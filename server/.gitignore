@@ -1,9 +1,10 @@
+# Gradle
 .gradle
-testGrailsWorkspace.build/
+build
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/testGrailsWorkspace.build/
 !**/src/test/**/testGrailsWorkspace.build/
-build
+testGrailsWorkspace.build/
 
 ### IntelliJ IDEA ###
 .idea
@@ -14,14 +15,13 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
+# Eclipse
 .project
-.settings
-.springBeans
-.sts4-cache
+.classpath
+.c9/
+*.launch
+.settings/
+.metadata
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
@@ -42,5 +42,12 @@ bin/
 ### ROVO DEV - Atlassion ###
 acli.exe
 
-### logs ###
-logs/*.log
+# Logs
+*.log
+logs/
+
+# Local properties
+local.properties
+
+# Test outputs
+test-results/
