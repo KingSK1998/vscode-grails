@@ -1,0 +1,5 @@
+package kingsk.grails.lsp.model
+
+class Constants {
+	
+}

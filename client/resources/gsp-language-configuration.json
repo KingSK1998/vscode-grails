@@ -1,0 +1,76 @@
+{
+  "comments": {
+    "blockComment": ["<%--", "--%>"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["<%", "%>"],
+    ["<g:", ">"],
+    ["</g:", ">"],
+    ["<", ">"]
+  ],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}", "notIn": ["string", "comment"] },
+    { "open": "[", "close": "]", "notIn": ["string", "comment"] },
+    { "open": "(", "close": ")", "notIn": ["string", "comment"] },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "<%", "close": "%>", "notIn": ["string", "comment"] },
+    { "open": "<%=", "close": "%>", "notIn": ["string", "comment"] },
+    { "open": "<%!", "close": "%>", "notIn": ["string", "comment"] },
+    { "open": "<%@", "close": "%>", "notIn": ["string", "comment"] },
+    { "open": "<%--", "close": "--%>", "notIn": ["string"] },
+    { "open": "${", "close": "}", "notIn": ["comment"] },
+    { "open": "<g:", "close": ">", "notIn": ["string", "comment"] },
+    { "open": "</g:", "close": ">", "notIn": ["string", "comment"] },
+    { "open": "<!--", "close": "-->", "notIn": ["string"] },
+    { "open": "<", "close": ">", "notIn": ["string", "comment"] }
+  ],
+  "autoCloseBefore": ";:.,=}])>` \n\t",
+  "surroundingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" },
+    { "open": "<%", "close": "%>" },
+    { "open": "${", "close": "}" },
+    { "open": "<g:", "close": ">" },
+    { "open": "<", "close": ">" }
+  ],
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)",
+  "indentationRules": {
+    "increaseIndentPattern": "^((?!\\/\\/).)*(\\{[^}\"'`]*|\\([^)\"'`]*|\\[[^\\]\"'`]*|<(?!\\?|(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\\s*\\/>)([_:\\w][_:\\w-.\\d]*)(?=\\s|>)[^>]*>(?!.*<\\/\\1>)|<!--(?!.*-->)|\\{[^}\"']*|\\([^)\"']*|\\[[^\\]\"']*)$",
+    "decreaseIndentPattern": "^((?!.*?\\/\\*).*\\*/)?\\s*[\\}\\]].*$|^\\s*<\\/(?!html)\\w+[^>]*>|^\\s*-->.*$"
+  },
+  "folding": {
+    "markers": {
+      "start": "^\\s*<%--\\s*#?region\\b",
+      "end": "^\\s*<%--\\s*#?endregion\\b"
+    }
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*<%--(?!.*--%>).*$",
+      "afterText": "^\\s*--%>$",
+      "action": {
+        "indent": "indentOutdent"
+      }
+    },
+    {
+      "beforeText": "^\\s*<!--(?!.*-->).*$",
+      "afterText": "^\\s*-->$",
+      "action": {
+        "indent": "indentOutdent"
+      }
+    },
+    {
+      "beforeText": "^\\s*<(?!(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\\s*\\/>)([_:\\w][_:\\w-.\\d]*)(?=\\s|>)[^>]*>(?!.*<\\/\\1>).*$",
+      "action": {
+        "indent": "indent"
+      }
+    }
+  ]
+}

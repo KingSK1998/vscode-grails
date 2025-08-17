@@ -1,0 +1,31 @@
+package kingsk.grails.lsp.providers
+
+import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.ISymbolResolver
+
+class GrailsSymbolResolver implements ISymbolResolver {
+	private final ISymbolResolver groovyResolver
+	private final GrailsProject project
+	
+	GrailsSymbolResolver(ISymbolResolver groovyResolver, GrailsProject project) {
+		this.groovyResolver = groovyResolver
+		this.project = project
+	}
+	
+	@Override
+	def resolveSymbol(String fileUri, int line, int column) {
+		def node = groovyResolver.resolveSymbol(fileUri, line, column)
+		return node ? node : null
+	}
+	
+	private resolveGrailsConventionSymbol(String fileUri, int line, int column) {
+		// Check if symbol is part of Grails conventions (e.g., controllers, GORM)
+		def node = visitor.getNodeAtLineAndColumn(fileUri, line, column)
+		if (isGrailsControllerMethod(node)) {
+			return createControllerSymbol(node)
+		}
+		
+		// Add other Grails-specific checks
+	}
+	
+}

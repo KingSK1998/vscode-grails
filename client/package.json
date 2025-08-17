@@ -1,0 +1,276 @@
+{
+  "name": "vscode-grails-client",
+  "displayName": "Grails Framework Support",
+  "description": "A full-featured extension for Grails and Groovy development.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/build.gradle"
+  ],
+  "main": "./out/extension.js",
+  "icon": "resources/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KingSK1998/vscode-grails-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KingSK1998/vscode-grails-extension/issues"
+  },
+  "homepage": "https://github.com/KingSK1998/vscode-grails-extension#readme",
+  "extensionDependencies": [
+    "vscjava.vscode-gradle"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "grails.run",
+        "title": "Grails: Run Application",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.test",
+        "title": "Grails: Run Tests",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.clean",
+        "title": "Grails: Clean",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.compile",
+        "title": "Grails: Compile",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.runGradleTask",
+        "title": "Grails: Run Gradle Task",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.restartServer",
+        "title": "Grails: Restart Language Server",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createArtifact",
+        "title": "Grails: Create New Artifact",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showConfig",
+        "title": "Grails: Show Configuration",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.openGrailsApp",
+        "title": "Grails: Open grails-app Folder",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.diagnoseGradle",
+        "title": "Grails: Diagnose Gradle Issues",
+        "category": "Grails"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "grails.run",
+          "when": "resourceLangId == groovy"
+        },
+        {
+          "command": "grails.restartServer"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "grails.run",
+          "when": "view == grailsExplorer",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "groovy",
+        "extensions": [
+          ".groovy"
+        ],
+        "configuration": "./resources/groovy-language-configuration.json"
+      },
+      {
+        "id": "gsp",
+        "extensions": [
+          ".gsp"
+        ],
+        "aliases": [
+          "GSP",
+          "Groovy Server Pages"
+        ],
+        "configuration": "./resources/gsp-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "groovy",
+        "scopeName": "source.groovy",
+        "path": "./resources/grammars/groovy.tmLanguage.json"
+      },
+      {
+        "language": "gsp",
+        "scopeName": "source.gsp",
+        "path": "./resources/grammars/gsp.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Grails",
+      "properties": {
+        "grails.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Grails installation directory"
+        },
+        "grails.javaHome": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Java installation to be used by the Grails Language Server (e.g. /usr/lib/jvm/java-17-openjdk). If not set, system default will be used."
+        },
+        "grails.server.port": {
+          "type": "number",
+          "default": 5007,
+          "description": "Port for development server"
+        },
+        "grails.server.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Host for development server"
+        },
+        "grails.server.jvmArgs": {
+          "type": "array",
+          "default": [
+            "-Xmx512m"
+          ],
+          "description": "JVM arguments for Grails server"
+        },
+        "grails.server.developmentMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Development Mode"
+        },
+        "grailsLsp.completionDetail": {
+          "type": "string",
+          "enum": [
+            "BASIC",
+            "STANDARD",
+            "ADVANCED"
+          ],
+          "default": "ADVANCED",
+          "description": "Level of completion detail: BASIC, STANDARD, or ADVANCED."
+        },
+        "grailsLsp.maxCompletionItems": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum number of completion items returned."
+        },
+        "grailsLsp.includeSnippets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include code snippets in completion results."
+        },
+        "grailsLsp.enableGrailsMagic": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Grails-specific magic features."
+        },
+        "grailsLsp.codeLensMode": {
+          "type": "string",
+          "enum": [
+            "OFF",
+            "BASIC",
+            "ADVANCED",
+            "FULL"
+          ],
+          "default": "ADVANCED",
+          "description": "CodeLens mode: OFF, BASIC, ADVANCED, or FULL."
+        },
+        "grailsLsp.compilerPhase": {
+          "type": "number",
+          "default": 0,
+          "description": "Groovy compiler phase to use (0 for auto-detection based on project size)."
+        },
+        "grailsLsp.shouldRecompileOnChange": {
+          "type": "boolean",
+          "default": false,
+          "description": "Recompile project when configuration changes."
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "grailsExplorer",
+          "name": "Grails Explorer",
+          "when": "workspaceContains:**/grails-app",
+          "icon": "media/icons/grails32.png"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "grailsActivityBar",
+          "title": "Grails",
+          "icon": "media/icons/grails32.png"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./resources/snippets/groovy.json"
+      },
+      {
+        "language": "gsp",
+        "path": "./resources/snippets/gsp.json"
+      }
+    ]
+  },
+  "files": [
+    "out",
+    "resources",
+    "language",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.16.5",
+    "@types/vscode": "^1.102.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "chai": "^5.2.1",
+    "eslint": "^9.31.0",
+    "mocha": "^11.7.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

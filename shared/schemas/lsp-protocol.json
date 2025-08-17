@@ -1,0 +1,45 @@
+{
+	"$schema": "https://json-schema.org/draft-07/schema#",
+	"title": "Grails LSP Protocol Extension",
+	"description": "Custom protocol extensions for Grails Language Server",
+	"type": "object",
+	"properties": {
+		"grails": {
+			"type": "object",
+			"properties": {
+				"artifacts": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/GrailsArtefact"
+					}
+				},
+				"config": {
+					"$ref": "#/definitions/GrailsConfig"
+				}
+			}
+		}
+	},
+	"definitions": {
+		"GrailsArtefact": {
+			"type": "object",
+			"properties": {
+				"name": { "type": "string" },
+				"type": {
+					"type": "string",
+					"enum": ["controller", "service", "domain", "taglib", "job", "command"],
+					"path": { "type": "string" },
+					"packageName": { "type": "string" }
+				}
+			},
+			"required": ["name", "type", "path"]
+		},
+		"GrailsConfig": {
+			"type": "object",
+			"properties": {
+				"grailsVersion": { "type": "string" },
+				"groovyVersion": { "type": "string" },
+				"javaVersion": { "type": "string" }
+			}
+		}
+	}
+}

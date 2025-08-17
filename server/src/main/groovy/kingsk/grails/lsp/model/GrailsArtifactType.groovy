@@ -1,0 +1,36 @@
+package kingsk.grails.lsp.model
+
+enum GrailsArtifactType {
+	APPLICATION,
+	BOOTSTRAP,
+	URL_MAPPINGS,
+	CONFIG,
+	
+	INTERCEPTOR,
+	CONTROLLER,
+	SERVICE,
+	DOMAIN,
+	TAGLIB,
+	VIEWS,
+	
+	COMMAND,
+	JOB,
+	SPOCK_TEST,
+	JUNIT_TEST,
+	POGO,
+	
+	UNKNOWN, // Fallback for non-grails files
+	NOT_SUPPORTED,
+	INCORRECT_PACKAGE,
+	
+	// Grails 7+ Spring Integration
+	SPRING_COMPONENT,
+	SPRING_CONFIGURATION,
+	SPRING_REPOSITORY,
+	SPRING_REST_CONTROLLER,
+	SPRING_BOOT_APPLICATION
+	
+	boolean isValid() {
+		return this != UNKNOWN && this != NOT_SUPPORTED && this != INCORRECT_PACKAGE && this != POGO
+	}
+}

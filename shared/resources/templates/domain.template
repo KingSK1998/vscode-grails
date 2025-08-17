@@ -1,0 +1,15 @@
+package ${packageName}
+
+class ${className} {
+
+    // TODO: add properties here
+
+    static constraints = {
+        // TODO: define constraints here
+    }
+
+    static mapping = {
+        // TODO: define mapping here
+    }
+
+}

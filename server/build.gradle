@@ -1,0 +1,126 @@
+plugins {
+	id 'groovy'
+	id 'application'
+	id 'jacoco' // Add JaCoCo plugin for code coverage
+}
+
+group = 'kingsk.grails.lsp'
+version = '0.3.1-SNAPSHOT'
+description = 'An LSP for Groovy on Grails'
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+	mavenCentral()
+	gradlePluginPortal()
+	mavenLocal()
+}
+
+dependencies {
+	implementation "org.apache.groovy:groovy-all:4.0.23"
+	implementation "com.google.guava:guava:33.3.0-jre"
+	
+	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1"
+	implementation "org.gradle:gradle-tooling-api:7.3-20210825160000+0000"
+	implementation "org.apache.groovy:groovy-json:4.0.23"
+	
+	implementation "org.slf4j:slf4j-api:2.0.16"
+	implementation 'ch.qos.logback:logback-classic:1.5.13'
+	
+	// Testing dependencies - Spock Framework
+	testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
+	testImplementation "junit:junit:4.13.2"
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+	
+	// Mockito for mocking (works well with Spock)
+	testImplementation "org.mockito:mockito-core:5.11.0"
+}
+
+application {
+	mainClass = 'kingsk.grails.lsp.GrailsLanguageServer'
+}
+
+test {
+	useJUnitPlatform() // Spock 2.3 uses JUnit Platform
+	
+	// Spock-optimized test logging
+	testLogging {
+		events "passed", "skipped", "failed"
+		showStandardStreams = true
+		exceptionFormat = 'full'
+		showExceptions = true
+		showCauses = true
+		showStackTraces = true
+	}
+	
+	// Fail the build on test failures
+	ignoreFailures = false
+	
+	// Set system properties for tests
+	systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
+	
+	// Generate test reports
+	reports {
+		html.required = true
+		junitXml.required = true
+	}
+}
+
+// JaCoCo configuration for code coverage
+jacoco {
+	toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+	dependsOn test
+	
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+	
+	// Set coverage thresholds
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					// Exclude generated code
+					"**/generated/**",
+					// Exclude model classes that are mostly data holders
+					"**/model/**"
+			])
+		}))
+	}
+}
+
+// JaCoCo verification task
+jacocoTestCoverageVerification {
+	dependsOn jacocoTestReport
+	
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.60 // 60% minimum coverage
+			}
+		}
+	}
+}
+
+// Make sure JaCoCo report is generated after tests run
+test.finalizedBy jacocoTestReport
+
+// Task to run all checks including tests and coverage
+tasks.register('checkAll') {
+	description = 'Runs all checks including tests, coverage, and verification'
+	group = 'verification'
+	
+	dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
+}
+
+// Clean task enhancement
+clean {
+	delete layout.buildDirectory.dir("test-workspaces")
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Custom color and formatting converters -->
+    <conversionRule conversionWord="clr" converterClass="ch.qos.logback.core.pattern.color.ANSIConstants"/>
+    <conversionRule conversionWord="wex" converterClass="ch.qos.logback.classic.pattern.ThrowableProxyConverter"/>
+
+    <!-- Console appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>false</withJansi>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%cyan(%d{yyyy-MM-dd HH:mm:ss.SSS}) %highlight(%5p) %magenta(---) %cyan([%15.15t])
+                %yellow(%-40.40logger{39}) %cyan(:) %m%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- File appender -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>./logs/grails-language-server.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Set logging level for specific packages -->
+    <logger name="ch.qos.logback" level="ERROR"/>
+    <logger name="org.slf4j" level="ERROR"/>
+    <logger name="kingsk.grails.lsp" level="DEBUG"/>
+
+    <!-- Root logger -->
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

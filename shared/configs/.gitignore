@@ -1,0 +1,38 @@
+# Build outputs
+dist/
+out/
+build/
+target/
+*.jar
+*.vsix
+
+# Dependencies
+node_modules/
+.gradle/
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Test outputs
+coverage/
+test-results/
+.nyc_output/
+
+# Environment
+.env
+.env.local

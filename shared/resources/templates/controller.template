@@ -1,0 +1,9 @@
+package ${packageName}
+
+class ${className}Controller {
+
+    def index() {
+        render "Hello, from ${className}Controller!"
+    }
+
+}

@@ -1,0 +1,12 @@
+package ${packageName}
+
+import grails.gorm.transactions.Transactional
+
+@Transactional
+class ${className}Service {
+
+	def serviceMethod() {
+		// TODO: implement business logic here
+	}
+
+}
