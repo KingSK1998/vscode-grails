@@ -3,12 +3,13 @@ import * as fs from "fs";
 import * as path from "path";
 import { LanguageClient } from "vscode-languageclient/node";
 import { ErrorService } from "./services/ErrorService";
-import { GradleService } from "./services/GradleService";
+import { GradleService } from "./services/gradle-service";
 import { StatusBarService } from "./services/StatusBarService";
-import { GRAILS_MESSAGE, ERROR_SEVERITY, MODULE_TYPE } from "./utils/Constants";
-import { LanguageServerManager } from "./languageClient/LanguageServerManager";
-import { registerCommands } from "./commands/GrailsCommands";
-import { GrailsExplorerProvider } from "./projectInfo/GrailsExplorer";
+import { GrailsMessage, ErrorSeverity, ModuleType } from "./utils/constants";
+import { LanguageServerManager } from "./language/grails-language-client";
+import { registerCommands } from "./commands/grails-commands";
+import { GrailsTreeDataProvider } from "./views/grails-tree-view";
+import { GrailsDashboard } from "./views/grails-dashboard";
 
 // Global language client and server
 let client: LanguageClient | undefined;
@@ -45,12 +46,12 @@ export async function activate(context: vscode.ExtensionContext) {
       gradleAvailable = await gradleApi.sync();
       if (gradleAvailable) {
         console.log("Gradle API available - full Grails features enabled");
-        statusBar.ready(MODULE_TYPE.GRADLE, "Gradle integration active");
+        statusBar.ready(ModuleType.GRADLE, "Gradle integration active");
       }
     } catch (error) {
       console.log("Gradle unavailable - this will affect LSP compilation:", error);
-      statusBar.warning(MODULE_TYPE.GRADLE, "Gradle issues detected - LSP may have limited functionality");
-      
+      statusBar.warning(ModuleType.GRADLE, "Gradle issues detected - LSP may have limited functionality");
+
       // Still start LSP - it might have cached data or work in degraded mode
       console.log("Starting LSP anyway - it may work with cached data or in fallback mode");
     }
@@ -62,14 +63,14 @@ export async function activate(context: vscode.ExtensionContext) {
       await initializeExtensionFeatures(context, client, gradleApi, workspaceRoot, gradleAvailable);
     } else if (!gradleAvailable) {
       // LSP failed and Gradle unavailable - likely build issues
-      statusBar.error(MODULE_TYPE.SERVER, "LSP startup failed - check Gradle build for errors");
+      statusBar.error(ModuleType.SERVER, "LSP startup failed - check Gradle build for errors");
       const action = await vscode.window.showErrorMessage(
         "Grails Language Server failed to start. This is often due to Gradle build issues.",
         "Check Gradle Problems",
         "View Output",
-        "Retry"
+        "Retry",
       );
-      
+
       if (action === "Check Gradle Problems") {
         vscode.commands.executeCommand("workbench.panel.markers.view.focus");
       } else if (action === "View Output") {
@@ -92,7 +93,7 @@ export async function activate(context: vscode.ExtensionContext) {
 function getProjectWorkspace(): vscode.WorkspaceFolder {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders?.length) {
-    throw new Error(GRAILS_MESSAGE.INVALID_PROJECT);
+    throw new Error(GrailsMessage.INVALID_PROJECT);
   }
   return workspaceFolders[0];
 }
@@ -116,8 +117,57 @@ async function initializeExtensionFeatures(
   registerServerRestartCommand(context, gradleAvailable);
 
   // Initialize project explorer with Gradle availability info
-  const projectExplorer = new GrailsExplorerProvider(languageClient, gradleAvailable);
-  context.subscriptions.push(vscode.window.registerTreeDataProvider("grailsExplorer", projectExplorer));
+  // const projectExplorer = new GrailsExplorerProvider(languageClient, gradleAvailable);
+  // context.subscriptions.push(vscode.window.registerTreeDataProvider("grailsExplorer", projectExplorer));
+
+  // Register Grails tree view
+  const grailsTreeProvider = new GrailsTreeDataProvider(context);
+  vscode.window.registerTreeDataProvider("grailsExplorer", grailsTreeProvider);
+
+  // Register refresh command
+  vscode.commands.registerCommand("grails.refreshTree", () => {
+    grailsTreeProvider.refresh();
+  });
+
+  // Register dashboard command
+  const grailsDashboard = new GrailsDashboard();
+  vscode.commands.registerCommand("grails.showDashboard", () => {
+    grailsDashboard.createOrShow(context);
+  });
+
+  // Register artifact creation command
+  vscode.commands.registerCommand("grails.createController", async () => {
+    const name = await vscode.window.showInputBox({
+      prompt: "Enter controller name",
+      placeHolder: "UserController",
+    });
+    if (name) {
+      // TODO: Implement controller creation
+      await vscode.window.showInformationMessage(`Creating controller: ${name}`);
+    }
+  });
+
+  vscode.commands.registerCommand("grails.createService", async () => {
+    const name = await vscode.window.showInputBox({
+      prompt: "Enter service name",
+      placeHolder: "UserService",
+    });
+    if (name) {
+      // TODO: Implement service creation
+      await vscode.window.showInformationMessage(`Creating service: ${name}`);
+    }
+  });
+
+  vscode.commands.registerCommand("grails.createDomain", async () => {
+    const name = await vscode.window.showInputBox({
+      prompt: "Enter domain name",
+      placeHolder: "User",
+    });
+    if (name) {
+      // TODO: Implement domain creation
+      vscode.window.showInformationMessage(`Creating domain: ${name}`);
+    }
+  });
 
   // Register other Grails commands with Gradle availability info
   registerCommands(context, gradleService, projectRoot, gradleAvailable);
@@ -129,18 +179,18 @@ function registerServerRestartCommand(context: vscode.ExtensionContext, gradleAv
       try {
         if (client && serverLSP) {
           await client.stop();
-          
+
           client = await serverLSP.start();
           if (client) {
             // Re-register workspace listeners with current Gradle status
             registerWorkspaceEventListeners(context, client, gradleAvailable);
-            vscode.window.showInformationMessage(GRAILS_MESSAGE.SERVER_RESTARTED);
+            vscode.window.showInformationMessage(GrailsMessage.SERVER_RESTARTED);
           }
         } else {
-          vscode.window.showWarningMessage(GRAILS_MESSAGE.SERVER_NOT_RUNNING);
+          vscode.window.showWarningMessage(GrailsMessage.SERVER_NOT_RUNNING);
         }
       } catch (error) {
-        errorHandler.handle(error, MODULE_TYPE.SERVER, ERROR_SEVERITY.ERROR);
+        errorHandler.handle(error, ModuleType.SERVER, ErrorSeverity.ERROR);
       }
     }),
   );
@@ -162,7 +212,7 @@ export function registerWorkspaceEventListeners(
         grails: vscode.workspace.getConfiguration("grails").get(""),
         grailsLsp: vscode.workspace.getConfiguration("grailsLsp").get(""),
       };
-      
+
       // Only notify server if Gradle is working (server can compile properly)
       if (gradleAvailable) {
         console.log("Sending configuration change to LSP server (Gradle available)");
@@ -180,15 +230,15 @@ export function registerWorkspaceEventListeners(
       grails: vscode.workspace.getConfiguration("grails").get(""),
       grailsLsp: vscode.workspace.getConfiguration("grailsLsp").get(""),
     };
-    
+
     // Send initial configuration to trigger: initialize workspace -> compile project -> server ready
     client?.sendNotification("workspace/didChangeConfiguration", { settings: initialSettings });
   }
 }
 
 async function handleExtensionError(error: unknown): Promise<void> {
-  errorHandler.handle(error, MODULE_TYPE.EXTENSION, ERROR_SEVERITY.FATAL);
-  statusBar.error(MODULE_TYPE.EXTENSION, GRAILS_MESSAGE.SERVER_STARTUP_FAILED);
+  errorHandler.handle(error, ModuleType.EXTENSION, ErrorSeverity.FATAL);
+  statusBar.error(ModuleType.EXTENSION, GrailsMessage.SERVER_START_FAILED);
 }
 
 export async function deactivate(): Promise<void> {

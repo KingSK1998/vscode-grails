@@ -60,12 +60,12 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
     if (!element) {
       // Top-level: Show all available Grails directories
       const items: GrailsItem[] = [];
-      
+
       // Always show main artifact types
       items.push(new GrailsItem("Controllers", vscode.TreeItemCollapsibleState.Collapsed, "controllers"));
       items.push(new GrailsItem("Services", vscode.TreeItemCollapsibleState.Collapsed, "services"));
       items.push(new GrailsItem("Domains", vscode.TreeItemCollapsibleState.Collapsed, "domains"));
-      
+
       // Add other directories if they exist
       const grailsAppPath = path.join(workspaceRoot, "grails-app");
       if (fs.existsSync(grailsAppPath)) {
@@ -73,9 +73,9 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
           { name: "Views", path: "views", contextValue: "views" },
           { name: "TagLibs", path: "taglib", contextValue: "taglib" },
           { name: "Utils", path: "utils", contextValue: "utils" },
-          { name: "Configuration", path: "conf", contextValue: "conf" }
+          { name: "Configuration", path: "conf", contextValue: "conf" },
         ];
-        
+
         for (const dir of additionalDirs) {
           const dirPath = path.join(grailsAppPath, dir.path);
           if (fs.existsSync(dirPath)) {
@@ -83,11 +83,14 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
           }
         }
       }
-      
+
       return Promise.resolve(items);
     } else if (["controllers", "services", "domains"].includes(element.contextValue)) {
       // List artifact files
-      return await getArtefactItems(projectInfo, element.contextValue as "controllers" | "services" | "domains");
+      return await getArtefactItems(
+        projectInfo,
+        element.contextValue as "controllers" | "services" | "domains",
+      );
     } else if (["views", "taglib", "utils", "conf"].includes(element.contextValue)) {
       // List other directory contents
       return await getOtherDirectoryItems(workspaceRoot, element.contextValue);
@@ -103,37 +106,37 @@ export class GrailsItem extends vscode.TreeItem {
     public readonly contextValue: string,
   ) {
     super(label, collapsibleState);
-    
+
     // Set icons based on context
     this.iconPath = this.getIcon();
   }
 
   private getIcon(): vscode.ThemeIcon {
     switch (this.contextValue) {
-      case 'controllers':
-        return new vscode.ThemeIcon('globe');
-      case 'services':
-        return new vscode.ThemeIcon('gear');
-      case 'domains':
-        return new vscode.ThemeIcon('database');
-      case 'views':
-        return new vscode.ThemeIcon('browser');
-      case 'taglib':
-        return new vscode.ThemeIcon('tag');
-      case 'utils':
-        return new vscode.ThemeIcon('tools');
-      case 'conf':
-        return new vscode.ThemeIcon('settings-gear');
+      case "controllers":
+        return new vscode.ThemeIcon("globe");
+      case "services":
+        return new vscode.ThemeIcon("gear");
+      case "domains":
+        return new vscode.ThemeIcon("database");
+      case "views":
+        return new vscode.ThemeIcon("browser");
+      case "taglib":
+        return new vscode.ThemeIcon("tag");
+      case "utils":
+        return new vscode.ThemeIcon("tools");
+      case "conf":
+        return new vscode.ThemeIcon("settings-gear");
       default:
         // For individual files
-        if (this.label.endsWith('.groovy')) {
-          return new vscode.ThemeIcon('file-code');
-        } else if (this.label.endsWith('.java')) {
-          return new vscode.ThemeIcon('file-code');
-        } else if (this.label.endsWith('.gsp')) {
-          return new vscode.ThemeIcon('file-code');
+        if (this.label.endsWith(".groovy")) {
+          return new vscode.ThemeIcon("file-code");
+        } else if (this.label.endsWith(".java")) {
+          return new vscode.ThemeIcon("file-code");
+        } else if (this.label.endsWith(".gsp")) {
+          return new vscode.ThemeIcon("file-code");
         }
-        return new vscode.ThemeIcon('file');
+        return new vscode.ThemeIcon("file");
     }
   }
 }
@@ -156,7 +159,7 @@ async function readProjectInfo(workspaceRoot: string): Promise<any | undefined> 
 
 async function scanGrailsProject(workspaceRoot: string): Promise<any> {
   const grailsAppPath = path.join(workspaceRoot, "grails-app");
-  
+
   if (!fs.existsSync(grailsAppPath)) {
     return null;
   }
@@ -165,18 +168,18 @@ async function scanGrailsProject(workspaceRoot: string): Promise<any> {
     sourceDirectories: [] as string[],
     controllers: [] as string[],
     services: [] as string[],
-    domains: [] as string[]
+    domains: [] as string[],
   };
 
   // Standard Grails directories
   const standardDirs = [
-    { type: 'controllers', path: path.join(grailsAppPath, 'controllers') },
-    { type: 'services', path: path.join(grailsAppPath, 'services') },
-    { type: 'domains', path: path.join(grailsAppPath, 'domain') }, // Note: 'domain' not 'domains'
-    { type: 'views', path: path.join(grailsAppPath, 'views') },
-    { type: 'conf', path: path.join(grailsAppPath, 'conf') },
-    { type: 'taglib', path: path.join(grailsAppPath, 'taglib') },
-    { type: 'utils', path: path.join(grailsAppPath, 'utils') }
+    { type: "controllers", path: path.join(grailsAppPath, "controllers") },
+    { type: "services", path: path.join(grailsAppPath, "services") },
+    { type: "domains", path: path.join(grailsAppPath, "domain") }, // Note: 'domain' not 'domains'
+    { type: "views", path: path.join(grailsAppPath, "views") },
+    { type: "conf", path: path.join(grailsAppPath, "conf") },
+    { type: "taglib", path: path.join(grailsAppPath, "taglib") },
+    { type: "utils", path: path.join(grailsAppPath, "utils") },
   ];
 
   for (const dir of standardDirs) {
@@ -204,7 +207,7 @@ async function getArtefactItems(
   // Map types to actual directory names in Grails
   const dirMap: Record<string, string> = {
     controllers: "controllers",
-    services: "services", 
+    services: "services",
     domains: "domain", // Grails uses 'domain' not 'domains'
   };
 
@@ -212,7 +215,7 @@ async function getArtefactItems(
   const targetDir = path.join(grailsAppPath, dirMap[type]);
 
   const items: GrailsItem[] = [];
-  
+
   if (!fs.existsSync(targetDir)) {
     return items;
   }
@@ -227,34 +230,34 @@ async function getArtefactItems(
 }
 
 async function scanDirectoryRecursively(
-  currentDir: string, 
-  baseDir: string, 
-  items: GrailsItem[], 
-  type: string
+  currentDir: string,
+  baseDir: string,
+  items: GrailsItem[],
+  type: string,
 ): Promise<void> {
   try {
     const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(currentDir, entry.name);
-      
+
       if (entry.isDirectory()) {
         // Recursively scan subdirectories (for package structures)
         await scanDirectoryRecursively(fullPath, baseDir, items, type);
-      } else if (entry.isFile() && (entry.name.endsWith('.groovy') || entry.name.endsWith('.java'))) {
+      } else if (entry.isFile() && (entry.name.endsWith(".groovy") || entry.name.endsWith(".java"))) {
         // Calculate relative path for display
         const relativePath = path.relative(baseDir, fullPath);
-        const displayName = relativePath.replace(/\\/g, '/'); // Use forward slashes for display
-        
+        const displayName = relativePath.replace(/\\/g, "/"); // Use forward slashes for display
+
         const item = new GrailsItem(displayName, vscode.TreeItemCollapsibleState.None, type);
         item.resourceUri = vscode.Uri.file(fullPath);
         item.command = {
-          command: 'vscode.open',
-          title: 'Open File',
-          arguments: [vscode.Uri.file(fullPath)]
+          command: "vscode.open",
+          title: "Open File",
+          arguments: [vscode.Uri.file(fullPath)],
         };
         item.tooltip = fullPath;
-        
+
         items.push(item);
       }
     }
@@ -265,13 +268,13 @@ async function scanDirectoryRecursively(
 
 async function getOtherDirectoryItems(workspaceRoot: string, contextValue: string): Promise<GrailsItem[]> {
   const grailsAppPath = path.join(workspaceRoot, "grails-app");
-  
+
   // Map context values to directory names
   const dirMap: Record<string, string> = {
     views: "views",
-    taglib: "taglib", 
+    taglib: "taglib",
     utils: "utils",
-    conf: "conf"
+    conf: "conf",
   };
 
   const targetDir = path.join(grailsAppPath, dirMap[contextValue]);
@@ -294,49 +297,56 @@ async function scanOtherDirectoryRecursively(
   currentDir: string,
   baseDir: string,
   items: GrailsItem[],
-  contextValue: string
+  contextValue: string,
 ): Promise<void> {
   try {
     const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(currentDir, entry.name);
-      
+
       if (entry.isDirectory()) {
         // For views, show directories as expandable items
         if (contextValue === "views") {
           const relativePath = path.relative(baseDir, fullPath);
-          const displayName = relativePath.replace(/\\/g, '/');
-          
-          const item = new GrailsItem(displayName, vscode.TreeItemCollapsibleState.Collapsed, `${contextValue}-dir`);
+          const displayName = relativePath.replace(/\\/g, "/");
+
+          const item = new GrailsItem(
+            displayName,
+            vscode.TreeItemCollapsibleState.Collapsed,
+            `${contextValue}-dir`,
+          );
           item.resourceUri = vscode.Uri.file(fullPath);
           item.tooltip = fullPath;
           items.push(item);
         }
-        
+
         // Recursively scan subdirectories
         await scanOtherDirectoryRecursively(fullPath, baseDir, items, contextValue);
       } else if (entry.isFile()) {
         // Show files based on context
-        const shouldInclude = 
-          (contextValue === "views" && (entry.name.endsWith('.gsp') || entry.name.endsWith('.html'))) ||
-          (contextValue === "conf" && (entry.name.endsWith('.groovy') || entry.name.endsWith('.yml') || entry.name.endsWith('.properties'))) ||
-          (contextValue === "taglib" && (entry.name.endsWith('.groovy'))) ||
-          (contextValue === "utils" && (entry.name.endsWith('.groovy') || entry.name.endsWith('.java')));
+        const shouldInclude =
+          (contextValue === "views" && (entry.name.endsWith(".gsp") || entry.name.endsWith(".html"))) ||
+          (contextValue === "conf" &&
+            (entry.name.endsWith(".groovy") ||
+              entry.name.endsWith(".yml") ||
+              entry.name.endsWith(".properties"))) ||
+          (contextValue === "taglib" && entry.name.endsWith(".groovy")) ||
+          (contextValue === "utils" && (entry.name.endsWith(".groovy") || entry.name.endsWith(".java")));
 
         if (shouldInclude) {
           const relativePath = path.relative(baseDir, fullPath);
-          const displayName = relativePath.replace(/\\/g, '/');
-          
+          const displayName = relativePath.replace(/\\/g, "/");
+
           const item = new GrailsItem(displayName, vscode.TreeItemCollapsibleState.None, contextValue);
           item.resourceUri = vscode.Uri.file(fullPath);
           item.command = {
-            command: 'vscode.open',
-            title: 'Open File',
-            arguments: [vscode.Uri.file(fullPath)]
+            command: "vscode.open",
+            title: "Open File",
+            arguments: [vscode.Uri.file(fullPath)],
           };
           item.tooltip = fullPath;
-          
+
           items.push(item);
         }
       }

@@ -1,53 +1,49 @@
 export const GRADLE_EXTENSION_ID = "vscjava.vscode-gradle";
 
-/**
- * Messages for Grails Language Server status and operations
- */
-export enum GRAILS_MESSAGE {
+// -------- Extension & Gradle IDs --------
+export const EXTENSION_IDS = {
+  GRADLE: "vscjava.vscode-gradle",
+} as const;
+
+// -------- Status and Operation Messages --------
+export enum GrailsMessage {
   EXTENSION_STARTUP = "Starting Grails Extension...",
   EXTENSION_READY = "Grails Extension is ready.",
   EXTENSION_SYNCING = "Syncing Grails project...",
   EXTENSION_SYNC_FAILED = "Failed to sync Grails project.",
-
   // Server Lifecycle
-  SERVER_STARTUP_MESSAGE = "Starting Grails Language Server...",
-  SERVER_STARTUP_SUCCESS = "Grails Language Server started successfully.",
-  SERVER_STARTUP_FAILED = "Failed to start Grails Language Server.",
+  SERVER_STARTUP = "Starting Grails Language Server...",
+  SERVER_STARTED = "Grails Language Server started successfully.",
+  SERVER_START_FAILED = "Failed to start Grails Language Server.",
   SERVER_STOPPED = "Grails Language Server stopped.",
   SERVER_STOPPED_SUCCESS = "Grails Language Server stopped successfully.",
   SERVER_STOPPED_FAILED = "Failed to stop Grails Language Server.",
   SERVER_RESTARTED = "Grails Language Server restarted successfully.",
   SERVER_RESTART_FAILED = "Failed to restart Grails Language Server.",
   SERVER_NOT_RUNNING = "Grails Language Server: Not Running",
-
   // Error States (templated)
   SERVER_ERROR = "Grails Server Error: {0}",
   CLIENT_ERROR = "Grails Client Error: {0}",
   GRADLE_ERROR = "Gradle Error: {0}",
   LANGUAGE_SERVER_ERROR = "Language Server Error: {0}",
-
   // Project Messages
   INVALID_PROJECT = "Not a valid Groovy or Grails project",
-
   // Gradle Messages
-  GRADLE_SYNC_STARTED = "Syncing Gradle project...",
-  GRADLE_SYNC_IN_PROGRESS = "Gradle sync in progress...",
-  GRADLE_SYNC_COMPLETED = "Gradle sync completed",
+  GRADLE_SYNC_START = "Syncing Gradle project...",
+  GRADLE_SYNC_PROGRESS = "Gradle sync in progress...",
+  GRADLE_SYNC_COMPLETE = "Gradle sync completed",
   GRADLE_SYNC_FAILED = "Gradle sync failed",
-
-  // Gradle API Messages
+  // Gradle API
   GRADLE_API_INITIALIZING = "Initializing Gradle API...",
   GRADLE_API_INITIALIZED = "Gradle API initialized successfully",
-  GRADLE_API_INITIALIZATION_FAILED = "Failed to initialize Gradle API",
-
-  GRADLE_EXTENSION_NOT_FOUND = "Gradle extension not found. Please install it.",
-  // Gradle Task Messages
+  GRADLE_API_INIT_FAILED = "Failed to initialize Gradle API",
+  GRADLE_EXTENSION_MISSING = "Gradle extension not found. Please install it.",
+  // Gradle Task
   GRADLE_TASK_NOT_FOUND = "Gradle task not found: {0}",
   GRADLE_TASK_STARTED = "Running Gradle task: {0}",
   GRADLE_TASK_COMPLETED = "Gradle task completed: {0}",
   GRADLE_TASK_CANCELED = "Gradle task canceled: {0}",
-  GRADLE_TASK_CANCELLATION_FAILED = "Failed to cancel Gradle task: {0}",
-
+  GRADLE_TASK_CANCEL_FAILED = "Failed to cancel Gradle task: {0}",
   GRADLE_TASK_PROVIDER_MISSING = "Gradle Task Provider not available.",
   GRADLE_TASKS_LOADED = "Gradle tasks loaded.",
   GRADLE_TASK_RUNNING = "Running Gradle task: {0}",
@@ -57,31 +53,26 @@ export enum GRAILS_MESSAGE {
   GRADLE_API_NOT_AVAILABLE = "Gradle API is not available. Please check the extension.",
   GRADLE_API_ACTIVATION_FAILED = "Unable to activate the Gradle extension.",
   GRADLE_SYNC_PROGRESS_TITLE = "Waiting for Gradle to finish project sync...",
-
   EMPTY = "",
 }
 
-/**
- * Short status labels shown in status bar
- */
-export enum STATUS_TEXT_MESSAGES {
-  STARTING = "Starting", // when the server or client is starting
-  SYNC = "Syncing", // when workspace setup is in progress
-  RESTARTING = "Restarting", // when the server or client is restarting
-  RUNNING = "Running", // when the server or client is running
-  STOPPED = "Stopped", // when the server or client is stopped
-  READY = "Ready", // when the server or client is restarting
-  ERROR = "Error", // when there is an error in the server or client
-  WARNING = "Warning", // when there is a warning in the server or client
-  SUCCESS = "Success", // when the server or client has successfully completed an operation
-  INFO = "Info", // when there is an informational message in the server or client
+// -------- Short Status Labels --------
+export enum StatusText {
+  STARTING = "Starting",
+  SYNC = "Syncing",
+  RESTARTING = "Restarting",
+  RUNNING = "Running",
+  STOPPED = "Stopped",
+  READY = "Ready",
+  ERROR = "Error",
+  WARNING = "Warning",
+  SUCCESS = "Success",
+  INFO = "Info",
   EMPTY = "",
 }
 
-/**
- * VSCode-specific status bar icons
- */
-export enum STATUS_BAR_ICONS {
+// -------- VS Code Status Bar Icons --------
+export enum StatusBarIcon {
   SYNC_SPIN = "$(sync~spin)",
   ROCKET = "$(rocket)",
   CIRCLE_SLASH = "$(circle-slash)",
@@ -96,19 +87,15 @@ export enum STATUS_BAR_ICONS {
   EMPTY = "",
 }
 
-/**
- * Error severity levels for error handling
- */
-export enum ERROR_SEVERITY {
+// -------- Error Severity --------
+export enum ErrorSeverity {
   INFO = "INFO", // Informational messages
   WARNING = "WARNING", // Warnings that don't prevent operation
   ERROR = "ERROR", // Errors that affect functionality
   FATAL = "FATAL", // Critical errors that prevent operation
 }
 
-/**
- * Common file paths and patterns used in the extension
- */
+// -------- Common File Paths --------
 export const FILE_PATHS = {
   GRAILS_APP: "grails-app",
   BUILD_GRADLE: "build.gradle",
@@ -120,9 +107,7 @@ export const FILE_PATHS = {
   SERVICES_DIR: "grails-app/services",
 } as const;
 
-/**
- * Command IDs used in the extension
- */
+// -------- Command IDs --------
 export const COMMAND_IDS = {
   RUN_APP: "grails.runApp",
   STOP_APP: "grails.stopApp",
@@ -132,7 +117,8 @@ export const COMMAND_IDS = {
   RESTART_SERVER: "grails.restartServer",
 } as const;
 
-export enum PROGRESS_PHASE {
+// -------- Progress Phases --------
+export enum ProgressPhase {
   EXTENSION_STARTUP = "extension/startup",
   GRADLE_SYNC = "gradle/sync",
   SERVER_STARTUP = "server/startup",
@@ -142,10 +128,8 @@ export enum PROGRESS_PHASE {
   IDLE = "idle",
 }
 
-/**
- * Types of Modules or Components in the Grails ecosystem
- */
-export enum MODULE_TYPE {
+// -------- Grails Module Types --------
+export enum ModuleType {
   GRADLE = "Gradle",
   SERVER = "Server",
   CLIENT = "Client",
@@ -155,3 +139,27 @@ export enum MODULE_TYPE {
   UNKNOWN = "Unknown",
   GRAILS_FRAMEWORK_SUPPORT = "Grails Framework Support",
 }
+
+// -------- Grails Artifact Types --------
+export enum GrailsArtifactType {
+  CONTROLLER = "controller",
+  SERVICE = "service",
+  DOMAIN = "domain",
+  VIEW = "view",
+  TAGLIB = "taglib",
+  PLUGIN = "plugin",
+  CONFIG = "config",
+  URL_MAPPING = "urlmapping",
+}
+
+// -------- Tree View Contexts --------
+export const GRAILS_TREE_CONTEXTS = {
+  CONTROLLERS: "grails-controllers",
+  SERVICES: "grails-services",
+  DOMAINS: "grails-domains",
+  VIEWS: "grails-views",
+  TAGLIBS: "grails-taglibs",
+  CONFIG: "grails-config",
+} as const;
+
+export type GrailsTreeContext = (typeof GRAILS_TREE_CONTEXTS)[keyof typeof GRAILS_TREE_CONTEXTS];

@@ -1,0 +1,38 @@
+:root {
+  /* Grails Brand Colors */
+  --grails-green-primary: #48b946;
+  --grails-green-secondary: #2d5d2b;
+  --grails-green-accent: #7bc142;
+  --grails-green-light: #a8d5a7;
+
+  /* Semantic Colors */
+  --grails-success: var(--grails-green-primary);
+  --grails-warning: #ffa500;
+  --grails-danger: #dc3545;
+  --grails-info: #17a2b8;
+
+  /* Spacing */
+  --grails-spacing-xs: 4px;
+  --grails-spacing-sm: 8px;
+  --grails-spacing-md: 16px;
+  --grails-spacing-lg: 24px;
+  --grails-spacing-xl: 32px;
+
+  /* Border Radius */
+  --grails-radius-sm: 6px;
+  --grails-radius-md: 10px;
+  --grails-radius-lg: 16px;
+  --grails-radius-xl: 24px;
+  --grails-radius-pill: 50px;
+
+  /* Shadows */
+  --grails-shadow-sm: 0 2px 4px rgba(72, 185, 70, 0.1);
+  --grails-shadow-md: 0 4px 8px rgba(72, 185, 70, 0.15);
+  --grails-shadow-lg: 0 8px 16px rgba(72, 185, 70, 0.2);
+  --grails-shadow-xl: 0 16px 32px rgba(72, 185, 70, 0.25);
+
+  /* Transitions */
+  --grails-transition-fast: 0.15s ease;
+  --grails-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --grails-transition-slow: 0.5s ease-out;
+}

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as util from "util";
 import { ErrorService } from "./ErrorService";
-import { ERROR_SEVERITY, GRADLE_EXTENSION_ID, GRAILS_MESSAGE, MODULE_TYPE } from "../utils/Constants";
+import { ErrorSeverity, GRADLE_EXTENSION_ID, GrailsMessage, ModuleType } from "../utils/constants";
 import { StatusBarService } from "./StatusBarService";
 import { Api, GradleTaskResult } from "./gradleApiInterfaces/GradleApiInterface";
 
@@ -15,12 +15,12 @@ export class GradleService {
    */
   async sync(): Promise<boolean> {
     try {
-      this.statusBar.sync(MODULE_TYPE.GRADLE, GRAILS_MESSAGE.GRADLE_API_INITIALIZING);
+      this.statusBar.sync(ModuleType.GRADLE, GrailsMessage.GRADLE_API_INITIALIZING);
 
       const gradleExtension = vscode.extensions.getExtension(GRADLE_EXTENSION_ID);
 
       if (!gradleExtension) {
-        this.reportGradleError(GRAILS_MESSAGE.GRADLE_EXTENSION_NOT_FOUND);
+        this.reportGradleError(GrailsMessage.GRADLE_EXTENSION_MISSING);
         return false;
       }
 
@@ -30,33 +30,33 @@ export class GradleService {
 
       const gradleApi = gradleExtension.exports;
       if (!gradleApi) {
-        this.reportGradleError(GRAILS_MESSAGE.GRADLE_API_NOT_AVAILABLE);
+        this.reportGradleError(GrailsMessage.GRADLE_API_NOT_AVAILABLE);
         return false;
       }
 
       this.gradleApi = gradleApi;
 
-      this.statusBar.sync(MODULE_TYPE.GRADLE, GRAILS_MESSAGE.GRADLE_SYNC_STARTED);
+      this.statusBar.sync(ModuleType.GRADLE, GrailsMessage.GRADLE_SYNC_START);
 
       return await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: GRAILS_MESSAGE.GRADLE_SYNC_PROGRESS_TITLE,
+          title: GrailsMessage.GRADLE_SYNC_PROGRESS_TITLE,
         },
         () =>
           new Promise<boolean>((resolve) => {
             const taskProvider = this.gradleApi?.getTaskProvider();
 
             if (!taskProvider || typeof taskProvider.onDidLoadTasks !== "function") {
-              this.statusBar.warning(MODULE_TYPE.GRADLE, GRAILS_MESSAGE.GRADLE_TASK_PROVIDER_MISSING);
+              this.statusBar.warning(ModuleType.GRADLE, GrailsMessage.GRADLE_TASK_PROVIDER_MISSING);
               resolve(false);
               return;
             }
 
             const disposable = taskProvider.onDidLoadTasks((tasks: vscode.Task[]) => {
-              console.log(GRAILS_MESSAGE.GRADLE_TASKS_LOADED, tasks);
+              console.log(GrailsMessage.GRADLE_TASKS_LOADED, tasks);
               disposable.dispose();
-              this.statusBar.info(MODULE_TYPE.GRADLE, GRAILS_MESSAGE.GRADLE_SYNC_COMPLETED);
+              this.statusBar.info(ModuleType.GRADLE, GrailsMessage.GRADLE_SYNC_COMPLETE);
               resolve(true);
             });
 
@@ -64,7 +64,7 @@ export class GradleService {
           }),
       );
     } catch (error) {
-      this.reportGradleError(GRAILS_MESSAGE.GRADLE_API_NOT_AVAILABLE, error);
+      this.reportGradleError(GrailsMessage.GRADLE_API_NOT_AVAILABLE, error);
       return false;
     }
   }
@@ -78,7 +78,7 @@ export class GradleService {
     onProgress?: (info: string) => void,
   ): Promise<GradleTaskResult> {
     if (!this.gradleApi) {
-      return this.reportGradleError(GRAILS_MESSAGE.GRADLE_API_NOT_AVAILABLE);
+      return this.reportGradleError(GrailsMessage.GRADLE_API_NOT_AVAILABLE);
     }
 
     const outputData: string[] = [];
@@ -109,10 +109,7 @@ export class GradleService {
     };
 
     try {
-      this.statusBar.sync(
-        MODULE_TYPE.GRADLE,
-        this.formatMessage(GRAILS_MESSAGE.GRADLE_TASK_STARTED, taskName),
-      );
+      this.statusBar.sync(ModuleType.GRADLE, this.formatMessage(GrailsMessage.GRADLE_TASK_STARTED, taskName));
 
       await this.gradleApi.runTask({
         projectFolder,
@@ -122,17 +119,17 @@ export class GradleService {
       });
 
       this.statusBar.success(
-        MODULE_TYPE.GRADLE,
-        this.formatMessage(GRAILS_MESSAGE.GRADLE_TASK_SUCCESS, taskName),
+        ModuleType.GRADLE,
+        this.formatMessage(GrailsMessage.GRADLE_TASK_SUCCESS, taskName),
       );
 
       return {
         success: true,
-        message: this.formatMessage(GRAILS_MESSAGE.GRADLE_TASK_SUCCESS, taskName),
+        message: this.formatMessage(GrailsMessage.GRADLE_TASK_SUCCESS, taskName),
         data: outputData,
       };
     } catch (error) {
-      return this.reportGradleError(this.formatMessage(GRAILS_MESSAGE.GRADLE_TASK_FAILED, taskName), error);
+      return this.reportGradleError(this.formatMessage(GrailsMessage.GRADLE_TASK_FAILED, taskName), error);
     }
   }
 
@@ -143,8 +140,8 @@ export class GradleService {
     const errorMessage = error instanceof Error ? error.message : String(error ?? "");
     const fullMessage = error ? `${message}: ${errorMessage}` : message;
 
-    this.errorService.handle(fullMessage, MODULE_TYPE.GRADLE, ERROR_SEVERITY.ERROR);
-    this.statusBar.error(MODULE_TYPE.GRADLE, fullMessage);
+    this.errorService.handle(fullMessage, ModuleType.GRADLE, ErrorSeverity.ERROR);
+    this.statusBar.error(ModuleType.GRADLE, fullMessage);
     return { success: false, message: fullMessage };
   }
 

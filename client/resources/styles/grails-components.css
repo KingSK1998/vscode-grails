@@ -1,0 +1,57 @@
+/* grails-components.css - Reusable components */
+@import url('./grails-variables.css');
+
+.grails-button {
+  background: linear-gradient(135deg, var(--grails-green-primary), var(--grails-green-accent));
+  border: none;
+  border-radius: var(--grails-radius-pill);
+  color: white;
+  padding: var(--grails-spacing-sm) var(--grails-spacing-lg);
+  cursor: pointer;
+  transition: var(--grails-transition-normal);
+  font-weight: 600;
+  box-shadow: var(--grails-shadow-sm);
+}
+
+.grails-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--grails-shadow-md);
+}
+
+.grails-card {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: var(--grails-radius-lg);
+  padding: var(--grails-spacing-lg);
+  box-shadow: var(--grails-shadow-sm);
+  transition: var(--grails-transition-normal);
+}
+
+.grails-card:hover {
+  border-color: var(--grails-green-primary);
+  box-shadow: var(--grails-shadow-md);
+}
+
+.grails-badge {
+  background: var(--grails-green-primary);
+  color: white;
+  padding: var(--grails-spacing-xs) var(--grails-spacing-md);
+  border-radius: var(--grails-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.grails-input {
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: var(--grails-radius-md);
+  padding: var(--grails-spacing-sm) var(--grails-spacing-md);
+  color: var(--vscode-input-foreground);
+  transition: var(--grails-transition-fast);
+}
+
+.grails-input:focus {
+  border-color: var(--grails-green-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(72, 185, 70, 0.2);
+}

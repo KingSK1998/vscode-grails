@@ -1,0 +1,48 @@
+:root {
+  --grails-primary: #48b946;
+  --grails-secondary: #2d5d2b;
+  --grails-accent: #7bc142;
+
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  --border-radius-pill: 50px;
+
+  --shadow-subtle: 0 2px 8px rgba(72, 185, 70, 0.1);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grails-project-card {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  margin: 12px;
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition-smooth);
+}
+
+.grails-project-card:hover {
+  border-color: var(--grails-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(72, 185, 70, 0.15);
+}
+
+.grails-fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.grails-fab-trigger {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius-pill);
+  background: linear-gradient(135deg, var(--grails-primary), var(--grails-accent));
+  border: none;
+  color: white;
+  cursor: pointer;
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition-smooth);
+}

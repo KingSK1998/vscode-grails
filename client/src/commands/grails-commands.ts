@@ -1,6 +1,8 @@
+// Grails-specific commands
+
 import { ExtensionContext, Terminal, commands, window, workspace, ConfigurationTarget, Uri } from "vscode";
 import { GrailsConfig } from "../config/GrailsConfig";
-import { GradleService } from "../services/GradleService";
+import { GradleService } from "../services/gradle-service";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -248,7 +250,6 @@ export class GrailsCommands {
     window.showInformationMessage(`Creating ${selectedType.label}: ${fullName}`);
   }
 
-
   private async showGrailsConfig() {
     const config = GrailsConfig.getAllConfig();
     const configInfo = [
@@ -319,36 +320,36 @@ export class GrailsCommands {
     // Create diagnostic terminal
     const diagnosticTerminal = window.createTerminal({
       name: "Gradle Diagnostics",
-      cwd: projectRoot
+      cwd: projectRoot,
     });
 
     // Run basic Gradle diagnostics
-    const hasWrapper = fs.existsSync(path.join(projectRoot, process.platform === "win32" ? "gradlew.bat" : "gradlew"));
-    const gradleCmd = hasWrapper 
-      ? (process.platform === "win32" ? "gradlew.bat" : "./gradlew")
-      : "gradle";
+    const hasWrapper = fs.existsSync(
+      path.join(projectRoot, process.platform === "win32" ? "gradlew.bat" : "gradlew"),
+    );
+    const gradleCmd = hasWrapper ? (process.platform === "win32" ? "gradlew.bat" : "./gradlew") : "gradle";
 
     // Run diagnostic commands
     diagnosticTerminal.sendText(`echo "=== Gradle Diagnostics for Grails Project ==="`);
     diagnosticTerminal.sendText(`echo "Project: ${projectRoot}"`);
     diagnosticTerminal.sendText(`echo ""`);
-    
+
     diagnosticTerminal.sendText(`echo "1. Checking Gradle version..."`);
     diagnosticTerminal.sendText(`${gradleCmd} --version`);
     diagnosticTerminal.sendText(`echo ""`);
-    
+
     diagnosticTerminal.sendText(`echo "2. Checking project structure..."`);
     diagnosticTerminal.sendText(`${gradleCmd} projects`);
     diagnosticTerminal.sendText(`echo ""`);
-    
+
     diagnosticTerminal.sendText(`echo "3. Checking dependencies (this may take a while)..."`);
     diagnosticTerminal.sendText(`${gradleCmd} dependencies --configuration compileClasspath`);
     diagnosticTerminal.sendText(`echo ""`);
-    
+
     diagnosticTerminal.sendText(`echo "4. Checking for build issues..."`);
     diagnosticTerminal.sendText(`${gradleCmd} compileGroovy --dry-run`);
     diagnosticTerminal.sendText(`echo ""`);
-    
+
     diagnosticTerminal.sendText(`echo "=== Diagnostics Complete ==="`);
     diagnosticTerminal.sendText(`echo "If you see errors above, those are likely causing LSP issues."`);
     diagnosticTerminal.sendText(`echo "Common fixes:"`);
@@ -356,7 +357,7 @@ export class GrailsCommands {
     diagnosticTerminal.sendText(`echo "- Check internet connection for dependency downloads"`);
     diagnosticTerminal.sendText(`echo "- Verify Grails version compatibility in build.gradle"`);
     diagnosticTerminal.sendText(`echo "- Check for syntax errors in build.gradle"`);
-    
+
     diagnosticTerminal.show();
   }
 }

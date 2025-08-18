@@ -2,7 +2,7 @@ import { ExtensionContext, ProgressLocation, window } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { getClientOptions } from "./clientOptions";
 import { getServerOptions } from "./serverOptions";
-import { ERROR_SEVERITY, GRAILS_MESSAGE, MODULE_TYPE } from "../utils/Constants";
+import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/constants";
 import { StatusBarService } from "../services/StatusBarService";
 import { ErrorService } from "../services/ErrorService";
 
@@ -32,7 +32,7 @@ export class LanguageServerManager {
     return window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: GRAILS_MESSAGE.SERVER_STARTUP_MESSAGE,
+        title: GrailsMessage.SERVER_STARTUP,
         cancellable: false,
       },
       async (progress) => {
@@ -59,17 +59,14 @@ export class LanguageServerManager {
           );
 
           // Register server message notifications
-          this.client.onNotification(
-            "window/showMessage",
-            (params: { type: number; message: string }) => {
-              this.handleServerMessage(params);
-            },
-          );
+          this.client.onNotification("window/showMessage", (params: { type: number; message: string }) => {
+            this.handleServerMessage(params);
+          });
 
           // Don't set ready state here - let progress "end" handle it
           return this.client;
         } catch (error) {
-          this.errorService.handle(error, MODULE_TYPE.SERVER, ERROR_SEVERITY.FATAL);
+          this.errorService.handle(error, ModuleType.SERVER, ErrorSeverity.FATAL);
           throw error; // Rethrow the error to be caught in the catch block
         }
       },
@@ -81,48 +78,48 @@ export class LanguageServerManager {
     progress: { report: (info: { message?: string; increment?: number }) => void },
   ) {
     const { kind, message, percentage, title } = value;
-    
+
     switch (kind) {
       case "begin":
         progress.report({
           message: title ? `${title}: ${message}` : message,
           increment: percentage ?? 0,
         });
-        this.statusBarService.sync(MODULE_TYPE.SERVER, message ?? "Starting...");
+        this.statusBarService.sync(ModuleType.SERVER, message ?? "Starting...");
         break;
-        
+
       case "report":
         progress.report({
           message,
           increment: percentage ?? 0,
         });
-        this.statusBarService.sync(MODULE_TYPE.SERVER, message ?? "Working...");
+        this.statusBarService.sync(ModuleType.SERVER, message ?? "Working...");
         break;
-        
+
       case "end":
         progress.report({
           message: message ?? "Completed",
           increment: percentage ?? 100,
         });
-        this.statusBarService.ready(MODULE_TYPE.SERVER, GRAILS_MESSAGE.SERVER_STARTUP_SUCCESS);
+        this.statusBarService.ready(ModuleType.SERVER, GrailsMessage.SERVER_STARTED);
         break;
     }
   }
 
   private handleServerMessage(params: { type: number; message: string }): void {
     const { type, message } = params;
-    
+
     // MessageType enum from LSP: Error=1, Warning=2, Info=3, Log=4
     // Use ErrorService for proper handling (it will show notifications and update status bar)
     switch (type) {
       case 1: // Error
-        this.errorService.handle(new Error(message), MODULE_TYPE.SERVER, ERROR_SEVERITY.ERROR);
+        this.errorService.handle(new Error(message), ModuleType.SERVER, ErrorSeverity.ERROR);
         break;
       case 2: // Warning
-        this.errorService.handle(new Error(message), MODULE_TYPE.SERVER, ERROR_SEVERITY.WARNING);
+        this.errorService.handle(new Error(message), ModuleType.SERVER, ErrorSeverity.WARNING);
         break;
       case 3: // Info
-        this.errorService.handle(new Error(message), MODULE_TYPE.SERVER, ERROR_SEVERITY.INFO);
+        this.errorService.handle(new Error(message), ModuleType.SERVER, ErrorSeverity.INFO);
         break;
       case 4: // Log
         console.log(`Grails Language Server: ${message}`);

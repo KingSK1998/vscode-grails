@@ -29,6 +29,12 @@
   "contributes": {
     "commands": [
       {
+        "command": "grails.showDashboard",
+        "title": "Show Dashboard",
+        "category": "Grails",
+        "icon": "$(dashboard)"
+      },
+      {
         "command": "grails.run",
         "title": "Grails: Run Application",
         "category": "Grails"
@@ -77,6 +83,31 @@
         "command": "grails.diagnoseGradle",
         "title": "Grails: Diagnose Gradle Issues",
         "category": "Grails"
+      },
+      {
+        "command": "grails.refreshTree",
+        "title": "Refresh",
+        "icon": "refresh"
+      },
+      {
+        "command": "grails.showDashboard",
+        "title": "Show Dashboard",
+        "icon": "dashboard"
+      },
+      {
+        "command": "grails.createController",
+        "title": "Create Controller",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createService",
+        "title": "Create Service",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createDomain",
+        "title": "Create Domain",
+        "category": "Grails"
       }
     ],
     "menus": {
@@ -91,9 +122,14 @@
       ],
       "view/title": [
         {
-          "command": "grails.run",
+          "command": "grails.refreshTree",
           "when": "view == grailsExplorer",
           "group": "navigation@1"
+        },
+        {
+          "command": "grails.showDashboard",
+          "when": "view == grailsExplorer",
+          "group": "navigation@2"
         }
       ]
     },
@@ -212,22 +248,28 @@
         }
       }
     },
-    "views": {
-      "explorer": [
-        {
-          "id": "grailsExplorer",
-          "name": "Grails Explorer",
-          "when": "workspaceContains:**/grails-app",
-          "icon": "media/icons/grails32.png"
-        }
-      ]
-    },
     "viewsContainers": {
       "activitybar": [
         {
           "id": "grailsActivityBar",
           "title": "Grails",
-          "icon": "media/icons/grails32.png"
+          "icon": "symbol-misc"
+        }
+      ]
+    },
+    "views": {
+      "grailsActivityBar": [
+        {
+          "id": "grailsExplorer",
+          "name": "Grails Explorer",
+          "when": "workspaceContains:**/grails-app",
+          "icon": "$(symbol-misc)"
+        },
+        {
+          "id": "grailsDashboard",
+          "name": "Grails Dashboard",
+          "when": "workspaceContans:**/grails-app",
+          "icon": "$(dashboard)"
         }
       ]
     },

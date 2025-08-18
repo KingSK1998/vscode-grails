@@ -1,12 +1,12 @@
 import { window } from "vscode";
 import { StatusBarService } from "./StatusBarService";
-import { ERROR_SEVERITY, GRAILS_MESSAGE, MODULE_TYPE } from "../utils/Constants";
+import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/constants";
 import { formatTemplate } from "../utils/TemplateUtils";
 
 interface ErrorDetails {
   message: string;
-  severity: ERROR_SEVERITY;
-  source: MODULE_TYPE;
+  severity: ErrorSeverity;
+  source: ModuleType;
   timestamp: Date;
   stack?: string;
   suggestions: string[];
@@ -27,36 +27,28 @@ export class ErrorService {
   /**
    * Handle and log an error, show notification, and update status bar if needed.
    */
-  public handle(
-    error: unknown,
-    source: MODULE_TYPE,
-    severity: ERROR_SEVERITY = ERROR_SEVERITY.ERROR,
-  ): void {
+  public handle(error: unknown, source: ModuleType, severity: ErrorSeverity = ErrorSeverity.ERROR): void {
     const details = this.createErrorDetails(error, source, severity);
     this.log(details);
     this.notify(details);
-    
+
     // Update status bar based on severity
     switch (severity) {
-      case ERROR_SEVERITY.ERROR:
-      case ERROR_SEVERITY.FATAL:
+      case ErrorSeverity.ERROR:
+      case ErrorSeverity.FATAL:
         this.statusBarService.error(source, this.statusBarMessage(source, details.message));
         break;
-      case ERROR_SEVERITY.WARNING:
+      case ErrorSeverity.WARNING:
         this.statusBarService.warning(source, details.message);
         break;
-      case ERROR_SEVERITY.INFO:
+      case ErrorSeverity.INFO:
         this.statusBarService.info(source, details.message);
         break;
     }
   }
 
   /** Converts unknown error input into structured ErrorDetails. */
-  private createErrorDetails(
-    error: unknown,
-    source: MODULE_TYPE,
-    severity: ERROR_SEVERITY,
-  ): ErrorDetails {
+  private createErrorDetails(error: unknown, source: ModuleType, severity: ErrorSeverity): ErrorDetails {
     return {
       message: error instanceof Error ? error.message : String(error),
       severity,
@@ -68,22 +60,22 @@ export class ErrorService {
   }
 
   /** Suggestion hints to show in error notifications. */
-  private suggestions(source: MODULE_TYPE): string[] {
+  private suggestions(source: ModuleType): string[] {
     switch (source) {
-      case MODULE_TYPE.GRADLE:
+      case ModuleType.GRADLE:
         return [
           "Check Gradle configuration in build.gradle",
           "Verify Gradle wrapper version",
           "Try restarting the Language Server",
           "Check server logs for more details",
         ];
-      case MODULE_TYPE.SERVER:
+      case ModuleType.SERVER:
         return ["Check server configuration"];
-      case MODULE_TYPE.CLIENT:
+      case ModuleType.CLIENT:
         return ["Check client configuration"];
-      case MODULE_TYPE.PROJECT:
+      case ModuleType.PROJECT:
         return ["Verify project structure"];
-      case MODULE_TYPE.EXTENSION:
+      case ModuleType.EXTENSION:
         return ["Try reloading the extension"];
       default:
         return [];
@@ -94,9 +86,7 @@ export class ErrorService {
   private log(details: ErrorDetails): void {
     this.errorLog.push(details);
     console.error(
-      `[${details.timestamp.toISOString()}] [${details.source}] [${details.severity}]: ${
-        details.message
-      }`,
+      `[${details.timestamp.toISOString()}] [${details.source}] [${details.severity}]: ${details.message}`,
     );
   }
 
@@ -104,32 +94,32 @@ export class ErrorService {
   private notify(details: ErrorDetails): void {
     const message = `${details.source}: ${details.message}`;
     switch (details.severity) {
-      case ERROR_SEVERITY.ERROR:
-      case ERROR_SEVERITY.FATAL:
+      case ErrorSeverity.ERROR:
+      case ErrorSeverity.FATAL:
         window.showErrorMessage(message, ...details.suggestions);
         break;
-      case ERROR_SEVERITY.WARNING:
+      case ErrorSeverity.WARNING:
         window.showWarningMessage(message, ...details.suggestions);
         break;
-      case ERROR_SEVERITY.INFO:
+      case ErrorSeverity.INFO:
         window.showInformationMessage(message);
         break;
     }
   }
 
   /** Returns an appropriate status bar message based on the error source. */
-  private statusBarMessage(source: MODULE_TYPE, message: string): string {
+  private statusBarMessage(source: ModuleType, message: string): string {
     switch (source) {
-      case MODULE_TYPE.SERVER:
-        return formatTemplate(GRAILS_MESSAGE.SERVER_ERROR, message);
-      case MODULE_TYPE.CLIENT:
-        return formatTemplate(GRAILS_MESSAGE.CLIENT_ERROR, message);
-      case MODULE_TYPE.GRADLE:
-        return formatTemplate(GRAILS_MESSAGE.GRADLE_ERROR, message);
-      case MODULE_TYPE.PROJECT:
-      case MODULE_TYPE.EXTENSION:
+      case ModuleType.SERVER:
+        return formatTemplate(GrailsMessage.SERVER_ERROR, message);
+      case ModuleType.CLIENT:
+        return formatTemplate(GrailsMessage.CLIENT_ERROR, message);
+      case ModuleType.GRADLE:
+        return formatTemplate(GrailsMessage.GRADLE_ERROR, message);
+      case ModuleType.PROJECT:
+      case ModuleType.EXTENSION:
       default:
-        return formatTemplate(GRAILS_MESSAGE.SERVER_ERROR, message);
+        return formatTemplate(GrailsMessage.SERVER_ERROR, message);
     }
   }
 }
