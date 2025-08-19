@@ -16,14 +16,6 @@
   ],
   "main": "./out/extension.js",
   "icon": "resources/icon.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/KingSK1998/vscode-grails-extension.git"
-  },
-  "bugs": {
-    "url": "https://github.com/KingSK1998/vscode-grails-extension/issues"
-  },
-  "homepage": "https://github.com/KingSK1998/vscode-grails-extension#readme",
   "extensionDependencies": [
     "vscjava.vscode-gradle"
   ],
@@ -136,7 +128,7 @@
         "extensions": [
           ".groovy"
         ],
-        "configuration": "./resources/groovy-language-configuration.json"
+        "configuration": "./resources/language-configurations/groovy-language-configuration.json"
       },
       {
         "id": "gsp",
@@ -147,7 +139,7 @@
           "GSP",
           "Groovy Server Pages"
         ],
-        "configuration": "./resources/gsp-language-configuration.json"
+        "configuration": "./resources/language-configurations/gsp-language-configuration.json"
       }
     ],
     "grammars": [
@@ -259,7 +251,7 @@
         {
           "id": "grailsExplorer",
           "name": "Project Structure",
-          "icon": "$(symbol-misc)"
+          "icon": "resources/icons/grails.svg"
         }
       ]
     },
