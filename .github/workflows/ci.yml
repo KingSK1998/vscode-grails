@@ -28,12 +28,12 @@ jobs:
 
       # 2-a Assemble (no tests)
       - name: Assemble language-server
-        working-directory: grails-language-server
+        working-directory: server
         run: ./gradlew --no-daemon --parallel assemble
 
       # 2-b Run tests
       - name: Run Groovy unit tests
-        working-directory: grails-language-server
+        working-directory: server
         run: ./gradlew --no-daemon test
 
       # 2-c Copy the JAR into the VS Code client
@@ -41,8 +41,8 @@ jobs:
         if: success() # skip if tests failed
         run: |
           shopt -s nullglob
-          cp grails-language-server/build/libs/*.jar \
-             vscode-grails-client/server/
+          cp server/build/libs/*.jar \
+             client/server/
 
       # 3 — Node (VS Code client)
       - name: Set up Node 18
@@ -50,23 +50,23 @@ jobs:
         with:
           node-version: 18
           cache: npm
-          cache-dependency-path: vscode-grails-client/package-lock.json
+          cache-dependency-path: client/package-lock.json
 
       - name: Install client deps
-        working-directory: vscode-grails-client
+        working-directory: client
         run: npm ci
 
       - name: Compile TypeScript
-        working-directory: vscode-grails-client
+        working-directory: client
         run: npm run compile
 
       - name: Run client unit tests
-        working-directory: vscode-grails-client
+        working-directory: client
         run: npm test --if-present
 
       # 4 — Package VSIX
       - name: Package extension
-        working-directory: vscode-grails-client
+        working-directory: client
         run: |
           npm i -g @vscode/vsce
           vsce package --out ../vscode-grails.vsix
