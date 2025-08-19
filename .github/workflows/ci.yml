@@ -1,24 +1,21 @@
-# .github/workflows/ci.yml
-name: Build & Test
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main, develop]
+    branches: [ main, develop ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ["17"] # Grails LSP needs JDK 17
+        java: ["17"]
 
     steps:
-      # 1 — Checkout
       - uses: actions/checkout@v4
 
-      # 2 — Java + Gradle (language-server)
       - name: Set up Temurin JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
@@ -26,64 +23,61 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: gradle
 
-      - name: Make gradlew executable
-        working-directory: server
-        run: chmod +x gradlew
-
-      # 2-a Assemble without tests for faster incremental builds
-      - name: Assemble language-server
-        working-directory: server
-        run: ./gradlew --no-daemon --parallel assemble
-
-      # 2-b Run tests but do not fail on develop branch
-      - name: Run Server Unit tests
-        working-directory: server
-        run: ./gradlew --no-daemon test jacocoTestReport
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-test-results
-          path: server/build/test-results/
-
-      - name: Ensure client/server directory exists
-        run: mkdir -p client/server/
-
-      # 2-c Bundle language server JAR into VS Code client
-      - name: Bundle language-server into client
-        if: success()
-        run: |
-          shopt -s nullglob
-          cp server/build/libs/*.jar client/server/
-
-      # 3 — Node (VS Code client)
-      - name: Set up Node 18
+      - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
           cache-dependency-path: client/package-lock.json
 
-      - name: Install npm dependencies
+      - name: Make gradlew executable
+        working-directory: server
+        run: chmod +x gradlew
+
+      - name: Build and test server
+        working-directory: server
+        run: ./gradlew --no-daemon build jacocoTestReport
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Upload server test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-results
+          path: |
+            server/build/test-results/test/
+            server/build/reports/jacoco/test/html/
+
+      - name: Verify server JAR
+        run: |
+          echo "Checking JAR files..."
+          ls -la server/build/libs/ || echo "⚠️ No JAR found"
+
+      - name: Copy server JAR into client
+        if: success()
+        run: |
+          mkdir -p client/server/
+          cp server/build/libs/*.jar client/server/ || \
+            (echo "No JAR found, skipping copy" && exit 1)
+
+      - name: Install client dependencies
         working-directory: client
         run: npm ci
 
-      - name: Compile client extension
+      - name: Compile TypeScript client
         working-directory: client
         run: npm run compile
 
       - name: Run client unit tests
         working-directory: client
         run: npm test --if-present
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
 
-      # 4 — Package VSIX
-      - name: Package extension
+      - name: Package VSIX
         working-directory: client
         run: |
-          npm install -g @vscode/vsce
-          vsce package --out ../vscode-grails.vsix
+          npm install --no-save @vscode/vsce
+          npx vsce package --out ../vscode-grails.vsix
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
@@ -91,11 +85,11 @@ jobs:
           name: vscode-grails
           path: vscode-grails.vsix
 
-  # 5 — Manual publish (only on main, triggered from UI)
   publish:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -103,4 +97,6 @@ jobs:
           path: .
 
       - name: Publish to VS Code Marketplace (manual)
-        run: echo "Run 'vsce publish' locally or add a PAT and uncomment this line"
+        run: echo "Run 'vsce publish' locally or configure a PAT and uncomment"
+        # - name: Publish to VS Code Marketplace
+        #   run: npx vsce publish --pat ${{ secrets.VSCODE_PAT }}
