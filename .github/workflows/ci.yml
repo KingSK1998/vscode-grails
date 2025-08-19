@@ -1,24 +1,24 @@
+# .github/workflows/ci.yml
 name: Build & Test
 
 on:
   push:
-    branches: [main, develop] # run on direct commits
+    branches: [main, develop]
   pull_request:
-    branches: [main, develop] # run on PRs targeting these
+    branches: [main, develop]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        java: ["17"] # Groovy LSP requires JDK 17
+        java: ["17"] # Grails LSP needs JDK 17
 
     steps:
-      # 1 ▸ Checkout
+      # 1 — Checkout
       - uses: actions/checkout@v4
 
-      # 2 ▸ Java / Gradle for Groovy language-server
+      # 2 — Java + Gradle (language-server)
       - name: Set up Temurin ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
@@ -26,24 +26,25 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: gradle
 
-      # 2-a Compile without tests (fast fail on syntax errors)
+      # 2-a Assemble (no tests)
       - name: Assemble language-server
         working-directory: server/grails-language-server
         run: ./gradlew --no-daemon --parallel assemble
 
-      # 2-b Run tests only if assemble succeeded
+      # 2-b Run tests
       - name: Run Groovy unit tests
         working-directory: server/grails-language-server
         run: ./gradlew --no-daemon test
 
-      # 2-c  Copy the JAR for packaging
+      # 2-c Copy the JAR into the VS Code client
       - name: Bundle language-server into client
-        if: success()
+        if: success() # skip if tests failed
         run: |
+          shopt -s nullglob
           cp server/grails-language-server/build/libs/*.jar \
-            vscode-grails-client/server/
+             vscode-grails-client/server/
 
-      # 3 ▸ Node for VS Code client
+      # 3 — Node (VS Code client)
       - name: Set up Node 18
         uses: actions/setup-node@v4
         with:
@@ -63,25 +64,25 @@ jobs:
         working-directory: vscode-grails-client
         run: npm test --if-present
 
-      # 4 ▸ Package VSIX (always, so you can download it from develop)
+      # 4 — Package VSIX
       - name: Package extension
         working-directory: vscode-grails-client
         run: |
           npm i -g @vscode/vsce
           vsce package --out ../vscode-grails.vsix
 
-      - name: Upload VSIX artifact
+      - name: Upload VSIX
         uses: actions/upload-artifact@v4
         with:
           name: vscode-grails
           path: vscode-grails.vsix
 
-  # Manual publish job – runs only on main and only when you click “Run workflow”
+  # 5 — Manual publish (only on main, triggered from UI)
   publish:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production # optional env for approvals
+    environment: production
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -89,5 +90,4 @@ jobs:
           path: .
 
       - name: Publish to VS Code Marketplace (manual)
-        # This step does nothing unless you start the job from the Actions tab
         run: echo "Run 'vsce publish' locally or add a PAT and uncomment this line"

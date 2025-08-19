@@ -2,7 +2,7 @@
 
 import { ExtensionContext, Terminal, commands, window, workspace, ConfigurationTarget, Uri } from "vscode";
 import { GrailsConfig } from "../config/GrailsConfig";
-import { GradleService } from "../services/gradle-service";
+import { GradleService } from "../services/gradleService";
 import * as fs from "fs";
 import * as path from "path";
 

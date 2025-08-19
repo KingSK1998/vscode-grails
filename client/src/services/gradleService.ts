@@ -152,3 +152,14 @@ export class GradleService {
     return template.replace(/{(\d+)}/g, (match, index) => args[index] ?? match);
   }
 }
+
+export function runGrails(cmd: string, args: string[] = []) {
+  const task = new vscode.Task(
+    { type: "grails", task: cmd },
+    vscode.TaskScope.Workspace,
+    `grails ${cmd}`,
+    "grails",
+    new vscode.ShellExecution("grails", [cmd, ...args]),
+  );
+  vscode.tasks.executeTask(task);
+}
