@@ -48,6 +48,9 @@ jobs:
           name: server-test-results
           path: server/build/test-results/
 
+      - name: Ensure client/server directory exists
+        run: mkdir -p client/server/
+
       # 2-c Bundle language server JAR into VS Code client
       - name: Bundle language-server into client
         if: success()
