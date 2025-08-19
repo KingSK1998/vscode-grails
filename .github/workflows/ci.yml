@@ -40,13 +40,19 @@ jobs:
         working-directory: server
         run: ./gradlew --no-daemon test
 
+      - name: Upload test results
+        if: always() # Runs even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-results
+          path: server/build/test-results/
+
       # 2-c Copy the JAR into the VS Code client
       - name: Bundle language-server into client
         if: success() # skip if tests failed
         run: |
           shopt -s nullglob
-          cp server/build/libs/*.jar \
-             client/server/
+          cp server/build/libs/*.jar client/server/
 
       # 3 — Node (VS Code client)
       - name: Set up Node 18

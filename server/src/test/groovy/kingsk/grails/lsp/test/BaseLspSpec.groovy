@@ -21,19 +21,19 @@ import java.util.concurrent.CompletableFuture
  */
 @Slf4j
 abstract class BaseLspSpec extends Specification {
-	
+
 	// Shared service instance to avoid recreating for each test
 	@Shared
 	protected GrailsService grailsService
-	
+
 	// Mock client for capturing diagnostics and messages
 	@Shared
 	protected MockLanguageClient mockClient
-	
+
 	// Configuration
 	protected static final int DEFAULT_TIMEOUT = 5000
 	// ms
-	
+
 	/**
 	 * Setup method that runs before each test
 	 * Override in subclasses but call super.setup() first
@@ -43,7 +43,7 @@ abstract class BaseLspSpec extends Specification {
 		grailsService = new GrailsService()
 		grailsService.connect(mockClient)
 	}
-	
+
 	/**
 	 * Initialize a project for testing
 	 * @param projectType The type of project to initialize
@@ -62,7 +62,7 @@ abstract class BaseLspSpec extends Specification {
 		}
 		return grailsService
 	}
-	
+
 	/**
 	 * Get the project directory URI for a given project type
 	 * @param projectType The type of project
@@ -78,7 +78,7 @@ abstract class BaseLspSpec extends Specification {
 			default: return null
 		}
 	}
-	
+
 	/**
 	 * Get the path to a mock project
 	 * @param userDir The user directory
@@ -86,13 +86,13 @@ abstract class BaseLspSpec extends Specification {
 	 * @return The path to the mock project
 	 */
 	private static String getMockProjectPath(Path userDir, String projectName) {
-		Path projectPath = userDir.parent.resolve(projectName)
+		Path projectPath = userDir.parent.parent.resolve("Resources").resolve(projectName)
 		if (!Files.exists(projectPath)) {
 			throw new FileNotFoundException("Mock project directory not found: ${projectPath}")
 		}
 		return projectPath.toUri().toString()
 	}
-	
+
 	/**
 	 * Create a dummy workspace for testing
 	 * @param userDir The user directory
@@ -106,7 +106,7 @@ abstract class BaseLspSpec extends Specification {
 		}
 		return workspaceDir.toUri().toString()
 	}
-	
+
 	/**
 	 * Open a text document for testing
 	 * @param fileName The name of the file (can include path like "grails-app/controllers/BookController.groovy")
@@ -123,7 +123,7 @@ abstract class BaseLspSpec extends Specification {
 		)
 		return uri
 	}
-	
+
 	/**
 	 * Open an existing project file for testing
 	 * @param fileName The name of the file to find in the project
@@ -135,17 +135,17 @@ abstract class BaseLspSpec extends Specification {
 			log.warn("No project initialized, cannot open existing file: ${fileName}")
 			return null
 		}
-		
+
 		// Find the file in project source directories
 		File foundFile = findFileInProject(fileName)
 		if (!foundFile) {
 			log.warn("File not found in project: ${fileName}")
 			return null
 		}
-		
+
 		String content = foundFile.text
 		String uri = foundFile.toURI().toString()
-		
+
 		grailsService.document.didOpen(
 				new DidOpenTextDocumentParams(
 						new TextDocumentItem(uri, "groovy", version, content)
@@ -153,7 +153,7 @@ abstract class BaseLspSpec extends Specification {
 		)
 		return uri
 	}
-	
+
 	/**
 	 * Close a text document
 	 * @param uri The URI of the document to close
@@ -165,7 +165,7 @@ abstract class BaseLspSpec extends Specification {
 				)
 		)
 	}
-	
+
 	/**
 	 * Change a text document
 	 * @param uri The URI of the document to change
@@ -181,7 +181,7 @@ abstract class BaseLspSpec extends Specification {
 				)
 		)
 	}
-	
+
 	/**
 	 * Replace the entire content of a text document.
 	 * @param uri The URI of the document
@@ -196,8 +196,8 @@ abstract class BaseLspSpec extends Specification {
 				)
 		)
 	}
-	
-	
+
+
 	/**
 	 * Wait for a CompletableFuture to complete with a timeout
 	 * @param future The future to wait for
@@ -208,7 +208,7 @@ abstract class BaseLspSpec extends Specification {
 		//		return future.get(timeout, TimeUnit.MILLISECONDS)
 		return future.get()
 	}
-	
+
 	/**
 	 * Resolve file URI for testing, handling both new files and existing project files
 	 * @param fileName The file name or path
@@ -216,7 +216,7 @@ abstract class BaseLspSpec extends Specification {
 	 */
 	protected String resolveFileUri(String fileName) {
 		fileName = ensureGroovyExtension(fileName)
-		
+
 		// If it's a simple filename, check if it exists in project first
 		if (!fileName.contains("/") && !fileName.contains("\\")) {
 			File existingFile = findFileInProject(fileName)
@@ -225,13 +225,13 @@ abstract class BaseLspSpec extends Specification {
 				return existingFile.toURI().toString()
 			}
 		}
-		
+
 		// If it contains path separators, resolve relative to project root
 		if (grailsService.project?.rootDirectory && (fileName.contains("/") || fileName.contains("\\"))) {
 			File projectFile = new File(grailsService.project.rootDirectory, fileName)
 			return projectFile.toURI().toString()
 		}
-		
+
 		// Fallback: create in project root or current directory
 		if (grailsService.project?.rootDirectory) {
 			File projectFile = new File(grailsService.project.rootDirectory, fileName)
@@ -242,7 +242,7 @@ abstract class BaseLspSpec extends Specification {
 			return currentDirFile.toURI().toString()
 		}
 	}
-	
+
 	/**
 	 * Find a file in the project using ServiceUtils
 	 * @param fileName The file name to find
@@ -250,16 +250,16 @@ abstract class BaseLspSpec extends Specification {
 	 */
 	protected File findFileInProject(String fileName) {
 		if (!grailsService.project) return null
-		
+
 		// Use ServiceUtils to get all project files
 		List<File> allProjectFiles = ServiceUtils.getAllGroovySourceFilesFromProject(grailsService.project)
-		
+
 		// Find file by name
 		return allProjectFiles.find { file ->
 			file.name == fileName || file.name == ensureGroovyExtension(fileName)
 		}
 	}
-	
+
 	/**
 	 * Find files by pattern in the project using ServiceUtils
 	 * @param pattern The pattern to match (e.g., "*Controller.groovy")
@@ -267,28 +267,28 @@ abstract class BaseLspSpec extends Specification {
 	 */
 	protected List<File> findFilesByPattern(String pattern) {
 		if (!grailsService.project) return []
-		
+
 		List<File> allProjectFiles = ServiceUtils.getAllGroovySourceFilesFromProject(grailsService.project)
-		
+
 		// Convert pattern to regex
 		String regex = pattern.replace("*", ".*").replace("?", ".")
-		
+
 		return allProjectFiles.findAll { file ->
 			file.name.matches(regex)
 		}
 	}
-	
+
 	/**
 	 * Get FQCN to TextFile mapping using ServiceUtils
 	 * @return Map of FQCN to TextFile
 	 */
 	protected Map<String, TextFile> getProjectFQCNMap() {
 		if (!grailsService.project) return [:]
-		
+
 		List<File> allProjectFiles = ServiceUtils.getAllGroovySourceFilesFromProject(grailsService.project)
 		return ServiceUtils.generateFQCNFromSourceFiles(allProjectFiles)
 	}
-	
+
 	/**
 	 * Get all related files for a given file using ServiceUtils
 	 * @param sourceFile The source file
@@ -296,10 +296,10 @@ abstract class BaseLspSpec extends Specification {
 	 */
 	protected List<TextFile> getAllRelatedFiles(TextFile sourceFile) {
 		if (!grailsService.project) return [sourceFile]
-		
+
 		return ServiceUtils.getAllRelatedFilesFromProject(sourceFile, grailsService.project)
 	}
-	
+
 	/**
 	 * Ensure a file name has a .groovy extension
 	 * @param fileName The file name
@@ -308,7 +308,7 @@ abstract class BaseLspSpec extends Specification {
 	protected String ensureGroovyExtension(String fileName) {
 		return fileName.toLowerCase().endsWith(".groovy") ? fileName : "${fileName}.groovy"
 	}
-	
+
 	/**
 	 * Create a position in a document
 	 * @param line The line number (0-based)
@@ -318,7 +318,7 @@ abstract class BaseLspSpec extends Specification {
 	protected Position pos(int line, int character) {
 		return new Position(line, character)
 	}
-	
+
 	/**
 	 * Create a range in a document
 	 * @param startLine The start line number (0-based)
@@ -330,9 +330,9 @@ abstract class BaseLspSpec extends Specification {
 	protected Range range(int startLine, int startChar, int endLine, int endChar) {
 		return new Range(pos(startLine, startChar), pos(endLine, endChar))
 	}
-	
+
 	// === Grails-specific helper methods ===
-	
+
 	/**
 	 * Open a controller file in the proper Grails location
 	 * @param controllerName The controller name (without "Controller" suffix)
@@ -344,7 +344,7 @@ abstract class BaseLspSpec extends Specification {
 		String fileName = "grails-app/controllers/${controllerName}Controller.groovy"
 		return openTextDocument(fileName, content, version)
 	}
-	
+
 	/**
 	 * Open a service file in the proper Grails location
 	 * @param serviceName The service name (without "Service" suffix)
@@ -356,7 +356,7 @@ abstract class BaseLspSpec extends Specification {
 		String fileName = "grails-app/services/${serviceName}Service.groovy"
 		return openTextDocument(fileName, content, version)
 	}
-	
+
 	/**
 	 * Open a domain file in the proper Grails location
 	 * @param domainName The domain name
@@ -368,7 +368,7 @@ abstract class BaseLspSpec extends Specification {
 		String fileName = "grails-app/domain/${domainName}.groovy"
 		return openTextDocument(fileName, content, version)
 	}
-	
+
 	/**
 	 * Open an existing project file by searching for it
 	 * @param fileName The file name to search for
@@ -378,7 +378,7 @@ abstract class BaseLspSpec extends Specification {
 	protected String openExistingFile(String fileName, int version = 0) {
 		return openExistingProjectFile(fileName, version)
 	}
-	
+
 	/**
 	 * List all Groovy files in the project using ServiceUtils
 	 * @return List of all Groovy files
@@ -387,7 +387,7 @@ abstract class BaseLspSpec extends Specification {
 		if (!grailsService.project) return []
 		return ServiceUtils.getAllGroovySourceFilesFromProject(grailsService.project)
 	}
-	
+
 	/**
 	 * Find controllers in the project
 	 * @return List of controller files
@@ -395,7 +395,7 @@ abstract class BaseLspSpec extends Specification {
 	protected List<File> getAllControllers() {
 		return findFilesByPattern("*Controller.groovy")
 	}
-	
+
 	/**
 	 * Find services in the project
 	 * @return List of service files
@@ -403,7 +403,7 @@ abstract class BaseLspSpec extends Specification {
 	protected List<File> getAllServices() {
 		return findFilesByPattern("*Service.groovy")
 	}
-	
+
 	/**
 	 * Find domain classes in the project
 	 * @return List of domain files
@@ -413,7 +413,7 @@ abstract class BaseLspSpec extends Specification {
 			file.absolutePath.contains("grails-app${File.separator}domain")
 		}
 	}
-	
+
 	/**
 	 * Find a specific controller by name
 	 * @param controllerName The controller name (with or without "Controller" suffix)
@@ -424,7 +424,7 @@ abstract class BaseLspSpec extends Specification {
 				"${controllerName}.groovy" : "${controllerName}Controller.groovy"
 		return findFileInProject(fileName)
 	}
-	
+
 	/**
 	 * Find a specific service by name
 	 * @param serviceName The service name (with or without "Service" suffix)
@@ -435,7 +435,7 @@ abstract class BaseLspSpec extends Specification {
 				"${serviceName}.groovy" : "${serviceName}Service.groovy"
 		return findFileInProject(fileName)
 	}
-	
+
 	/**
 	 * Get file content using ServiceUtils validation
 	 * @param file The file to read
@@ -464,35 +464,35 @@ class MockLanguageClient implements LanguageClient {
 	List<PublishDiagnosticsParams> diagnostics = []
 	List<MessageParams> messages = []
 	List<ProgressParams> progressUpdates = []
-	
+
 	@Override
 	void telemetryEvent(Object object) {}
-	
+
 	@Override
 	void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
 		this.diagnostics.add(diagnostics)
 	}
-	
+
 	@Override
 	void showMessage(MessageParams messageParams) {
 		this.messages.add(messageParams)
 	}
-	
+
 	@Override
 	CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
 		return CompletableFuture.completedFuture(null)
 	}
-	
+
 	@Override
 	void logMessage(MessageParams message) {
 		this.messages.add(message)
 	}
-	
+
 	@Override
 	void notifyProgress(ProgressParams params) {
 		this.progressUpdates.add(params)
 	}
-	
+
 	/**
 	 * Clear all captured data
 	 */
@@ -501,7 +501,7 @@ class MockLanguageClient implements LanguageClient {
 		messages.clear()
 		progressUpdates.clear()
 	}
-	
+
 	/**
 	 * Get the latest diagnostics for a specific URI
 	 * @param uri The URI to get diagnostics for

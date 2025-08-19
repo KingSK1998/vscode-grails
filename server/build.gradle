@@ -17,24 +17,29 @@ repositories {
 	mavenCentral()
 	gradlePluginPortal()
 	mavenLocal()
+
+    // Add Gradle's repository for Tooling API
+    maven {
+        url = 'https://repo.gradle.org/gradle/libs-releases'
+    }
 }
 
 dependencies {
 	implementation "org.apache.groovy:groovy-all:4.0.23"
 	implementation "com.google.guava:guava:33.3.0-jre"
-	
+
 	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1"
-	implementation "org.gradle:gradle-tooling-api:7.3-20210825160000+0000"
+	implementation "org.gradle:gradle-tooling-api:8.12"
 	implementation "org.apache.groovy:groovy-json:4.0.23"
-	
+
 	implementation "org.slf4j:slf4j-api:2.0.16"
 	implementation 'ch.qos.logback:logback-classic:1.5.13'
-	
+
 	// Testing dependencies - Spock Framework
 	testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
 	testImplementation "junit:junit:4.13.2"
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-	
+
 	// Mockito for mocking (works well with Spock)
 	testImplementation "org.mockito:mockito-core:5.11.0"
 }
@@ -45,23 +50,20 @@ application {
 
 test {
 	useJUnitPlatform() // Spock 2.3 uses JUnit Platform
-	
+
 	// Spock-optimized test logging
 	testLogging {
 		events "passed", "skipped", "failed"
-		showStandardStreams = true
-		exceptionFormat = 'full'
-		showExceptions = true
-		showCauses = true
-		showStackTraces = true
+        exceptionFormat = (System.getenv('CI') ? "short" : "full")
+		showStandardStreams = !System.getenv('CI')
 	}
-	
+
 	// Fail the build on test failures
 	ignoreFailures = false
-	
+
 	// Set system properties for tests
 	systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
-	
+
 	// Generate test reports
 	reports {
 		html.required = true
@@ -76,13 +78,13 @@ jacoco {
 
 jacocoTestReport {
 	dependsOn test
-	
+
 	reports {
 		xml.required = true
 		html.required = true
 		csv.required = false
 	}
-	
+
 	// Set coverage thresholds
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
@@ -99,7 +101,7 @@ jacocoTestReport {
 // JaCoCo verification task
 jacocoTestCoverageVerification {
 	dependsOn jacocoTestReport
-	
+
 	violationRules {
 		rule {
 			limit {
@@ -116,7 +118,7 @@ test.finalizedBy jacocoTestReport
 tasks.register('checkAll') {
 	description = 'Runs all checks including tests, coverage, and verification'
 	group = 'verification'
-	
+
 	dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
 }
 
