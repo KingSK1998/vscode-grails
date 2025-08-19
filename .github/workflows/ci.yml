@@ -28,12 +28,12 @@ jobs:
 
       # 2-a Assemble (no tests)
       - name: Assemble language-server
-        working-directory: server/grails-language-server
+        working-directory: grails-language-server
         run: ./gradlew --no-daemon --parallel assemble
 
       # 2-b Run tests
       - name: Run Groovy unit tests
-        working-directory: server/grails-language-server
+        working-directory: grails-language-server
         run: ./gradlew --no-daemon test
 
       # 2-c Copy the JAR into the VS Code client
@@ -41,7 +41,7 @@ jobs:
         if: success() # skip if tests failed
         run: |
           shopt -s nullglob
-          cp server/grails-language-server/build/libs/*.jar \
+          cp grails-language-server/build/libs/*.jar \
              vscode-grails-client/server/
 
       # 3 — Node (VS Code client)
