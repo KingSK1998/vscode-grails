@@ -107,6 +107,18 @@ export const FILE_PATHS = {
   SERVICES_DIR: "grails-app/services",
 } as const;
 
+// File type patterns
+export const FILE_PATTERNS = {
+  GROOVY: "**/*.groovy",
+  GSP: "**/*.gsp",
+  YML: "**/*.yml",
+  YAML: "**/*.yaml",
+  PROPERTIES: "**/*.properties",
+  JS: "**/*.js",
+  CSS: "**/*.css",
+  SCSS: "**/*.scss",
+} as const;
+
 // -------- Command IDs --------
 export const COMMAND_IDS = {
   RUN_APP: "grails.runApp",
@@ -140,16 +152,76 @@ export enum ModuleType {
   GRAILS_FRAMEWORK_SUPPORT = "Grails Framework Support",
 }
 
+// -------- VS Code Icons (using codicons) --------
+export const Icons = {
+  GRAILS: "symbol-misc",
+  CONTROLLER: "rocket",
+  SERVICE: "gear",
+  DOMAIN: "database",
+  VIEW: "browser",
+  TAGLIB: "tag",
+  PLUGIN: "extensions",
+  CONFIG: "settings-gear",
+  URL_MAPPING: "link",
+  SERVER_RUNNING: "play-circle",
+  SERVER_STOPPED: "stop-circle",
+  REFRESH: "refresh",
+  DASHBOARD: "dashboard",
+
+  // Grails-specific icons
+  ASSETS: "symbol-color",
+  I18N: "globe",
+  INIT: "rocket",
+  UNIT_TESTS: "beaker",
+  INTEGRATION_TESTS: "verified",
+  GSP_FILE: "browser",
+  YML_FILE: "settings",
+  GROOVY_FILE: "symbol-method",
+} as const;
+
+// -------- VS Code Theme Colors --------
+export const Colors = {
+  PRIMARY_GREEN: "charts.green",
+  BLUE: "charts.blue",
+  PURPLE: "charts.purple",
+  ORANGE: "charts.orange",
+  RED: "charts.red",
+  YELLOW: "charts.yellow",
+  GRAY: "charts.gray",
+} as const;
+
 // -------- Grails Artifact Types --------
 export enum GrailsArtifactType {
+  // Core Artifacts (Primary)
   CONTROLLER = "controller",
   SERVICE = "service",
   DOMAIN = "domain",
   VIEW = "view",
   TAGLIB = "taglib",
-  PLUGIN = "plugin",
+
+  // Configuration & Routing
   CONFIG = "config",
   URL_MAPPING = "urlmapping",
+  I18N = "i18n",
+
+  // Assets & Resources
+  ASSETS = "assets",
+  RESOURCES = "resources",
+
+  // Application Structure
+  INIT = "init",
+
+  // Development & Testing
+  TESTS = "tests",
+  UNIT_TESTS = "unit-tests",
+  INTEGRATION_TESTS = "integration-tests",
+  GROOVY_SRC = "groovy-src",
+
+  // Groovy Project Types
+  SOURCE_SETS = "sourcesets",
+  DEPENDENCIES = "dependencies",
+  TASKS = "tasks",
+  STRUCTURE = "structure",
 }
 
 // -------- Tree View Contexts --------

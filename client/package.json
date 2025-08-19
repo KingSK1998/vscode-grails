@@ -1,7 +1,7 @@
 {
   "name": "vscode-grails-client",
-  "displayName": "Grails Framework Support",
-  "description": "A full-featured extension for Grails and Groovy development.",
+  "displayName": "Grails & Groovy Framework Support",
+  "description": "Full-featured extension for Grails and Groovy development.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.93.0"
@@ -11,7 +11,8 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/build.gradle"
+    "workspaceContains:**/build.gradle",
+    "workspaceContains:**/build.gradle.kts"
   ],
   "main": "./out/extension.js",
   "icon": "resources/icon.png",
@@ -29,10 +30,16 @@
   "contributes": {
     "commands": [
       {
+        "command": "grails.refreshTree",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "Grails"
+      },
+      {
         "command": "grails.showDashboard",
         "title": "Show Dashboard",
-        "category": "Grails",
-        "icon": "$(dashboard)"
+        "icon": "$(dashboard)",
+        "category": "Grails"
       },
       {
         "command": "grails.run",
@@ -83,16 +90,6 @@
         "command": "grails.diagnoseGradle",
         "title": "Grails: Diagnose Gradle Issues",
         "category": "Grails"
-      },
-      {
-        "command": "grails.refreshTree",
-        "title": "Refresh",
-        "icon": "refresh"
-      },
-      {
-        "command": "grails.showDashboard",
-        "title": "Show Dashboard",
-        "icon": "dashboard"
       },
       {
         "command": "grails.createController",
@@ -253,7 +250,7 @@
         {
           "id": "grailsActivityBar",
           "title": "Grails",
-          "icon": "symbol-misc"
+          "icon": "resources/icons/grails.svg"
         }
       ]
     },
@@ -261,15 +258,8 @@
       "grailsActivityBar": [
         {
           "id": "grailsExplorer",
-          "name": "Grails Explorer",
-          "when": "workspaceContains:**/grails-app",
+          "name": "Project Structure",
           "icon": "$(symbol-misc)"
-        },
-        {
-          "id": "grailsDashboard",
-          "name": "Grails Dashboard",
-          "when": "workspaceContans:**/grails-app",
-          "icon": "$(dashboard)"
         }
       ]
     },
