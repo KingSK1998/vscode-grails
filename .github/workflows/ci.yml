@@ -26,11 +26,22 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: gradle
 
-      - name: Build language-server (fat JAR)
-        run: ./gradlew :grails-language-server:shadowJar
+      # 2-a Compile without tests (fast fail on syntax errors)
+      - name: Assemble language-server
+        working-directory: server/grails-language-server
+        run: ./gradlew --no-daemon --parallel assemble
 
+      # 2-b Run tests only if assemble succeeded
       - name: Run Groovy unit tests
-        run: ./gradlew test
+        working-directory: server/grails-language-server
+        run: ./gradlew --no-daemon test
+
+      # 2-c  Copy the JAR for packaging
+      - name: Bundle language-server into client
+        if: success()
+        run: |
+          cp server/grails-language-server/build/libs/*.jar \
+            vscode-grails-client/server/
 
       # 3 ▸ Node for VS Code client
       - name: Set up Node 18

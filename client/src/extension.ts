@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { LanguageClient } from "vscode-languageclient/node";
 import { ErrorService } from "./services/ErrorService";
-import { GradleService } from "./services/gradle-service";
+import { GradleService } from "./services/gradleService";
 import { StatusBarService } from "./services/StatusBarService";
 import { GrailsMessage, ErrorSeverity, ModuleType } from "./utils/constants";
 import { LanguageServerManager } from "./language/grails-language-client";
