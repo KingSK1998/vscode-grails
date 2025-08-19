@@ -26,6 +26,10 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: gradle
 
+      - name: Make gradlew executable
+        working-directory: server
+        run: chmod +x gradlew
+
       # 2-a Assemble (no tests)
       - name: Assemble language-server
         working-directory: server
