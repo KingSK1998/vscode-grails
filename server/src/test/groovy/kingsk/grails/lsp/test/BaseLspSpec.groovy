@@ -75,7 +75,6 @@ abstract class BaseLspSpec extends Specification {
 			case ProjectType.GROOVY: return getMockProjectPath(userDir, "groovy-test-project")
 			case ProjectType.DUMMY: return createDummyWorkspace(userDir)
 			case ProjectType.EMPTY: return null
-			default: return null
 		}
 	}
 
@@ -86,11 +85,18 @@ abstract class BaseLspSpec extends Specification {
 	 * @return The path to the mock project
 	 */
 	private static String getMockProjectPath(Path userDir, String projectName) {
-		Path projectPath = userDir.parent.parent.resolve("Resources").resolve(projectName)
-		if (!Files.exists(projectPath)) {
-			throw new FileNotFoundException("Mock project directory not found: ${projectPath}")
+        // Look in test resources
+        Path projectPath = userDir.resolve("src/test/resources/test-projects").resolve(projectName)
+
+        // Fallback for when running tests from IDE (uses build/resources/test)
+        if (!Files.exists(projectPath)) {
+            projectPath = userDir.resolve("build/resources/test/test-projects").resolve(projectName)
 		}
-		return projectPath.toUri().toString()
+
+        if (!Files.exists(projectPath)) {
+            throw new FileNotFoundException("Test project directory not found: ${projectPath} (looked in src/test/resources/test-projects/)")
+        }
+        return projectPath.toUri().toString()
 	}
 
 	/**
