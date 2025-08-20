@@ -1,5 +1,5 @@
 *.vsix
-server/
+server/*
 
 # Logs
 logs
