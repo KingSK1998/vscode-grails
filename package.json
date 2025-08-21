@@ -7,10 +7,10 @@
     "client"
   ],
   "scripts": {
-    "setup": "cd client && npm install && cd ../server && chmod +x gradlew && ./gradlew build -x test",
-    "build": "npm run build:client && npm run build:server",
+    "setup": "cd client && npm install && cd ../server && gradlew.bat build -x test",
+    "build": "npm run build:server && npm run build:client",
     "build:client": "cd client && npm run compile",
-    "build:server": "cd server && chmod +x gradlew && ./gradlew build -x test",
+    "build:server": "cd server && gradlew.bat build -x test",
     "dev:server": "cd server && java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar build/libs/*.jar",
     "clean": "cd client && (if exist out rmdir /s /q out) && (if exist node_modules\\.cache rmdir /s /q node_modules\\.cache) && cd ../server && gradlew.bat clean",
     "test": "cd server && gradlew.bat test && cd ../client && npm test"

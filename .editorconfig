@@ -1,24 +1,30 @@
 root = true
 
+# All files
 [*]
-charset = utf-8
-end_of_line = lf
-insert_final_newline = true
+end_of_line = crlf
+insert_final_newline = false
 trim_trailing_whitespace = true
+charset = utf-8
+
+# Typescript/Javascript
+[client/**/*.{js,ts,json}]
 indent_style = space
 indent_size = 2
 
-[*.{js,ts,json}]
-indent_size = 2
-
-[*.{groovy,java}]
+# Groovy/Java
+[server/**/*.{groovy,java}]
+indent_style = space
 indent_size = 4
 
+# Markdown
 [*.md]
 trim_trailing_whitespace = false
 
 [*.gradle]
 indent_size = 4
 
-[Makefile]
-indent_style = tab
+# YAML files
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2

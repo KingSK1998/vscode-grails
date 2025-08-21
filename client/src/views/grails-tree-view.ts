@@ -7,104 +7,73 @@ import {
   Uri,
   ExtensionContext,
   workspace,
-  ThemeIcon,
-  ThemeColor,
 } from "vscode";
-import { Colors, GrailsArtifactType, Icons } from "../utils/constants";
+import { GrailsArtifactType, Icons, ProjectType } from "../utils/Constants";
 import path from "path";
 import fs from "fs";
 import { GrailsIconProvider } from "../providers/grails-icon-provider";
+import { ArtifactCounts, ConfigFile } from "../types/grails-types";
 
 export class GrailsTreeItem extends TreeItem {
   constructor(
     public readonly label: string,
     public readonly collapsibleState: TreeItemCollapsibleState,
     public readonly artifactType?: GrailsArtifactType,
-    public readonly filePath?: string,
+    public readonly filePath?: string
   ) {
     super(label, collapsibleState);
 
-    // Set icon based on artifact type or file extension
-    if (artifactType) {
-      // Use the provider instead of inline logic
-      this.iconPath = GrailsIconProvider.getArtifactIcon(artifactType);
-      this.tooltip = GrailsIconProvider.getArtifactTooltip(artifactType);
-      this.contextValue = `grails-${artifactType}`;
-    } else if (filePath) {
-      // Use file extension detection
-      this.iconPath = GrailsIconProvider.getFileExtensionIcon(filePath);
-      this.contextValue = `grails-file`;
-    }
+    this.setupIcon();
+    this.setupFileProperties();
+  }
 
-    // Add additional properties for file items
-    if (filePath) {
-      this.resourceUri = Uri.file(filePath);
-      this.command = {
-        command: "vscode.open",
-        title: "Open File",
-        arguments: [this.resourceUri],
-      };
-
-      // Add tooltip with file path
-      this.tooltip = `${this.label}\n${workspace.asRelativePath(filePath)}`;
+  private setupIcon(): void {
+    if (this.artifactType) {
+      this.iconPath = GrailsIconProvider.getArtifactIcon(this.artifactType);
+      this.tooltip = GrailsIconProvider.getArtifactTooltip(this.artifactType);
+      this.contextValue = `grails-${this.artifactType}`;
+    } else if (this.filePath) {
+      this.iconPath = GrailsIconProvider.getFileExtensionIcon(this.filePath);
+      this.contextValue = "grails-file";
     }
   }
 
-  private getIconForFile(filePath: string): ThemeIcon {
-    const ext = path.extname(filePath).toLowerCase();
+  private setupFileProperties(): void {
+    if (!this.filePath) return;
 
-    switch (ext) {
-      case ".gsp":
-        return new ThemeIcon(Icons.GSP_FILE, new ThemeColor(Colors.ORANGE));
-      case ".yml":
-      case ".yaml":
-        return new ThemeIcon(Icons.YML_FILE, new ThemeColor(Colors.BLUE));
-      case ".groovy":
-        return new ThemeIcon(Icons.GROOVY_FILE, new ThemeColor(Colors.PRIMARY_GREEN));
-      case ".js":
-        return new ThemeIcon("symbol-function", new ThemeColor(Colors.YELLOW));
-      case ".css":
-      case ".scss":
-        return new ThemeIcon("symbol-color", new ThemeColor(Colors.PURPLE));
-      case ".properties":
-        return new ThemeIcon("symbol-key", new ThemeColor(Colors.GRAY));
-      default:
-        return new ThemeIcon("symbol-file");
-    }
-  }
-
-  private getIconForArtifact(type: GrailsArtifactType): ThemeIcon {
-    switch (type) {
-      case GrailsArtifactType.CONTROLLER:
-        return new ThemeIcon(Icons.CONTROLLER, new ThemeColor(Colors.PRIMARY_GREEN));
-      case GrailsArtifactType.SERVICE:
-        return new ThemeIcon(Icons.SERVICE, new ThemeColor(Colors.BLUE));
-      case GrailsArtifactType.DOMAIN:
-        return new ThemeIcon(Icons.DOMAIN, new ThemeColor(Colors.PURPLE));
-      case GrailsArtifactType.VIEW:
-        return new ThemeIcon(Icons.VIEW, new ThemeColor(Colors.ORANGE));
-      case GrailsArtifactType.TAGLIB:
-        return new ThemeIcon(Icons.TAGLIB, new ThemeColor(Colors.RED));
-      default:
-        return new ThemeIcon(Icons.GRAILS);
-    }
+    this.resourceUri = Uri.file(this.filePath);
+    this.command = {
+      command: "vscode.open",
+      title: "Open File",
+      arguments: [this.resourceUri],
+    };
+    this.tooltip = `${this.label}\n${workspace.asRelativePath(this.filePath)}`;
   }
 }
 
 export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> {
-  private _onDidChangeTreeData: EventEmitter<GrailsTreeItem | undefined | null | void> = new EventEmitter<
+  private readonly _onDidChangeTreeData = new EventEmitter<
     GrailsTreeItem | undefined | null | void
   >();
   readonly onDidChangeTreeData: Event<GrailsTreeItem | undefined | null | void> =
     this._onDidChangeTreeData.event;
 
-  constructor(private context: ExtensionContext) {
-    console.log("🌳 GrailsTreeDataProvider created");
+  private projectType: ProjectType | null = null;
+  private artifactCountsCache: ArtifactCounts | null = null;
+
+  constructor(private readonly context: ExtensionContext) {
+    console.log("🌳 GrailsTreeDataProvider initialized");
   }
 
   refresh(): void {
-    console.log("🔄 Tree data refreshing...");
+    console.log("🔄 Refreshing tree data...");
+    this.clearCache();
     this._onDidChangeTreeData.fire();
+  }
+
+  private clearCache(): void {
+    this.projectType = null;
+    this.artifactCountsCache = null;
   }
 
   getTreeItem(element: GrailsTreeItem): TreeItem {
@@ -112,36 +81,37 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
   }
 
   async getChildren(element?: GrailsTreeItem): Promise<GrailsTreeItem[]> {
-    console.log("📂 Getting tree children for:", element?.label || "root");
+    console.log("📂 Getting children for:", element?.label || "root");
 
     if (!element) {
-      // Root level - check if we have a valid project
-      const projectType = await this.detectProjectType();
-      if (projectType === "none") {
-        return [new GrailsTreeItem("No Grails/Groovy projecy detected", TreeItemCollapsibleState.None)];
-      }
-
-      return this.getRootItemsForProjectType(projectType);
+      return this.getRootItems();
     }
 
-    // ✅ Handle special nested cases
+    return this.getElementChildren(element);
+  }
+
+  private async getRootItems(): Promise<GrailsTreeItem[]> {
+    const projectType = await this.getProjectType();
+
+    if (projectType === "none") {
+      return [
+        new GrailsTreeItem("No Grails/Groovy project detected", TreeItemCollapsibleState.None),
+      ];
+    }
+
+    return this.getProjectStructure(projectType);
+  }
+
+  private async getElementChildren(element: GrailsTreeItem): Promise<GrailsTreeItem[]> {
+    // Handle special context values
     if (element.contextValue) {
-      switch (element.contextValue) {
-        case "grails-view-folder":
-          return this.getViewFilesForController(element.id!);
-
-        case "grails-asset-js":
-          return this.getAssetFiles("grails-app/assets/javascripts/**/*.js");
-
-        case "grails-asset-css":
-          return this.getAssetFiles("grails-app/assets/stylesheets/**/*.{css,scss}");
-
-        case "grails-asset-images":
-          return this.getAssetFiles("grails-app/assets/images/**/*.{png,jpg,jpeg,gif,svg}");
+      const handler = this.getContextHandler(element.contextValue);
+      if (handler) {
+        return handler(element);
       }
     }
 
-    // Standard artifact type expansion
+    // Handle artifact types
     if (element.artifactType) {
       return this.getArtifactFiles(element.artifactType);
     }
@@ -149,89 +119,190 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
     return [];
   }
 
-  private async getRootItemsForProjectType(projectType: string): Promise<GrailsTreeItem[]> {
+  private getContextHandler(
+    contextValue: string
+  ): ((element: GrailsTreeItem) => Promise<GrailsTreeItem[]>) | null {
+    const handlers: Record<string, (element: GrailsTreeItem) => Promise<GrailsTreeItem[]>> = {
+      "grails-view-folder": (element: GrailsTreeItem) =>
+        this.getViewFilesForController(element.id!),
+      "grails-asset-js": () => this.getAssetFiles("grails-app/assets/javascripts/**/*.js", "📜"),
+      "grails-asset-css": () =>
+        this.getAssetFiles("grails-app/assets/stylesheets/**/*.{css,scss}", "🎨"),
+      "grails-asset-images": () =>
+        this.getAssetFiles("grails-app/assets/images/**/*.{png,jpg,jpeg,gif,svg}", "🖼️"),
+    };
+
+    return handlers[contextValue] ?? null;
+  }
+
+  private async getProjectType(): Promise<ProjectType> {
+    if (this.projectType !== null) {
+      return this.projectType;
+    }
+
+    this.projectType = await this.detectProjectType();
+    return this.projectType;
+  }
+
+  private async detectProjectType(): Promise<ProjectType> {
+    const workspaceFolders = workspace.workspaceFolders;
+    if (!workspaceFolders) return "none";
+
+    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+
+    // Check for Grails project
+    if (await this.fileExists(path.join(workspaceRoot, "grails-app"))) {
+      console.log("🎯 Detected: Grails project");
+      return "grails";
+    }
+
+    // Check for Groovy project
+    if (await this.fileExists(path.join(workspaceRoot, "src", "main", "groovy"))) {
+      console.log("🎯 Detected: Groovy project");
+      return "groovy";
+    }
+
+    // Check for Gradle project
+    if (await this.fileExists(path.join(workspaceRoot, "build.gradle"))) {
+      console.log("🎯 Detected: Gradle project");
+      return "gradle";
+    }
+
+    return "none";
+  }
+
+  private async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await fs.promises.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async getProjectStructure(projectType: ProjectType): Promise<GrailsTreeItem[]> {
     switch (projectType) {
       case "grails":
-        return await this.getGrailsProjectStructure();
+        return this.getGrailsProjectStructure();
       case "groovy":
-        return await this.getGroovyProjectStructure();
+        return this.getGroovyProjectStructure();
+      case "gradle":
+        return this.getGradleProjectStructure();
       default:
-        return await this.getGenericGradleStructure();
+        return [];
     }
   }
 
   private async getGrailsProjectStructure(): Promise<GrailsTreeItem[]> {
-    const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
-
-    // Get counts for each artifact type
-    const counts = await this.getArtifactCounts(workspaceRoot);
+    const counts = await this.getArtifactCounts();
 
     return [
-      // 🎯 CORE ARTIFACTS (Expanded - Most Important)
-      new GrailsTreeItem(
-        `🚀 Controllers ${counts.controllers > 0 ? `(${counts.controllers})` : ""}`,
-        TreeItemCollapsibleState.Expanded,
+      // Core artifacts (expanded by default)
+      this.createArtifactItem(
+        "🚀 Controllers",
+        counts.controllers,
         GrailsArtifactType.CONTROLLER,
+        TreeItemCollapsibleState.Expanded
       ),
-      new GrailsTreeItem(
-        `⚙️ Services ${counts.services > 0 ? `(${counts.services})` : ""}`,
-        TreeItemCollapsibleState.Expanded,
+      this.createArtifactItem(
+        "⚙️ Services",
+        counts.services,
         GrailsArtifactType.SERVICE,
+        TreeItemCollapsibleState.Expanded
       ),
-      new GrailsTreeItem(
-        `🗄️ Domains ${counts.domains > 0 ? `(${counts.domains})` : ""}`,
-        TreeItemCollapsibleState.Expanded,
+      this.createArtifactItem(
+        "🗄️ Domains",
+        counts.domains,
         GrailsArtifactType.DOMAIN,
+        TreeItemCollapsibleState.Expanded
       ),
-      new GrailsTreeItem(
-        `📄 Views ${counts.views > 0 ? `(${counts.views})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      this.createArtifactItem(
+        "📄 Views",
+        counts.views,
         GrailsArtifactType.VIEW,
+        TreeItemCollapsibleState.Collapsed
       ),
 
-      // 🎨 PRESENTATION & UI (Collapsed)
-      new GrailsTreeItem(
-        `🏷️ TagLibs ${counts.taglibs > 0 ? `(${counts.taglibs})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      // Presentation & UI (collapsed)
+      this.createArtifactItem(
+        "🏷️ TagLibs",
+        counts.taglibs,
         GrailsArtifactType.TAGLIB,
+        TreeItemCollapsibleState.Collapsed
       ),
-      new GrailsTreeItem(
-        `🎨 Assets ${counts.assets > 0 ? `(${counts.assets})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      this.createArtifactItem(
+        "🎨 Assets",
+        counts.assets,
         GrailsArtifactType.ASSETS,
+        TreeItemCollapsibleState.Collapsed
       ),
-      new GrailsTreeItem(
-        `🌐 i18n ${counts.i18n > 0 ? `(${counts.i18n})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      this.createArtifactItem(
+        "🌐 i18n",
+        counts.i18n,
         GrailsArtifactType.I18N,
+        TreeItemCollapsibleState.Collapsed
       ),
 
-      // ⚙️ CONFIGURATION & ROUTING
+      // Configuration & routing
       new GrailsTreeItem(
         "🔗 URL Mappings",
         TreeItemCollapsibleState.Collapsed,
-        GrailsArtifactType.URL_MAPPING,
+        GrailsArtifactType.URL_MAPPING
       ),
-      new GrailsTreeItem("⚙️ Configuration", TreeItemCollapsibleState.Collapsed, GrailsArtifactType.CONFIG),
-      new GrailsTreeItem("🚀 Init & Bootstrap", TreeItemCollapsibleState.Collapsed, GrailsArtifactType.INIT),
+      new GrailsTreeItem(
+        "⚙️ Configuration",
+        TreeItemCollapsibleState.Collapsed,
+        GrailsArtifactType.CONFIG
+      ),
+      new GrailsTreeItem(
+        "🚀 Init & Bootstrap",
+        TreeItemCollapsibleState.Collapsed,
+        GrailsArtifactType.INIT
+      ),
 
-      // 🧪 DEVELOPMENT & TESTING
-      new GrailsTreeItem(
-        `🧪 Tests ${counts.tests > 0 ? `(${counts.tests})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      // Development & testing
+      this.createArtifactItem(
+        "🧪 Tests",
+        counts.tests,
         GrailsArtifactType.TESTS,
+        TreeItemCollapsibleState.Collapsed
       ),
-      new GrailsTreeItem(
-        `📁 Source ${counts.groovySrc > 0 ? `(${counts.groovySrc})` : ""}`,
-        TreeItemCollapsibleState.Collapsed,
+      this.createArtifactItem(
+        "📝 Source",
+        counts.groovySrc,
         GrailsArtifactType.GROOVY_SRC,
+        TreeItemCollapsibleState.Collapsed
       ),
     ];
   }
 
-  // Get artifact counts for better UX
-  private async getArtifactCounts(workspaceRoot: string): Promise<any> {
-    const counts = {
+  private createArtifactItem(
+    label: string,
+    count: number,
+    artifactType: GrailsArtifactType,
+    collapsibleState: TreeItemCollapsibleState
+  ): GrailsTreeItem {
+    const displayLabel = count > 0 ? `${label} (${count})` : label;
+    return new GrailsTreeItem(displayLabel, collapsibleState, artifactType);
+  }
+
+  private async getArtifactCounts(): Promise<ArtifactCounts> {
+    if (this.artifactCountsCache) {
+      return this.artifactCountsCache;
+    }
+
+    const patterns = {
+      controllers: "grails-app/controllers/**/*.groovy",
+      services: "grails-app/services/**/*.groovy",
+      domains: "grails-app/domain/**/*.groovy",
+      views: "grails-app/views/**/*.gsp",
+      taglibs: "grails-app/taglib/**/*.groovy",
+      assets: "grails-app/assets/**/*",
+      i18n: "grails-app/i18n/**/*.properties",
+      groovySrc: "src/main/groovy/**/*.groovy",
+    };
+
+    const counts: ArtifactCounts = {
       controllers: 0,
       services: 0,
       domains: 0,
@@ -244,274 +315,196 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
     };
 
     try {
-      // Controllers
-      const controllers = await workspace.findFiles("grails-app/controllers/**/*.groovy");
-      counts.controllers = controllers.length;
+      // Count regular artifacts
+      for (const [key, pattern] of Object.entries(patterns)) {
+        const files = await workspace.findFiles(pattern);
+        counts[key as keyof ArtifactCounts] = files.length;
+      }
 
-      // Services
-      const services = await workspace.findFiles("grails-app/services/**/*.groovy");
-      counts.services = services.length;
-
-      // Domains
-      const domains = await workspace.findFiles("grails-app/domain/**/*.groovy");
-      counts.domains = domains.length;
-
-      // Views (GSP files)
-      const views = await workspace.findFiles("grails-app/views/**/*.gsp");
-      counts.views = views.length;
-
-      // TagLibs
-      const taglibs = await workspace.findFiles("grails-app/taglib/**/*.groovy");
-      counts.taglibs = taglibs.length;
-
-      // Assets
-      const assets = await workspace.findFiles("grails-app/assets/**/*");
-      counts.assets = assets.length;
-
-      // i18n files
-      const i18n = await workspace.findFiles("grails-app/i18n/**/*.properties");
-      counts.i18n = i18n.length;
-
-      // Tests (both unit and integration)
-      const unitTests = await workspace.findFiles("src/test/**/*Spec.groovy");
-      const integrationTests = await workspace.findFiles("src/integration-test/**/*Spec.groovy");
+      // Count tests separately (unit + integration)
+      const [unitTests, integrationTests] = await Promise.all([
+        workspace.findFiles("src/test/**/*Spec.groovy"),
+        workspace.findFiles("src/integration-test/**/*Spec.groovy"),
+      ]);
       counts.tests = unitTests.length + integrationTests.length;
-
-      // Additional Groovy source
-      const groovySrc = await workspace.findFiles("src/main/groovy/**/*.groovy");
-      counts.groovySrc = groovySrc.length;
     } catch (error) {
-      console.log("Error counting artifacts:", error);
+      console.error("Error counting artifacts:", error);
     }
 
+    this.artifactCountsCache = counts;
     return counts;
   }
 
-  private async detectProjectType(): Promise<"grails" | "groovy" | "gradle" | "none"> {
-    const workspaceFolders = workspace.workspaceFolders;
-    if (!workspaceFolders) return "none";
-
-    const workspaceRoot = workspaceFolders[0].uri.fsPath;
-
-    // Primary detection: Grails 7 project structure
-    if (fs.existsSync(path.join(workspaceRoot, "grails-app"))) {
-      console.log("🎯 Detected: Grails project");
-      return "grails";
-    }
-
-    // Check for Groovy
-    if (fs.existsSync(path.join(workspaceRoot, "src", "main", "groovy"))) {
-      console.log("🎯 Detected: Groovy project");
-      return "groovy";
-    }
-
-    // Check for Gradle with potential Groovy support
-    if (fs.existsSync(path.join(workspaceRoot, "build.gradle"))) {
-      console.log("🎯 Detected: Gradle project");
-      return "gradle";
-    }
-
-    return "none";
-  }
-
   private async getArtifactFiles(type: GrailsArtifactType): Promise<GrailsTreeItem[]> {
-    const workspaceFolders = workspace.workspaceFolders;
-    if (!workspaceFolders) return [];
+    const handlers: Partial<Record<GrailsArtifactType, () => Promise<GrailsTreeItem[]>>> = {
+      [GrailsArtifactType.CONTROLLER]: () =>
+        this.getFilesFromPattern("grails-app/controllers/**/*.groovy", type),
+      [GrailsArtifactType.SERVICE]: () =>
+        this.getFilesFromPattern("grails-app/services/**/*.groovy", type),
+      [GrailsArtifactType.DOMAIN]: () =>
+        this.getFilesFromPattern("grails-app/domain/**/*.groovy", type),
+      [GrailsArtifactType.VIEW]: () => this.getViewsStructure(),
+      [GrailsArtifactType.TAGLIB]: () =>
+        this.getFilesFromPattern("grails-app/taglib/**/*.groovy", type),
+      [GrailsArtifactType.ASSETS]: () => this.getAssetsStructure(),
+      [GrailsArtifactType.CONFIG]: () => this.getConfigurationFiles(),
+      [GrailsArtifactType.URL_MAPPING]: () => this.getUrlMappingFiles(),
+      [GrailsArtifactType.I18N]: () =>
+        this.getFilesFromPattern("grails-app/i18n/**/*.properties", type),
+      [GrailsArtifactType.INIT]: () => this.getInitFiles(),
+      [GrailsArtifactType.TESTS]: () => this.getTestStructure(),
+      [GrailsArtifactType.UNIT_TESTS]: () =>
+        this.getFilesFromPattern("src/test/**/*Spec.groovy", type),
+      [GrailsArtifactType.INTEGRATION_TESTS]: () =>
+        this.getFilesFromPattern("src/integration-test/**/*Spec.groovy", type),
+      [GrailsArtifactType.GROOVY_SRC]: () =>
+        this.getFilesFromPattern("src/main/groovy/**/*.groovy", type),
+    };
 
-    switch (type) {
-      case GrailsArtifactType.CONTROLLER:
-        return this.getFilesFromPattern("grails-app/controllers/**/*.groovy", type);
-
-      case GrailsArtifactType.SERVICE:
-        return this.getFilesFromPattern("grails-app/services/**/*.groovy", type);
-
-      case GrailsArtifactType.DOMAIN:
-        return this.getFilesFromPattern("grails-app/domain/**/*.groovy", type);
-
-      case GrailsArtifactType.VIEW:
-        return this.getViewsStructure();
-
-      case GrailsArtifactType.TAGLIB:
-        return this.getFilesFromPattern("grails-app/taglib/**/*.groovy", type);
-
-      case GrailsArtifactType.ASSETS:
-        return this.getAssetsStructure();
-
-      case GrailsArtifactType.CONFIG:
-        return this.getConfigurationFiles();
-
-      case GrailsArtifactType.URL_MAPPING:
-        return this.getUrlMappingFiles();
-
-      case GrailsArtifactType.I18N:
-        return this.getFilesFromPattern("grails-app/i18n/**/*.properties", type);
-
-      case GrailsArtifactType.INIT:
-        return this.getInitFiles();
-
-      case GrailsArtifactType.TESTS:
-        return this.getTestStructure();
-
-      // ✅ Add support for nested test categories
-      case GrailsArtifactType.UNIT_TESTS:
-        return this.getFilesFromPattern("src/test/**/*Spec.groovy", type);
-
-      case GrailsArtifactType.INTEGRATION_TESTS:
-        return this.getFilesFromPattern("src/integration-test/**/*Spec.groovy", type);
-
-      case GrailsArtifactType.GROOVY_SRC:
-        return this.getFilesFromPattern("src/main/groovy/**/*.groovy", type);
-
-      default:
-        console.warn(`No handler for artifact type: ${type}`);
-        return [];
+    const handler = handlers[type];
+    if (!handler) {
+      console.warn(`No handler for artifact type: ${type}`);
+      return [];
     }
+
+    return handler();
   }
 
-  // Enhanced file pattern matching with proper icons
-  private async getFilesFromPattern(pattern: string, type: GrailsArtifactType): Promise<GrailsTreeItem[]> {
+  private async getFilesFromPattern(
+    pattern: string,
+    type: GrailsArtifactType
+  ): Promise<GrailsTreeItem[]> {
     try {
       const files = await workspace.findFiles(pattern);
-      return files.map((file) => {
+      return files.map(file => {
         const fileName = path.basename(file.fsPath);
-        const nameWithoutExt = path.basename(file.fsPath, path.extname(file.fsPath));
-
         return new GrailsTreeItem(fileName, TreeItemCollapsibleState.None, type, file.fsPath);
       });
-    } catch {
+    } catch (error) {
+      console.error(`Error loading files with pattern ${pattern}:`, error);
       return [];
     }
   }
 
-  // Special handling for Views (organized by controller)
   private async getViewsStructure(): Promise<GrailsTreeItem[]> {
     try {
       const viewFiles = await workspace.findFiles("grails-app/views/**/*.gsp");
-      const viewsByController = new Map<string, string[]>();
+      const viewsByController = this.groupViewsByController(viewFiles);
 
-      viewFiles.forEach((file) => {
-        const relativePath = workspace.asRelativePath(file);
-        const pathParts = this.splitPath(relativePath);
-
-        let controllerName = "";
-        if (pathParts.length >= 4) {
-          // grails-app/views/controllerName/view.gsp
-          controllerName = pathParts[2];
-        } else if (pathParts.length === 3) {
-          // grails-app/views/view.gsp (root-level views)
-          controllerName = ""; // ✅ Use "root" instead of empty string
-        }
-
-        if (!viewsByController.has(controllerName)) {
-          viewsByController.set(controllerName, []);
-        }
-        viewsByController.get(controllerName)!.push(file.fsPath);
-      });
-
-      const result: GrailsTreeItem[] = [];
-
-      // ✅ Handle root-level views first
-      if (viewsByController.has("") && viewsByController.get("")!.length > 0) {
-        const rootViews = viewsByController.get("")!;
-
-        // Add individual root views directly to result
-        rootViews.forEach((filePath) => {
-          const fileName = path.basename(filePath);
-          result.push(
-            new GrailsTreeItem(
-              `📄 ${fileName}`,
-              TreeItemCollapsibleState.None,
-              GrailsArtifactType.VIEW,
-              filePath,
-            ),
-          );
-        });
-
-        // Remove from map so we don't process it again
-        viewsByController.delete("");
-      }
-
-      // ✅ Create sections for each controller/group
-      for (const [controllerName, files] of viewsByController) {
-        if (controllerName) {
-          const controllerItem = new GrailsTreeItem(
-            `📁 ${controllerName} (${files.length})`,
-            TreeItemCollapsibleState.Collapsed,
-            GrailsArtifactType.VIEW,
-          );
-
-          controllerItem.contextValue = "grails-view-folder";
-          controllerItem.id = `view-folder-${controllerName}`;
-          result.push(controllerItem);
-        }
-      }
-
-      return result;
+      return this.createViewTreeItems(viewsByController);
     } catch (error) {
-      console.error("❌ Error loading views:", error);
+      console.error("Error loading views:", error);
       return [];
     }
   }
 
-  // Assets structure (CSS, JS, Images)
-  private async getAssetsStructure(): Promise<GrailsTreeItem[]> {
+  private groupViewsByController(viewFiles: readonly Uri[]): Map<string, string[]> {
+    const viewsByController = new Map<string, string[]>();
+
+    viewFiles.forEach(file => {
+      const relativePath = workspace.asRelativePath(file);
+      const pathParts = this.splitPath(relativePath);
+
+      const controllerName = pathParts.length >= 4 ? pathParts[2] : "";
+
+      if (!viewsByController.has(controllerName)) {
+        viewsByController.set(controllerName, []);
+      }
+      viewsByController.get(controllerName)!.push(file.fsPath);
+    });
+
+    return viewsByController;
+  }
+
+  private createViewTreeItems(viewsByController: Map<string, string[]>): GrailsTreeItem[] {
     const result: GrailsTreeItem[] = [];
 
-    try {
-      // JavaScript files
-      const jsFiles = await workspace.findFiles("grails-app/assets/javascripts/**/*.js");
-      if (jsFiles.length > 0) {
-        const jsItem = new GrailsTreeItem(
-          `📜 JavaScript (${jsFiles.length})`,
-          TreeItemCollapsibleState.Collapsed,
-          GrailsArtifactType.ASSETS, // We'll handle this specially
+    // Handle root-level views
+    if (viewsByController.has("")) {
+      const rootViews = viewsByController.get("")!;
+      rootViews.forEach(filePath => {
+        const fileName = path.basename(filePath);
+        result.push(
+          new GrailsTreeItem(
+            `📄 ${fileName}`,
+            TreeItemCollapsibleState.None,
+            GrailsArtifactType.VIEW,
+            filePath
+          )
         );
-        jsItem.contextValue = "grails-asset-js";
-        jsItem.id = "asset-js";
-        result.push(jsItem);
-      }
+      });
+      viewsByController.delete("");
+    }
 
-      // CSS/SCSS files
-      const cssFiles = await workspace.findFiles("grails-app/assets/stylesheets/**/*.{css,scss}");
-      if (cssFiles.length > 0) {
-        const cssItem = new GrailsTreeItem(
-          `🎨 Stylesheets (${cssFiles.length})`,
+    // Create controller view folders
+    for (const [controllerName, files] of viewsByController) {
+      if (controllerName) {
+        const controllerItem = new GrailsTreeItem(
+          `📁 ${controllerName} (${files.length})`,
           TreeItemCollapsibleState.Collapsed,
-          GrailsArtifactType.ASSETS,
+          GrailsArtifactType.VIEW
         );
-        cssItem.contextValue = "grails-asset-css";
-        cssItem.id = "asset-css";
-        result.push(cssItem);
+        controllerItem.contextValue = "grails-view-folder";
+        controllerItem.id = `view-folder-${controllerName}`;
+        result.push(controllerItem);
       }
-
-      // Images
-      const imageFiles = await workspace.findFiles("grails-app/assets/images/**/*.{png,jpg,jpeg,gif,svg}");
-      if (imageFiles.length > 0) {
-        const imageItem = new GrailsTreeItem(
-          `🖼️ Images (${imageFiles.length})`,
-          TreeItemCollapsibleState.Collapsed,
-          GrailsArtifactType.ASSETS,
-        );
-        imageItem.contextValue = "grails-asset-images";
-        imageItem.id = "asset-images";
-        result.push(imageItem);
-      }
-    } catch (error) {
-      console.log("Error loading assets:", error);
     }
 
     return result;
   }
 
-  // Configuration files
-  private async getConfigurationFiles(): Promise<GrailsTreeItem[]> {
+  private async getAssetsStructure(): Promise<GrailsTreeItem[]> {
+    const assetTypes = [
+      {
+        pattern: "grails-app/assets/javascripts/**/*.js",
+        label: "📜 JavaScript",
+        contextValue: "grails-asset-js",
+      },
+      {
+        pattern: "grails-app/assets/stylesheets/**/*.{css,scss}",
+        label: "🎨 Stylesheets",
+        contextValue: "grails-asset-css",
+      },
+      {
+        pattern: "grails-app/assets/images/**/*.{png,jpg,jpeg,gif,svg}",
+        label: "🖼️ Images",
+        contextValue: "grails-asset-images",
+      },
+    ];
+
     const result: GrailsTreeItem[] = [];
+
+    for (const assetType of assetTypes) {
+      try {
+        const files = await workspace.findFiles(assetType.pattern);
+        if (files.length > 0) {
+          const item = new GrailsTreeItem(
+            `${assetType.label} (${files.length})`,
+            TreeItemCollapsibleState.Collapsed,
+            GrailsArtifactType.ASSETS
+          );
+          item.contextValue = assetType.contextValue;
+          item.id = assetType.contextValue.replace("grails-", "");
+          result.push(item);
+        }
+      } catch (error) {
+        console.error(`Error loading ${assetType.label}:`, error);
+      }
+    }
+
+    return result;
+  }
+
+  private async getConfigurationFiles(): Promise<GrailsTreeItem[]> {
     const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
 
-    // Main configuration files
-    const configFiles = [
+    const configFiles: ConfigFile[] = [
       { path: "grails-app/conf/application.yml", name: "⚙️ application.yml", icon: Icons.YML_FILE },
-      { path: "grails-app/conf/application.groovy", name: "⚙️ application.groovy", icon: Icons.GROOVY_FILE },
+      {
+        path: "grails-app/conf/application.groovy",
+        name: "⚙️ application.groovy",
+        icon: Icons.GROOVY_FILE,
+      },
       {
         path: "grails-app/conf/spring/resources.groovy",
         name: "🌱 resources.groovy",
@@ -520,11 +513,18 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
       { path: "grails-app/conf/logback.xml", name: "📋 logback.xml", icon: Icons.CONFIG },
     ];
 
+    const result: GrailsTreeItem[] = [];
+
     for (const config of configFiles) {
       const fullPath = path.join(workspaceRoot, config.path);
-      if (fs.existsSync(fullPath)) {
+      if (await this.fileExists(fullPath)) {
         result.push(
-          new GrailsTreeItem(config.name, TreeItemCollapsibleState.None, GrailsArtifactType.CONFIG, fullPath),
+          new GrailsTreeItem(
+            config.name,
+            TreeItemCollapsibleState.None,
+            GrailsArtifactType.CONFIG,
+            fullPath
+          )
         );
       }
     }
@@ -532,84 +532,85 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
     return result;
   }
 
-  // URL Mapping files
   private async getUrlMappingFiles(): Promise<GrailsTreeItem[]> {
     try {
-      const mappingFiles = await workspace.findFiles("grails-app/controllers/**/UrlMappings.groovy");
+      const mappingFiles = await workspace.findFiles(
+        "grails-app/controllers/**/UrlMappings.groovy"
+      );
       return mappingFiles.map(
-        (file) =>
+        file =>
           new GrailsTreeItem(
             `🔗 ${path.basename(file.fsPath)}`,
             TreeItemCollapsibleState.None,
             GrailsArtifactType.URL_MAPPING,
-            file.fsPath,
-          ),
+            file.fsPath
+          )
       );
-    } catch {
+    } catch (error) {
+      console.error("Error loading URL mappings:", error);
       return [];
     }
   }
 
-  // Init files (Application.groovy, BootStrap.groovy)
   private async getInitFiles(): Promise<GrailsTreeItem[]> {
-    const result: GrailsTreeItem[] = [];
-
-    const initFiles = [
-      { path: "grails-app/init/**/Application.groovy", name: "🚀 Application.groovy" },
-      { path: "grails-app/init/**/BootStrap.groovy", name: "⚡ BootStrap.groovy" },
+    const initFilePatterns = [
+      { pattern: "grails-app/init/**/Application.groovy", name: "🚀 Application.groovy" },
+      { pattern: "grails-app/init/**/BootStrap.groovy", name: "⚡ BootStrap.groovy" },
     ];
 
-    for (const init of initFiles) {
+    const result: GrailsTreeItem[] = [];
+
+    for (const init of initFilePatterns) {
       try {
-        const files = await workspace.findFiles(init.path);
-        files.forEach((file) => {
+        const files = await workspace.findFiles(init.pattern);
+        files.forEach(file => {
           result.push(
             new GrailsTreeItem(
               init.name,
               TreeItemCollapsibleState.None,
               GrailsArtifactType.INIT,
-              file.fsPath,
-            ),
+              file.fsPath
+            )
           );
         });
       } catch (error) {
-        console.log(`Error finding ${init.name}:`, error);
+        console.error(`Error finding ${init.name}:`, error);
       }
     }
 
     return result;
   }
 
-  // Test structure (Unit + Integration)
   private async getTestStructure(): Promise<GrailsTreeItem[]> {
     const result: GrailsTreeItem[] = [];
 
     try {
-      // Unit tests
-      const unitTests = await workspace.findFiles("src/test/**/*Spec.groovy");
+      const [unitTests, integrationTests] = await Promise.all([
+        workspace.findFiles("src/test/**/*Spec.groovy"),
+        workspace.findFiles("src/integration-test/**/*Spec.groovy"),
+      ]);
+
       if (unitTests.length > 0) {
         result.push(
           new GrailsTreeItem(
             `🧪 Unit Tests (${unitTests.length})`,
             TreeItemCollapsibleState.Collapsed,
-            GrailsArtifactType.UNIT_TESTS,
-          ),
+            GrailsArtifactType.UNIT_TESTS
+          )
         );
       }
 
-      // Integration tests
-      const integrationTests = await workspace.findFiles("src/integration-test/**/*Spec.groovy");
       if (integrationTests.length > 0) {
         result.push(
           new GrailsTreeItem(
             `⚡ Integration Tests (${integrationTests.length})`,
             TreeItemCollapsibleState.Collapsed,
-            GrailsArtifactType.INTEGRATION_TESTS,
-          ),
+            GrailsArtifactType.INTEGRATION_TESTS
+          )
         );
       }
     } catch (error) {
-      console.log("Error loading tests:", error);
+      console.error("Error loading tests:", error);
     }
 
     return result;
@@ -618,54 +619,57 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
   private async getGroovyProjectStructure(): Promise<GrailsTreeItem[]> {
     const result: GrailsTreeItem[] = [];
 
-    // all files under /src/main/groovy are source files
-    // all files under /src/test/groovy are test files
-    const sourceFiles = await workspace.findFiles("/src/main/groovy/**/*.{groovy,java}");
-    const testFiles = await workspace.findFiles("/src/test/groovy/**/*.{groovy,java}");
+    const [sourceFiles, testFiles] = await Promise.all([
+      workspace.findFiles("src/main/groovy/**/*.{groovy,java}"),
+      workspace.findFiles("src/test/groovy/**/*.{groovy,java}"),
+    ]);
 
     if (sourceFiles.length > 0) {
       result.push(
-        new GrailsTreeItem("Source Files", TreeItemCollapsibleState.Collapsed, GrailsArtifactType.GROOVY_SRC),
+        new GrailsTreeItem(
+          `📝 Source Files (${sourceFiles.length})`,
+          TreeItemCollapsibleState.Collapsed,
+          GrailsArtifactType.GROOVY_SRC
+        )
       );
     }
 
     if (testFiles.length > 0) {
       result.push(
-        new GrailsTreeItem("Test Files", TreeItemCollapsibleState.Collapsed, GrailsArtifactType.TESTS),
+        new GrailsTreeItem(
+          `🧪 Test Files (${testFiles.length})`,
+          TreeItemCollapsibleState.Collapsed,
+          GrailsArtifactType.TESTS
+        )
       );
     }
 
     return result;
   }
 
-  private async getGenericGradleStructure(): Promise<GrailsTreeItem[]> {
-    const result: GrailsTreeItem[] = [];
-    return result;
+  private async getGradleProjectStructure(): Promise<GrailsTreeItem[]> {
+    // Implement Gradle-specific structure if needed
+    return [];
   }
 
-  // Get individual view files for a specific controller
   private async getViewFilesForController(folderId: string): Promise<GrailsTreeItem[]> {
     const controllerName = folderId.replace("view-folder-", "");
 
     try {
-      let pattern = "";
-      if (controllerName === "root") {
-        // Root views pattern - files directly under views/
-        pattern = "grails-app/views/*.gsp";
-      } else {
-        // Controller views pattern
-        pattern = `grails-app/views/${controllerName}/**/*.gsp`;
-      }
+      const pattern =
+        controllerName === "root"
+          ? "grails-app/views/*.gsp"
+          : `grails-app/views/${controllerName}/**/*.gsp`;
 
       const viewFiles = await workspace.findFiles(pattern);
 
-      return viewFiles.map((file) => {
+      return viewFiles.map(file => {
         const fileName = path.basename(file.fsPath);
         return new GrailsTreeItem(
           `📄 ${fileName}`,
           TreeItemCollapsibleState.None,
           GrailsArtifactType.VIEW,
-          file.fsPath,
+          file.fsPath
         );
       });
     } catch (error) {
@@ -674,25 +678,17 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
     }
   }
 
-  // Get asset files by pattern
-  private async getAssetFiles(pattern: string): Promise<GrailsTreeItem[]> {
+  private async getAssetFiles(pattern: string, emoji: string): Promise<GrailsTreeItem[]> {
     try {
       const files = await workspace.findFiles(pattern);
 
-      return files.map((file) => {
+      return files.map(file => {
         const fileName = path.basename(file.fsPath);
-        const ext = path.extname(fileName).toLowerCase();
-
-        let icon = "📄";
-        if ([".js"].includes(ext)) icon = "📜";
-        else if ([".css", ".scss"].includes(ext)) icon = "🎨";
-        else if ([".png", ".jpg", ".jpeg", ".gif", ".svg"].includes(ext)) icon = "🖼️";
-
         return new GrailsTreeItem(
-          `${icon} ${fileName}`,
+          `${emoji} ${fileName}`,
           TreeItemCollapsibleState.None,
           GrailsArtifactType.ASSETS,
-          file.fsPath,
+          file.fsPath
         );
       });
     } catch (error) {
@@ -701,9 +697,7 @@ export class GrailsTreeDataProvider implements TreeDataProvider<GrailsTreeItem> 
     }
   }
 
-  // Cross-platform path splitting helper
   private splitPath(filePath: string): string[] {
-    // Normalize all path separators to forward slashes, then split
     return filePath.replace(/\\/g, "/").split("/");
   }
 }

@@ -9,7 +9,7 @@ dist/
 *.vsix
 
 # IDE files
-.vscode/settings.json
+.vscode/mcp.json
 .idea/
 *.iml
 
@@ -32,3 +32,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# ROVO DEV CLI
+acli.exe

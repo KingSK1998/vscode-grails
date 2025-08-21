@@ -4,10 +4,10 @@ import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 
 export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<GrailsItem | undefined | void> = new vscode.EventEmitter<
-    GrailsItem | undefined | void
-  >();
-  readonly onDidChangeTreeData: vscode.Event<GrailsItem | undefined | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<GrailsItem | undefined | void> =
+    new vscode.EventEmitter<GrailsItem | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<GrailsItem | undefined | void> =
+    this._onDidChangeTreeData.event;
 
   private languageClient?: LanguageClient;
   private gradleAvailable: boolean;
@@ -62,7 +62,9 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
       const items: GrailsItem[] = [];
 
       // Always show main artifact types
-      items.push(new GrailsItem("Controllers", vscode.TreeItemCollapsibleState.Collapsed, "controllers"));
+      items.push(
+        new GrailsItem("Controllers", vscode.TreeItemCollapsibleState.Collapsed, "controllers")
+      );
       items.push(new GrailsItem("Services", vscode.TreeItemCollapsibleState.Collapsed, "services"));
       items.push(new GrailsItem("Domains", vscode.TreeItemCollapsibleState.Collapsed, "domains"));
 
@@ -79,7 +81,9 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
         for (const dir of additionalDirs) {
           const dirPath = path.join(grailsAppPath, dir.path);
           if (fs.existsSync(dirPath)) {
-            items.push(new GrailsItem(dir.name, vscode.TreeItemCollapsibleState.Collapsed, dir.contextValue));
+            items.push(
+              new GrailsItem(dir.name, vscode.TreeItemCollapsibleState.Collapsed, dir.contextValue)
+            );
           }
         }
       }
@@ -89,7 +93,7 @@ export class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsIte
       // List artifact files
       return await getArtefactItems(
         projectInfo,
-        element.contextValue as "controllers" | "services" | "domains",
+        element.contextValue as "controllers" | "services" | "domains"
       );
     } else if (["views", "taglib", "utils", "conf"].includes(element.contextValue)) {
       // List other directory contents
@@ -103,7 +107,7 @@ export class GrailsItem extends vscode.TreeItem {
   constructor(
     public readonly label: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-    public readonly contextValue: string,
+    public readonly contextValue: string
   ) {
     super(label, collapsibleState);
 
@@ -193,7 +197,7 @@ async function scanGrailsProject(workspaceRoot: string): Promise<any> {
 
 async function getArtefactItems(
   projectInfo: any,
-  type: "controllers" | "services" | "domains",
+  type: "controllers" | "services" | "domains"
 ): Promise<GrailsItem[]> {
   if (!projectInfo) {
     return [];
@@ -233,7 +237,7 @@ async function scanDirectoryRecursively(
   currentDir: string,
   baseDir: string,
   items: GrailsItem[],
-  type: string,
+  type: string
 ): Promise<void> {
   try {
     const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
@@ -244,7 +248,10 @@ async function scanDirectoryRecursively(
       if (entry.isDirectory()) {
         // Recursively scan subdirectories (for package structures)
         await scanDirectoryRecursively(fullPath, baseDir, items, type);
-      } else if (entry.isFile() && (entry.name.endsWith(".groovy") || entry.name.endsWith(".java"))) {
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith(".groovy") || entry.name.endsWith(".java"))
+      ) {
         // Calculate relative path for display
         const relativePath = path.relative(baseDir, fullPath);
         const displayName = relativePath.replace(/\\/g, "/"); // Use forward slashes for display
@@ -266,7 +273,10 @@ async function scanDirectoryRecursively(
   }
 }
 
-async function getOtherDirectoryItems(workspaceRoot: string, contextValue: string): Promise<GrailsItem[]> {
+async function getOtherDirectoryItems(
+  workspaceRoot: string,
+  contextValue: string
+): Promise<GrailsItem[]> {
   const grailsAppPath = path.join(workspaceRoot, "grails-app");
 
   // Map context values to directory names
@@ -297,7 +307,7 @@ async function scanOtherDirectoryRecursively(
   currentDir: string,
   baseDir: string,
   items: GrailsItem[],
-  contextValue: string,
+  contextValue: string
 ): Promise<void> {
   try {
     const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
@@ -314,7 +324,7 @@ async function scanOtherDirectoryRecursively(
           const item = new GrailsItem(
             displayName,
             vscode.TreeItemCollapsibleState.Collapsed,
-            `${contextValue}-dir`,
+            `${contextValue}-dir`
           );
           item.resourceUri = vscode.Uri.file(fullPath);
           item.tooltip = fullPath;
@@ -326,19 +336,25 @@ async function scanOtherDirectoryRecursively(
       } else if (entry.isFile()) {
         // Show files based on context
         const shouldInclude =
-          (contextValue === "views" && (entry.name.endsWith(".gsp") || entry.name.endsWith(".html"))) ||
+          (contextValue === "views" &&
+            (entry.name.endsWith(".gsp") || entry.name.endsWith(".html"))) ||
           (contextValue === "conf" &&
             (entry.name.endsWith(".groovy") ||
               entry.name.endsWith(".yml") ||
               entry.name.endsWith(".properties"))) ||
           (contextValue === "taglib" && entry.name.endsWith(".groovy")) ||
-          (contextValue === "utils" && (entry.name.endsWith(".groovy") || entry.name.endsWith(".java")));
+          (contextValue === "utils" &&
+            (entry.name.endsWith(".groovy") || entry.name.endsWith(".java")));
 
         if (shouldInclude) {
           const relativePath = path.relative(baseDir, fullPath);
           const displayName = relativePath.replace(/\\/g, "/");
 
-          const item = new GrailsItem(displayName, vscode.TreeItemCollapsibleState.None, contextValue);
+          const item = new GrailsItem(
+            displayName,
+            vscode.TreeItemCollapsibleState.None,
+            contextValue
+          );
           item.resourceUri = vscode.Uri.file(fullPath);
           item.command = {
             command: "vscode.open",

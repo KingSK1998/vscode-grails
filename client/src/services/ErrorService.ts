@@ -1,6 +1,6 @@
 import { window } from "vscode";
 import { StatusBarService } from "./StatusBarService";
-import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/constants";
+import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/Constants";
 import { formatTemplate } from "../utils/TemplateUtils";
 
 interface ErrorDetails {

@@ -2,7 +2,7 @@ import { ExtensionContext, ProgressLocation, window } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { getClientOptions } from "./clientOptions";
 import { getServerOptions } from "./serverOptions";
-import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/constants";
+import { ErrorSeverity, GrailsMessage, ModuleType } from "../utils/Constants";
 import { StatusBarService } from "../services/StatusBarService";
 import { ErrorService } from "../services/ErrorService";
 

@@ -1,6 +1,14 @@
 // Grails-specific commands
 
-import { ExtensionContext, Terminal, commands, window, workspace, ConfigurationTarget, Uri } from "vscode";
+import {
+  ExtensionContext,
+  Terminal,
+  commands,
+  window,
+  workspace,
+  ConfigurationTarget,
+  Uri,
+} from "vscode";
 import { GrailsConfig } from "../config/GrailsConfig";
 import { GradleService } from "../services/gradleService";
 import * as fs from "fs";
@@ -99,12 +107,12 @@ export class GrailsCommands {
         }
         if (changed) {
           window.showInformationMessage(
-            "Grails workspace setup: Emmet for GSP, run/debug config, and extension recommendations applied.",
+            "Grails workspace setup: Emmet for GSP, run/debug config, and extension recommendations applied."
           );
         } else {
           window.showInformationMessage("Grails workspace already configured.");
         }
-      }),
+      })
     );
   }
 
@@ -115,7 +123,7 @@ export class GrailsCommands {
       const action = await window.showErrorMessage(
         `Grails configuration error: ${configError}`,
         "Open Settings",
-        "Set GRAILS_HOME",
+        "Set GRAILS_HOME"
       );
 
       if (action === "Open Settings") {
@@ -205,7 +213,7 @@ export class GrailsCommands {
     const name = await window.showInputBox({
       prompt: `Enter ${selectedType.label} name`,
       placeHolder: `e.g., Book${selectedType.label}`,
-      validateInput: (value) => {
+      validateInput: value => {
         if (!value || value.trim().length === 0) {
           return "Name cannot be empty";
         }
@@ -222,7 +230,7 @@ export class GrailsCommands {
     const packageName = await window.showInputBox({
       prompt: `Enter package name (optional)`,
       placeHolder: "com.example.myapp",
-      validateInput: (value) => {
+      validateInput: value => {
         if (value && value.trim().length > 0) {
           if (!/^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$/.test(value.trim())) {
             return "Package name must be lowercase and follow Java package naming conventions";
@@ -263,14 +271,14 @@ export class GrailsCommands {
       `• **Is Grails Project:** ${config.isGrailsProject ? "✅" : "❌"}`,
       ``,
       `**Available Grails Projects:**`,
-      ...GrailsConfig.getGrailsProjects().map((project) => `• ${project}`),
+      ...GrailsConfig.getGrailsProjects().map(project => `• ${project}`),
     ].join("\n");
 
     const panel = window.createWebviewPanel(
       "grailsConfig",
       "Grails Configuration",
       window.activeTextEditor?.viewColumn || 1,
-      {},
+      {}
     );
 
     panel.webview.html = `
@@ -325,9 +333,13 @@ export class GrailsCommands {
 
     // Run basic Gradle diagnostics
     const hasWrapper = fs.existsSync(
-      path.join(projectRoot, process.platform === "win32" ? "gradlew.bat" : "gradlew"),
+      path.join(projectRoot, process.platform === "win32" ? "gradlew.bat" : "gradlew")
     );
-    const gradleCmd = hasWrapper ? (process.platform === "win32" ? "gradlew.bat" : "./gradlew") : "gradle";
+    const gradleCmd = hasWrapper
+      ? process.platform === "win32"
+        ? "gradlew.bat"
+        : "./gradlew"
+      : "gradle";
 
     // Run diagnostic commands
     diagnosticTerminal.sendText(`echo "=== Gradle Diagnostics for Grails Project ==="`);
@@ -351,7 +363,9 @@ export class GrailsCommands {
     diagnosticTerminal.sendText(`echo ""`);
 
     diagnosticTerminal.sendText(`echo "=== Diagnostics Complete ==="`);
-    diagnosticTerminal.sendText(`echo "If you see errors above, those are likely causing LSP issues."`);
+    diagnosticTerminal.sendText(
+      `echo "If you see errors above, those are likely causing LSP issues."`
+    );
     diagnosticTerminal.sendText(`echo "Common fixes:"`);
     diagnosticTerminal.sendText(`echo "- Run 'gradle clean' to clear build cache"`);
     diagnosticTerminal.sendText(`echo "- Check internet connection for dependency downloads"`);
@@ -366,7 +380,7 @@ export function registerCommands(
   context: ExtensionContext,
   gradleService: GradleService,
   projectRoot: string,
-  gradleAvailable: boolean = false,
+  gradleAvailable: boolean = false
 ) {
   // Register enhanced Gradle integration if available
   if (gradleAvailable) {
@@ -390,7 +404,7 @@ export function registerCommands(
         } catch (error) {
           window.showErrorMessage(`Gradle sync failed: ${error}`);
         }
-      }),
+      })
     );
   }
 }

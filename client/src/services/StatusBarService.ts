@@ -1,6 +1,6 @@
-import { ModuleType } from "../utils/constants";
+import { ModuleType } from "../utils/Constants";
 import { ExtensionContext, StatusBarAlignment, StatusBarItem, window } from "vscode";
-import { GrailsMessage, StatusBarIcon, StatusText } from "../utils/constants";
+import { GrailsMessage, StatusBarIcon, StatusText } from "../utils/Constants";
 
 /**
  * Service to manage the status bar.

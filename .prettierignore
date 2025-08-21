@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+client/node_modules
+
+# Build outputs
+client/out/
+client/dist/
+server/build/
+server/.gradle/
+server/bin
+
+# VS Code Extension
+*.vsix
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode-test/
+.idea/
+
+# Java/Gradle
+*.jar
+*.class

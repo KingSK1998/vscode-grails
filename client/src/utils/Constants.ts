@@ -235,3 +235,77 @@ export const GRAILS_TREE_CONTEXTS = {
 } as const;
 
 export type GrailsTreeContext = (typeof GRAILS_TREE_CONTEXTS)[keyof typeof GRAILS_TREE_CONTEXTS];
+
+export type ProjectType = "grails" | "groovy" | "gradle" | "none";
+
+export const GRAILS_ITEM_TO_ICONS_MAP = {
+  /* ===============================
+   * 📂 Folders
+   * =============================== */
+  CONTROLLER_FOLDER: "file-submodule",
+  SERVICE_FOLDER: "wrench-screwdriver",
+  DOMAIN_FOLDER: "database",
+  VIEW_FOLDER: "layout-panel-left",
+  TAGLIB_FOLDER: "code",
+  CONF_FOLDER: "settings-gear",
+  ASSETS_FOLDER: "package",
+  ASSETS_IMAGES_FOLDER: "image",
+  ASSETS_CSS_FOLDER: "file-code",
+  ASSETS_JAVASCRIPT_FOLDER: "file-terminal",
+  ASSETS_MISCELLANEOUS_FOLDER: "files",
+  RESOURCES_FOLDER: "folder-kanban",
+  I18N_FOLDER: "languages",
+  INIT_FOLDER: "rocket",
+  GROOVY_SRC_FOLDER: "braces",
+  UNIT_TESTS_FOLDER: "beaker",
+  INTEGRATION_TESTS_FOLDER: "flask-conical",
+
+  /* ===============================
+   * 📄 Files
+   * =============================== */
+  APPLICATION: "play-circle",
+  BOOTSTRAP: "gear",
+  CONFIG: "settings",
+  CONTROLLER: "circuit-board",
+  SERVICE: "tool",
+  TAGLIB: "puzzle",
+  DOMAIN: "database",
+  GSP: "file-badge",
+  TEST: "beaker",
+  GROOVY: "file-code",
+
+  /* ===============================
+   * 🛠 Optional / Advanced Files
+   * =============================== */
+  CSS: "file-css",
+  JAVASCRIPT: "file-js",
+  IMAGES: "image",
+  SPRING_RESOURCES: "leaf",
+  APPLICATION_YML: "file-badge",
+  LOG_XML: "file-bar-chart",
+  PROPERTIES: "file-text",
+};
+
+export const GRAILS_SEMANTIC_ICONS = {
+  /* ===============================
+   * 🌱 Dependency Injection / Beans
+   * =============================== */
+  INJECTED_SERVICE: "leaf", // e.g. def bookService, @Autowired BookService
+  SPRING_BEAN: "leaf", // Spring-managed beans
+  GRAILS_BEAN: "leaf", // Grails artefact injections
+
+  /* ===============================
+   * ⚡ Controller & Actions
+   * =============================== */
+  CONTROLLER_ACTION: "zap", // Any closure/action in a Controller
+  REST_ENDPOINT: "cloud", // Actions with @GetMapping, @PostMapping, etc.
+  INTERCEPTOR: "shield", // before/after/interceptor blocks
+
+  /* ===============================
+   * 🎬 Lifecycle / Events
+   * =============================== */
+  BOOTSTRAP_INIT: "rocket", // BootStrap.init, Application.groovy main
+  DOMAIN_CONSTRAINTS: "ruler", // static constraints
+  DOMAIN_MAPPING: "map", // static mapping
+  ASYNC_TASK: "timer", // runAsync, @Async methods
+};

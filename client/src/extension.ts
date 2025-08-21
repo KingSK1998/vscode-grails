@@ -5,7 +5,7 @@ import { LanguageClient } from "vscode-languageclient/node";
 import { ErrorService } from "./services/ErrorService";
 import { GradleService } from "./services/gradleService";
 import { StatusBarService } from "./services/StatusBarService";
-import { GrailsMessage, ErrorSeverity, ModuleType } from "./utils/constants";
+import { GrailsMessage, ErrorSeverity, ModuleType } from "./utils/Constants";
 import { LanguageServerManager } from "./language/grails-language-client";
 import { registerCommands } from "./commands/grails-commands";
 import { GrailsTreeDataProvider } from "./views/grails-tree-view";
@@ -69,7 +69,7 @@ export async function activate(context: vscode.ExtensionContext) {
     } catch (error) {
       console.log("⚠️ No workspace folder found, extension activated in limited mode");
       vscode.window.showInformationMessage(
-        "🎉 Grails Framework Support is active! (Limited mode - no workspace)",
+        "🎉 Grails Framework Support is active! (Limited mode - no workspace)"
       );
       return; // Exit early if no workspace
     }
@@ -89,7 +89,10 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     } catch (error) {
       console.log("⚠️ Gradle unavailable - this will affect LSP compilation:", error);
-      statusBar.warning(ModuleType.GRADLE, "Gradle issues detected - LSP may have limited functionality");
+      statusBar.warning(
+        ModuleType.GRADLE,
+        "Gradle issues detected - LSP may have limited functionality"
+      );
       console.log("🔄 Starting LSP anyway - it may work with cached data or in fallback mode");
     }
 
@@ -103,7 +106,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
       if (client) {
         console.log("✅ Language Server started successfully");
-        await initializeExtensionFeatures(context, client, gradleApi, workspaceRoot, isGradleAvailable);
+        await initializeExtensionFeatures(
+          context,
+          client,
+          gradleApi,
+          workspaceRoot,
+          isGradleAvailable
+        );
       } else {
         console.log("⚠️ Language Server failed to start");
         await handleLSPStartupFailure(context, isGradleAvailable);
@@ -214,7 +223,7 @@ async function initializeExtensionFeatures(
   languageClient: LanguageClient,
   gradleService: GradleService,
   projectRoot: string,
-  gradleAvailable: boolean,
+  gradleAvailable: boolean
 ): Promise<void> {
   try {
     // Register workspace configuration handlers with Gradle status
@@ -236,7 +245,10 @@ async function initializeExtensionFeatures(
 // ========================================
 // SERVER RESTART COMMAND
 // ========================================
-function registerServerRestartCommand(context: vscode.ExtensionContext, isGradleAvailable: boolean): void {
+function registerServerRestartCommand(
+  context: vscode.ExtensionContext,
+  isGradleAvailable: boolean
+): void {
   const restartCommand = vscode.commands.registerCommand("grails.restartServer", async () => {
     try {
       console.log("🔄 Restarting Language Server...");
@@ -276,7 +288,7 @@ function registerServerRestartCommand(context: vscode.ExtensionContext, isGradle
 export function registerWorkspaceEventListeners(
   context: vscode.ExtensionContext,
   client: LanguageClient,
-  isGradleAvailable: boolean,
+  isGradleAvailable: boolean
 ): void {
   console.log("📡 Registering workspace event listeners...");
   // Always listen for configuration changes
@@ -315,7 +327,7 @@ export function registerWorkspaceEventListeners(
 // ========================================
 async function handleLSPStartupFailure(
   context: vscode.ExtensionContext,
-  isGradleAvailable: boolean,
+  isGradleAvailable: boolean
 ): Promise<void> {
   if (!isGradleAvailable) {
     // LSP failed and Gradle unavailable - likely build issues
@@ -325,7 +337,7 @@ async function handleLSPStartupFailure(
       "Grails Language Server failed to start. This is often due to Gradle build issues.",
       "Check Gradle Problems",
       "View Output",
-      "Retry",
+      "Retry"
     );
 
     if (action === "Check Gradle Problems") {
@@ -343,7 +355,7 @@ async function handleLSPStartupFailure(
             client,
             gradleApi,
             projectFolder.uri.fsPath,
-            isGradleAvailable,
+            isGradleAvailable
           );
         }
       }
@@ -370,7 +382,11 @@ function isValidGradleProject(folderPath: string): boolean {
   return fs.existsSync(path.join(folderPath, "build.gradle"));
 }
 
-function getWelcomeMessage(hasGradleFile: boolean, isGradleAvailable: boolean, lspRunning: boolean): string {
+function getWelcomeMessage(
+  hasGradleFile: boolean,
+  isGradleAvailable: boolean,
+  lspRunning: boolean
+): string {
   if (hasGradleFile && isGradleAvailable && lspRunning) {
     return "🎉 Grails Framework Support is fully active! All features enabled.";
   } else if (hasGradleFile && isGradleAvailable) {

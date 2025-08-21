@@ -1,8 +1,11 @@
 import { ThemeColor, ThemeIcon } from "vscode";
-import { GrailsArtifactType } from "../utils/constants";
+import { GrailsArtifactType } from "../utils/Constants";
 
 export class GrailsIconProvider {
-  private static readonly ARTIFACT_ICONS: Record<GrailsArtifactType, { icon: string; color: string }> = {
+  private static readonly ARTIFACT_ICONS: Record<
+    GrailsArtifactType,
+    { icon: string; color: string }
+  > = {
     [GrailsArtifactType.CONTROLLER]: { icon: "rocket", color: "charts.green" },
     [GrailsArtifactType.SERVICE]: { icon: "gear", color: "charts.blue" },
     [GrailsArtifactType.DOMAIN]: { icon: "database", color: "charts.purple" },
@@ -33,7 +36,8 @@ export class GrailsIconProvider {
   };
 
   private static readonly ARTIFACT_TOOLTIPS: Record<GrailsArtifactType, string> = {
-    [GrailsArtifactType.CONTROLLER]: "🚀 Grails Controller - Handles HTTP requests and user interactions",
+    [GrailsArtifactType.CONTROLLER]:
+      "🚀 Grails Controller - Handles HTTP requests and user interactions",
     [GrailsArtifactType.SERVICE]: "⚙️ Grails Service - Business logic and transactional operations",
     [GrailsArtifactType.DOMAIN]: "🗄️ GORM Domain Class - Data model with database mapping",
     [GrailsArtifactType.VIEW]: "📄 GSP View - Groovy Server Pages for presentation layer",
@@ -84,7 +88,9 @@ export class GrailsIconProvider {
   // Helper method for string-based type
   static getIconFromString(typeString: string): ThemeIcon {
     // Validate if string is a valid GrailsArtifactType
-    const type = Object.values(GrailsArtifactType).find((t) => t === typeString) as GrailsArtifactType;
+    const type = Object.values(GrailsArtifactType).find(
+      t => t === typeString
+    ) as GrailsArtifactType;
 
     if (type) {
       return this.getArtifactIcon(type);
@@ -96,7 +102,9 @@ export class GrailsIconProvider {
   }
 
   static getTooltipFromString(typeString: string): string {
-    const type = Object.values(GrailsArtifactType).find((t) => t === typeString) as GrailsArtifactType;
+    const type = Object.values(GrailsArtifactType).find(
+      t => t === typeString
+    ) as GrailsArtifactType;
 
     if (type) {
       return this.getArtifactTooltip(type);
@@ -137,8 +145,8 @@ export class GrailsIconProvider {
     const iconKeys = Object.keys(this.ARTIFACT_ICONS);
     const tooltipKeys = Object.keys(this.ARTIFACT_TOOLTIPS);
 
-    const missingIcons = enumValues.filter((value) => !iconKeys.includes(value));
-    const missingTooltips = enumValues.filter((value) => !tooltipKeys.includes(value));
+    const missingIcons = enumValues.filter(value => !iconKeys.includes(value));
+    const missingTooltips = enumValues.filter(value => !tooltipKeys.includes(value));
 
     if (missingIcons.length > 0) {
       console.error(`Missing icon mappings for: ${missingIcons.join(", ")}`);

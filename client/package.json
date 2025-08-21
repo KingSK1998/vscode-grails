@@ -277,9 +277,12 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "eslint ./src --ext .ts",
+    "lint:fix": "eslint ./src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
+    "clean": "rimraf out",
+    "dev": "npm run watch"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -290,9 +293,12 @@
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "chai": "^5.2.1",
-    "eslint": "^9.31.0",
+    "eslint-plugin-import": "^2.32.0",
     "mocha": "^11.7.1",
-    "typescript": "^5.8.3"
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "eslint": "^9.33.0",
+    "prettier": "^3.6.2"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

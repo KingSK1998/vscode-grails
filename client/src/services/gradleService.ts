@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as util from "util";
 import { ErrorService } from "./ErrorService";
-import { ErrorSeverity, GRADLE_EXTENSION_ID, GrailsMessage, ModuleType } from "../utils/constants";
+import { ErrorSeverity, GRADLE_EXTENSION_ID, GrailsMessage, ModuleType } from "../utils/Constants";
 import { StatusBarService } from "./StatusBarService";
 import { Api, GradleTaskResult } from "./gradleApiInterfaces/GradleApiInterface";
 

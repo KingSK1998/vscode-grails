@@ -1,6 +1,23 @@
 {
-  "java.configuration.updateBuildConfiguration": "automatic",
-  "java.compile.nullAnalysis.mode": "automatic",
   "editor.formatOnSave": true,
-  "files.autoSave": "afterDelay"
+  "files.autoSave": "afterDelay",
+
+  // Typescript-focused settings
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  "eslint.useFlatConfig": true,
+  "eslint.format.enable": false,
+  "eslint.validate": ["typescript"],
+
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "chat.mcp.serverSampling": {
+    "vscode-grails/.vscode/mcp.json: perplexity": {
+      "allowedModels": ["copilot/gpt-5-mini"]
+    }
+  }
 }
