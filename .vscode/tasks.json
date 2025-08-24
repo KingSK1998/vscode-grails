@@ -1,0 +1,50 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compile",
+      "type": "npm",
+      "script": "compile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$tsc",
+      "detail": "Compile TypeScript using tsc"
+    },
+    {
+      "label": "watch",
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "detail": "Watch and recompile TypeScript files"
+    },
+    {
+      "label": "bundle",
+      "type": "npm",
+      "script": "bundle",
+      "group": "build",
+      "detail": "Bundle extension with esbuild for publishing"
+    },
+    {
+      "label": "bundle:watch",
+      "type": "npm",
+      "script": "bundle:watch",
+      "isBackground": true,
+      "detail": "Watch and bundle extension with esbuild"
+    },
+    {
+      "label": "build-server",
+      "type": "npm",
+      "script": "build-server",
+      "detail": "Build Grails backend with Gradle"
+    },
+    {
+      "label": "copy-server",
+      "type": "npm",
+      "script": "copy-server",
+      "detail": "Copy built server.jar into client folder"
+    }
+  ]
+}

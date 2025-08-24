@@ -5,56 +5,70 @@ export const EXTENSION_IDS = {
   GRADLE: "vscjava.vscode-gradle",
 } as const;
 
+export const EXTENSION_ID = "kingsk1998.vscode-grails";
+export const EXTENSION_NAME = "vscode-grails";
+
 // -------- Status and Operation Messages --------
-export enum GrailsMessage {
-  EXTENSION_STARTUP = "Starting Grails Extension...",
-  EXTENSION_READY = "Grails Extension is ready.",
-  EXTENSION_SYNCING = "Syncing Grails project...",
-  EXTENSION_SYNC_FAILED = "Failed to sync Grails project.",
-  // Server Lifecycle
-  SERVER_STARTUP = "Starting Grails Language Server...",
-  SERVER_STARTED = "Grails Language Server started successfully.",
-  SERVER_START_FAILED = "Failed to start Grails Language Server.",
-  SERVER_STOPPED = "Grails Language Server stopped.",
-  SERVER_STOPPED_SUCCESS = "Grails Language Server stopped successfully.",
-  SERVER_STOPPED_FAILED = "Failed to stop Grails Language Server.",
-  SERVER_RESTARTED = "Grails Language Server restarted successfully.",
-  SERVER_RESTART_FAILED = "Failed to restart Grails Language Server.",
-  SERVER_NOT_RUNNING = "Grails Language Server: Not Running",
-  // Error States (templated)
-  SERVER_ERROR = "Grails Server Error: {0}",
-  CLIENT_ERROR = "Grails Client Error: {0}",
-  GRADLE_ERROR = "Gradle Error: {0}",
-  LANGUAGE_SERVER_ERROR = "Language Server Error: {0}",
-  // Project Messages
-  INVALID_PROJECT = "Not a valid Groovy or Grails project",
-  // Gradle Messages
-  GRADLE_SYNC_START = "Syncing Gradle project...",
-  GRADLE_SYNC_PROGRESS = "Gradle sync in progress...",
-  GRADLE_SYNC_COMPLETE = "Gradle sync completed",
-  GRADLE_SYNC_FAILED = "Gradle sync failed",
-  // Gradle API
-  GRADLE_API_INITIALIZING = "Initializing Gradle API...",
-  GRADLE_API_INITIALIZED = "Gradle API initialized successfully",
-  GRADLE_API_INIT_FAILED = "Failed to initialize Gradle API",
-  GRADLE_EXTENSION_MISSING = "Gradle extension not found. Please install it.",
-  // Gradle Task
-  GRADLE_TASK_NOT_FOUND = "Gradle task not found: {0}",
-  GRADLE_TASK_STARTED = "Running Gradle task: {0}",
-  GRADLE_TASK_COMPLETED = "Gradle task completed: {0}",
-  GRADLE_TASK_CANCELED = "Gradle task canceled: {0}",
-  GRADLE_TASK_CANCEL_FAILED = "Failed to cancel Gradle task: {0}",
-  GRADLE_TASK_PROVIDER_MISSING = "Gradle Task Provider not available.",
-  GRADLE_TASKS_LOADED = "Gradle tasks loaded.",
-  GRADLE_TASK_RUNNING = "Running Gradle task: {0}",
-  GRADLE_TASK_SUCCESS = 'Gradle task "{0}" completed successfully',
-  GRADLE_TASK_FAILED = 'Failed to run Gradle task "{0}"',
-  GRADLE_API_INIT_SUCCESS = "Gradle API initialized successfully.",
-  GRADLE_API_NOT_AVAILABLE = "Gradle API is not available. Please check the extension.",
-  GRADLE_API_ACTIVATION_FAILED = "Unable to activate the Gradle extension.",
-  GRADLE_SYNC_PROGRESS_TITLE = "Waiting for Gradle to finish project sync...",
-  EMPTY = "",
-}
+export const Messages = {
+  EXTENSION_STARTUP: "Starting Grails Extension...",
+  EXTENSION_INTIALIZING: "Initializing Grails extension...",
+  EXTENSION_READY: "Grails Extension is ready.",
+  EXTENSION_SYNCING: "Syncing Grails project...",
+  EXTENSION_SYNC_FAILED: "Failed to sync Grails project.",
+
+  /* ─── Server lifecycle ─────────────────────── */
+  SERVER_STARTING: "Starting Grails Language Server...",
+  SERVER_STARTED: "Grails Language Server started.",
+  SERVER_START_FAILED: "Failed to start Grails Language Server.",
+  SERVER_STOPPED: "Grails Language Server stopped.",
+  SERVER_STOPPED_SUCCESS: "Grails Language Server stopped successfully.",
+  SERVER_STOPPED_FAILED: "Failed to stop Grails Language Server.",
+  SERVER_RESTARTED: "Grails Language Server restarted successfully.",
+  SERVER_RESTART_FAILED: "Failed to restart Grails Language Server.",
+  SERVER_NOT_RUNNING: "Grails Language Server: Not Running",
+
+  /* ─── Error templates ──────────────────────── */
+  SERVER_ERROR: "Grails Server Error: {0}",
+  CLIENT_ERROR: "Grails Client Error: {0}",
+  GRADLE_ERROR: "Gradle Error: {0}",
+  LANGUAGE_SERVER_ERROR: "Language Server Error: {0}",
+
+  /* ─── Project ──────────────────────────────── */
+  INVALID_PROJECT: "Not a valid Groovy or Grails project",
+
+  /* ─── Gradle-project sync ──────────────────── */
+  GRADLE_SYNC_START: "Syncing Gradle project...",
+  GRADLE_SYNC_PROGRESS: "Gradle sync in progress...",
+  GRADLE_SYNC_COMPLETE: "Gradle sync completed",
+  GRADLE_SYNC_FAILED: "Failed to sync with Gradle",
+  GRADLE_SYNC_PROJECTS: "Synchronizing Gradle projects",
+
+  /* ─── Gradle API / extension ───────────────── */
+  GRADLE_ACTIVATING: "Activating Gradle extension...",
+  GRADLE_INITIALIZING: "Initializing Gradle API...",
+  GRADLE_API_INITIALIZED: "Gradle API initialized successfully",
+  GRADLE_API_INIT_FAILED: "Failed to initialize Gradle API",
+  GRADLE_NOT_AVAILABLE: "Gradle API is not available. Please check the extension.",
+  GRADLE_API_ACTIVATION_FAILED: "Unable to activate the Gradle extension.",
+  GRADLE_API_INIT_SUCCESS: "Gradle API initialized successfully.",
+  GRADLE_EXTENSION_MISSING:
+    "Gradle extension not found. Please install 'Gradle for Java' extension.",
+
+  /* ─── Gradle tasks ─────────────────────────── */
+  GRADLE_TASK_NOT_FOUND: "Gradle task not found: {0}",
+  GRADLE_TASK_STARTED: "Running Gradle task: {0}",
+  GRADLE_TASK_COMPLETED: "Gradle task completed: {0}",
+  GRADLE_TASK_CANCELED: "Gradle task canceled: {0}",
+  GRADLE_TASK_CANCEL_FAILED: "Failed to cancel Gradle task: {0}",
+  GRADLE_TASK_PROVIDER_NOT_AVAILABLE: "Gradle Task Provider not available.",
+  GRADLE_TASKS_LOADED: "Gradle tasks loaded.",
+  GRADLE_TASK_RUNNING: "Running Gradle task: {0}",
+  GRADLE_TASK_SUCCESS: 'Gradle task "{0}" completed successfully',
+  GRADLE_TASK_FAILED: 'Failed to run Gradle task "{0}"',
+} as const;
+
+/** Union of all message keys, useful for type-safe utilities */
+export type MessageKey = keyof typeof Messages;
 
 // -------- Short Status Labels --------
 export enum StatusText {
@@ -85,14 +99,6 @@ export enum StatusBarIcon {
   DEBUG = "$(debug)",
   TERMINAL = "$(terminal)",
   EMPTY = "",
-}
-
-// -------- Error Severity --------
-export enum ErrorSeverity {
-  INFO = "INFO", // Informational messages
-  WARNING = "WARNING", // Warnings that don't prevent operation
-  ERROR = "ERROR", // Errors that affect functionality
-  FATAL = "FATAL", // Critical errors that prevent operation
 }
 
 // -------- Common File Paths --------
@@ -142,12 +148,16 @@ export enum ProgressPhase {
 
 // -------- Grails Module Types --------
 export enum ModuleType {
-  GRADLE = "Gradle",
-  SERVER = "Server",
+  EXTENSION = "extension",
+  GRADLE_SERVICE = "gradle.service",
+  PROJECT_SERVICE = "project.service",
+  LANGUAGE_SERVER = "language.server",
+  ERROR_SERVICE = "error.service",
+  STATUS_BAR = "status.bar",
+  CONFIGURATION = "configuration",
+  // TODO: remove below
   CLIENT = "Client",
   TASK = "Task",
-  PROJECT = "Project",
-  EXTENSION = "GFS",
   UNKNOWN = "Unknown",
   GRAILS_FRAMEWORK_SUPPORT = "Grails Framework Support",
 }

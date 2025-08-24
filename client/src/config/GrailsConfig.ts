@@ -18,14 +18,17 @@ export class GrailsConfig {
 
   /** Returns the configured Grails path, or GRAILS_HOME, or empty string. */
   static getGrailsPath(): string {
-    const configuredPath = workspace.getConfiguration(GRAILS_CONFIG_SECTION).get<string>(GRAILS_PATH_KEY);
+    const configuredPath = workspace
+      .getConfiguration(GRAILS_CONFIG_SECTION)
+      .get<string>(GRAILS_PATH_KEY);
     return configuredPath || process.env.GRAILS_HOME || "";
   }
 
   /** Returns the configured Java Home for Grails, or JAVA_HOME, or undefined. */
   static getJavaHome(): string | undefined {
     return (
-      workspace.getConfiguration(GRAILS_CONFIG_SECTION).get<string>(JAVA_HOME_KEY) || process.env.JAVA_HOME
+      workspace.getConfiguration(GRAILS_CONFIG_SECTION).get<string>(JAVA_HOME_KEY) ||
+      process.env.JAVA_HOME
     );
   }
 
@@ -82,7 +85,7 @@ export class GrailsConfig {
     if (!grailsPath) {
       return "Grails path is not configured. Please set GRAILS_HOME environment variable or configure 'grails.path' setting.";
     }
-    
+
     if (!fs.existsSync(grailsPath)) {
       return `Grails path does not exist: ${grailsPath}`;
     }
@@ -98,10 +101,9 @@ export class GrailsConfig {
     if (javaHome && !fs.existsSync(javaHome)) {
       return `Configured Java Home does not exist: ${javaHome}`;
     }
-    
+
     return undefined;
   }
-
 
   /** Get all Grails-related configuration as an object */
   static getAllConfig() {
@@ -111,7 +113,9 @@ export class GrailsConfig {
       projectRoot: this.getProjectRoot(),
       grailsVersion: this.getGrailsVersion(this.getProjectRoot()),
       isConfigured: this.isGrailsConfigured(),
-      isGrailsProject: this.getProjectRoot() ? this.isGrailsProjectFolder(this.getProjectRoot()!) : false
+      isGrailsProject: this.getProjectRoot()
+        ? this.isGrailsProjectFolder(this.getProjectRoot()!)
+        : false,
     };
   }
 
@@ -119,7 +123,7 @@ export class GrailsConfig {
   static getGrailsProjects(): string[] {
     const folders = workspace.workspaceFolders;
     if (!folders) return [];
-    
+
     return folders
       .map(folder => folder.uri.fsPath)
       .filter(folderPath => this.isGrailsProjectFolder(folderPath));

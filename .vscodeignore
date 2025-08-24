@@ -1,0 +1,56 @@
+# Source files
+client/src/**
+build/**
+scripts/**
+server/src/**
+server/gradle/**
+server/gradlew*
+server/build.gradle
+server/settings.gradle
+
+# Development files
+.vscode/**
+.vscode-test/**
+*.map
+tsconfig*.json
+eslint.config.*
+.prettierrc
+.editorconfig
+
+# Build artifacts
+node_modules/**
+out/**
+src/out/**
+
+# Documentation and development
+docs/**
+CONTRIBUTING.md
+vsc-extension-quickstart.md
+.github/**
+
+# Test files
+**/*.test.ts
+**/test/**
+
+# Logs and temp files
+*.log
+.DS_Store
+Thumbs.db
+
+server
+server/**
+.vscode/**
+**/*.ts
+**/*.map
+.gitignore
+**/tsconfig.json
+**/tsconfig.base.json
+esbuild.js
+contributing.md
+.travis.yml
+client/node_modules/**
+!client/node_modules/vscode-jsonrpc/**
+!client/node_modules/vscode-languageclient/**
+# !client/node_modules/vscode-languageserver-protocol/**
+# !client/node_modules/vscode-languageserver-types/**
+# !client/node_modules/semver/**

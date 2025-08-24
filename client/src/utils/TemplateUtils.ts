@@ -7,7 +7,7 @@
  * @param template - Template string with numbered placeholders
  * @param args - Arguments to replace placeholders with
  * @returns Formatted string with placeholders replaced
- * 
+ *
  * @example
  * formatTemplate("Error in {0}: {1}", "Server", "Connection failed")
  * // Returns: "Error in Server: Connection failed"
@@ -24,7 +24,7 @@ export function formatTemplate(template: string, ...args: string[]): string {
  * @param template - Template string with named placeholders
  * @param params - Object with key-value pairs for replacement
  * @returns Formatted string with placeholders replaced
- * 
+ *
  * @example
  * formatTemplateNamed("Error in {source}: {message}", { source: "Server", message: "Connection failed" })
  * // Returns: "Error in Server: Connection failed"

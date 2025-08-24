@@ -1,22 +1,528 @@
 {
   "name": "vscode-grails",
+  "displayName": "Grails & Groovy Support",
   "description": "Grails Framework Support for Visual Studio Code",
+  "author": "Shivam Kashyap",
+  "license": "MIT",
   "version": "0.0.1",
-  "private": true,
-  "workspaces": [
-    "client"
-  ],
-  "scripts": {
-    "setup": "cd client && npm install && cd ../server && gradlew.bat build -x test",
-    "build": "npm run build:server && npm run build:client",
-    "build:client": "cd client && npm run compile",
-    "build:server": "cd server && gradlew.bat build -x test",
-    "dev:server": "cd server && java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar build/libs/*.jar",
-    "clean": "cd client && (if exist out rmdir /s /q out) && (if exist node_modules\\.cache rmdir /s /q node_modules\\.cache) && cd ../server && gradlew.bat clean",
-    "test": "cd server && gradlew.bat test && cd ../client && npm test"
-  },
+  "publisher": "KingSK1998",
   "repository": {
     "type": "git",
     "url": "https://github.com/KingSK1998/vscode-grails.git"
+  },
+  "bugs": "https://github.com/KingSK1998/vscode-grails/issues",
+  "homepage": "https://github.com/KingSK1998/vscode-grails#readme",
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "multi-root ready",
+    "Grails",
+    "Groovy",
+    "Grails Framework",
+    "Grails Framework Support"
+  ],
+  "engines": {
+    "vscode": "^1.102.0"
+  },
+  "activationEvents": [
+    "workspaceContains:**/build.gradle",
+    "workspaceContains:**/build.gradle.kts",
+    "workspaceContains:**/settings.gradle",
+    "workspaceContains:**/settings.gradle.kts",
+    "workspaceContains:**/gradle.properties",
+    "workspaceContains:**/gradlew",
+    "workspaceContains:**/gradlew.bat",
+    "workspaceContains:**/grails-app",
+    "workspaceContains:**/application.yml",
+    "workspaceContains:**/application.yaml",
+    "workspaceContains:**/application.groovy"
+  ],
+  "main": "./client/out/extension.js",
+  "icon": "./resources/icons/icon.png",
+  "extensionDependencies": [
+    "vscjava.vscode-gradle"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "grails.refreshTree",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showDashboard",
+        "title": "Show Dashboard",
+        "icon": "$(dashboard)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showExtensionInfo",
+        "title": "Show Extension Info",
+        "icon": "$(info)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.refreshProjects",
+        "title": "Refresh Projects",
+        "icon": "$(sync)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showProjectConfig",
+        "title": "Show Project Configuration",
+        "icon": "$(gear)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.runApp",
+        "title": "Run Application",
+        "icon": "$(play)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.testApp",
+        "title": "Run Tests",
+        "icon": "$(beaker)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.buildProject",
+        "title": "Build Project",
+        "icon": "$(tools)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.cleanProject",
+        "title": "Clean Project",
+        "icon": "$(trash)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createController",
+        "title": "Create Controller",
+        "icon": "$(file-add)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createService",
+        "title": "Create Service",
+        "icon": "$(file-add)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createDomain",
+        "title": "Create Domain",
+        "icon": "$(file-add)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.createArtifact",
+        "title": "Create New Artifact",
+        "icon": "$(add)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.restartLanguageServer",
+        "title": "Restart Language Server",
+        "icon": "$(refresh)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.syncGradle",
+        "title": "Sync with Gradle",
+        "icon": "$(sync~spin)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.setupWorkspace",
+        "title": "Setup Workspace",
+        "icon": "$(settings-gear)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.diagnoseIssues",
+        "title": "Diagnose Issues",
+        "icon": "$(search)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.run",
+        "title": "Run Application (Terminal)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.test",
+        "title": "Run Tests (Terminal)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.clean",
+        "title": "Clean (Terminal)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.compile",
+        "title": "Compile (Terminal)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showConfig",
+        "title": "Show Configuration (Legacy)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.openGrailsApp",
+        "title": "Open grails-app Folder",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.diagnoseGradle",
+        "title": "Diagnose Gradle Issues (Legacy)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.runGradleTask",
+        "title": "Run Gradle Task (Legacy)",
+        "category": "Grails"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "grails.refreshTree",
+          "when": "false"
+        },
+        {
+          "command": "grails.runApp",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
+          "command": "grails.testApp",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
+          "command": "grails.buildProject",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
+          "command": "grails.cleanProject",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
+          "command": "grails.createController",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.createService",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.createDomain",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.createArtifact",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.run",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.test",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.clean",
+          "when": "workspaceContains:**/grails-app"
+        },
+        {
+          "command": "grails.compile",
+          "when": "workspaceContains:**/grails-app"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "grails.refreshTree",
+          "when": "view == grailsExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "grails.showDashboard",
+          "when": "view == grailsExplorer",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "grails.runApp",
+          "when": "view == grailsExplorer && viewItem == grailsProject",
+          "group": "1_run@1"
+        },
+        {
+          "command": "grails.testApp",
+          "when": "view == grailsExplorer && viewItem == grailsProject",
+          "group": "1_run@2"
+        },
+        {
+          "command": "grails.buildProject",
+          "when": "view == grailsExplorer && viewItem == grailsProject",
+          "group": "1_run@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "grails.createController",
+          "when": "explorerResourceIsFolder && resourceFilename == controllers",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "grails.createService",
+          "when": "explorerResourceIsFolder && resourceFilename == services",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "grails.createDomain",
+          "when": "explorerResourceIsFolder && resourceFilename == domain",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "grails.createArtifact",
+          "when": "explorerResourceIsFolder && resourcePath =~ /grails-app$/",
+          "group": "2_workspace@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "grails.runApp",
+          "when": "resourceLangId == groovy && resourcePath =~ /.*Controller\\.groovy$/",
+          "group": "1_run@1"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "groovy",
+        "extensions": [
+          ".groovy"
+        ],
+        "configuration": "./resources/language-configurations/groovy-language-configuration.json"
+      },
+      {
+        "id": "gsp",
+        "extensions": [
+          ".gsp"
+        ],
+        "aliases": [
+          "GSP",
+          "Groovy Server Pages"
+        ],
+        "configuration": "./resources/language-configurations/gsp-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "groovy",
+        "scopeName": "source.groovy",
+        "path": "./resources/syntaxes/groovy.tmLanguage.json"
+      },
+      {
+        "language": "gsp",
+        "scopeName": "source.gsp",
+        "path": "./resources/syntaxes/gsp.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Grails",
+      "properties": {
+        "grails.grailsHome": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Grails installation directory (leave empty to use system PATH)",
+          "scope": "machine-overridable"
+        },
+        "grails.javaHome": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Java installation for Grails (leave empty to use JAVA_HOME or system default)",
+          "scope": "machine-overridable"
+        },
+        "grails.server.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start Grails development server when opening a project"
+        },
+        "grails.server.port": {
+          "type": "number",
+          "default": 5007,
+          "description": "Deafult port for Grails development server",
+          "minimum": 1024,
+          "maximum": 65535
+        },
+        "grails.completion.detail": {
+          "type": "string",
+          "enum": [
+            "basic",
+            "standard",
+            "advanced"
+          ],
+          "enumDescriptions": [
+            "Basic completion (faster)",
+            "Standard completion with moderate detail",
+            "Advanced completion with full details (slower)"
+          ],
+          "default": "advanced",
+          "description": "Level of detail in code completion"
+        },
+        "grails.completion.maxItems": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum completion items to show",
+          "minimum": 50,
+          "maximum": 2000
+        },
+        "grails.includeSnippets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include code snippets in completion suggestions"
+        },
+        "grails.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CodeLens annotations (run buttons, references, etc.)"
+        },
+        "grails.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable error and warning diagnostics"
+        },
+        "grails.server.jvmArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "-Xmx1g",
+            "-XX:+UseG1GC"
+          ],
+          "description": "JVM arguments for Grails Language Server",
+          "scope": "machine-overridable"
+        },
+        "grails.languageServer.trace": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Language server communication trace level (for debugging)"
+        },
+        "grails.cache.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable project information caching for faster startup"
+        },
+        "grails.cache.directory": {
+          "type": "string",
+          "default": ".grails-lsp",
+          "description": "Cache directory name (relative to project root)"
+        },
+        "grails.experimental.smartRecompilation": {
+          "type": "boolean",
+          "default": false,
+          "description": "⚠️ EXPERIMENTAL: Smart recompilation on file changes (may be unstable)"
+        },
+        "grails.debug.logLevel": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "warn",
+          "description": "Extension logging level (restart required)"
+        },
+        "grails.server.developmentMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable development mode for Language Server"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "grailsActivityBar",
+          "title": "Grails",
+          "icon": "resources/icons/grails.svg"
+        }
+      ]
+    },
+    "views": {
+      "grailsActivityBar": [
+        {
+          "id": "grailsExplorer",
+          "name": "Project Structure",
+          "icon": "resources/icons/grails.svg"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./resources/snippets/groovy.json"
+      },
+      {
+        "language": "gsp",
+        "path": "./resources/snippets/gsp.json"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm run compile && npm run bundle",
+    "build:server": "cd server && ./gradlew shadowJar && node ../scripts/copy-server.js",
+    "compile": "tsc -p ./tsconfig.json",
+    "bundle": "esbuild client/src/extension.ts --bundle --platform=node --external:vscode --outfile=client/out/extension.js --sourcemap",
+    "watch": "npm-run-all --parallel watch:*",
+    "watch:compile": "npm run compile -- --watch",
+    "watch:bundle": "npm run bundle -- --watch",
+    "check-types": "tsc -p ./tsconfig.json --noEmit",
+    "lint": "eslint client/src --ext ts",
+    "format": "prettier --write \"client/src/**/*.{ts,js,json}\"",
+    "clean": "rimraf client/out dist",
+    "test": "node ./client/out/test/runTest.js",
+    "package": "vsce package --out dist/",
+    "vscode:prepublish": "npm run clean && npm run build",
+    "pretest": "npm run build"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.3.0",
+    "@stylistic/eslint-plugin": "^5.2.3",
+    "typescript-eslint": "^8.39.0",
+    "eslint-plugin-import": "^2.32.0",
+    "chai": "^6.0.1",
+    "mocha": "^11.7.1",
+    "rimraf": "^6.0.1",
+    "eslint": "^9.33.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "npm-run-all": "^4.1.5",
+    "esbuild": "^0.25.0",
+    "@vscode/vsce": "^3.6.0",
+    "@types/vscode": "^1.103.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
   }
 }

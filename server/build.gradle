@@ -2,10 +2,11 @@ plugins {
 	id 'groovy'
 	id 'application'
 	id 'jacoco' // Add JaCoCo plugin for code coverage
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'kingsk.grails.lsp'
-version = '0.3.1-SNAPSHOT'
+version = '0.4.1-SNAPSHOT'
 description = 'An LSP for Groovy on Grails'
 
 java {
@@ -18,19 +19,22 @@ repositories {
 	gradlePluginPortal()
 	mavenLocal()
 
-    // Add Gradle's repository for Tooling API
-    maven {
-        url = 'https://repo.gradle.org/gradle/libs-releases'
-    }
+	// Add Gradle's repository for Tooling API
+	maven { url = 'https://repo.gradle.org/gradle/libs-releases' }
 }
 
 dependencies {
-	implementation "org.apache.groovy:groovy-all:4.0.23"
+	implementation "org.apache.groovy:groovy:4.0.23"
+	implementation "org.apache.groovy:groovy-json:4.0.23"
+
+	// implementation "org.apache.groovy:groovy-all:4.0.23"
 	implementation "com.google.guava:guava:33.3.0-jre"
 
 	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1"
+	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1"
+
 	implementation "org.gradle:gradle-tooling-api:8.12"
-	implementation "org.apache.groovy:groovy-json:4.0.23"
+	// implementation "org.apache.groovy:groovy-json:4.0.23"
 
 	implementation "org.slf4j:slf4j-api:2.0.16"
 	implementation 'ch.qos.logback:logback-classic:1.5.13'
@@ -39,28 +43,34 @@ dependencies {
 	testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
 	testImplementation "junit:junit:4.13.2"
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-
-	// Mockito for mocking (works well with Spock)
 	testImplementation "org.mockito:mockito-core:5.11.0"
 }
 
 application {
-	mainClass = 'kingsk.grails.lsp.GrailsLanguageServer'
+	mainClass = "kingsk.grails.lsp.GrailsLanguageServer"
+}
+
+jar {
+	enabled = false
+}
+
+tasks.named('shadowJar') {
+	archiveClassifier.set('all')
+	// Safe default for service files (SPI). Adjust if needed for specific frameworks.
+	mergeServiceFiles()
+	// After validating functionality, you can try to trim:
+	// minimize()
 }
 
 test {
-	useJUnitPlatform() // Spock 2.3 uses JUnit Platform
-
-	// Spock-optimized test logging
+	useJUnitPlatform()
 	testLogging {
 		events "passed", "skipped", "failed"
-        exceptionFormat = (System.getenv('CI') ? "short" : "full")
+		exceptionFormat = (System.getenv('CI') ? "short" : "full")
 		showStandardStreams = !System.getenv('CI')
 	}
-
 	// Fail the build on test failures
 	ignoreFailures = false
-
 	// Set system properties for tests
 	systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
 
@@ -89,10 +99,10 @@ jacocoTestReport {
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
 			fileTree(dir: it, exclude: [
-					// Exclude generated code
-					"**/generated/**",
-					// Exclude model classes that are mostly data holders
-					"**/model/**"
+				// Exclude generated code
+				"**/generated/**",
+				// Exclude model classes that are mostly data holders
+				"**/model/**"
 			])
 		}))
 	}

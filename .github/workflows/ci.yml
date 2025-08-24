@@ -6,9 +6,23 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Add concurrency control to cancel outdated runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Add timeout to prevent hanging jobs
+    timeout-minutes: 30
+
+    # Restrict permissions following principle of least privilege
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
     strategy:
       matrix:
         java: ["17"]
@@ -26,88 +40,163 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "20.18.1" # Updated to match undici requirements
           cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Make gradlew executable
         working-directory: server
         run: chmod +x gradlew
 
-      # Server - Skip tests but ensure JAR is built (CRITICAL for LSP)
+      # Add Gradle validation
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v3
+
+      # Server build with better error handling
       - name: 🔨 Build server (skip tests)
         working-directory: server
-        run: ./gradlew --no-daemon build -x test
-
-      # Client - ALWAYS blocking (must work or no point in VSIX)
-      - name: 📦 Build client
-        working-directory: client
         run: |
-          npm ci
-          npm run compile
-          npm test --if-present
+          ./gradlew --no-daemon clean build -x test --stacktrace
+          echo "Server build completed"
 
-      # Validate CRITICAL artifacts exist
+      # Install dependencies at root level (since you consolidated)
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      # Build client with proper TypeScript compilation
+      - name: 🏗️ Build client
+        run: |
+          npm run compile
+          npm run bundle
+          echo "Client build completed"
+
+      # Run tests if available
+      - name: 🧪 Run tests
+        run: npm test --if-present
+
+      # Enhanced artifact validation
       - name: 🔍 Validate build artifacts
         run: |
-          echo "Server build status:"
+          echo "=== Server Build Validation ==="
           if ! ls server/build/libs/*.jar 1> /dev/null 2>&1; then
-            echo "❌ CRITICAL: Server JAR not found! Extension will not work."
+            echo "❌ CRITICAL: Server JAR not found!"
             echo "Available files in server/build/:"
-            find server/build/ -name "*.jar" || echo "No JAR files found anywhere"
+            find server/build/ -type f -name "*.jar" || echo "No JAR files found"
             exit 1
           fi
-          echo "✅ Server JAR found: $(ls server/build/libs/*.jar)"
 
-          echo "Client build status:"
-          if [ ! -d "client/out" ]; then
-            echo "❌ Client out directory missing"
+          SERVER_JAR=$(ls server/build/libs/*.jar | head -1)
+          SERVER_SIZE=$(stat -f%z "$SERVER_JAR" 2>/dev/null || stat -c%s "$SERVER_JAR")
+          echo "✅ Server JAR found: $SERVER_JAR (${SERVER_SIZE} bytes)"
+
+          echo "=== Client Build Validation ==="
+          if [ ! -f "client/out/extension.js" ]; then
+            echo "❌ CRITICAL: Client extension.js not found!"
             exit 1
           fi
-          echo "✅ Client compiled successfully"
 
-      # Package - Only with validated artifacts
+          CLIENT_SIZE=$(stat -f%z "client/out/extension.js" 2>/dev/null || stat -c%s "client/out/extension.js")
+          echo "✅ Client compiled: client/out/extension.js (${CLIENT_SIZE} bytes)"
+
+      # Package with better structure
       - name: 🎁 Package VSIX
         if: success()
         run: |
-          # Ensure client/server directory exists
-          mkdir -p client/server
+          # Create server directory structure
+          mkdir -p server/
 
-          # Copy JAR files (we already validated they exist)
-          cp server/build/libs/*.jar client/server/
-          echo "✅ Server JAR copied to client/server/"
+          # Copy server JAR to root server directory (matching your package.json main path)
+          cp server/build/libs/*.jar server/
+          echo "✅ Server JAR copied to server/"
 
-          # List what we're packaging
+          # List packaging contents
           echo "📦 Packaging contents:"
-          echo "Server JAR: $(ls client/server/*.jar)"
+          echo "Server JAR: $(ls server/*.jar)"
           echo "Client files: $(ls client/out/)"
+          echo "Package.json main: $(grep '"main"' package.json)"
 
-          cd client
-          npm install --no-save @vscode/vsce
-          npx vsce package --out ../vscode-grails.vsix
-          echo "✅ VSIX created with complete Language Server"
+          # Package using root directory
+          npm run package
+          echo "✅ VSIX created successfully"
 
-      # Always upload for debugging
-      - name: 📤 Upload artifacts
+      # Upload artifacts with better organization
+      - name: 📤 Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vscode-grails-${{ github.run_number }}
           path: |
-            vscode-grails.vsix
-            server/build/libs/*.jar
+            dist/*.vsix
+            server/*.jar
             client/out/
-            server/build/reports/
+          retention-days: 30
 
-  publish:
-    needs: build
-    if: github.ref == 'refs/heads/main' && success()
+      # Upload test results if they exist
+      - name: 📊 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            server/build/reports/
+            client/coverage/
+          retention-days: 7
+
+  # Security scanning job
+  security:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript, java
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  publish:
+    needs: [build, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      id-token: write # For OIDC if needed
+
+    steps:
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
         with:
           name: vscode-grails-${{ github.run_number }}
+
+      - name: 🔍 Verify VSIX before publish
+        run: |
+          VSIX_FILE=$(find . -name "*.vsix" | head -1)
+          if [ -z "$VSIX_FILE" ]; then
+            echo "❌ No VSIX file found!"
+            find . -type f -name "*.vsix" || echo "No VSIX files in workspace"
+            exit 1
+          fi
+
+          VSIX_SIZE=$(stat -f%z "$VSIX_FILE" 2>/dev/null || stat -c%s "$VSIX_FILE")
+          echo "✅ VSIX found: $VSIX_FILE (${VSIX_SIZE} bytes)"
+
+          # Basic VSIX validation
+          if [ "$VSIX_SIZE" -lt 10000 ]; then
+            echo "❌ VSIX file suspiciously small (< 10KB)"
+            exit 1
+          fi
 
       - name: 🚀 Publish to VS Code Marketplace
         run: |
@@ -117,12 +206,18 @@ jobs:
             exit 0
           fi
 
-          # Verify VSIX exists before publishing
-          if [ ! -f "vscode-grails.vsix" ]; then
-            echo "❌ VSIX file not found! Cannot publish."
-            exit 1
-          fi
+          VSIX_FILE=$(find . -name "*.vsix" | head -1)
+          echo "🚀 Publishing $VSIX_FILE to VS Code Marketplace..."
 
-          echo "🚀 Publishing to VS Code Marketplace..."
-          npx vsce publish --pat "${{ secrets.VSCODE_PAT }}" --packagePath vscode-grails.vsix
+          npx @vscode/vsce publish --pat "${{ secrets.VSCODE_PAT }}" --packagePath "$VSIX_FILE"
           echo "✅ Published successfully to VS Code Marketplace!"
+
+      # Optional: Create GitHub release
+      - name: 🏷️ Create GitHub Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          files: "*.vsix"
+          generate_release_notes: true

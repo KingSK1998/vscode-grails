@@ -305,3 +305,44 @@ Built with ❤️ for the Grails community using:
 **Happy Grails Development!** 🎉
 
 > 💡 **Need help?** Check our [documentation](./docs/) or [open an issue](https://github.com/KingSK1998/vscode-grails/issues/new)
+
+# VS Code Extension + Server
+
+This project contains a VS Code extension (`client`) and a backend server (`server`).  
+The client is built with **TypeScript** and bundled using **esbuild**.  
+The server is built with **Gradle** (producing a `-all.jar`).
+
+---
+
+## 🚀 Commands
+
+### Client (VS Code Extension)
+
+- **`npm run build`** → Type-checks, lints, and compiles the extension with `tsc`.
+- **`npm run watch`** → Recompiles on file changes (use during development).
+- **`npm run lint`** → Runs ESLint checks on `client/src`.
+- **`npm run format`** → Auto-formats code with Prettier.
+
+### Server
+
+- **`npm run build-server`** → Builds the server JAR with Gradle.
+- **`npm run copy-server`** → Builds the server JAR and copies it into the `client/server/` folder.
+
+### Packaging
+
+- **`npm run vscode:prepublish`** → Prepares the extension for publishing (build + copy server).
+- **`npm run test`** → Runs extension tests (compiles first, then executes tests).
+
+---
+
+## 🛠️ Development Workflow
+
+1. Run **`npm run watch`** to keep the client extension rebuilding on changes.
+2. If server code changes, run **`npm run copy-server`** to update the JAR inside the client.
+3. Launch the extension in VS Code (`F5` → "Launch Extension").
+
+---
+
+## 📦 CI/CD
+
+- In CI, use **`npm ci && npm run vscode:prepublish`** to ensure a clean, reproducible build.
