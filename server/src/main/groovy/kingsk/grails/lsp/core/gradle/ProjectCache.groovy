@@ -1,7 +1,9 @@
 package kingsk.grails.lsp.core.gradle
 
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.model.DependencyNode
 import kingsk.grails.lsp.model.GrailsProject
 
 /**
@@ -55,7 +57,8 @@ class ProjectCache {
 
             // 2. JSON side-car for VS Code
             Map dto = toDto(grailsProject, projectDir)
-            new File(cacheDir, PROJECT_JSON_FILE).text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(dto))
+            File cacheDir = new File(projectDir, CACHE_DIR_NAME)
+            new File(cacheDir, PROJECT_JSON_FILE).text = JsonOutput.prettyPrint(JsonOutput.toJson(dto))
 
 			BigDecimal sizeKB = cacheFile.length() / 1024
 			log.info("[GRADLE] Saved project to binary cache: ${grailsProject.name} (${sizeKB}KB, ${grailsProject.dependencies.size()} deps)")
@@ -144,18 +147,23 @@ class ProjectCache {
             grailsVersion : gp.grailsVersion,
             pluginVersion : gp.pluginVersion,
             groovyVersion : gp.groovyVersion,
-            dependencies  : gp.dependencies.collect { DependencyNode d -> d.ga },
+            dependencies  : gp.dependencies.collect { d ->
+                [ group: d.group, name: d.name, version: d.version ]
+            },
             artifactCounts: [
                 controllers: countSources(root, "controllers"),
                 services   : countSources(root, "services"),
-                domain     : countSources(root, "domain")
+                domain     : countSources(root, "domain"),
+                taglib     : countSources(root, "taglib"),
+                conf       : countSources(root, "conf"),
+                jobs       : countSources(root, "jobs")
             ]
         ]
     }
 
     private static int countSources(File root, String dir) {
-        File folder = new File(root, "grails-app/$dir")
-        if (!folder.exists()) return 0
-        return folder.listFiles()?.count { it.name.endsWith(".groovy") } ?: 0
+        return (int) (new File(root, "grails-app/$dir")
+            .listFiles()
+            ?.count { it.isFile() && it.name.endsWith(".groovy") } ?: 0)
     }
 }
