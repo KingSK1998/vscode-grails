@@ -3,12 +3,12 @@ const path = require("path");
 
 async function copyServer() {
   const serverDir = path.join(__dirname, "..", "server", "build", "libs");
-  const targetDir = path.join(__dirname, "..", "client", "lsp");
+  const targetDir = path.join(__dirname, "..", "client", "server");
 
   try {
     // Ensure server directories exists
     if (!fs.existsSync(serverDir)) {
-      console.error('❌ Server build directory not found. Run `npm run build-server` first.');
+      console.error("❌ Server build directory not found. Run `npm run build-server` first.");
       process.exit(1);
     }
 
@@ -22,11 +22,11 @@ async function copyServer() {
     }
 
     const sourcePath = path.join(serverDir, jarFile);
-    const targetPath = path.join(targetDir, "server.jar");
+    const targetPath = path.join(targetDir, jarFile);
 
     // Copy the file
     fs.copyFileSync(sourcePath, targetPath);
-    console.log(`✅ Copied ${jarFile} to client/lsp/server.jar`, targetPath);
+    console.log(`✅ Copied ${jarFile} to client/lsp/${jarFile}`, targetPath);
   } catch (error) {
     console.error("❌ Error copying server JAR file:", error);
     process.exit(1);

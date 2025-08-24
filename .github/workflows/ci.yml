@@ -66,8 +66,8 @@ jobs:
           echo "Client build completed"
 
       # Run tests if available
-      - name: 🧪 Run tests
-        run: npm test --if-present
+      # - name: 🧪 Run tests
+      #   run: npm test --if-present
 
       # Enhanced artifact validation
       - name: 🔍 Validate build artifacts

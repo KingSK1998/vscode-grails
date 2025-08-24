@@ -488,7 +488,7 @@
   "scripts": {
     "build": "npm run build:client && npm run build:server",
     "build:client": "npm run compile && npm run bundle",
-    "build:server": "cd server && ./gradlew shadowJar && node ../scripts/copy-server.js",
+    "build:server": "cd server && gradlew shadowJar && node ../scripts/copy-server.js",
     "compile": "tsc -p ./tsconfig.json",
     "bundle": "esbuild client/src/extension.ts --bundle --platform=node --external:vscode --outfile=client/out/extension.js --sourcemap",
     "watch": "npm-run-all --parallel watch:*",
