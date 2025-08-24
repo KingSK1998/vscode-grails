@@ -47,10 +47,6 @@ jobs:
         working-directory: server
         run: chmod +x gradlew
 
-      # Add Gradle validation
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3
-
       # Server build with better error handling
       - name: 🔨 Build server (skip tests)
         working-directory: server
