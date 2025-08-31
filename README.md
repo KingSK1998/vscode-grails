@@ -2,7 +2,7 @@
 
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/KingSK1998.vscode-grails)](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-grails)
 [![GitHub](https://img.shields.io/github/license/KingSK1998/vscode-grails)](https://github.com/KingSK1998/vscode-grails/blob/main/LICENSE)
-[![Build Status](https://github.com/KingSK1998/vscode-grails/workflows/CI/badge.svg)](https://github.com/KingSK1998/vscode-grails/actions)
+[![Build Status](https://github.com/KingSK1998/vscode-grails/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/KingSK1998/vscode-grails/actions)
 
 A comprehensive VS Code extension that provides full-featured support for **Grails** and **Groovy** development with intelligent Language Server Protocol (LSP) integration.
 
