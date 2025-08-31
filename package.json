@@ -497,9 +497,9 @@
     "check-types": "tsc -p ./tsconfig.json --noEmit",
     "lint": "eslint client/src --ext ts",
     "format": "prettier --write \"client/src/**/*.{ts,js,json}\"",
-    "clean": "rimraf client/out dist",
+    "clean": "rimraf client/out",
     "test": "node ./client/out/test/runTest.js",
-    "package": "vsce package --out dist/",
+    "package": "vsce package --out dist/vscode-grails.vsix",
     "vscode:prepublish": "npm run clean && npm run build",
     "pretest": "npm run build"
   },

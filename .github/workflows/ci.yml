@@ -99,6 +99,7 @@ jobs:
         run: |
           # Create server directory structure
           mkdir -p server/
+          mkdir -p dist/
 
           # Copy server JAR to root server directory (matching your package.json main path)
           cp server/build/libs/*.jar server/
