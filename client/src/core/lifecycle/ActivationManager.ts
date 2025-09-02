@@ -1,11 +1,20 @@
-import { commands, Disposable, ExtensionContext, window, workspace } from "vscode";
+import {
+  commands,
+  Disposable,
+  env,
+  ExtensionContext,
+  extensions,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 import { ServiceContainer } from "../container/ServiceContainer";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import { EventBus } from "../events/EventBus";
 import { EventType, ProjectChangedEvent, ProjectsDiscoveredEvent } from "../events/eventTypes";
-import { GrailsDashboard } from "../../ui/views/GrailsDashboard";
-import { GrailsTreeDataProvider } from "../../ui/providers/TreeDataProvider";
+import { createProjectTreeProvider } from "../../ui/providers/TreeDataProvider";
 import { Commands } from "../../ui/commands/Commands";
+import { IconThemeDetector } from "../../ui/icons/IconThemeDetector";
 
 /**
  * Manages the complete extension activation lifecycle.
@@ -31,7 +40,6 @@ export class ActivationManager implements Disposable {
 
       // Phase 1: Register commands and UI components early
       this.commands.registerAllCommands();
-      this.setupUIComponents();
 
       // Phase 2: Setup event listeners
       this.setupEventListeners();
@@ -41,6 +49,9 @@ export class ActivationManager implements Disposable {
 
       // Phase 4: Health check and final setup
       await this.performHealthCheck();
+
+      // Suggest Material Icon Theme if not installed
+      await this.suggestMaterialThemeIfNeeded();
 
       console.log("✅ Grails Extension activated successfully");
     } catch (error) {
@@ -54,26 +65,19 @@ export class ActivationManager implements Disposable {
   }
 
   /**
-   * Setup UI components like tree view.
+   * Optionally suggest Material Theme installation
    */
-  private setupUIComponents(): void {
-    try {
-      // Create and register tree view
-      const treeProvider = new GrailsTreeDataProvider(this.context);
-      const treeView = window.createTreeView("grailsExplorer", {
-        treeDataProvider: treeProvider,
-        showCollapseAll: true,
-      });
+  private async suggestMaterialThemeIfNeeded(): Promise<void> {
+    const shouldSuggest = workspace
+      .getConfiguration("grails")
+      .get<boolean>("icons.suggestMaterialTheme", true);
 
-      this.context.subscriptions.push(treeView);
-      console.log("✅ Tree view registered successfully");
-    } catch (error) {
-      console.error("❌ Failed to setup UI components:", error);
-      this.container.errorService.handle(
-        `UI setup failed: ${error}`,
-        ErrorSource.Extension,
-        ErrorSeverity.Error
-      );
+    if (shouldSuggest && !IconThemeDetector.isMaterialThemeInstalled()) {
+
+      // Don't block activation, just suggest
+      setTimeout(() => {
+        IconThemeDetector.suggestMaterialTheme();
+      }, 2000); // Delay so it doesn't interfere with startup
     }
   }
 
@@ -100,6 +104,19 @@ export class ActivationManager implements Disposable {
             await this.container.gradleService.sync();
           }
         }
+
+        if (e.affectsConfiguration("workbench.iconTheme")) {
+          console.log("🎨 Icon theme changed - refreshing tree view");
+          this.refreshTreeView();
+        }
+      })
+    );
+
+    this.disposables.push(
+      extensions.onDidChange(() => {
+        IconThemeDetector.resetCache();
+        // Optionally refresh tree view
+        this.refreshTreeView();
       })
     );
 
@@ -123,15 +140,87 @@ export class ActivationManager implements Disposable {
     const eventBus = EventBus.getInstance();
     this.disposables.push(
       eventBus.subscribe<ProjectsDiscoveredEvent>(EventType.PROJECTS_DISCOVERED, event => {
+        console.log(`📂 Projects discovered: ${event.projects.length} projects`);
+
         this.container.statusBarService.info(`Discovered ${event.projects.length} projects`);
+
+        // Create UI components now that projects are available
+        this.setupUIComponents();
       })
     );
 
     this.disposables.push(
       eventBus.subscribe<ProjectChangedEvent>(EventType.PROJECT_CHANGED, event => {
+        console.log(`🔄 Project changed: ${event.project.name}`);
         this.container.statusBarService.info(`Project ${event.project.name} changed`);
+
+        // Potentially recreate UI if project types changed
+        this.recreateUIIfNeeded();
       })
     );
+  }
+
+  private refreshTreeView(): void {
+    // Trigger tree refresh if needed
+    const eventBus = EventBus.getInstance();
+    eventBus?.publish({
+      type: EventType.TREE_REFRESH,
+      timestamp: Date.now(),
+      source: "IconThemeChange",
+    });
+  }
+
+  /**
+   * Setup UI components only if supported projects exist. Called after project discovery.
+   */
+  private setupUIComponents(): void {
+    try {
+      // Create and register tree view
+      const treeProvider = createProjectTreeProvider(this.context);
+      if (!treeProvider) {
+        console.log("❌ No supported projects found in the workspace, skipping UI setup.");
+
+        window
+          .showInformationMessage(
+            "No Grails or Groovy projects found in the workspace.",
+            "Learn More"
+          )
+          .then(selection => {
+            if (selection === "Learn More") {
+              env.openExternal(Uri.parse("https://grails.org"));
+            }
+          });
+
+        return;
+      }
+
+      const treeView = window.createTreeView("grailsExplorer", {
+        treeDataProvider: treeProvider,
+        showCollapseAll: true,
+        canSelectMany: false,
+      });
+
+      this.context.subscriptions.push(treeView);
+      console.log("✅ Tree view registered successfully");
+
+      // Update status bar to show tree view is ready
+      this.container.statusBarService.ready("Project Explorer ready");
+    } catch (error) {
+      console.error("❌ Failed to setup UI components:", error);
+      this.container.errorService.handle(
+        `UI setup failed: ${error}`,
+        ErrorSource.Extension,
+        ErrorSeverity.Error
+      );
+    }
+  }
+
+  /**
+   * Recreate UI if project composition changed (optional)
+   */
+  private recreateUIIfNeeded(): void {
+    // Advanced: If project types changed, recreate tree with different provider
+    // For now, existing tree will auto-refresh via its own event listeners
   }
 
   /**
@@ -207,15 +296,6 @@ export class ActivationManager implements Disposable {
           }
         });
     }
-  }
-
-  /**
-   * Helper to register a command with disposal tracking.
-   */
-  private registerCommand(command: string, callback: (...args: any[]) => any): void {
-    const disposable = commands.registerCommand(command, callback);
-    this.disposables.push(disposable);
-    this.context.subscriptions.push(disposable);
   }
 
   /**

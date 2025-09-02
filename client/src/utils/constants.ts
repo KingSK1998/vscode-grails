@@ -101,18 +101,6 @@ export enum StatusBarIcon {
   EMPTY = "",
 }
 
-// -------- Common File Paths --------
-export const FILE_PATHS = {
-  GRAILS_APP: "grails-app",
-  BUILD_GRADLE: "build.gradle",
-  APPLICATION_YML: "grails-app/conf/application.yml",
-  APPLICATION_GROOVY: "grails-app/conf/application.groovy",
-  CONTROLLERS_DIR: "grails-app/controllers",
-  DOMAIN_DIR: "grails-app/domain",
-  VIEWS_DIR: "grails-app/views",
-  SERVICES_DIR: "grails-app/services",
-} as const;
-
 // File type patterns
 export const FILE_PATTERNS = {
   GROOVY: "**/*.groovy",
@@ -200,40 +188,6 @@ export const Colors = {
   GRAY: "charts.gray",
 } as const;
 
-// -------- Grails Artifact Types --------
-export enum GrailsArtifactType {
-  // Core Artifacts (Primary)
-  CONTROLLER = "controller",
-  SERVICE = "service",
-  DOMAIN = "domain",
-  VIEW = "view",
-  TAGLIB = "taglib",
-
-  // Configuration & Routing
-  CONFIG = "config",
-  URL_MAPPING = "urlmapping",
-  I18N = "i18n",
-
-  // Assets & Resources
-  ASSETS = "assets",
-  RESOURCES = "resources",
-
-  // Application Structure
-  INIT = "init",
-
-  // Development & Testing
-  TESTS = "tests",
-  UNIT_TESTS = "unit-tests",
-  INTEGRATION_TESTS = "integration-tests",
-  GROOVY_SRC = "groovy-src",
-
-  // Groovy Project Types
-  SOURCE_SETS = "sourcesets",
-  DEPENDENCIES = "dependencies",
-  TASKS = "tasks",
-  STRUCTURE = "structure",
-}
-
 // -------- Tree View Contexts --------
 export const GRAILS_TREE_CONTEXTS = {
   CONTROLLERS: "grails-controllers",
@@ -243,10 +197,6 @@ export const GRAILS_TREE_CONTEXTS = {
   TAGLIBS: "grails-taglibs",
   CONFIG: "grails-config",
 } as const;
-
-export type GrailsTreeContext = (typeof GRAILS_TREE_CONTEXTS)[keyof typeof GRAILS_TREE_CONTEXTS];
-
-export type ProjectType = "grails" | "groovy" | "gradle" | "none";
 
 export const GRAILS_ITEM_TO_ICONS_MAP = {
   /* ===============================

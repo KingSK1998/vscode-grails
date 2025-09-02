@@ -18,6 +18,7 @@ export enum EventType {
   LANGUAGE_SERVER_STOPPED = "languageServer.stopped",
   CONFIGURATION_CHANGED = "configuration.changed",
   PROJECT_CHANGED = "project.changed",
+  TREE_REFRESH = "tree.refresh",
 }
 
 export interface ProjectsDiscoveredEvent extends BaseGrailsEvents {
@@ -68,6 +69,10 @@ export interface ArtifactDeletedEvent extends BaseGrailsEvents {
   artifact: string;
 }
 
+export interface TreeRefreshEvent extends BaseGrailsEvents {
+  type: EventType.TREE_REFRESH;
+}
+
 // Create a union type for all events (this is the key!)
 export type GrailsEvent =
   | ProjectsDiscoveredEvent
@@ -78,7 +83,8 @@ export type GrailsEvent =
   | ProjectSyncCompletedEvent
   | ProjectSyncFailedEvent
   | ArtifactCreatedEvent
-  | ArtifactDeletedEvent;
+  | ArtifactDeletedEvent
+  | TreeRefreshEvent;
 
 // Helper type for event handlers
 export type EventHandler<T extends GrailsEvent> = (event: T) => void;

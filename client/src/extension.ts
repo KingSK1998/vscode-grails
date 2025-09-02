@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import { ExtensionContext } from "vscode";
 import { ActivationManager } from "./core/lifecycle/ActivationManager";
 
 let activationManager: ActivationManager | undefined;
@@ -6,12 +6,14 @@ let activationManager: ActivationManager | undefined;
 /**
  * Extension activation entry point.
  */
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
+export async function activate(context: ExtensionContext): Promise<void> {
   console.log("🚀 Grails extension activating...");
 
   try {
     activationManager = new ActivationManager(context);
     await activationManager.activate();
+
+    context.subscriptions.push(activationManager);
     console.log("✅ Grails extension ACTIVATED successfully");
   } catch (error) {
     console.error("❌ Grails extension activation failed:", error);

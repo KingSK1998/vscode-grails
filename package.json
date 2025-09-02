@@ -453,6 +453,11 @@
           "type": "boolean",
           "default": false,
           "description": "Enable development mode for Language Server"
+        },
+        "grails.icons.suggestMaterialTheme": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show suggestion to install Material Icon Theme for better icons"
         }
       }
     },

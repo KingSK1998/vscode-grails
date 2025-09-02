@@ -1,5 +1,120 @@
 # Grails Extension
 
+## ✨ Succinct Thread Summary & Objectives
+
+### Current State
+
+* Large VS Code extension for Grails (TypeScript client, Groovy server) migrated to monorepo, all configs and core code cleaned up.
+* Core services structured as classes (ServiceContainer, ActivationManager, EventBus, etc.), VSCode commands/menus modularized, CI/CD and activation events working and code compiles cross-platform with strict TypeScript settings.
+* All major configuration, packaging, logging, and CI/CD issues have been fixed; focus now moves to further feature development, architecture refactor, or any unresolved bugs.
+
+### 🎯 Key Goals/Next Steps
+
+* Further enhance or extend event-driven architecture (EventBus, event typing, smart service orchestration).
+* Improve/test Grails-specific developer productivity features (artifact creation, diagnostics, project discovery).
+* Refine or extend activation manager lifecycle/event listeners.
+* Add new features, refactors, or integrations as suggested by product/team or to prepare for contributions.
+
+📚 Paste-able Interface (Class + Method Signatures)
+Use this interface/class layout with TSDoc-style function comments for clarity (update or extend as needed for next steps):
+
+```typescript
+/** Manages activation lifecycle and core event linking for the extension. */
+class ActivationManager {
+  /**Activates all core services and registers listeners/commands. */
+  activate(): Promise<void>;
+  /** Disposes all services and disposables for graceful shutdown. */
+  dispose(): void;
+  // --- PRIVATE --- //
+  /**Sets up workspace/config change listeners and internal event subscriptions.*/
+  setupEventListeners(): void;
+  /** Setup UI components like tree view. */
+  setupUIComponents(): void;
+  /** Initialize services in the correct order. */
+  initializeServices(): void;
+  performHealthCheck(): Promise<void>;
+}
+
+/**
+
+* Handles all extension-wide command registration and disposal.
+ */
+class Commands {
+  /**Registers all commands (UI, project, task, artifact, extension management). */
+  registerAllCommands(): void;
+  /** Dispose all registered command handlers. */
+  dispose(): void;
+}
+
+/**
+
+* Manages language server lifecycle tasks.
+ */
+class LanguageServerManager {
+  /**Starts the language server and sets up progress diagnostics. */
+  start(): Promise<LanguageClient | undefined>;
+  /** Stops the language server if running. */
+  stop(): Promise<void>;
+  /**Restarts the language server for new config or errors.*/
+  restart(): Promise<void>;
+  get isRunning(): boolean;
+  get languageClient(): LanguageClient | undefined;
+}
+
+/**
+
+* Provides Gradle project integration, sync, and build commands.
+ */
+class GradleService {
+  /**Synchronizes Gradle projects and notifies listeners. */
+  sync(): Promise<boolean>;
+  /** Runs the Grails application for the active project. */
+  runGrailsApp(project: ProjectInfo): Promise<void>;
+  /**Builds the active Grails project.*/
+  buildProject(project: ProjectInfo): Promise<void>;
+  /** Run any Gradle task using the vscode-gradle API. */
+  async runTask(projectInfo: ProjectInfo, taskName: GrailsTask | string, _args: string[] = []): Promise<boolean>;
+  runGrailsApp(projectInfo: ProjectInfo): Promise<boolean>;
+  testGrailsApp(projectInfo: ProjectInfo): Promise<boolean>;
+  buildProject(projectInfo: ProjectInfo): Promise<boolean>;
+  cleanProject(projectInfo: ProjectInfo): Promise<boolean>;
+  hasGrailsTasks(projectInfo: ProjectInfo): Promise<boolean>;
+  get isReady(): boolean;
+}
+
+/**
+
+* EventBus for strongly-typed, decoupled intra-extension messaging.
+ */
+class EventBus {
+  /**
+  * Subscribe to a GrailsEvent type; callback receives typed event.
+  * @param eventType EventType
+  * @param handler Function to handle event data
+   */
+  subscribe<T extends GrailsEvent>(eventType: T["type"], handler: (event: T) => void): Disposable;
+  /**Publish a new event to all subscribers. */
+  publish<T extends GrailsEvent>(event: T): void;
+  /** Cleans up all listeners. */
+  dispose(): void;
+  /** Clear all listeners (useful for testing). */
+  clearAll(): void;
+  /** Clear all listeners for an event type. */
+  clearEventListeners(eventType: string): void;
+  /** Get number of listeners for an event type (useful for debugging). */
+  getListenerCount(eventType: string): number;
+}
+
+/** Type representing all possible Grails events. */
+type GrailsEvent = ProjectsDiscoveredEvent | ProjectChangedEvent | ... ;
+
+/** Information about loaded projects. */
+interface ProjectInfo { /* ... */ }
+
+/** All getters provide sensible defaults matching package.json. */
+class ConfigurationService { /* ... */ }
+```
+
 ## Client Side
 
 ```plaintext
@@ -132,45 +247,42 @@ Validating Grails project structure
 h. GSP Template Viewer
 Simple previewer for .gsp (Groovy Server Pages) files, possibly as an HTML preview.
 
-
-
-
 ### Key Files Description
 
 #### Core Files
 
-- extension.ts - Main activation point, registers all commands, -providers, and views
-- commands/index.ts - Central command registry that exports all commands for easy management
+* extension.ts - Main activation point, registers all commands, -providers, and views
+* commands/index.ts - Central command registry that exports all commands for easy management
 
 #### Command Handlers
 
-- artifactCommands.ts - Handles "Create Controller", "Create Service", "Create Domain" commands
-- grailsCommands.ts - Grails-specific commands like "Run App", "Clean", "Test"
-- projectCommands.ts - Project initialization and configuration commands
+* artifactCommands.ts - Handles "Create Controller", "Create Service", "Create Domain" commands
+* grailsCommands.ts - Grails-specific commands like "Run App", "Clean", "Test"
+* projectCommands.ts - Project initialization and configuration commands
 
 #### Providers (Tree Views)
 
-- grailsExplorerProvider.ts - Your existing Grails Explorer functionality
-- artifactProvider.ts - Provides structured view of Controllers, Services, Domains
-- testProvider.ts - Test results and test runner integration
+* grailsExplorerProvider.ts - Your existing Grails Explorer functionality
+* artifactProvider.ts - Provides structured view of Controllers, Services, Domains
+* testProvider.ts - Test results and test runner integration
 
 #### Webviews (Rich UI)
 
-- artifactWizard.ts - Multi-step wizard for creating new artifacts with forms
-- welcomePage.ts - Onboarding experience for new users
-- pluginManager.ts - Visual plugin browser and installer
+* artifactWizard.ts - Multi-step wizard for creating new artifacts with forms
+* welcomePage.ts - Onboarding experience for new users
+* pluginManager.ts - Visual plugin browser and installer
 
 #### Services (Business Logic)
 
-- grailsService.ts - Handles Grails CLI integration and command execution
-- gradleService.ts - Integration with your existing Gradle tasks
-- pluginService.ts - Plugin discovery, installation, and management
+* grailsService.ts - Handles Grails CLI integration and command execution
+* gradleService.ts - Integration with your existing Gradle tasks
+* pluginService.ts - Plugin discovery, installation, and management
 
 #### Utilities
 
-- grailsUtils.ts - Project detection, convention helpers
-- templateUtils.ts - Code generation and templating
-- configUtils.ts - VS Code settings and workspace configuration
+* grailsUtils.ts - Project detection, convention helpers
+* templateUtils.ts - Code generation and templating
+* configUtils.ts - VS Code settings and workspace configuration
 
 ## Server Side
 
@@ -303,41 +415,84 @@ grails-groovy-language-server/
 
 #### Core Server Files
 
-- GrailsLanguageServer.groovy - Main LSP server implementation, implements LanguageServer interface
-- GrailsLanguageServerLauncher.groovy - Entry point with main() method, handles CLI arguments and server startup
+* GrailsLanguageServer.groovy - Main LSP server implementation, implements LanguageServer interface
+* GrailsLanguageServerLauncher.groovy - Entry point with main() method, handles CLI arguments and server startup
 
 #### LSP Service Implementation
 
-- GrailsTextDocumentService.groovy - Handles all text document operations (completion, definition, diagnostics)
-- GrailsWorkspaceService.groovy - Handles workspace-level operations and custom commands
-- GrailsLanguageClientService.groovy - Manages client communication and notifications
+* GrailsTextDocumentService.groovy - Handles all text document operations (completion, definition, diagnostics)
+* GrailsWorkspaceService.groovy - Handles workspace-level operations and custom commands
+* GrailsLanguageClientService.groovy - Manages client communication and notifications
 
 #### Custom Protocol Extensions
 
-- GrailsProtocolExtensions.groovy - Defines custom LSP protocol extensions using @JsonRequest and @JsonNotification
-- GrailsCustomCommands.groovy - Custom commands for artifact creation, project operations
-- GrailsNotifications.groovy - Custom notifications for client communication
+* GrailsProtocolExtensions.groovy - Defines custom LSP protocol extensions using @JsonRequest and @JsonNotification
+* GrailsCustomCommands.groovy - Custom commands for artifact creation, project operations
+* GrailsNotifications.groovy - Custom notifications for client communication
 
 #### Project Management
 
-- GrailsProjectManager.groovy - Central project management with caching strategy
-- GrailsProjectBuilder.groovy - Uses Gradle Tooling API for project analysis (your current code)
-- DependencyResolver.groovy - Handles dependency resolution and caching
+* GrailsProjectManager.groovy - Central project management with caching strategy
+* GrailsProjectBuilder.groovy - Uses Gradle Tooling API for project analysis (your current code)
+* DependencyResolver.groovy - Handles dependency resolution and caching
 
 #### Language Features
 
-- GrailsCompletionProvider.groovy - Code completion specific to Grails conventions
-- GrailsDefinitionProvider.groovy - Go-to-definition for Grails artifacts and conventions
-- GrailsDiagnosticsProvider.groovy - Error detection and validation
+* GrailsCompletionProvider.groovy - Code completion specific to Grails conventions
+* GrailsDefinitionProvider.groovy - Go-to-definition for Grails artifacts and conventions
+* GrailsDiagnosticsProvider.groovy - Error detection and validation
 
 #### Build Integration
 
-- GradleProjectAnalyzer.groovy - Your existing Gradle Tooling API integration
-- GradleDependencyExtractor.groovy - Dependency extraction with caching optimization
-- GradleTaskExecutor.groovy - Execute Gradle tasks from language server
+* GradleProjectAnalyzer.groovy - Your existing Gradle Tooling API integration
+* GradleDependencyExtractor.groovy - Dependency extraction with caching optimization
+* GradleTaskExecutor.groovy - Execute Gradle tasks from language server
 
 #### Performance Optimization
 
-- ProjectCache.groovy - Cache project information to avoid repeated Gradle API calls
-- DependencyCache.groovy - Cache dependency resolution results
-- GrailsProjectIndexer.groovy - Index project symbols for fast lookup
+* ProjectCache.groovy - Cache project information to avoid repeated Gradle API calls
+* DependencyCache.groovy - Cache dependency resolution results
+* GrailsProjectIndexer.groovy - Index project symbols for fast lookup
+
+Implementation Priority
+Phase 1: Foundation
+ProjectService - Multi-root detection with strict typing
+
+EventBus - Project change notifications
+
+ServiceContainer - Strongly-typed DI
+
+Phase 2: Adaptive UI
+Adaptive Tree Explorer - Changes based on project type
+
+Conditional Status Bar - Project-type specific display
+
+Smart Command Registration - Context-aware commands
+
+Phase 3: Advanced Features
+Project Switcher UI - Multi-root navigation
+
+Type-Specific Dashboards - Different panels per project type
+
+LSP Cache Integration - Your existing .grails-lsp cache support
+
+Key Architectural Principles
+Single Responsibility: Each service handles one concern (detection, UI adaptation, events)
+
+Type Safety: Enums and interfaces prevent runtime errors
+
+Event-Driven: UI components react to project changes automatically
+
+Progressive Enhancement: Basic features work immediately, advanced features enhance experience
+
+Multi-Root Aware: Every component understands multiple workspace roots
+
+This architecture gives you:
+
+Clean separation between project detection and UI adaptation
+
+Type-safe service resolution without strings
+
+Reactive UI that updates automatically when project type changes
+
+Extensible design for future project types or features
