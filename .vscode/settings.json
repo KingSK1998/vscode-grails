@@ -1,5 +1,9 @@
 {
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
   "files.autoSave": "afterDelay",
 
   // Typescript-focused settings
@@ -8,12 +12,16 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
 
   "eslint.useFlatConfig": true,
-  "eslint.format.enable": false,
+  "eslint.format.enable": true,
   "eslint.validate": ["typescript"],
+  "eslint.codeActionsOnSave.rules": ["@typescript-eslint/consistent-type-imports"],
+  "typescript.preferences.importModuleSpecifier": "relative",
 
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+
+  "editor.rulers": [100],
 
   "chat.mcp.serverSampling": {
     "vscode-grails/.vscode/mcp.json: perplexity": {

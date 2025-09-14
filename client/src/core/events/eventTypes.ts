@@ -1,4 +1,4 @@
-import { ProjectInfo } from "../../features/models/modelTypes";
+import type { ProjectInfo } from "../../features/models/modelTypes";
 
 export interface BaseGrailsEvents {
   timestamp: number;
@@ -88,3 +88,16 @@ export type GrailsEvent =
 
 // Helper type for event handlers
 export type EventHandler<T extends GrailsEvent> = (event: T) => void;
+
+export interface GrailsEventMap {
+  [EventType.PROJECTS_DISCOVERED]: ProjectsDiscoveredEvent;
+  [EventType.PROJECT_CHANGED]: ProjectChangedEvent;
+  [EventType.PROJECT_DISCOVERED]: ProjectDiscoveredEvent;
+  [EventType.PROJECT_LOADED]: ProjectLoadedEvent;
+  [EventType.PROJECT_SYNC_STARTED]: ProjectSyncStartedEvent;
+  [EventType.PROJECT_SYNC_COMPLETED]: ProjectSyncCompletedEvent;
+  [EventType.PROJECT_SYNC_FAILED]: ProjectSyncFailedEvent;
+  [EventType.ARTIFACT_CREATED]: ArtifactCreatedEvent;
+  [EventType.ARTIFACT_DELETED]: ArtifactDeletedEvent;
+  [EventType.TREE_REFRESH]: TreeRefreshEvent;
+}

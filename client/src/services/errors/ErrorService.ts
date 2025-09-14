@@ -1,7 +1,9 @@
-import { Disposable, OutputChannel, window } from "vscode";
-import { StatusBarService } from "../workspace/StatusBarService";
+import type { Disposable, OutputChannel } from "vscode";
+import { window } from "vscode";
 import { ServiceContainer } from "../../core/container/ServiceContainer";
-import { ErrorDetails, ErrorSeverity, ErrorSource } from "./errorTypes";
+import { OutputChannelService } from "../workspace/OutputChannelService";
+import type { ErrorDetails } from "./errorTypes";
+import { ErrorSeverity, ErrorSource } from "./errorTypes";
 
 /**
  * Centralized error handler for the Grails extension.
@@ -13,26 +15,37 @@ export class ErrorService implements Disposable {
   private _disposed = false;
 
   constructor() {
-    this._channel = window.createOutputChannel("Grails");
+    this._channel = OutputChannelService.getInstance().clientChannel;
   }
 
   /* ================= PUBLIC API ===================================== */
 
   /**
+   * @deprecated Use handleError() instead
    * Handle an error with appropriate logging, notification, and status bar update.
    */
+
   public handle(
+    error: unknown,
+    source: ErrorSource = ErrorSource.Extension,
+    severity: ErrorSeverity = ErrorSeverity.Error
+  ) {
+    this.handleError(null, error, source, severity);
+  }
+
+  public handleError(
+    message: string | null,
     error: unknown,
     source: ErrorSource = ErrorSource.Extension,
     severity: ErrorSeverity = ErrorSeverity.Error
   ): void {
     if (!this._disposed) {
       // Fallback to console if service is disposed
-      console.error(`[${source}]`, error);
+      console.error(`[${source}]`, error ?? message);
       return;
     }
 
-    const details = this.createErrorDetails(error, source, severity);
+    const details = this.createErrorDetails(error, source, severity, message);
     this._log.push(details);
     this.logToChannel(details);
     this.showNotification(details);
@@ -63,9 +76,11 @@ export class ErrorService implements Disposable {
   private createErrorDetails(
     error: unknown,
     source: ErrorSource,
-    severity: ErrorSeverity
+    severity: ErrorSeverity,
+    customMessage?: string | null
   ): ErrorDetails {
-    const message = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const message = customMessage ? `${customMessage}: ${errorMessage}` : errorMessage;
     const stack = error instanceof Error ? error.stack : undefined;
 
     return {
@@ -97,7 +112,6 @@ export class ErrorService implements Disposable {
   /** Show VS Code notification based on severity */
   private showNotification(details: ErrorDetails): void {
     const message = `${details.source}: ${details.message}`;
-    const action = details.suggestions.slice(0, 2); // Max 2 buttons
 
     switch (details.severity) {
       case ErrorSeverity.Critical:

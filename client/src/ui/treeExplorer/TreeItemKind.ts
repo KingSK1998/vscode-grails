@@ -1,0 +1,44 @@
+/** Tree item types for different content categories */
+export enum TreeItemKind {
+  // Project structure
+  ProjectRoot = "project-root",
+
+  // Grails App structure
+  GrailsAppRoot = "grails-app-root",
+  GrailsArtifactFolders = "grails-artifact-folders",
+
+  // Main sections
+  AssetsRoot = "assets-root",
+  ConfigRoot = "config-root",
+  IntiRoot = "init-root",
+  ViewsRoot = "views-root",
+  RoutesRoot = "routes-root",
+  SrcRoot = "source-root",
+  TestsRoot = "test-root",
+  DependenciesRoot = "dependency-root",
+
+  // Sub-categories
+  ConfFolder = "config-folder",
+  AssetsFolder = "assets-folder",
+  ViewsFolder = "view-folder",
+  DEPENDENCY_CATEGORY = "dependency-category",
+
+  // Directories
+  SourceDir = "source-dir",
+  TestDir = "test-dir",
+
+  // Files
+  ArtifactFile = "artifact-file",
+  ConfFile = "config-file",
+  ViewFile = "view-file",
+  AssetFile = "asset-file",
+  SrcFile = "source-file",
+  TestFile = "test-file",
+
+  // Special cases
+  Route = "route",
+  Dependency = "dependency",
+  Error = "error",
+  Package = "package",
+  UTILITIES_ROOT = "utilities-root",
+}

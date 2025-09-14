@@ -1,4 +1,5 @@
-import { commands, ExtensionContext, Uri, ViewColumn, WebviewPanel, window } from "vscode";
+import type { ExtensionContext, WebviewPanel } from "vscode";
+import { Uri, ViewColumn, window } from "vscode";
 
 export class GrailsDashboard {
   private panel: WebviewPanel | undefined;
@@ -27,7 +28,7 @@ export class GrailsDashboard {
     // Handle messages from webview
     this.panel.webview.onDidReceiveMessage(
       message => {
-        switch (message.command) {
+        switch (message) {
           case "createController":
             // commands.executeCommand("grails.createController");
             window.showInformationMessage("Create Controller clicked!");

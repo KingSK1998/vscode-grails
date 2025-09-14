@@ -13,6 +13,7 @@ export enum ErrorSource {
   ProjectService = "project-service",
   LanguageServer = "language-server",
   Configuration = "configuration",
+  Commands = "commands",
 }
 
 /** Shape of an error entry kept in memory */
@@ -21,6 +22,6 @@ export interface ErrorDetails {
   severity: ErrorSeverity;
   source: ErrorSource;
   timestamp: Date;
-  stack?: string;
+  stack?: string | undefined;
   suggestions: string[];
 }

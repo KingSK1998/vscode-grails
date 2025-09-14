@@ -1,9 +1,9 @@
-import { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
-import { ProjectService } from "../../services/workspace/ProjectService";
-import { ConfigurationService } from "../../services/workspace/ConfigurationService";
-import { StatusBarService } from "../../services/workspace/StatusBarService";
-import { ErrorService } from "../../services/errors/ErrorService";
-import { GradleService } from "../../services/gradle/GradleService";
+import type { ErrorService } from "../../services/errors/ErrorService";
+import type { GradleService } from "../../services/gradle/GradleService";
+import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import type { ConfigurationService } from "../../services/workspace/ConfigurationService";
+import type { ProjectService } from "../../services/workspace/ProjectService";
+import type { StatusBarService } from "../../services/workspace/StatusBarService";
 
 export interface ServiceRegistry {
   ErrorService: ErrorService;

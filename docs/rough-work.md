@@ -496,3 +496,274 @@ Type-safe service resolution without strings
 Reactive UI that updates automatically when project type changes
 
 Extensible design for future project types or features
+
+
+Performance-First Architecture Recommendations
+🚀 Critical Performance Principles for VS Code Extensions
+The 3-2-1 Rule for Extension Performance:
+3 seconds: Maximum total activation time
+
+200ms: UI must be responsive within this window
+
+100ms: Status bar/basic UI should show progress immediately
+
+Your Current Architecture Assessment: ✅ SOLID Foundation
+Your architecture is fundamentally correct:
+
+✅ Dependency injection with ServiceContainer
+
+✅ Event-driven communication via EventBus
+
+✅ Separation of concerns (services, UI, core)
+
+✅ Multi-root workspace planning
+
+🎯 Performance Optimization Strategy
+Phase 1: Instant UI Feedback (0-200ms)
+What you SHOULD do immediately:
+
+typescript
+Extension Activation Priority Queue:
+1. StatusBar.show("⚡ Initializing...")           // 5ms
+2. ProjectService.quickScan()                     // 50ms  
+3. TreeView.showSkeleton()                        // 30ms
+4. Commands.registerEssential()                   // 40ms
+5. StatusBar.show("🔍 Loading projects...")       // 5ms
+What you should AVOID:
+
+❌ Waiting for LSP before showing UI
+
+❌ Gradle sync during activation
+
+❌ File system heavy operations in main thread
+
+❌ Loading all features at once
+
+Phase 2: Progressive Enhancement (200ms-2s)
+typescript
+Background Loading (Non-blocking):
+├── LSP Server Start (parallel)
+├── Cache file reading (async)
+├── Gradle API initialization (lazy)
+└── Advanced tree features (on-demand)
+📊 Client-Server Metadata Exchange Strategy
+Recommended: Lightweight JSON Protocol
+Why JSON over binary cache for client?
+
+✅ Parsing speed: JSON.parse() is 50x faster than Java deserialization in Node.js
+
+✅ Size efficiency: Gzipped JSON is often smaller than Java serialization
+
+✅ Debuggability: Human-readable, easy to troubleshoot
+
+✅ Cross-platform: No JVM dependency on client side
+
+Optimal Metadata Structure:
+typescript
+// Lightweight client metadata (target: <5KB per project)
+interface ProjectMetadata {
+  // Essential (always needed)
+  id: string;
+  name: string;
+  type: 'grails' | 'grails-plugin' | 'groovy';
+  rootPath: string;
+  
+  // Quick stats (for UI badges/counters)
+  stats: {
+    controllers: number;
+    services: number;
+    domains: number;
+    views: number;
+  };
+  
+  // Versions (for compatibility checks)
+  versions: {
+    grails?: string;
+    groovy?: string;
+    gradle?: string;
+  };
+  
+  // Health status (for status indicators)
+  status: 'healthy' | 'syncing' | 'error';
+  lastSync: number; // timestamp
+  
+  // Minimal deps (for quick analysis)
+  dependencies: string[]; // top 10 only
+}
+What CLIENT should NOT store:
+❌ Full dependency trees (LSP handles this)
+
+❌ AST data (LSP manages)
+
+❌ Complete file listings (file system handles)
+
+❌ Build configurations (Gradle handles)
+
+🔄 Client-Server Responsibility Matrix
+CLIENT Responsibilities (Fast, UI-focused):
+typescript
+Client Owns:
+├── UI State Management (active project, tree expansion)
+├── File System Watching (build.gradle changes)
+├── User Interactions (clicks, commands)
+├── Basic Project Detection (existence checks)
+├── Cache Coordination (read JSON metadata)
+└── Extension Lifecycle (activation, deactivation)
+SERVER Responsibilities (Deep Analysis):
+typescript
+Server Owns:
+├── Language Features (completion, diagnostics, hover)
+├── Deep Project Analysis (AST, semantic analysis)
+├── Gradle Integration (tasks, dependencies, builds)
+├── Code Intelligence (references, symbols)
+├── Cache Management (binary cache + JSON export)
+└── Build System Events (compilation, test results)
+SHARED Responsibilities (Coordinated):
+typescript
+Coordinated:
+├── Project Discovery (Client detects, Server analyzes)
+├── Error Reporting (Both contribute different contexts)
+├── Configuration (Client reads, Server applies)
+└── Status Updates (Server reports, Client displays)
+⚡ Performance-Critical Recommendations
+1. Lazy Loading Strategy
+typescript
+// Load immediately (0-200ms)
+const essentialServices = [
+  'ErrorService',
+  'StatusBarService', 
+  'ProjectService.quickScan',
+  'TreeView.skeleton'
+];
+
+// Load on first use
+const lazyServices = [
+  'GradleService',      // Load when user opens gradle panel
+  'TestRunner',         // Load when user runs tests
+  'DependencyAnalyzer', // Load when user views dependencies
+  'AdvancedDiagnostics' // Load when user enables
+];
+2. Caching Strategy
+typescript
+Cache Hierarchy (Fastest to Slowest):
+1. Memory Cache (instant) → ProjectService.projects Map
+2. JSON Cache (1-5ms) → .grails-lsp/metadata.json  
+3. File System Scan (50-200ms) → build.gradle detection
+4. LSP Request (100-500ms) → Full project analysis
+3. Event System Optimization
+typescript
+// Batch updates to prevent UI thrashing
+EventBus.batch([
+  { type: 'PROJECT_DISCOVERED', project: proj1 },
+  { type: 'PROJECT_DISCOVERED', project: proj2 },
+  { type: 'PROJECT_DISCOVERED', project: proj3 }
+], 50); // Debounce 50ms
+🌳 Tree Explorer Problem Diagnosis
+Common Tree Performance Issues:
+Problem 1: Expensive getChildren() calls
+
+typescript
+// ❌ Slow: File system call on every expansion
+getChildren() {
+  return fs.readdirSync(this.path); // Blocks UI thread
+}
+
+// ✅ Fast: Pre-computed with caching
+getChildren() {
+  return this.cachedChildren || this.computeChildrenAsync();
+}
+Problem 2: Over-eager tree refresh
+
+typescript
+// ❌ Refreshes entire tree on any file change
+onDidChangeFile() {
+  this.refresh(); // Expensive
+}
+
+// ✅ Targeted refresh only affected nodes
+onDidChangeFile(uri: Uri) {
+  this.refreshNode(this.findNodeByUri(uri));
+}
+Problem 3: Synchronous tree operations
+
+typescript
+// ❌ Blocks main thread
+async getTreeItem(element: ProjectNode) {
+  const stats = fs.statSync(element.path); // Synchronous
+  return new TreeItem(element.name);
+}
+
+// ✅ Non-blocking with cached data
+getTreeItem(element: ProjectNode) {
+  return new TreeItem(element.name, element.cachedCollapsibleState);
+}
+🎯 Next Steps Priority Ranking
+Week 1 (Critical Performance Fixes):
+Implement 200ms activation target
+
+Move heavy operations to background
+
+Show skeleton UI immediately
+
+Fix tree explorer performance
+
+Cache tree nodes
+
+Implement smart refresh
+
+Use async operations
+
+Add JSON metadata export from LSP
+
+Server writes metadata.json alongside .cache
+
+Client reads JSON for instant UI
+
+Week 2 (User Experience):
+Progressive loading indicators
+
+Status bar shows loading progress
+
+Tree shows "Loading..." placeholders
+
+Error resilience
+
+Extension works even if LSP fails
+
+Graceful degradation of features
+
+Memory optimization
+
+Dispose unused services
+
+Limit cache sizes
+
+Week 3 (Advanced Features):
+Lazy feature loading
+
+Background synchronization
+
+Performance monitoring
+
+🚀 Performance Metrics to Track
+typescript
+Performance Targets:
+├── Activation Time: <200ms (current industry standard)
+├── UI Response: <50ms (for tree expansion, clicks)
+├── Memory Usage: <50MB (for typical project)
+├── LSP Startup: <3s (background, non-blocking)
+└── Tree Refresh: <100ms (for file changes)
+Summary: You're on the Right Track! ✅
+Your architecture decisions are fundamentally sound. The key to making it awesome is:
+
+Prioritize UI responsiveness over feature completeness at startup
+
+Use JSON for client-server metadata exchange (performance + debuggability)
+
+Implement aggressive lazy loading for non-essential features
+
+Fix tree explorer performance with caching and smart refresh
+
+Add progressive loading indicators so users see immediate feedback
+
+Your ServiceContainer + EventBus + Multi-root approach is enterprise-grade architecture. Focus on execution speed rather than architectural changes, and you'll have an extension that users love for its responsiveness.

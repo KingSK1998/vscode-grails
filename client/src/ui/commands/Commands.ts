@@ -1,12 +1,9 @@
-import {
-  ExtensionContext,
-  commands,
-  window,
-  workspace,
-  ConfigurationTarget,
-  Disposable,
-} from "vscode";
-import { ServiceContainer } from "../../core/container/ServiceContainer";
+import type { Disposable, ExtensionContext } from "vscode";
+import { commands, ConfigurationTarget, window, workspace } from "vscode";
+import type { ServiceContainer } from "../../core/container/ServiceContainer";
+import { EventBus } from "../../core/events/EventBus";
+import { EventType } from "../../core/events/eventTypes";
+import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import { GrailsDashboard } from "../views/GrailsDashboard";
 
 /**
@@ -47,9 +44,41 @@ export class Commands implements Disposable {
   /* ================= UI COMMANDS ================================== */
 
   private registerUICommands(): void {
-    this.register("grails.refreshTree", () => {
-      // TODO: Emit refresh event via EventBus
-      console.log("🔄 Refreshing tree view");
+    this.register("grails.refreshTree", async () => {
+      console.log("🔄 REFRESH COMMAND: Manual tree refresh started");
+
+      try {
+        // Step 1: Check initial state
+        const initialProjects = this.container.projectService.getProjects();
+        console.log(`📊 REFRESH: Initial projects count: ${initialProjects.length}`);
+
+        // Step 2: Trigger project discovery
+        console.log("🔍 REFRESH: Triggering project discovery...");
+        const discoveredProjects = await this.container.projectService.discoverProjects();
+        console.log(`📊 REFRESH: Discovered ${discoveredProjects.length} projects`);
+
+        // Step 3: Publish event - TreeProvider should listen to this
+        console.log("📡 REFRESH: Publishing PROJECTS_DISCOVERED event...");
+        const eventBus = EventBus.getInstance();
+        eventBus.publish({
+          type: EventType.PROJECTS_DISCOVERED,
+          projects: discoveredProjects,
+          timestamp: Date.now(),
+          source: "RefreshCommand",
+        });
+        console.log("✅ REFRESH: Event published successfully");
+
+        window.showInformationMessage("Project tree refreshed");
+        console.log("✅ REFRESH COMMAND: Completed successfully");
+      } catch (error) {
+        console.error("❌ REFRESH COMMAND: Failed with error:", error);
+        this.container.errorService.handleError(
+          "Failed to refresh project tree",
+          error,
+          ErrorSource.Commands,
+          ErrorSeverity.Error
+        );
+      }
     });
 
     this.register("grails.showDashboard", () => {
@@ -57,8 +86,8 @@ export class Commands implements Disposable {
       dashboard.createOrShow(this.context);
     });
 
-    this.register("grails.showExtensionInfo", async () => {
-      const health = await this.container.healthCheck();
+    this.register("grails.showExtensionInfo", () => {
+      const health = this.container.healthCheck();
       const projects = this.container.projectService.getProjects();
 
       const info = [
@@ -74,6 +103,11 @@ export class Commands implements Disposable {
 
       window.showInformationMessage(info);
     });
+
+    this.register("grails.statusBarClicked", () => {
+      // Delegate to the same info command
+      commands.executeCommand("grails.showExtensionInfo");
+    });
   }
 
   /* ================= PROJECT COMMANDS ========================== */
@@ -83,7 +117,7 @@ export class Commands implements Disposable {
       await this.container.projectService.discoverProjects();
     });
 
-    this.register("grails.showProjectConfig", async () => {
+    this.register("grails.showProjectConfig", () => {
       const projects = this.container.projectService.getProjects();
       if (projects.length === 0) {
         window.showWarningMessage("No Grails projects found");
@@ -214,9 +248,9 @@ export class Commands implements Disposable {
       await this.setupGrailsWorkspace();
     });
 
-    this.register("grails.diagnoseIssues", async () => {
+    this.register("grails.diagnoseIssues", () => {
       // Enhanced diagnostics using services
-      await this.diagnoseExtensionIssues();
+      this.diagnoseExtensionIssues();
     });
   }
 
@@ -248,7 +282,9 @@ export class Commands implements Disposable {
       matchOnDescription: true,
     });
 
-    if (!selectedType) return;
+    if (!selectedType) {
+      return;
+    }
 
     const name = await window.showInputBox({
       prompt: `Enter ${selectedType.label} name`,
@@ -256,7 +292,9 @@ export class Commands implements Disposable {
       validateInput: this.validateArtifactName,
     });
 
-    if (!name) return;
+    if (!name) {
+      return;
+    }
 
     // TODO: Implement service-based artifact creation
     window.showInformationMessage(`Creating ${selectedType.label}: ${name}`);
@@ -268,7 +306,7 @@ export class Commands implements Disposable {
 
     // 1. Enable Emmet for GSP
     const emmetConfig = workspace.getConfiguration("emmet");
-    const includeLangs = emmetConfig.get<{ [key: string]: string }>("includeLanguages") || {};
+    const includeLangs = emmetConfig.get<Record<string, string>>("includeLanguages") ?? {};
 
     if (includeLangs["gsp"] !== "html") {
       includeLangs["gsp"] = "html";
@@ -285,8 +323,8 @@ export class Commands implements Disposable {
     }
   }
 
-  private async diagnoseExtensionIssues(): Promise<void> {
-    const health = await this.container.healthCheck();
+  private diagnoseExtensionIssues(): void {
+    const health = this.container.healthCheck();
 
     if (health.healthy) {
       window.showInformationMessage("✅ No issues detected");
@@ -303,7 +341,7 @@ export class Commands implements Disposable {
     }
   }
 
-  private async executeGrailsTerminalCommand(command: string): Promise<void> {
+  private executeGrailsTerminalCommand(command: string): void {
     // Your existing terminal-based command execution
     // Keep for compatibility but consider migrating to service-based approach
     const projects = this.container.projectService.getProjects();
@@ -322,19 +360,19 @@ export class Commands implements Disposable {
     terminal.show();
   }
 
-  private validateArtifactName(value: string): string | null {
+  private validateArtifactName = (value: string): string | undefined => {
     if (!value || value.trim().length === 0) {
       return "Name cannot be empty";
     }
     if (!/^[A-Za-z][A-Za-z0-9]*$/.test(value.trim())) {
       return "Name must start with a letter and contain only letters and numbers";
     }
-    return null;
-  }
+    return undefined;
+  };
 
   /* ================= REGISTRATION HELPER ======================== */
 
-  private register(command: string, callback: (...args: any[]) => any): void {
+  private register(command: string, callback: (...args: unknown[]) => unknown): void {
     const disposable = commands.registerCommand(command, callback);
     this.disposables.push(disposable);
     this.context.subscriptions.push(disposable);
@@ -343,7 +381,7 @@ export class Commands implements Disposable {
   /* ================= DISPOSAL =================================== */
 
   dispose(): void {
-    this.disposables.forEach(d => d.dispose());
+    this.disposables.forEach(d => void d.dispose());
     this.disposables = [];
   }
 }

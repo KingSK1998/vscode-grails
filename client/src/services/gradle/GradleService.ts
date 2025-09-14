@@ -1,9 +1,12 @@
-import { Disposable, extensions, window, ProgressLocation, tasks } from "vscode";
-import { ErrorService } from "../errors/ErrorService";
-import { Api, GrailsTask, RunTaskOpts } from "./gradleTypes";
-import { StatusBarService } from "../workspace/StatusBarService";
+import type { Disposable, Task } from "vscode";
+import { extensions, ProgressLocation, window } from "vscode";
+import type { ProjectInfo } from "../../features/models/modelTypes";
+import { ProjectType } from "../../features/models/modelTypes";
+import type { ErrorService } from "../errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
-import { ProjectInfo, ProjectType } from "../../features/models/modelTypes";
+import type { StatusBarService } from "../workspace/StatusBarService";
+import type { Api, RunTaskOpts } from "./gradleTypes";
+import { GrailsTask } from "./gradleTypes";
 
 /**
  * Grails-focused Gradle service that enhances the existing vscode-gradle extension
@@ -13,13 +16,87 @@ export class GradleService implements Disposable {
   private static readonly GRADLE_EXTENSION_ID = "vscjava.vscode-gradle";
   private gradleApi: Api | undefined;
   private isInitialized = false;
+  private intializationPromise?: Promise<boolean>;
 
   constructor(
-    private readonly statusBar: StatusBarService,
-    private readonly errors: ErrorService
+    private readonly statusBarService: StatusBarService,
+    private readonly errorService: ErrorService
   ) {}
 
   /* ================= CORE SYNC FUNCTIONALITY =================== */
+
+  /**
+   * Fast sync - returns immediately if already initialized.
+   * Otherwise, starts initialization but does not wait for it to complete.
+   */
+  quickSync(): boolean {
+    if (this.isInitialized) {
+      return true; // Already synced
+    }
+
+    // Start initialization in background if not already started
+    this.intializationPromise ??= this.fullSync();
+
+    return false; // Not ready yet, but initializing
+  }
+
+  /**
+   * Full blocking sync - only calls when actually needed.
+   */
+  async fullSync(): Promise<boolean> {
+    if (this.isInitialized) {
+      return true; // Already synced
+    }
+
+    try {
+      this.statusBarService.sync("🔄 Initializing Gradle...");
+
+      // Add timeout wrapper
+      const syncResult = await Promise.race([
+        this.performGradleSync(),
+        this.createTimeoutPromise(15000), // 15 sec timeout
+      ]);
+
+      if (syncResult) {
+        this.isInitialized = true;
+        this.statusBarService.success("✅ Gradle ready");
+        return true;
+      } else {
+        this.statusBarService.warning("⚠️ Gradle intialization timed out");
+        return false;
+      }
+    } catch (error) {
+      this.errorService.handleError(
+        "Gradle sync failed",
+        error,
+        ErrorSource.GradleService,
+        ErrorSeverity.Warning
+      );
+      this.statusBarService.warning("⚠️ Gradle unavailable - limited features");
+      return false;
+    }
+  }
+
+  private async performGradleSync(): Promise<boolean> {
+    // Your existing sync logic here
+    const extension = extensions.getExtension(GradleService.GRADLE_EXTENSION_ID);
+    if (!extension) {
+      return false;
+    }
+
+    if (!extension.isActive) {
+      await extension.activate();
+    }
+
+    this.gradleApi = extension.exports as Api;
+    return !!this.gradleApi;
+  }
+
+  private createTimeoutPromise(timeoutMs: number): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+      setTimeout(() => resolve(false), timeoutMs);
+    });
+  }
 
   /**
    * Initialize Gradle API and wait for task provider to be ready.
@@ -31,28 +108,40 @@ export class GradleService implements Disposable {
     }
 
     try {
-      this.statusBar.sync("Initializing Gradle API...");
+      this.statusBarService.sync("Initializing Gradle API...");
 
       // 1. Get the Gradle extension
       const extension = extensions.getExtension(GradleService.GRADLE_EXTENSION_ID);
       if (!extension) {
-        return this.fail("Gradle extension not found. Please install 'Gradle for Java' extension.");
+        this.errorService.handleError(
+          "Gradle extension not found. Please install 'Gradle for Java' extension.",
+          null,
+          ErrorSource.GradleService,
+          ErrorSeverity.Error
+        );
+        return false;
       }
 
       // 2. Activate if needed
       if (!extension.isActive) {
-        this.statusBar.sync("Activating Gradle extension...");
+        this.statusBarService.sync("Activating Gradle extension...");
         await extension.activate();
       }
 
       // 3. Get the API
       this.gradleApi = extension.exports as Api;
       if (!this.gradleApi) {
-        return this.fail("Gradle API not available");
+        this.errorService.handleError(
+          "Gradle API not available",
+          null,
+          ErrorSource.GradleService,
+          ErrorSeverity.Error
+        );
+        return false;
       }
 
       // 4. Wait for task provider to be fully loaded
-      this.statusBar.sync("Syncing with Gradle projects...");
+      this.statusBarService.sync("Syncing with Gradle projects...");
 
       const syncSuccess = await window.withProgress(
         {
@@ -65,38 +154,51 @@ export class GradleService implements Disposable {
 
       if (syncSuccess) {
         this.isInitialized = true;
-        this.statusBar.success("Gradle synchronization complete");
+        this.statusBarService.success("Gradle synchronization complete");
         return true;
       } else {
-        return this.fail("Gradle task provider not available");
+        this.errorService.handleError(
+          "Gradle task provider not available",
+          null,
+          ErrorSource.GradleService,
+          ErrorSeverity.Error
+        );
+        return false;
       }
     } catch (error) {
-      return this.fail("Failed to sync with Gradle", error);
+      this.errorService.handleError(
+        "Failed to sync with Gradle",
+        error,
+        ErrorSource.GradleService,
+        ErrorSeverity.Error
+      );
+      return false;
     }
   }
 
-  private waitForTaskProviderReady(): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
-      const provider = this.gradleApi?.getTaskProvider?.();
-      if (!provider || typeof provider.onDidLoadTasks !== "function") {
-        resolve(false);
-        return;
-      }
+  private async waitForTaskProviderReady(): Promise<boolean> {
+    const provider = this.gradleApi?.getTaskProvider?.();
+    if (!provider || typeof provider.onDidLoadTasks !== "function") {
+      return false;
+    }
 
-      const disposable = provider.onDidLoadTasks((tasks: any[]) => {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("Timeout waiting for task provider to be ready"));
+      }, 30000);
+    });
+
+    const readyPromise = new Promise(resolve => {
+      const disposable = provider.onDidLoadTasks((tasks: Task[]) => {
         console.log(`[GradleService] Tasks loaded: ${tasks.length} tasks found`);
         disposable.dispose();
         resolve(true);
       });
-
-      provider.provideTasks();
-
-      // Timeout after 30 seconds
-      setTimeout(() => {
-        disposable.dispose();
-        resolve(false);
-      }, 30000);
     });
+
+    await provider.provideTasks();
+    const result = await Promise.race([readyPromise, timeoutPromise]);
+    return result as boolean;
   }
 
   /* ================= TASK EXECUTION ============================= */
@@ -111,7 +213,7 @@ export class GradleService implements Disposable {
   ): Promise<boolean> {
     const synced = await this.sync();
     if (!synced) {
-      this.errors.handle(
+      this.errorService.handle(
         "Cannot run task: Gradle synchronization failed",
         ErrorSource.GradleService,
         ErrorSeverity.Error
@@ -120,7 +222,7 @@ export class GradleService implements Disposable {
     }
 
     try {
-      this.statusBar.sync(`Running ${taskName}...`);
+      this.statusBarService.sync(`Running ${taskName}...`);
 
       const taskOptions: RunTaskOpts = {
         projectFolder: projectInfo.rootPath,
@@ -135,11 +237,12 @@ export class GradleService implements Disposable {
       };
 
       await this.gradleApi!.runTask(taskOptions);
-      this.statusBar.success(`${taskName} completed successfully`);
+      this.statusBarService.success(`${taskName} completed successfully`);
       return true;
     } catch (error) {
-      this.errors.handle(
-        `Task ${taskName} failed: ${error}`,
+      this.errorService.handleError(
+        `Task ${taskName} failed`,
+        error,
         ErrorSource.GradleService,
         ErrorSeverity.Error
       );
@@ -151,8 +254,9 @@ export class GradleService implements Disposable {
 
   async runGrailsApp(projectInfo: ProjectInfo): Promise<boolean> {
     if (projectInfo.type !== ProjectType.Grails) {
-      this.errors.handle(
+      this.errorService.handleError(
         "bootRun is only available for Grails projects",
+        null,
         ErrorSource.GradleService,
         ErrorSeverity.Warning
       );
@@ -175,7 +279,7 @@ export class GradleService implements Disposable {
 
   /* ================= UTILITIES =================================== */
 
-  async hasGrailsTasks(projectInfo: ProjectInfo): Promise<boolean> {
+  hasGrailsTasks(projectInfo: ProjectInfo): boolean {
     return projectInfo.type === ProjectType.Grails || projectInfo.type === ProjectType.GrailsPlugin;
   }
 
@@ -183,73 +287,8 @@ export class GradleService implements Disposable {
     return !!this.gradleApi && this.isInitialized;
   }
 
-  private fail(msg: string, err?: unknown): false {
-    const full = err ? `${msg}: ${err instanceof Error ? err.message : err}` : msg;
-    this.errors.handle(full, ErrorSource.GradleService, ErrorSeverity.Error);
-    this.statusBar.error(full);
-    return false;
-  }
-
   dispose(): void {
     this.gradleApi = undefined;
     this.isInitialized = false;
   }
 }
-
-/** Code Lens:
-
-const gradleService = container.gradleService;
-if (await gradleService.hasGrailsTasks(projectInfo)) {
-  // Show "Run" lens on controller methods
-}
-
-*/
-
-/** For Commands:
-
-// Register commands that use the service
-vscode.commands.registerCommand('grails.runApp', async () => {
-  const projectInfo = container.projectService.getCurrentProject();
-  if (projectInfo) {
-    await container.gradleService.runGrailsApp(projectInfo);
-  }
-});
-
- */
-
-/**
-
-// In your extension activation
-export async function activate(context: ExtensionContext) {
-  const container = ServiceContainer.initialize(context);
-
-  // 1. First sync Gradle (required for project analysis)
-  const gradleService = container.gradleService;
-  const gradleSynced = await gradleService.sync();
-
-  if (!gradleSynced) {
-    // Show user-friendly error but don't block extension
-    window.showErrorMessage(
-      "Gradle synchronization failed. Some features may not work properly.",
-      "Install Gradle Extension",
-      "Retry"
-    ).then(selection => {
-      if (selection === "Install Gradle Extension") {
-        commands.executeCommand("workbench.extensions.installExtension", "vscjava.vscode-gradle");
-      } else if (selection === "Retry") {
-        gradleService.sync();
-      }
-    });
-  }
-
-  // 2. Start LSP (it can work with basic functionality even without full Gradle sync)
-  const lspManager = container.languageServerManager;
-  await lspManager.start();
-
-  // 3. Discover projects (uses Gradle info if available, falls back to heuristics)
-  const projectService = container.projectService;
-  await projectService.discoverProjects();
-}
-
-
- */

@@ -6,17 +6,24 @@ export const EXTENSION_IDS = {
 } as const;
 
 export const EXTENSION_ID = "kingsk1998.vscode-grails";
-export const EXTENSION_NAME = "vscode-grails";
+export const EXTENSION_NAME = "Grails";
 
 // -------- Status and Operation Messages --------
 export const Messages = {
-  EXTENSION_STARTUP: "Starting Grails Extension...",
-  EXTENSION_INTIALIZING: "Initializing Grails extension...",
+  EXTENSION_STARTING: "Starting Grails Extension...",
   EXTENSION_READY: "Grails Extension is ready.",
+  EXTENSION_RUNNING: "Grails Extension is running.",
+  EXTENSION_STOPPED: "Grails Extension is stopped.",
+  EXTENSION_RESTARTING: "Restarting Grails Extension...",
+
+  EXTENSION_INTIALIZING: "Initializing Grails extension...",
   EXTENSION_SYNCING: "Syncing Grails project...",
   EXTENSION_SYNC_FAILED: "Failed to sync Grails project.",
 
   /* ─── Server lifecycle ─────────────────────── */
+  SERVER_CONNECTING: "Connecting to Grails Language Server...",
+  SERVER_DISCONNECTED: "Language server disconnected - Click to restart",
+
   SERVER_STARTING: "Starting Grails Language Server...",
   SERVER_STARTED: "Grails Language Server started.",
   SERVER_START_FAILED: "Failed to start Grails Language Server.",
@@ -35,9 +42,14 @@ export const Messages = {
 
   /* ─── Project ──────────────────────────────── */
   INVALID_PROJECT: "Not a valid Groovy or Grails project",
+  TESTING: "Running tests...",
+  INFO: "Information available",
+  SUCCESS: "Successful operation",
+  WARNING: "Warning - Click for details",
+  ERROR: "Error occurred - Check Problems panel",
 
   /* ─── Gradle-project sync ──────────────────── */
-  GRADLE_SYNC_START: "Syncing Gradle project...",
+  GRADLE_SYNC_START: "Syncing with Gradle...",
   GRADLE_SYNC_PROGRESS: "Gradle sync in progress...",
   GRADLE_SYNC_COMPLETE: "Gradle sync completed",
   GRADLE_SYNC_FAILED: "Failed to sync with Gradle",
@@ -69,37 +81,6 @@ export const Messages = {
 
 /** Union of all message keys, useful for type-safe utilities */
 export type MessageKey = keyof typeof Messages;
-
-// -------- Short Status Labels --------
-export enum StatusText {
-  STARTING = "Starting",
-  SYNC = "Syncing",
-  RESTARTING = "Restarting",
-  RUNNING = "Running",
-  STOPPED = "Stopped",
-  READY = "Ready",
-  ERROR = "Error",
-  WARNING = "Warning",
-  SUCCESS = "Success",
-  INFO = "Info",
-  EMPTY = "",
-}
-
-// -------- VS Code Status Bar Icons --------
-export enum StatusBarIcon {
-  SYNC_SPIN = "$(sync~spin)",
-  ROCKET = "$(rocket)",
-  CIRCLE_SLASH = "$(circle-slash)",
-  CROSS = "$(x)",
-  ALERT = "$(alert)",
-  ERROR = "$(error)",
-  WARNING = "$(warning)",
-  SUCCESS = "$(check)",
-  INFO = "$(info)",
-  DEBUG = "$(debug)",
-  TERMINAL = "$(terminal)",
-  EMPTY = "",
-}
 
 // File type patterns
 export const FILE_PATTERNS = {

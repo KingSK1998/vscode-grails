@@ -1,4 +1,4 @@
-import { window, ViewColumn } from "vscode";
+import { ViewColumn, window } from "vscode";
 
 export class GSPTemplateViewer {
   showGSPStructure(gspFile: string): void {

@@ -1,4 +1,5 @@
-import { StatusBarAlignment, StatusBarItem, window } from "vscode";
+import type { StatusBarItem } from "vscode";
+import { StatusBarAlignment, window } from "vscode";
 
 type GrailsEnvironment = "development" | "test" | "production";
 

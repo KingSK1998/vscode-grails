@@ -1,11 +1,11 @@
-import { Disposable, ExtensionContext } from "vscode";
+import type { Disposable, ExtensionContext } from "vscode";
 import { ErrorService } from "../../services/errors/ErrorService";
-import { StatusBarService } from "../../services/workspace/StatusBarService";
-import { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
 import { GradleService } from "../../services/gradle/GradleService";
+import { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
 import { ConfigurationService } from "../../services/workspace/ConfigurationService";
 import { ProjectService } from "../../services/workspace/ProjectService";
-import { ServiceRegistry, ServiceName } from "./ServiceRegistry";
+import { StatusBarService } from "../../services/workspace/StatusBarService";
+import type { ServiceName, ServiceRegistry } from "./ServiceRegistry";
 
 export class ServiceContainer {
   private static _instance: ServiceContainer;
@@ -82,50 +82,65 @@ export class ServiceContainer {
 
     // Phase 2: Services with dependencies
     this._services.GradleService = new GradleService(
-      this._services.StatusBarService!,
-      this._services.ErrorService!
+      this._services.StatusBarService,
+      this._services.ErrorService
     );
 
     this._services.ProjectService = new ProjectService(
-      this._services.StatusBarService!,
-      this._services.ErrorService!,
-      this._services.ConfigurationService!
+      this._services.StatusBarService,
+      this._services.ErrorService,
+      this._services.ConfigurationService
     );
 
     this._services.LanguageServerManager = new LanguageServerManager(
       this.context,
-      this._services.StatusBarService!,
-      this._services.ErrorService!,
-      this._services.ConfigurationService!
+      this._services.StatusBarService,
+      this._services.ErrorService,
+      this._services.ConfigurationService
     );
   }
 
   /**
    * Verify all services are properly initialized and ready.
    */
-  async healthCheck(): Promise<{ healthy: boolean; issues: string[] }> {
+  healthCheck(): { healthy: boolean; issues: string[] } {
     const issues: string[] = [];
 
     // Check core services
-    // Check core services
-    if (!this._services.ErrorService) issues.push("ErrorService not initialized");
-    if (!this._services.StatusBarService) issues.push("StatusBarService not initialized");
-    if (!this._services.ConfigurationService) issues.push("ConfigurationService not initialized");
+    if (!this._services.ErrorService) {
+      issues.push("ErrorService not initialized");
+    }
+    if (!this._services.StatusBarService) {
+      issues.push("StatusBarService not initialized");
+    }
+    if (!this._services.ConfigurationService) {
+      issues.push("ConfigurationService not initialized");
+    }
 
     // Check dependent services
-    if (!this._services.GradleService) issues.push("GradleService not initialized");
-    if (!this._services.ProjectService) issues.push("ProjectService not initialized");
-    if (!this._services.LanguageServerManager) issues.push("LanguageServerManager not initialized");
+    if (!this._services.GradleService) {
+      issues.push("GradleService not initialized");
+    }
+    if (!this._services.ProjectService) {
+      issues.push("ProjectService not initialized");
+    }
+    if (!this._services.LanguageServerManager) {
+      issues.push("LanguageServerManager not initialized");
+    }
 
     // Test service readiness
     try {
       const gradleReady = this._services.GradleService?.isReady ?? false;
       const lspReady = this._services.LanguageServerManager?.isRunning ?? false;
 
-      if (!gradleReady) issues.push("Gradle API not ready");
-      if (!lspReady) issues.push("Language Server not running");
+      if (!gradleReady) {
+        issues.push("Gradle API not ready");
+      }
+      if (!lspReady) {
+        issues.push("Language Server not running");
+      }
     } catch (error) {
-      issues.push(`Health check failed: ${error}`);
+      issues.push(`Health check failed: ${String(error)}`);
     }
 
     return {
@@ -137,7 +152,7 @@ export class ServiceContainer {
   /* ================= CLEANUP ======================================== */
 
   dispose(): void {
-    const services = Object.values(this._services) as Array<Disposable | undefined>;
+    const services = Object.values(this._services) as (Disposable | undefined)[];
     services.forEach(service => {
       if (service && "dispose" in service && typeof service.dispose === "function") {
         service.dispose();

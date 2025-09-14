@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import * as path from "path";
 import * as net from "net";
-import { ExtensionContext, workspace } from "vscode";
-import { ServerOptions, StreamInfo, TransportKind } from "vscode-languageclient/node";
-import { ConfigurationService } from "../workspace/ConfigurationService";
+import * as path from "path";
+import type { ExtensionContext } from "vscode";
+import { TransportKind, type ServerOptions, type StreamInfo } from "vscode-languageclient/node";
+import type { ConfigurationService } from "../workspace/ConfigurationService";
 
 interface DebugOptions {
   port: number;

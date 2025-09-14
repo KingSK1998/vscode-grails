@@ -1,4 +1,5 @@
-import { ExtensionContext, Uri, WebviewPanel } from "vscode";
+import type { ExtensionContext, WebviewPanel } from "vscode";
+import { Uri } from "vscode";
 
 export class CSSHelper {
   static getStylesheetUri(context: ExtensionContext, fileName: string): Uri {
@@ -22,9 +23,9 @@ export class CSSHelper {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src ${panel.webview.cspSource} 'unsafe-inline';">
-    <link href="${variablesUri}" rel="stylesheet">
-    <link href="${componentsUri}" rel="stylesheet">
-    <link href="${themeUri}" rel="stylesheet">
+    <link href="${variablesUri.toString()}" rel="stylesheet">
+    <link href="${componentsUri.toString()}" rel="stylesheet">
+    <link href="${themeUri.toString()}" rel="stylesheet">
     `;
   }
 }

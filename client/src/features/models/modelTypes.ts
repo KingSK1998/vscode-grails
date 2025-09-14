@@ -3,56 +3,60 @@ export enum ProjectType {
   Groovy = "groovy",
   Grails = "grails",
   GrailsPlugin = "grails-plugin",
+  Unknown = "unknown",
 }
 
 /** Complete Grails artifact types */
-export enum GrailsArtifactType {
-  // ===== CORE MVC ARTIFACTS =====
-  CONTROLLER = "controller",
-  SERVICE = "service",
-  DOMAIN = "domain",
-  VIEW = "view",
-  TAGLIB = "taglib",
-  URL_MAPPING = "urlmapping", // grails-app/conf/UrlMappings.groovy
+export enum ArtifactType {
+  // Core MVC Artifacts
+  Controller = "controller",
+  Service = "service",
+  Domain = "domain",
+  View = "view",
+  TagLib = "taglib",
+
+  // Configuration
+  Config = "config", // grails-app/conf/
+  UrlMapping = "urlmapping", // grails-app/conf/UrlMappings.groovy
+  Bootstrap = "bootstrap", // Bootstrap.groovy
+
+  ApplicationConfig = "application", // Application.groovy
+  SpringConfig = "spring", // grails-app/conf/spring/
+  HibernateConfig = "hibernate", // grails-app/conf/hibernate/
 
   // ===== INTERCEPTORS & FILTERS =====
-  INTERCEPTOR = "interceptor", // grails-app/controllers/*Interceptor.groovy
-  FILTER = "filter", // grails-app/conf/*Filters.groovy
+  Interceptor = "interceptor", // grails-app/controllers/*Interceptor.groovy
+  Filter = "filter", // grails-app/conf/*Filters.groovy
 
   // ===== CONFIGURATION & ROUTING =====
-  CONFIG = "config", // grails-app/conf/
-  APPLICATION_CONFIG = "application", // Application.groovy
-  BOOTSTRAP = "bootstrap", // Bootstrap.groovy
-  SPRING_CONFIG = "spring", // grails-app/conf/spring/
-  HIBERNATE_CONFIG = "hibernate", // grails-app/conf/hibernate/
 
   // ===== TESTING ARTIFACTS =====
-  TESTS = "tests",
+  Tests = "tests",
   UNIT_TEST = "unit-test", // src/test/groovy/*Test.groovy
   INTEGRATION_TEST = "integration-test", // src/integration-test/groovy/*Spec.groovy
   SPOCK_SPEC = "spock-spec", // *Spec.groovy (Spock framework)
   FUNCTIONAL_TEST = "functional-test", // src/test/functional/
 
   // ===== ASSETS & RESOURCES =====
-  ASSETS = "assets", // grails-app/assets/
+  Assets = "assets", // grails-app/assets/
   I18N = "i18n", // grails-app/i18n/
-  RESOURCES = "resources", // src/main/resources/
+  Resources = "resources", // src/main/resources/
   STATIC_RESOURCES = "static", // src/main/webapp/ (older Grails)
 
   // ===== COMMANDS & SCRIPTS =====
-  COMMAND = "command", // grails-app/commands/
-  SCRIPT = "script", // src/main/scripts/
+  Command = "command", // grails-app/commands/
+  Script = "script", // src/main/scripts/
 
   // ===== PLUGIN ARTIFACTS =====
-  JOBS = "jobs", // grails-app/jobs/ (Quartz plugin)
-  UTILS = "utils", // grails-app/utils/
+  Job = "job", // grails-app/jobs/ (Quartz plugin)
+  Utils = "utils", // grails-app/utils/
   CODEC = "codec", // grails-app/utils/*Codec.groovy
 
   // ===== GROOVY PROJECT TYPES =====
-  GROOVY_SRC = "groovy-src", // src/main/groovy/
-  JAVA_SRC = "java-src", // src/main/java/
+  GroovySrc = "groovy-src", // src/main/groovy/
+  JavaSrc = "java-src", // src/main/java/
   SOURCE_SETS = "sourcesets",
-  DEPENDENCIES = "dependencies",
+  Dependencies = "dependencies",
   TASKS = "tasks",
 }
 
@@ -118,19 +122,19 @@ export interface ProjectInfo {
   dependencies?: string[];
 
   // Version info from LSP cache or build.gradle parsing
-  grailsVersion?: string;
-  groovyVersion?: string;
-  javaVersion?: string;
-  pluginVersion?: string;
+  grailsVersion?: string | undefined;
+  groovyVersion?: string | undefined;
+  javaVersion?: string | undefined;
+  pluginVersion?: string | undefined;
 
   // UI display data
-  artifactCounts?: ArtifactCounts;
+  artifactCounts?: ArtifactCounts | undefined;
 }
 
 /** Grails artifact definition for tree display */
 export interface GrailsArtifact {
   name: string;
-  type: GrailsArtifactType;
+  type: ArtifactType;
   path: string;
   packageName?: string;
 }
@@ -205,19 +209,19 @@ export const FILE_PATHS = {
 
 // ===== ARTIFACT DIRECTORY MAPPING =====
 export const ARTIFACT_DIRECTORIES: Record<string, string> = {
-  [GrailsArtifactType.CONTROLLER]: "controllers",
-  [GrailsArtifactType.SERVICE]: "services",
-  [GrailsArtifactType.DOMAIN]: "domain",
-  [GrailsArtifactType.VIEW]: "views",
-  [GrailsArtifactType.TAGLIB]: "taglib",
-  [GrailsArtifactType.INTERCEPTOR]: "controllers", // Interceptors go in controllers dir
-  [GrailsArtifactType.FILTER]: "conf", // Filters in conf dir
-  [GrailsArtifactType.CONFIG]: "conf",
-  [GrailsArtifactType.ASSETS]: "assets",
-  [GrailsArtifactType.I18N]: "i18n",
-  [GrailsArtifactType.UTILS]: "utils",
-  [GrailsArtifactType.COMMAND]: "commands",
-  [GrailsArtifactType.JOBS]: "jobs",
+  [ArtifactType.Controller]: "controllers",
+  [ArtifactType.Service]: "services",
+  [ArtifactType.Domain]: "domain",
+  [ArtifactType.View]: "views",
+  [ArtifactType.TagLib]: "taglib",
+  [ArtifactType.Interceptor]: "controllers", // Interceptors go in controllers dir
+  [ArtifactType.Filter]: "conf", // Filters in conf dir
+  [ArtifactType.Config]: "conf",
+  [ArtifactType.Assets]: "assets",
+  [ArtifactType.I18N]: "i18n",
+  [ArtifactType.Utils]: "utils",
+  [ArtifactType.Command]: "commands",
+  [ArtifactType.Job]: "jobs",
 } as const;
 
 /**
@@ -225,23 +229,23 @@ export const ARTIFACT_DIRECTORIES: Record<string, string> = {
  * @param artifactType The Grails artifact type
  * @returns Directory name or undefined if not found
  */
-export function getArtifactDirectory(artifactType: GrailsArtifactType): string | undefined {
+export function getArtifactDirectory(artifactType: ArtifactType): string | undefined {
   return ARTIFACT_DIRECTORIES[artifactType as string];
 }
 
 // ===== FILE NAMING CONVENTIONS =====
 export const ARTIFACT_SUFFIXES = {
-  [GrailsArtifactType.CONTROLLER]: "Controller.groovy",
-  [GrailsArtifactType.SERVICE]: "Service.groovy",
-  [GrailsArtifactType.DOMAIN]: ".groovy", // No suffix required
-  [GrailsArtifactType.TAGLIB]: "TagLib.groovy",
-  [GrailsArtifactType.INTERCEPTOR]: "Interceptor.groovy",
-  [GrailsArtifactType.FILTER]: "Filters.groovy",
-  [GrailsArtifactType.CODEC]: "Codec.groovy",
-  [GrailsArtifactType.COMMAND]: "Command.groovy",
-  [GrailsArtifactType.UNIT_TEST]: "Test.groovy",
-  [GrailsArtifactType.SPOCK_SPEC]: "Spec.groovy",
-  [GrailsArtifactType.INTEGRATION_TEST]: "Spec.groovy",
+  [ArtifactType.Controller]: "Controller.groovy",
+  [ArtifactType.Service]: "Service.groovy",
+  [ArtifactType.Domain]: ".groovy", // No suffix required
+  [ArtifactType.TagLib]: "TagLib.groovy",
+  [ArtifactType.Interceptor]: "Interceptor.groovy",
+  [ArtifactType.Filter]: "Filters.groovy",
+  [ArtifactType.CODEC]: "Codec.groovy",
+  [ArtifactType.Command]: "Command.groovy",
+  [ArtifactType.UNIT_TEST]: "Test.groovy",
+  [ArtifactType.SPOCK_SPEC]: "Spec.groovy",
+  [ArtifactType.INTEGRATION_TEST]: "Spec.groovy",
 } as const;
 
 // ===== SPECIAL FILES =====
@@ -290,16 +294,22 @@ export const PROJECT_MARKERS = {
   GRAILS: {
     directories: [FILE_PATHS.GRAILS_APP],
     files: [FILE_PATHS.APPLICATION_YML, FILE_PATHS.APPLICATION_GROOVY],
-    buildGradleContains: ["grails", "org.grails.grails-web"],
+    buildGradleContains: ["grails", "org.grails.grails-web", "org.grails.grails-core"],
+    // Add profile detection
+    profiles: ["web", "rest-api", "angular", "react", "vue-js", "webpack"],
   },
   GRAILS_PLUGIN: {
     directories: [FILE_PATHS.GRAILS_APP],
     buildGradleContains: ["org.grails.grails-plugin", "grails-plugin"],
     files: ["plugin.groovy", "grails-app/conf/application.yml"],
+    // Plugin-specific markers
+    hasPluginDescriptor: true,
   },
   GROOVY: {
     directories: [FILE_PATHS.SRC_MAIN_GROOVY],
     buildGradleContains: ["groovy", "org.codehaus.groovy"],
     files: [],
+    // Exclude if it's actually a Grails plugin
+    excludeIfContains: ["grails-app"],
   },
 } as const;

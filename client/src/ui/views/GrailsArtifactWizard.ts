@@ -1,4 +1,5 @@
-import { ExtensionContext, Uri, ViewColumn, WebviewPanel, window } from "vscode";
+import type { ExtensionContext, WebviewPanel } from "vscode";
+import { Uri, ViewColumn, window } from "vscode";
 import { CSSHelper } from "../../utils/CSSHelper";
 
 export class GrailsArtifactWizard {

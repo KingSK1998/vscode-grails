@@ -1,4 +1,5 @@
-import { ConfigurationTarget, Disposable, workspace } from "vscode";
+import type { Disposable } from "vscode";
+import { ConfigurationTarget, workspace } from "vscode";
 
 const CONFIG_SECTION = "grails";
 
@@ -98,9 +99,7 @@ export class ConfigurationService implements Disposable {
   }
 
   /** Cache file name (relative to cache directory). */
-  get cacheFile(): string {
-    return "projectInfo.json";
-  }
+  readonly cacheFile = "projectInfo.json";
 
   /** Experimental smart recompilation. */
   get smartRecompilation(): boolean {
@@ -128,7 +127,7 @@ export class ConfigurationService implements Disposable {
   }
 
   dispose() {
-    this.disposables.forEach(d => d.dispose());
+    this.disposables.forEach(d => void d.dispose());
     this.disposables = [];
   }
 }

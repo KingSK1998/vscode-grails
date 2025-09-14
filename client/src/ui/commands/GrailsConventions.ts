@@ -2,12 +2,12 @@ import { ViewColumn, window } from "vscode";
 
 export class GrailsConventions {
   // Show Grails naming conventions overlay
-  async showNamingConventions(): Promise<void> {
+  showNamingConventions(): void {
     const panel = window.createWebviewPanel(
       "grailsConventions",
       "Grails Conventions Helper",
       ViewColumn.Beside,
-      { enableScripts: true },
+      { enableScripts: true }
     );
 
     panel.webview.html = `

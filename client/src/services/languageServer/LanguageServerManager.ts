@@ -1,13 +1,15 @@
-import { Disposable, ExtensionContext, ProgressLocation, window } from "vscode";
-import { LanguageClient, Trace } from "vscode-languageclient/node";
-import { getClientOptions } from "./clientConfig";
-import { getServerOptions } from "./serverConfig";
+import type { Disposable, ExtensionContext } from "vscode";
+import { ProgressLocation, window } from "vscode";
+import { Trace } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 import { Messages } from "../../utils/constants";
-import { ErrorService } from "../errors/ErrorService";
-import { StatusBarService } from "../workspace/StatusBarService";
-import { ConfigurationService } from "../workspace/ConfigurationService";
+import type { ErrorService } from "../errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
-import { MessageType, WorkDoneProgress } from "./languageServerTypes";
+import type { ConfigurationService } from "../workspace/ConfigurationService";
+import type { StatusBarService } from "../workspace/StatusBarService";
+import { getClientOptions } from "./clientConfig";
+import type { WorkDoneProgress } from "./languageServerTypes";
+import { getServerOptions } from "./serverConfig";
 
 /**
  * Manages the Grails Language Server lifecycle with proper progress reporting
@@ -42,7 +44,7 @@ export class LanguageServerManager implements Disposable {
         },
         async progress => {
           // Get server configurations
-          const clientOptions = getClientOptions(this.context, this.config);
+          const clientOptions = getClientOptions(this.config);
           const serverOptions = getServerOptions(this.context, this.config);
 
           // Create the language client
@@ -55,7 +57,7 @@ export class LanguageServerManager implements Disposable {
 
           // Set trace level from configuration
           const traceLevel = this.config.traceLevel;
-          this.client.setTrace(this.mapTraceLevel(traceLevel));
+          void this.client.setTrace(this.mapTraceLevel(traceLevel));
 
           // Register handlers BEFORE starting the client
           this.registerProgressHandler(progress);
@@ -70,12 +72,13 @@ export class LanguageServerManager implements Disposable {
         }
       );
     } catch (error) {
-      this.errors.handle(
-        `Failed to start langauge server: ${error}`,
+      this.errors.handleError(
+        "Failed to start langauge server",
+        error,
         ErrorSource.LanguageServer,
         ErrorSeverity.Critical
       );
-      throw undefined;
+      return undefined;
     }
   }
 
@@ -88,15 +91,17 @@ export class LanguageServerManager implements Disposable {
   private registerProgressHandler(progress: {
     report: (info: { message?: string; increment?: number }) => void;
   }): void {
-    if (!this.client) return;
+    if (!this.client) {
+      console.log("[LSP Progress] No client to register progress handler");
+      return;
+    }
 
     // Listen for server-initiated progress
     const progressDisposable = this.client.onNotification(
       "$/progress",
       (params: { token: string; value: WorkDoneProgress }) => {
-        // Handle server setup progress (or any other progress with this token)
         if (params.token === "GLS-SERVER-SETUP" || params.token.startsWith("grails-")) {
-          this.handleServerProgress(params.value, progress);
+          this.handleProgressNotification(params.value, progress);
         }
       }
     );
@@ -104,34 +109,35 @@ export class LanguageServerManager implements Disposable {
     this.disposables.push(progressDisposable);
   }
 
-  private handleServerProgress(
+  private handleProgressNotification(
     value: WorkDoneProgress,
     progress: { report: (info: { message?: string; increment?: number }) => void }
   ): void {
     switch (value.kind) {
-      case "begin":
-        const beginMessage = value.message || value.title;
+      case "begin": {
+        const beginMessage = value.message ?? (value.title || "Starting...");
         progress.report({
           message: beginMessage,
-          increment: value.percentage || 0,
+          increment: value.percentage ?? 0,
         });
         this.statusBar.sync(beginMessage);
         console.log(`[LSP Progress] Begin: ${beginMessage}`);
         break;
+      }
 
       case "report":
         if (value.message) {
           progress.report({
             message: value.message,
-            increment: value.percentage,
+            increment: value.percentage ?? 0,
           });
           this.statusBar.sync(value.message);
-          console.log(`[LSP Progress] Report: ${value.message} (${value.percentage || 0}%)`);
+          console.log(`[LSP Progress] Report: ${value.message} (${value.percentage ?? 0}%)`);
         }
         break;
 
-      case "end":
-        const endMessage = value.message || "Server ready";
+      case "end": {
+        const endMessage = value.message ?? "Server ready";
         progress.report({
           message: endMessage,
           increment: 100,
@@ -139,11 +145,14 @@ export class LanguageServerManager implements Disposable {
         this.statusBar.ready("Language server ready");
         console.log(`[LSP Progress] End: ${endMessage}`);
         break;
+      }
     }
   }
 
   private registerMessageHandler(): void {
-    if (!this.client) return;
+    if (!this.client) {
+      return;
+    }
 
     const messageDisposable = this.client.onNotification(
       "window/showMessage",
@@ -157,18 +166,33 @@ export class LanguageServerManager implements Disposable {
 
   private handleServerMessage(type: number, message: string): void {
     // MessageType enum from LSP: Error=1, Warning=2, Info=3, Log=4
-    // Use ErrorService for proper handling (it will show notifications and update status bar)
+
     switch (type) {
-      case MessageType.Error:
-        this.errors.handle(message, ErrorSource.LanguageServer, ErrorSeverity.Error);
+      case 1:
+        this.errors.handleError(
+          "[Grails LSP]",
+          message,
+          ErrorSource.LanguageServer,
+          ErrorSeverity.Error
+        );
         break;
-      case MessageType.Warning:
-        this.errors.handle(message, ErrorSource.LanguageServer, ErrorSeverity.Warning);
+      case 2:
+        this.errors.handleError(
+          "[Grails LSP]",
+          message,
+          ErrorSource.LanguageServer,
+          ErrorSeverity.Warning
+        );
         break;
-      case MessageType.Info:
-        this.errors.handle(message, ErrorSource.LanguageServer, ErrorSeverity.Info);
+      case 3:
+        this.errors.handleError(
+          "[Grails LSP]",
+          message,
+          ErrorSource.LanguageServer,
+          ErrorSeverity.Info
+        );
         break;
-      case MessageType.Log:
+      case 4:
         console.log(`[Grails LSP] ${message}`);
         break;
       default:
@@ -189,15 +213,18 @@ export class LanguageServerManager implements Disposable {
   }
 
   async stop(): Promise<void> {
-    if (!this.client) return;
+    if (!this.client) {
+      return;
+    }
 
     try {
       this.statusBar.sync("Stopping Grails Language Server...");
       await this.client.stop();
       this.statusBar.info("Language server stopped");
     } catch (error) {
-      this.errors.handle(
-        `Error stopping language server: ${error}`,
+      this.errors.handleError(
+        "Error stopping language server",
+        error,
         ErrorSource.LanguageServer,
         ErrorSeverity.Error
       );
@@ -209,7 +236,15 @@ export class LanguageServerManager implements Disposable {
   async restart(): Promise<void> {
     this.statusBar.sync("Restarting Grails Language Server...");
     await this.stop();
-    await this.start();
+    const client = await this.start();
+    if (!client) {
+      this.errors.handleError(
+        "Failed to restart language server",
+        new Error("Server startup returned undefined"),
+        ErrorSource.LanguageServer,
+        ErrorSeverity.Critical
+      );
+    }
   }
 
   get isRunning(): boolean {
@@ -221,11 +256,21 @@ export class LanguageServerManager implements Disposable {
   }
 
   dispose(): void {
-    this.disposables.forEach(d => d.dispose());
+    // Clean up all disposables
+    for (const disposable of this.disposables) {
+      try {
+        disposable.dispose();
+      } catch (error) {
+        console.warn("Error disposing language server resource:", error);
+      }
+    }
     this.disposables = [];
 
+    // Stop client if running
     if (this.client) {
-      this.client.stop();
+      void this.client.stop().catch(error => {
+        console.warn("Error stopping language client:", error);
+      });
       this.client = undefined;
     }
   }

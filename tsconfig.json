@@ -18,16 +18,13 @@
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false
   },
-  "include": [
-    "client/src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    ".vscode-test",
-    "client/out",
-    "server/**/*",
-    "dist/**/*"
-  ]
+  "include": ["client/src/**/*"],
+  "exclude": ["node_modules", ".vscode-test", "client/out", "server/**/*", "dist/**/*"]
 }

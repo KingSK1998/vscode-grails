@@ -1,4 +1,4 @@
-import { Task, Event, TaskProvider, Disposable } from "vscode";
+import type { Disposable, Event, Task, TaskProvider } from "vscode";
 // https://github.com/microsoft/vscode-gradle/blob/develop/API.md
 
 export declare class Api {
@@ -36,9 +36,9 @@ export interface RunTaskOpts {
 
 export interface RunBuildOpts {
   projectFolder: string;
-  args: ReadonlyArray<string>;
+  args: readonly string[];
   input?: string;
-  onOutput?: (output: any) => void;
+  onOutput?: (output: unknown) => void;
   showOutputColors: boolean;
   cancellationKey?: string;
 }
@@ -51,12 +51,12 @@ export interface CancelTaskOpts {
 
 export interface CancelBuildOpts {
   projectFolder?: string;
-  args?: ReadonlyArray<string>;
+  args?: readonly string[];
   cancellationKey?: string;
 }
 
 interface Output {
-  getOutputType(): any;
+  getOutputType(): unknown;
   getOutputBytes_asU8(): Uint8Array;
 }
 
