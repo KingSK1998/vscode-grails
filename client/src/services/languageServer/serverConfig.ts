@@ -110,59 +110,35 @@ function getJavaDebugArgs(options: DebugOptions): string[] {
 function connectToRemoteServer(config: ConfigurationService): Promise<StreamInfo> {
   const port = config.serverPort;
   const host = "localhost";
-  const maxRetries = 5;
-  const retryDelay = 5000;
 
   console.log(`[ServerConfig] Attempting to connect to remote server at ${host}:${port}`);
 
   return new Promise((resolve, reject) => {
-    let attempt = 1;
-
-    const tryConnect = () => {
-      console.log(`[ServerConfig] Connection attempt ${attempt}/${maxRetries} to ${host}:${port}`);
-
-      const serverConnection = net.connect({ port, host }, () => {
-        console.log(`[ServerConfig] Successfully connected to remote Grails Language Server`);
-        resolve({
-          writer: serverConnection,
-          reader: serverConnection,
-        });
+    const serverConnection = net.connect({ port, host }, () => {
+      console.log(`[ServerConfig] Successfully connected to remote Grails Language Server`);
+      resolve({
+        writer: serverConnection,
+        reader: serverConnection,
       });
+    });
 
-      // Set connection timeout
-      serverConnection.setTimeout(5000);
+    // Disable timeout (or increase it)
+    serverConnection.setTimeout(0);
 
-      serverConnection.on("timeout", () => {
-        console.warn(`[ServerConfig] Connection timeout on attempt ${attempt}`);
-        serverConnection.destroy();
-        handleRetry();
-      });
+    serverConnection.once("timeout", () => {
+      console.warn(`[ServerConfig] Connection timeout`);
+      // Let error handler deal with retry if desired
+    });
 
-      serverConnection.on("error", (err: Error) => {
-        console.warn(`[ServerConfig] Connection attempt ${attempt} failed: ${err.message}`);
-        serverConnection.destroy();
-        handleRetry();
-      });
+    serverConnection.once("error", (err: Error) => {
+      console.warn(`[ServerConfig] Connection error: ${err.message}`);
+      // Let caller handle errors or add retry logic here
+      reject(err);
+    });
 
-      serverConnection.on("close", () => {
-        console.log("[ServerConfig] Remote server connection closed");
-      });
-
-      const handleRetry = () => {
-        attempt++;
-        if (attempt <= maxRetries) {
-          console.log(`[ServerConfig] Retrying in ${retryDelay / 1000} seconds...`);
-          setTimeout(tryConnect, retryDelay);
-        } else {
-          reject(
-            new Error(
-              `Failed to connect to remote server after ${maxRetries} attempts. Is the server running on ${host}:${port}?`
-            )
-          );
-        }
-      };
-    };
-
-    tryConnect();
+    serverConnection.once("close", () => {
+      console.log("[ServerConfig] Remote server connection closed");
+      // Handle cleanup or reconnect as appropriate
+    });
   });
 }

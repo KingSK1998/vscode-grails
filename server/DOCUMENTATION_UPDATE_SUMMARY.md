@@ -1,5 +1,7 @@
 # 📚 Documentation Update Summary
 
+**Monorepo user/dev docs:** see repository [`docs/README.md`](../docs/README.md) (`user-guide.md`, `developer-guide.md`). Server-specific guides remain under `server/docs/`.
+
 ## ✅ **Issues Fixed**
 
 ### **1. API.md Corrections**
@@ -79,15 +81,15 @@ The LSP supports live project updates through:
 
 **✅ Implemented:**
 
-- Completion, Hover, Definition, References
+- Completion, Hover, Definition, Implementation, References
 - Document/Workspace Symbols, Diagnostics
-- Signature Help, Code Lens, Inlay Hints
+- Signature Help, Code Lens, Inlay Hints, Rename (registered in `ServerCapabilities`)
 
-**🔄 Future Features:**
+**🔄 Future / stub:**
 
-- Document Highlighting, Code Actions, Rename
-- Semantic Tokens, Formatting, Folding
-- Document Links, Execute Commands
+- Code Actions (handler returns empty list)
+- Document Highlighting, Semantic Tokens, Formatting, Folding
+- Document Links, Execute Commands, pull diagnostics registration
 
 ## 📈 **Documentation Quality**
 

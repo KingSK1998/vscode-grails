@@ -27,5 +27,6 @@
     "vscode-grails/.vscode/mcp.json: perplexity": {
       "allowedModels": ["copilot/gpt-5-mini"]
     }
-  }
+  },
+  "java.compile.nullAnalysis.mode": "automatic"
 }

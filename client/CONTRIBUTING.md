@@ -15,8 +15,8 @@ Thank you for your interest in contributing to the Grails Framework Support VS C
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/vscode-grails-extension.git
-   cd vscode-grails-extension
+   git clone https://github.com/YOUR_USERNAME/vscode-grails.git
+   cd vscode-grails
    ```
 
 2. **Install Dependencies**

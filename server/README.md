@@ -142,6 +142,7 @@ enableIncrementalCompilation = true
 
 ## 📚 Documentation
 
+- **[Monorepo LSP reference](../docs/developer-guide.md#language-server-reference)** — `ServerCapabilities` vs disabled features
 - **[Testing Guide](docs/TESTING.md)** - Testing infrastructure and best practices
 - **[Compiler Architecture](docs/COMPILER.md)** - GrailsCompiler implementation details
 - **[Feature Responsibilities](docs/FEATURE_RESPONSIBILITIES.md)** - Feature ownership matrix

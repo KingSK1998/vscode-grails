@@ -5,6 +5,7 @@ import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.services.FileContentTracker
 import kingsk.grails.lsp.utils.ASTUtils
 import kingsk.grails.lsp.utils.GrailsASTHelper
+import kingsk.grails.lsp.utils.RangeHelper
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
@@ -13,7 +14,6 @@ import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-
 import java.util.concurrent.CompletableFuture
 
 @Slf4j
@@ -31,6 +31,12 @@ class GrailsRenameProvider {
 		Map<String, List<TextEdit>> textEditChanges = [:]
 		List<Either<TextDocumentEdit, ResourceOperation>> documentChanges = []
 		WorkspaceEdit workspaceEdit = new WorkspaceEdit(documentChanges)
+
+		String newName = params?.newName
+		if (!newName?.trim()) {
+			log.warn("[RENAME] Missing newName.")
+			return CompletableFuture.completedFuture(workspaceEdit)
+		}
 		
 		if (!visitor) {
 			log.warn("[RENAME] AST is null, returning null.")
@@ -102,13 +108,13 @@ class GrailsRenameProvider {
 		def contents = files.getContents(uri)
 		if (contents == null) return null
 		
-		return Ranges.getSubstring(contents, range, 1)
+		return RangeHelper.getSubstring(contents, range, 1)
 	}
 	
 	static TextEdit createTextEditToRenameClassNode(ClassNode classNode, String newName, String text, Range range) {
 		def className = classNode.nameWithoutPackage
 		def dollarIndex = className.indexOf('$')
-		if (dollarIndex != 01) {
+		if (dollarIndex >= 0) {
 			className = className.substring(dollarIndex + 1)
 		}
 		

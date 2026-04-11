@@ -19,9 +19,9 @@
     "Other"
   ],
   "keywords": [
-    "multi-root ready",
     "Grails",
     "Groovy",
+    "Gradle",
     "Grails Framework",
     "Grails Framework Support"
   ],
@@ -451,7 +451,7 @@
         },
         "grails.server.developmentMode": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable development mode for Language Server"
         },
         "grails.icons.suggestMaterialTheme": {

@@ -13,13 +13,15 @@ export class GrailsTreeItem extends TreeItem {
     public override readonly command: Command,
     public readonly projectInfo?: ProjectInfo,
     public readonly resourcePath?: string,
-    public readonly artifactType?: ArtifactType
+    public readonly artifactType?: ArtifactType,
+    public readonly children?: GrailsTreeItem[]
   ) {
     super(label, collapsibleState);
 
     this.contextValue = this.buildContextValue();
     this.setupIcon();
     this.tooltip = this.buildTooltip();
+    this.children = children;
   }
 
   private buildContextValue(): string {

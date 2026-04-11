@@ -34,7 +34,7 @@ interface GrailsExtensionAPI {
 import * as vscode from 'vscode';
 
 // Get the Grails extension
-const grailsExtension = vscode.extensions.getExtension('KingSK1998.vscode-grails-extension');
+const grailsExtension = vscode.extensions.getExtension('KingSK1998.vscode-grails');
 
 if (grailsExtension) {
   await grailsExtension.activate();

@@ -1,15 +1,16 @@
 import fs from "fs";
 import path from "path";
-import type { Disposable, ExtensionContext, TreeDataProvider, TreeItem } from "vscode";
+import type { Command, Disposable, ExtensionContext, TreeDataProvider, TreeItem } from "vscode";
 import { EventEmitter, TreeItemCollapsibleState, Uri } from "vscode";
 import { ServiceContainer } from "../../core/container/ServiceContainer";
 import { EventBus } from "../../core/events/EventBus";
 import { EventType } from "../../core/events/eventTypes";
 import type { ProjectInfo } from "../../features/models/modelTypes";
 import { ArtifactType, ProjectType } from "../../features/models/modelTypes";
-import { FlattenedPackageBuilder, FlattenedPackageNode } from "./FlattenedPackageBuilder";
 import { GrailsTreeItem } from "./GrailsTreeItem";
 import { TreeItemKind } from "./TreeItemKind";
+
+const NO_ACTION_COMMAND: Command = { command: "grails.noAction", title: "No Action" };
 
 /** Grails-specific tree explorer using utilities and IconProvider */
 export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
@@ -18,26 +19,19 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  protected container: ServiceContainer;
+  protected container: ServiceContainer = ServiceContainer.getInstance();
   protected projects: ProjectInfo[] = [];
-
   protected disposables: Disposable[] = [];
 
   constructor(protected readonly context: ExtensionContext) {
-    this.container = ServiceContainer.getInstance();
+    console.log("🌳 [GRAILS-TREE] initializing...");
     this.registerEventListeners();
     this.refresh();
-    console.log("🌳 [GRAILS-TREE] initialized");
   }
 
   /** Refresh the entire tree */
   refresh(): void {
     this.projects = this.container.projectService.getProjects();
-    const activeProject = this.container.projectService.getActiveProject();
-    console.log(
-      `🌳 [GRAILS-TREE] refreshed - ${this.projects.length} projects found. Current Project: `,
-      activeProject
-    );
     this._onDidChangeTreeData.fire();
   }
 
@@ -49,18 +43,12 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   async getChildren(element?: GrailsTreeItem): Promise<GrailsTreeItem[]> {
     // Root level - show Grails projects only
     if (!element) {
-      console.debug("🌳 [GRAILS-TREE] getChildren: root level");
       return Promise.resolve(this.getProjectNodes(this.projects));
     }
 
     if (!element.projectInfo) {
       console.debug("🌳 [GRAILS-TREE] getChildren: no projectInfo", element.label);
       return Promise.resolve([]);
-    }
-
-    if (element instanceof FlattenedPackageNode && element.children) {
-      console.debug("🌳 [GRAILS-TREE] getChildren: flattened package node");
-      return Promise.resolve(element.children);
     }
 
     console.debug(`🌳 [GRAILS-TREE] getChildren: ${element.kind}`);
@@ -71,35 +59,35 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
 
       case TreeItemKind.GrailsAppRoot:
         return Promise.resolve(this.getGrailsArtefactCategories(element.projectInfo));
-      case TreeItemKind.ConfigRoot:
-        return Promise.resolve(this.getConfigurationItems(element.projectInfo));
-      case TreeItemKind.ViewsRoot:
-        return Promise.resolve(this.getViewStructure(element.projectInfo));
-      case TreeItemKind.AssetsRoot:
-        return Promise.resolve(this.getAssetStructure(element.projectInfo));
-      case TreeItemKind.RoutesRoot:
-        return Promise.resolve(this.getRouteList(element.projectInfo));
-      case TreeItemKind.SrcRoot:
-        return Promise.resolve(
-          this.getSourceDirectories(element.resourcePath, element.projectInfo)
-        );
-      case TreeItemKind.TestsRoot:
-        return Promise.resolve(this.getTestDirectories(element.resourcePath, element.projectInfo));
-      case TreeItemKind.DependenciesRoot:
-        return Promise.resolve(this.getDependencyCategories(element.projectInfo));
+      // case TreeItemKind.ConfigRoot:
+      //   return Promise.resolve(this.getConfigurationItems(element.projectInfo));
+      // case TreeItemKind.ViewsRoot:
+      //   return Promise.resolve(this.getViewStructure(element.projectInfo));
+      // case TreeItemKind.AssetsRoot:
+      //   return Promise.resolve(this.getAssetStructure(element.projectInfo));
+      // case TreeItemKind.RoutesRoot:
+      //   return Promise.resolve(this.getRouteList(element.projectInfo));
+      // case TreeItemKind.SrcRoot:
+      //   return Promise.resolve(
+      //     this.getSourceDirectories(element.resourcePath, element.projectInfo)
+      //   );
+      // case TreeItemKind.TestsRoot:
+      //   return Promise.resolve(this.getTestDirectories(element.resourcePath, element.projectInfo));
+      // case TreeItemKind.DependenciesRoot:
+      //   return Promise.resolve(this.getDependencyCategories(element.projectInfo));
 
       case TreeItemKind.GrailsArtifactFolders:
         return Promise.resolve(this.getArtifactFiles(element.projectInfo, element.artifactType));
-      case TreeItemKind.SourceDir:
-      case TreeItemKind.TestDir:
-        return Promise.resolve(this.getDirectoryContents(element.resourcePath, element.kind));
-      case TreeItemKind.ViewsFolder:
-        return Promise.resolve(this.getViewFiles(element.resourcePath));
-      case TreeItemKind.AssetsFolder:
-        return Promise.resolve(this.getAssetFiles(element.resourcePath));
+      // case TreeItemKind.SourceDir:
+      // case TreeItemKind.TestDir:
+      //   return Promise.resolve(this.getDirectoryContents(element.resourcePath, element.kind));
+      // case TreeItemKind.ViewsFolder:
+      //   return Promise.resolve(this.getViewFiles(element.resourcePath));
+      // case TreeItemKind.AssetsFolder:
+      //   return Promise.resolve(this.getAssetFiles(element.resourcePath));
 
-      case TreeItemKind.DEPENDENCY_CATEGORY:
-        return Promise.resolve(this.getDependencyList(element.projectInfo, element.label));
+      // case TreeItemKind.DEPENDENCY_CATEGORY:
+      //   return Promise.resolve(this.getDependencyList(element.projectInfo, element.label));
 
       default:
         console.log(`⚠️ [GRAILS-TREE] Unknown TreeItemKind: ${element.kind}`);
@@ -161,7 +149,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   /** Get grails-app sections */
   private getRootContainers(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     // 1. Grails Artefacts (only if grails-app exists)
     if (this.hasGrailsApp(project)) {
@@ -170,7 +157,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "Grails Artefacts",
           TreeItemCollapsibleState.Expanded,
           TreeItemKind.GrailsAppRoot,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           path.join(project.rootPath, "grails-app")
         )
@@ -184,9 +171,37 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "Configuration",
           TreeItemCollapsibleState.Collapsed,
           TreeItemKind.ConfigRoot,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           path.join(project.rootPath, "grails-app", "conf")
+        )
+      );
+    }
+
+    const i18nFolder = path.join(project.rootPath, "grails-app", "i18n");
+    if (this.folderExists(i18nFolder)) {
+      items.push(
+        new GrailsTreeItem(
+          "Internationalization",
+          TreeItemCollapsibleState.Collapsed,
+          TreeItemKind.I18nRoot,
+          NO_ACTION_COMMAND,
+          project,
+          i18nFolder
+        )
+      );
+    }
+
+    const assetsFolder = path.join(project.rootPath, "grails-app", "assets");
+    if (this.folderExists(assetsFolder)) {
+      items.push(
+        new GrailsTreeItem(
+          "Assets",
+          TreeItemCollapsibleState.Collapsed,
+          TreeItemKind.AssetsRoot,
+          NO_ACTION_COMMAND,
+          project,
+          assetsFolder
         )
       );
     }
@@ -198,7 +213,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "Views",
           TreeItemCollapsibleState.Collapsed,
           TreeItemKind.ViewsRoot,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           path.join(project.rootPath, "grails-app", "views")
         )
@@ -206,26 +221,26 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
     }
 
     // 4. Routes (Virtual - always show for Grails projects)
-    if (this.isGrailsProject(project)) {
-      items.push(
-        new GrailsTreeItem(
-          "Routes",
-          TreeItemCollapsibleState.Collapsed,
-          TreeItemKind.RoutesRoot,
-          noActionCommand,
-          project
-        )
-      );
-    }
+    // if (this.isGrailsProject(project)) {
+    //   items.push(
+    //     new GrailsTreeItem(
+    //       "Routes",
+    //       TreeItemCollapsibleState.Collapsed,
+    //       TreeItemKind.RoutesRoot,
+    //       NO_ACTION_COMMAND,
+    //       project
+    //     )
+    //   );
+    // }
 
     // 5. Source (only if src folder exists)
     if (this.hasSourceFolder(project)) {
       items.push(
         new GrailsTreeItem(
-          "Source",
+          "Sources",
           TreeItemCollapsibleState.Collapsed,
           TreeItemKind.SrcRoot,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           path.join(project.rootPath, "src", "main")
         )
@@ -239,34 +254,48 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "Tests",
           TreeItemCollapsibleState.Collapsed,
           TreeItemKind.TestsRoot,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           path.join(project.rootPath, "src", "test")
         )
       );
     }
 
+    const intiFolder = path.join(project.rootPath, "grails-app", "init");
+    if (this.folderExists(intiFolder)) {
+      items.push(
+        new GrailsTreeItem(
+          "Init (Startup)",
+          TreeItemCollapsibleState.Collapsed,
+          TreeItemKind.InitRoot,
+          NO_ACTION_COMMAND,
+          project,
+          intiFolder
+        )
+      );
+    }
+
     // 7. Dependencies (always show - parsed from build.gradle)
-    items.push(
-      new GrailsTreeItem(
-        "Dependencies",
-        TreeItemCollapsibleState.Collapsed,
-        TreeItemKind.DependenciesRoot,
-        noActionCommand,
-        project
-      )
-    );
+    // items.push(
+    //   new GrailsTreeItem(
+    //     "Dependencies",
+    //     TreeItemCollapsibleState.Collapsed,
+    //     TreeItemKind.DependenciesRoot,
+    //     NO_ACTION_COMMAND,
+    //     project
+    //   )
+    // );
 
     // 8. Utilities (always show for productivity features)
-    items.push(
-      new GrailsTreeItem(
-        "Utilities",
-        TreeItemCollapsibleState.Collapsed,
-        TreeItemKind.UTILITIES_ROOT,
-        noActionCommand,
-        project
-      )
-    );
+    // items.push(
+    //   new GrailsTreeItem(
+    //     "Utilities",
+    //     TreeItemCollapsibleState.Collapsed,
+    //     TreeItemKind.UTILITIES_ROOT,
+    //     NO_ACTION_COMMAND,
+    //     project
+    //   )
+    // );
 
     return items;
   }
@@ -274,22 +303,21 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   /** Get grails-app specific structure */
   private getGrailsArtefactCategories(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     // Assets (inside grails-app)
-    if (this.hasAssetsFolder(project)) {
-      const assetCount = this.getAssetCount(project);
-      items.push(
-        new GrailsTreeItem(
-          `Assets (${assetCount})`,
-          TreeItemCollapsibleState.Collapsed,
-          TreeItemKind.AssetsRoot,
-          noActionCommand,
-          project,
-          path.join(project.rootPath, "grails-app", "assets")
-        )
-      );
-    }
+    // if (this.hasAssetsFolder(project)) {
+    //   const assetCount = this.getAssetCount(project);
+    //   items.push(
+    //     new GrailsTreeItem(
+    //       `Assets (${assetCount})`,
+    //       TreeItemCollapsibleState.Collapsed,
+    //       TreeItemKind.AssetsRoot,
+    //       NO_ACTION_COMMAND,
+    //       project,
+    //       path.join(project.rootPath, "grails-app", "assets")
+    //     )
+    //   );
+    // }
 
     const artefactCategories = [
       {
@@ -303,7 +331,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
         folder: "services",
       },
       {
-        label: "Domain Classes",
+        label: "Domains",
         type: ArtifactType.Domain,
         folder: "domain",
       },
@@ -348,7 +376,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             displayLabel,
             TreeItemCollapsibleState.Collapsed,
             TreeItemKind.GrailsArtifactFolders,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project,
             categoryPath,
             category.type
@@ -363,7 +391,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   private getConfigurationItems(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
     const confPath = path.join(project.rootPath, "grails-app", "conf");
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     if (!this.folderExists(confPath)) {
       return items;
@@ -393,7 +420,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           `🏗️ Application Config (${appConfigItems.length})`,
           TreeItemCollapsibleState.Expanded,
           TreeItemKind.ConfFolder,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project,
           confPath
         )
@@ -467,7 +494,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   private getViewStructure(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
     const viewsPath = path.join(project.rootPath, "grails-app", "views");
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     if (!this.folderExists(viewsPath)) {
       return items;
@@ -483,7 +509,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             `Layouts (${layoutCount})`,
             TreeItemCollapsibleState.Collapsed,
             TreeItemKind.ViewsFolder,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project,
             layoutsPath
           )
@@ -501,7 +527,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             `${dirent.name} (${viewCount})`,
             TreeItemCollapsibleState.Collapsed,
             TreeItemKind.ViewsFolder,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project,
             folderPath
           );
@@ -518,7 +544,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   private getAssetStructure(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
     const assetsPath = path.join(project.rootPath, "grails-app", "assets");
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     if (!this.folderExists(assetsPath)) {
       return items;
@@ -540,7 +565,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
               `${category.name} (${assetCount})`,
               TreeItemCollapsibleState.Collapsed,
               TreeItemKind.AssetsFolder,
-              noActionCommand,
+              NO_ACTION_COMMAND,
               project,
               categoryPath
             )
@@ -555,8 +580,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   }
 
   private getRouteList(project: ProjectInfo): GrailsTreeItem[] {
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
-
     // Parse UrlMappings.groovy if it exists
     const urlMappingsPath = path.join(project.rootPath, "grails-app", "conf", "UrlMappings.groovy");
 
@@ -566,7 +589,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "❌ No URL mappings found",
           TreeItemCollapsibleState.None,
           TreeItemKind.Error,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project
         ),
       ];
@@ -583,7 +606,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             "Default routing active",
             TreeItemCollapsibleState.None,
             TreeItemKind.Route,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project
           ),
         ];
@@ -610,7 +633,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "❌ Error parsing URL mappings",
           TreeItemCollapsibleState.None,
           TreeItemKind.Error,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project
         ),
       ];
@@ -641,7 +664,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
     project: ProjectInfo
   ): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     if (sourcePath === undefined || !this.folderExists(sourcePath)) {
       return items;
@@ -659,7 +681,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
               `${dir} (${fileCount})`,
               TreeItemCollapsibleState.Collapsed,
               TreeItemKind.SourceDir,
-              noActionCommand,
+              NO_ACTION_COMMAND,
               project,
               dirPath
             )
@@ -675,7 +697,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
 
   private getTestDirectories(testPath: string | undefined, project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     if (testPath === undefined || !this.folderExists(testPath)) {
       return items;
@@ -693,7 +714,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
               `${dir} (${testCount})`,
               TreeItemCollapsibleState.Collapsed,
               TreeItemKind.TestDir,
-              noActionCommand,
+              NO_ACTION_COMMAND,
               project,
               dirPath
             )
@@ -709,7 +730,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
 
   private getDependencyCategories(project: ProjectInfo): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     // Parse build.gradle for dependencies
     const buildGradlePath = path.join(project.rootPath, "build.gradle");
@@ -720,7 +740,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "❌ No build.gradle found",
           TreeItemCollapsibleState.None,
           TreeItemKind.Error,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project
         ),
       ];
@@ -741,7 +761,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             `Grails Plugins (${plugins.length})`,
             TreeItemCollapsibleState.Collapsed,
             TreeItemKind.DEPENDENCY_CATEGORY,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project
           )
         );
@@ -753,7 +773,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             `External Libraries (${libraries.length})`,
             TreeItemCollapsibleState.Collapsed,
             TreeItemKind.DEPENDENCY_CATEGORY,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project
           )
         );
@@ -765,7 +785,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             "No dependencies found",
             TreeItemCollapsibleState.None,
             TreeItemKind.Error,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project
           )
         );
@@ -777,7 +797,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
           "❌ Error parsing dependencies",
           TreeItemCollapsibleState.None,
           TreeItemKind.Error,
-          noActionCommand,
+          NO_ACTION_COMMAND,
           project
         )
       );
@@ -825,15 +845,13 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
   }
 
   private getArtifactFiles(project: ProjectInfo, artifactType?: ArtifactType): GrailsTreeItem[] {
-    const items: GrailsTreeItem[] = [];
-
     if (!artifactType) {
-      return items;
+      return [];
     }
 
     const basePath = path.join(project.rootPath, "grails-app");
+    let artifactPath: string | null = null;
 
-    let artifactPath: string;
     switch (artifactType) {
       case ArtifactType.Controller:
         artifactPath = path.join(basePath, "controllers");
@@ -854,49 +872,24 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
         artifactPath = path.join(basePath, "utils");
         break;
       default:
-        return items;
+        // Unknown artifact; return empty list
+        return [];
     }
-
-    return FlattenedPackageBuilder.buildFlattenedPackageTree(artifactPath, artifactType, project);
 
     if (!this.folderExists(artifactPath)) {
-      return items;
+      return [];
     }
 
-    try {
-      const suffix = this.getArtefactSuffix(artifactType ?? ArtifactType.Resources);
-      const files = fs.readdirSync(artifactPath, { withFileTypes: true });
-
-      const artifactFiles = files
-        .filter(entry => {
-          if (!entry.isFile() || !entry.name.endsWith(".groovy")) {
-            return false;
-          }
-
-          if (artifactType === ArtifactType.Domain) {
-            return !entry.name.includes("Test");
-          }
-          return entry.name.endsWith(`${suffix}.groovy`);
-        })
-        .map(entry => {
-          const fullPath = path.join(artifactPath, entry.name);
-          return new GrailsTreeItem(
-            entry.name,
-            TreeItemCollapsibleState.None,
-            TreeItemKind.ArtifactFile,
-            { command: "vscode.open", title: "Open", arguments: [Uri.file(fullPath)] },
-            project,
-            fullPath,
-            artifactType
-          );
-        });
-
-      items.push(...artifactFiles);
-    } catch (error) {
-      console.warn(`Error reading artifact directory ${artifactPath}:`, error);
-    }
-
-    return items;
+    // Use getPackagesWithFiles to build {package} nodes, with files nested
+    // Use TreeItemKind.GrailsArtifactFolders for packages and TreeItemKind.ArtifactFile for files
+    return this.getPackagesWithFiles(
+      artifactPath,
+      artifactPath,
+      TreeItemKind.GrailsArtifactFolders,
+      TreeItemKind.ArtifactFile,
+      project,
+      artifactType
+    );
   }
 
   private getDirectoryContents(
@@ -1057,7 +1050,6 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
 
   private getDependencyList(project: ProjectInfo, category: string): GrailsTreeItem[] {
     const items: GrailsTreeItem[] = [];
-    const noActionCommand = { command: "grails.noAction", title: "No Action" };
 
     try {
       const buildGradlePath = path.join(project.rootPath, "build.gradle");
@@ -1083,7 +1075,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
             `${dep.name} (${dep.version})`,
             TreeItemCollapsibleState.None,
             TreeItemKind.Dependency,
-            noActionCommand,
+            NO_ACTION_COMMAND,
             project
           )
       );
@@ -1291,6 +1283,91 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
     });
 
     this.disposables.push(projectsDiscoveredSub, projectChangedSub, treeRefreshSub);
+  }
+
+  private getPackagesWithFiles(
+    basePath: string,
+    currentPath: string,
+    kind: TreeItemKind,
+    fileKind: TreeItemKind,
+    project: ProjectInfo,
+    artifactType?: ArtifactType
+  ): GrailsTreeItem[] {
+    if (!this.folderExists(currentPath)) return [];
+
+    try {
+      const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+      const dirs = entries.filter(e => e.isDirectory());
+
+      // Flatten single-child directories into a combined package name
+      const packageNameParts: string[] = [];
+      let nodePath = currentPath;
+      let nodeEntries = dirs;
+
+      while (
+        nodeEntries.length === 1 && // Exactly one subdirectory
+        fs
+          .readdirSync(path.join(nodePath, nodeEntries[0].name), { withFileTypes: true })
+          .filter(e => e.isDirectory()).length <= 1 // and the child has at most one subdirectory
+      ) {
+        packageNameParts.push(nodeEntries[0].name);
+        nodePath = path.join(nodePath, nodeEntries[0].name);
+        const nextEntries = fs.readdirSync(nodePath, { withFileTypes: true });
+        nodeEntries = nextEntries.filter(e => e.isDirectory());
+      }
+
+      const relativePackageName = path.relative(basePath, nodePath).split(path.sep).join(".");
+      const packageLabel = relativePackageName ? `{${relativePackageName}}` : "<root>";
+
+      const fileChildren = fs
+        .readdirSync(nodePath, { withFileTypes: true })
+        .filter(f => f.isFile())
+        .map(
+          file =>
+            new GrailsTreeItem(
+              file.name,
+              TreeItemCollapsibleState.None,
+              fileKind,
+              {
+                command: "vscode.open",
+                title: "Open",
+                arguments: [Uri.file(path.join(nodePath, file.name))],
+              },
+              project,
+              path.join(nodePath, file.name),
+              artifactType
+            )
+        );
+
+      const subPackageChildren = nodeEntries.flatMap(dir =>
+        this.getPackagesWithFiles(
+          basePath,
+          path.join(nodePath, dir.name),
+          kind,
+          fileKind,
+          project,
+          artifactType
+        )
+      );
+
+      const allChildren = [...fileChildren, ...subPackageChildren];
+
+      return [
+        new GrailsTreeItem(
+          packageLabel,
+          TreeItemCollapsibleState.Collapsed,
+          kind,
+          { command: "grails.noAction", title: "No Action" },
+          project,
+          nodePath,
+          artifactType,
+          allChildren.length > 0 ? allChildren : undefined
+        ),
+      ];
+    } catch (error) {
+      console.warn(`Error reading and flattening packages in ${currentPath}:`, error);
+      return [];
+    }
   }
 
   public dispose(): void {

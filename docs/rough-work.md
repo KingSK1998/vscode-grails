@@ -1,5 +1,7 @@
 # Grails Extension
 
+> **Internal notes / backlog** — may be outdated. For accurate product state use [`user-guide.md`](./user-guide.md), [`developer-guide.md`](./developer-guide.md), and [`CHANGELOG.md`](../client/CHANGELOG.md).
+
 ## ✨ Succinct Thread Summary & Objectives
 
 ### Current State
@@ -187,65 +189,48 @@ vscode-grails/
 ├── scripts/                       # Build and utility scripts
 │   └── copy-server.js
 └── docs/
-    ├── DEVELOPMENT.md
     ├── README.md
+    ├── user-guide.md
+    ├── developer-guide.md
     └── rough-work.md
 ```
 
-2. Frontend (UI) Features to Focus On
+### Frontend (UI) Features to Focus On
+
 Skip language stuff, focus on these practical, high-impact UX components:
 
-a. Task Execution Panels
-Use vscode-gradle integration.
+1. Task Execution Panels
+   * Use vscode-gradle integration.
+   * Show a “Tasks Tree” for all available Gradle tasks (build, test, clean, custom).
+   * Allow running tasks, see output, get notifications of status (success/failure).
 
-Show a “Tasks Tree” for all available Gradle tasks (build, test, clean, custom).
+2. Dependency Tree Viewer
+   * Surface the Gradle dependencies for the current project/workspace.
+   * Optionally, annotate if dependencies are outdated or have known conflicts.
 
-Allow running tasks, see output, get notifications of status (success/failure).
+3. Project Explorer & Grails Artifacts Tree
+   * Custom tree view for controllers, services, domain, etc., when it's a Grails project.
+   * Bonus: Quick info (artifact counts, health, recent changes).
 
-b. Dependency Tree Viewer
-Surface the Gradle dependencies for the current project/workspace.
+4. Status Bar Integration
+   * Live, text+icon display of extension state:
 
-Optionally, annotate if dependencies are outdated or have known conflicts.
+5. Dashboard/Webview Panels
+   * One-click launch dashboard for “Grails Quick Actions”
+   * Quick links to docs, recent tasks, artifact creation wizards.
 
-c. Project Explorer & Grails Artifacts Tree
-Custom tree view for controllers, services, domain, etc., when it's a Grails project.
+6. Snippets/Code Templates
+   * Provide Grails/Groovy code snippets via the VS Code snippet system (for controllers, services, tests, etc.).
 
-Bonus: Quick info (artifact counts, health, recent changes).
+7. Quick Actions/Commands
+   * Palette commands for:
+     * Creating artifacts (controller, service, etc.)
+     * Running common tasks (build, test, run-app)
+     * Restarting Language Server
+     * Validating Grails project structure
 
-d. Status Bar Integration
-Live, text+icon display of extension state:
-
-“Ready”
-
-“Syncing Gradle...”
-
-“Build/Task running/failed”
-
-“Grails Project Active”
-
-Errors, warnings, etc.
-
-e. Dashboard/Webview Panels
-One-click launch dashboard for “Grails Quick Actions”
-
-Quick links to docs, recent tasks, artifact creation wizards.
-
-f. Snippets/Code Templates
-Provide Grails/Groovy code snippets via the VS Code snippet system (for controllers, services, tests, etc.).
-
-g. Quick Actions/Commands
-Palette commands for:
-
-Creating artifacts (controller, service, etc.)
-
-Running common tasks (build, test, run-app)
-
-Restarting Language Server
-
-Validating Grails project structure
-
-h. GSP Template Viewer
-Simple previewer for .gsp (Groovy Server Pages) files, possibly as an HTML preview.
+8. GSP Template Viewer
+   * Simple previewer for .gsp (Groovy Server Pages) files, possibly as an HTML preview.
 
 ### Key Files Description
 
@@ -454,69 +439,35 @@ grails-groovy-language-server/
 * DependencyCache.groovy - Cache dependency resolution results
 * GrailsProjectIndexer.groovy - Index project symbols for fast lookup
 
-Implementation Priority
-Phase 1: Foundation
-ProjectService - Multi-root detection with strict typing
+---
 
-EventBus - Project change notifications
+## Implementation Priority
 
-ServiceContainer - Strongly-typed DI
+### Phase 1: Foundation
 
-Phase 2: Adaptive UI
-Adaptive Tree Explorer - Changes based on project type
+* ProjectService - Multi-root detection with strict typing
+* EventBus - Project change notifications
+* ServiceContainer - Strongly-typed DI
 
-Conditional Status Bar - Project-type specific display
+### Phase 2: Adaptive UI
 
-Smart Command Registration - Context-aware commands
+* Adaptive Tree Explorer - Changes based on project type
+* Conditional Status Bar - Project-type specific display
+* Smart Command Registration - Context-aware commands
 
-Phase 3: Advanced Features
-Project Switcher UI - Multi-root navigation
+### Phase 3: Advanced Features
 
-Type-Specific Dashboards - Different panels per project type
+* Project Switcher UI - Multi-root navigation
+* Type-Specific Dashboards - Different panels per project type
+* LSP Cache Integration - Your existing .grails-lsp cache support
 
-LSP Cache Integration - Your existing .grails-lsp cache support
+### Key Architectural Principles
 
-Key Architectural Principles
-Single Responsibility: Each service handles one concern (detection, UI adaptation, events)
-
-Type Safety: Enums and interfaces prevent runtime errors
-
-Event-Driven: UI components react to project changes automatically
-
-Progressive Enhancement: Basic features work immediately, advanced features enhance experience
-
-Multi-Root Aware: Every component understands multiple workspace roots
-
-This architecture gives you:
-
-Clean separation between project detection and UI adaptation
-
-Type-safe service resolution without strings
-
-Reactive UI that updates automatically when project type changes
-
-Extensible design for future project types or features
-
-
-Performance-First Architecture Recommendations
-🚀 Critical Performance Principles for VS Code Extensions
-The 3-2-1 Rule for Extension Performance:
-3 seconds: Maximum total activation time
-
-200ms: UI must be responsive within this window
-
-100ms: Status bar/basic UI should show progress immediately
-
-Your Current Architecture Assessment: ✅ SOLID Foundation
-Your architecture is fundamentally correct:
-
-✅ Dependency injection with ServiceContainer
-
-✅ Event-driven communication via EventBus
-
-✅ Separation of concerns (services, UI, core)
-
-✅ Multi-root workspace planning
+* Single Responsibility: Each service handles one concern (detection, UI adaptation, events)
+* Type Safety: Enums and interfaces prevent runtime errors
+* Event-Driven: UI components react to project changes automatically
+* Progressive Enhancement: Basic features work immediately, advanced features enhance experience
+* Multi-Root Aware: Every component understands multiple workspace roots
 
 🎯 Performance Optimization Strategy
 Phase 1: Instant UI Feedback (0-200ms)
@@ -524,19 +475,17 @@ What you SHOULD do immediately:
 
 typescript
 Extension Activation Priority Queue:
+
 1. StatusBar.show("⚡ Initializing...")           // 5ms
 2. ProjectService.quickScan()                     // 50ms  
 3. TreeView.showSkeleton()                        // 30ms
 4. Commands.registerEssential()                   // 40ms
 5. StatusBar.show("🔍 Loading projects...")       // 5ms
+
 What you should AVOID:
-
 ❌ Waiting for LSP before showing UI
-
 ❌ Gradle sync during activation
-
 ❌ File system heavy operations in main thread
-
 ❌ Loading all features at once
 
 Phase 2: Progressive Enhancement (200ms-2s)
@@ -548,14 +497,11 @@ Background Loading (Non-blocking):
 └── Advanced tree features (on-demand)
 📊 Client-Server Metadata Exchange Strategy
 Recommended: Lightweight JSON Protocol
+
 Why JSON over binary cache for client?
-
 ✅ Parsing speed: JSON.parse() is 50x faster than Java deserialization in Node.js
-
 ✅ Size efficiency: Gzipped JSON is often smaller than Java serialization
-
 ✅ Debuggability: Human-readable, easy to troubleshoot
-
 ✅ Cross-platform: No JVM dependency on client side
 
 Optimal Metadata Structure:
@@ -590,13 +536,11 @@ interface ProjectMetadata {
   // Minimal deps (for quick analysis)
   dependencies: string[]; // top 10 only
 }
+
 What CLIENT should NOT store:
 ❌ Full dependency trees (LSP handles this)
-
 ❌ AST data (LSP manages)
-
 ❌ Complete file listings (file system handles)
-
 ❌ Build configurations (Gradle handles)
 
 🔄 Client-Server Responsibility Matrix
@@ -609,6 +553,7 @@ Client Owns:
 ├── Basic Project Detection (existence checks)
 ├── Cache Coordination (read JSON metadata)
 └── Extension Lifecycle (activation, deactivation)
+
 SERVER Responsibilities (Deep Analysis):
 typescript
 Server Owns:
@@ -618,6 +563,7 @@ Server Owns:
 ├── Code Intelligence (references, symbols)
 ├── Cache Management (binary cache + JSON export)
 └── Build System Events (compilation, test results)
+
 SHARED Responsibilities (Coordinated):
 typescript
 Coordinated:
@@ -626,12 +572,13 @@ Coordinated:
 ├── Configuration (Client reads, Server applies)
 └── Status Updates (Server reports, Client displays)
 ⚡ Performance-Critical Recommendations
+
 1. Lazy Loading Strategy
 typescript
 // Load immediately (0-200ms)
 const essentialServices = [
   'ErrorService',
-  'StatusBarService', 
+  'StatusBarService',
   'ProjectService.quickScan',
   'TreeView.skeleton'
 ];
@@ -646,6 +593,7 @@ const lazyServices = [
 2. Caching Strategy
 typescript
 Cache Hierarchy (Fastest to Slowest):
+
 1. Memory Cache (instant) → ProjectService.projects Map
 2. JSON Cache (1-5ms) → .grails-lsp/metadata.json  
 3. File System Scan (50-200ms) → build.gradle detection

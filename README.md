@@ -19,6 +19,8 @@ A comprehensive VS Code extension that provides full-featured support for **Grai
 - **Code Lens** - Test runners and method execution shortcuts
 - **Document Symbols** - AST-based file structure navigation
 - **Workspace Symbols** - Project-wide symbol search and navigation
+- **Go to Implementation** - Navigate to implementing types where resolved
+- **Rename** - Best-effort symbol rename (complex Groovy may not cover every case)
 
 ### 📝 VS Code Integration
 
@@ -36,17 +38,18 @@ A comprehensive VS Code extension that provides full-featured support for **Grai
 - **Build Automation** - Automatic project compilation and dependency resolution
 - **Error Handling** - Comprehensive error reporting with actionable suggestions
 - **Hot Reload** - Development mode with automatic reconnection
-- **Multi-Project Support** - Handle complex Grails applications with multiple modules
+
+**Workspace note:** The language server loads **one folder per window** — the **first** workspace root. Extra folders in a multi-root workspace are not indexed yet. See [docs/user-guide.md](./docs/user-guide.md).
 
 ## 📋 Requirements
 
 ### Prerequisites
 
-- **VS Code**: 1.93.0+
+- **VS Code**: `^1.103.0` (see `package.json` `engines.vscode`)
 - **Java**: JDK 17+ (for Language Server)
 - **Grails**: 4.0+ recommended (supports 3.x with limitations)
 - **Gradle**: 7.0+ for project build management
-- **Node.js**: 16+ (for extension development)
+- **Node.js**: 20.x recommended (CI uses 20.18.1; see [docs/developer-guide.md#ci](./docs/developer-guide.md#ci))
 
 ### Required Extensions
 
@@ -105,12 +108,9 @@ This extension uses a **client-server architecture** for optimal performance:
 
 ## 📖 Documentation
 
-- [Getting Started](./docs/getting-started.md) - Installation and basic setup
-- [Features Overview](./docs/features.md) - Complete feature documentation
-- [Configuration Guide](./docs/configuration.md) - Extension settings and customization
-- [Development Setup](./docs/development.md) - Contributing and development guide
-- [Architecture Details](./docs/architecture.md) - Technical implementation details
-- [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
+- [Documentation hub](./docs/README.md) — two main guides
+- [**User guide**](./docs/user-guide.md) — install, settings, features, troubleshooting, status
+- [**Developer guide**](./docs/developer-guide.md) — build, architecture, LSP reference, CI
 
 ## 🛠️ Development Workflow
 
@@ -118,7 +118,7 @@ This extension uses a **client-server architecture** for optimal performance:
 
 - **Git** for version control
 - **Java 17+** for Language Server development
-- **Node.js 16+** for VS Code extension development
+- **Node.js 20+** for VS Code extension development (match CI)
 - **IntelliJ IDEA** (recommended for server development)
 - **VS Code** (for extension development)
 
@@ -253,31 +253,21 @@ We welcome contributions!
 7. Push to your fork: `git push origin feature/amazing-feature`
 8. Open a Pull Request with a clear description
 
-See our [Development Guide](./docs/development.md) for more details.
+See [docs/developer-guide.md](./docs/developer-guide.md) for more details.
 
-## 📊 Project Status
+## 📊 Project status
 
-### Current Features (v0.0.1)
+See **[docs/user-guide.md#status-and-roadmap](./docs/user-guide.md#status-and-roadmap)** (version **0.0.2**). High level:
 
-- Basic LSP integration with code completion
-- Grails artifact recognition and navigation
-- Syntax highlighting for Groovy and GSP
-- Project explorer with Grails structure
-- Command palette integration
-
-### Roadmap
-
-- Enhanced debugging support
-- Multi-root workspace support
-- Grails plugin ecosystem integration
-- Performance optimizations for large projects
-- Advanced refactoring tools
+- LSP: completion, hover, diagnostics, definition, implementation, references, symbols, code lens, inlay hints, rename (best-effort). Not yet: formatting, folding, semantic tokens, code actions / quick fixes.
+- Roadmap: true multi-root indexing, richer refactorings, performance hardening for very large repos.
 
 ## 🐛 Known Issues
 
 - Language server may take a few moments to initialize on first startup
 - Large projects (1000+ files) might experience slower completion response times
 - GSP syntax highlighting may not work perfectly with complex nested expressions
+- **Rename** and **GSP** intelligence are best-effort; there is no LSP formatting / semantic highlighting / quick fixes yet ([developer guide — LSP reference](./docs/developer-guide.md#language-server-reference))
 
 Report issues on our [GitHub Issues page](https://github.com/KingSK1998/vscode-grails/issues).
 
@@ -345,4 +335,5 @@ The server is built with **Gradle** (producing a `-all.jar`).
 
 ## 📦 CI/CD
 
-- In CI, use **`npm ci && npm run vscode:prepublish`** to ensure a clean, reproducible build.
+- Workflow: **[CI/CD Pipeline on GitHub Actions](https://github.com/KingSK1998/vscode-grails/actions)** (Java 17, Node 20.18.1; server build **skips tests**; client `compile` + `bundle`). Details: [docs/developer-guide.md#ci](./docs/developer-guide.md#ci).
+- Local release prep: **`npm ci && npm run vscode:prepublish`** for a clean, reproducible build.

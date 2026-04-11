@@ -24,7 +24,7 @@ export class IconProvider {
     [TreeItemKind.GrailsAppRoot]: { icon: "rocket", color: "charts.green" },
     [TreeItemKind.AssetsRoot]: { icon: "folder-library", color: "charts.pink" },
     [TreeItemKind.ConfigRoot]: { icon: "settings-gear", color: "charts.gray" },
-    [TreeItemKind.IntiRoot]: { icon: "play", color: "charts.green" },
+    [TreeItemKind.InitRoot]: { icon: "play", color: "charts.green" },
     [TreeItemKind.ViewsRoot]: { icon: "browser", color: "charts.green" },
     [TreeItemKind.RoutesRoot]: { icon: "link", color: "charts.purple" },
     [TreeItemKind.SrcRoot]: { icon: "symbol-package", color: "charts.yellow" },

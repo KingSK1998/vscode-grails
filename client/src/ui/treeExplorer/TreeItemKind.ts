@@ -10,12 +10,13 @@ export enum TreeItemKind {
   // Main sections
   AssetsRoot = "assets-root",
   ConfigRoot = "config-root",
-  IntiRoot = "init-root",
+  InitRoot = "init-root",
   ViewsRoot = "views-root",
   RoutesRoot = "routes-root",
   SrcRoot = "source-root",
   TestsRoot = "test-root",
   DependenciesRoot = "dependency-root",
+  I18nRoot = "i18n-root",
 
   // Sub-categories
   ConfFolder = "config-folder",
