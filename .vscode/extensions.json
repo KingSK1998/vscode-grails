@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "redhat.java",
+    "vscjava.vscode-gradle",
+    "vscjava.vscode-java-debug",
+    "pkief.material-icon-theme",
+    "usernamehw.errorlens",
+    "ms-vscode.vscode-lsp-inspector",
+    "simonsiefke.svg-preview"
+  ]
+}

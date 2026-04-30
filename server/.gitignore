@@ -39,9 +39,6 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-### ROVO DEV - Atlassion ###
-acli.exe
-
 # Logs
 *.log
 logs/
