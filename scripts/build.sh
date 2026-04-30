@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔨 Building vscode-grails..."
+echo "🔨 Building vscode-gng-support..."
 
 # Color codes for output
 GREEN='\033[0;32m'

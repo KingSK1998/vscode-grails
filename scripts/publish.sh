@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Publishing vscode-grails..."
+echo "🚀 Publishing vscode-gng-support..."
 
 # Check if we're on main branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD)

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Setting up vscode-grails development environment..."
+echo "🚀 Setting up vscode-gng-support development environment..."
 
 # Check prerequisites
 echo "🔍 Checking prerequisites..."
@@ -122,6 +122,6 @@ echo "✅ Development environment ready!"
 echo ""
 echo "📝 Next steps:"
 echo "1. Open IntelliJ IDEA and import the 'server' folder as Gradle project"
-echo "2. Open VS Code and open this entire 'vscode-grails' folder"
+echo "2. Open VS Code and open this entire 'vscode-gng-support' folder"
 echo "3. Use F5 in VS Code to launch the extension"
 echo "4. Run './scripts/start-server-debug.sh' to start server in debug mode"

@@ -1,10 +1,10 @@
 # User guide
 
-Extension: **Grails & Groovy Support** · Marketplace id `KingSK1998.vscode-grails` · Version tracked in root [`package.json`](../package.json).
+Extension: **Groovy & Grails Support** · Marketplace id `KingSK1998.vscode-gng-support` · Version tracked in root [`package.json`](../package.json).
 
 ## Install
 
-1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-grails).
+1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support).
 2. **Gradle for Java** is installed automatically as a dependency.
 
 ## Requirements
@@ -70,9 +70,9 @@ Initialization options sent to the server come from `ConfigurationService` → `
 - **LSP never ready:** JDK 17+, correct `grails.javaHome`, Output panel + `grails.languageServer.trace`, valid Gradle/Grails folder.  
 - **Weak completions:** wait for indexing; try `grails.completion.maxItems` / `detail` = `basic`; remember only the **first** workspace root is indexed.  
 - **Stale Gradle model:** delete `.grails-lsp` in the project root; restart LSP after `build.gradle` changes.  
-- **CI vs local:** [GitHub Actions](https://github.com/KingSK1998/vscode-grails/actions) builds with Java 17 and Node 20.18.1; server tests are skipped in the default workflow (see [developer-guide.md](./developer-guide.md#ci)).
+- **CI vs local:** [GitHub Actions](https://github.com/KingSK1998/vscode-gng-support/actions) builds with Java 17 and Node 20.18.1; server tests are skipped in the default workflow (see [developer-guide.md](./developer-guide.md#ci)).
 
-**Issues:** [github.com/KingSK1998/vscode-grails/issues](https://github.com/KingSK1998/vscode-grails/issues)
+**Issues:** [github.com/KingSK1998/vscode-gng-support/issues](https://github.com/KingSK1998/vscode-gng-support/issues)
 
 ## Status and roadmap
 
@@ -82,7 +82,7 @@ Update this section when behavior changes (not only README marketing).
 
 **Roadmap:** real multi-root; code actions, highlights, formatting, folding, semantic tokens, pull diagnostics; large-repo performance.
 
-**Releases:** [`client/CHANGELOG.md`](../client/CHANGELOG.md). **Build health:** [Actions](https://github.com/KingSK1998/vscode-grails/actions).
+**Releases:** [`client/CHANGELOG.md`](../client/CHANGELOG.md). **Build health:** [Actions](https://github.com/KingSK1998/vscode-gng-support/actions).
 
 ---
 

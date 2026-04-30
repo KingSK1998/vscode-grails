@@ -1,65 +1,70 @@
-# Graph Report - .  (2026-04-22)
+# Graph Report - d:\Grails_Framework_Support_Extension\vscode-grails  (2026-04-30)
 
 ## Corpus Check
-- Corpus is ~39,581 words - fits in a single context window. You may not need a graph.
+- 92 files · ~69,350 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 368 nodes · 591 edges · 51 communities detected
-- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 103 edges (avg confidence: 0.8)
+- 411 nodes · 634 edges · 55 communities detected
+- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 116 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Core Lifecycle Management|Core Lifecycle Management]]
-- [[_COMMUNITY_Tree Explorer UI|Tree Explorer UI]]
-- [[_COMMUNITY_Error Handling Services|Error Handling Services]]
-- [[_COMMUNITY_Icon Theme Integration|Icon Theme Integration]]
-- [[_COMMUNITY_Project Discovery Services|Project Discovery Services]]
-- [[_COMMUNITY_Event Handling|Event Handling]]
-- [[_COMMUNITY_Configuration Management|Configuration Management]]
-- [[_COMMUNITY_Icon Provider|Icon Provider]]
-- [[_COMMUNITY_Language Server Management|Language Server Management]]
-- [[_COMMUNITY_Service Container|Service Container]]
-- [[_COMMUNITY_Commands and Wizards|Commands and Wizards]]
-- [[_COMMUNITY_Tree View Items|Tree View Items]]
-- [[_COMMUNITY_File Utilities|File Utilities]]
-- [[_COMMUNITY_CSS Helpers|CSS Helpers]]
-- [[_COMMUNITY_Debug Configuration|Debug Configuration]]
-- [[_COMMUNITY_Diagnostics UI|Diagnostics UI]]
-- [[_COMMUNITY_Documentation|Documentation]]
-- [[_COMMUNITY_Dashboard UI|Dashboard UI]]
-- [[_COMMUNITY_Gradle Task Provider|Gradle Task Provider]]
-- [[_COMMUNITY_Grails Conventions|Grails Conventions]]
+- [[_COMMUNITY_Grails Tree Explorer|Grails Tree Explorer]]
+- [[_COMMUNITY_Core Activation Manager|Core Activation Manager]]
+- [[_COMMUNITY_LSP & Error Services|LSP & Error Services]]
+- [[_COMMUNITY_Icon Theme Detector|Icon Theme Detector]]
+- [[_COMMUNITY_Project Discovery Service|Project Discovery Service]]
+- [[_COMMUNITY_Configuration Service|Configuration Service]]
+- [[_COMMUNITY_Extension Architecture Maps|Extension Architecture Maps]]
+- [[_COMMUNITY_Gradle Integration Service|Gradle Integration Service]]
+- [[_COMMUNITY_Icon Resolution Provider|Icon Resolution Provider]]
+- [[_COMMUNITY_Status Bar Service|Status Bar Service]]
+- [[_COMMUNITY_Service Container DI|Service Container DI]]
+- [[_COMMUNITY_Command Registration|Command Registration]]
+- [[_COMMUNITY_LSP Feature Providers|LSP Feature Providers]]
+- [[_COMMUNITY_Output Channels|Output Channels]]
+- [[_COMMUNITY_Grails Tree Items|Grails Tree Items]]
+- [[_COMMUNITY_File Scanning Utils|File Scanning Utils]]
+- [[_COMMUNITY_Event Bus|Event Bus]]
+- [[_COMMUNITY_Webview CSS & Wizard|Webview CSS & Wizard]]
+- [[_COMMUNITY_Server Debug Config|Server Debug Config]]
+- [[_COMMUNITY_Diagnostic Decorator|Diagnostic Decorator]]
+- [[_COMMUNITY_Visual Extension Icons|Visual Extension Icons]]
+- [[_COMMUNITY_Grails Dashboard View|Grails Dashboard View]]
+- [[_COMMUNITY_Compiler Optimization Skills|Compiler Optimization Skills]]
+- [[_COMMUNITY_Testing Architecture|Testing Architecture]]
+- [[_COMMUNITY_Gradle Task Types|Gradle Task Types]]
+- [[_COMMUNITY_Naming Conventions View|Naming Conventions View]]
 - [[_COMMUNITY_Environment Indicator|Environment Indicator]]
-- [[_COMMUNITY_Project Card UI|Project Card UI]]
-- [[_COMMUNITY_Quick Actions UI|Quick Actions UI]]
+- [[_COMMUNITY_Project Card View|Project Card View]]
+- [[_COMMUNITY_Quick Actions View|Quick Actions View]]
 - [[_COMMUNITY_GSP Template Viewer|GSP Template Viewer]]
-- [[_COMMUNITY_Artifact Directories|Artifact Directories]]
-- [[_COMMUNITY_Build Configuration|Build Configuration]]
-- [[_COMMUNITY_Type Definitions|Type Definitions]]
-- [[_COMMUNITY_Test Framework|Test Framework]]
+- [[_COMMUNITY_Model Artifact Utils|Model Artifact Utils]]
+- [[_COMMUNITY_Testing Skills|Testing Skills]]
+- [[_COMMUNITY_LSP Execution Scope|LSP Execution Scope]]
+- [[_COMMUNITY_Test App Assets|Test App Assets]]
+- [[_COMMUNITY_ESLint Config|ESLint Config]]
+- [[_COMMUNITY_Service Registry|Service Registry]]
+- [[_COMMUNITY_Event Types|Event Types]]
+- [[_COMMUNITY_Error Types|Error Types]]
+- [[_COMMUNITY_LSP Types|LSP Types]]
+- [[_COMMUNITY_Status Bar Types|Status Bar Types]]
+- [[_COMMUNITY_Client Test Entry|Client Test Entry]]
+- [[_COMMUNITY_Tree Item Kinds|Tree Item Kinds]]
 - [[_COMMUNITY_Extension Constants|Extension Constants]]
-- [[_COMMUNITY_Client Types|Client Types]]
-- [[_COMMUNITY_Test Utilities|Test Utilities]]
-- [[_COMMUNITY_Client Services|Client Services]]
-- [[_COMMUNITY_Client Features|Client Features]]
-- [[_COMMUNITY_Core Types|Core Types]]
-- [[_COMMUNITY_Client Utils|Client Utils]]
-- [[_COMMUNITY_Client Models|Client Models]]
-- [[_COMMUNITY_Client Scripts|Client Scripts]]
-- [[_COMMUNITY_Build Scripts|Build Scripts]]
-- [[_COMMUNITY_Utility Scripts|Utility Scripts]]
-- [[_COMMUNITY_TypeScript Config|TypeScript Config]]
-- [[_COMMUNITY_LSP4J Library|LSP4J Library]]
-- [[_COMMUNITY_Server API|Server API]]
-- [[_COMMUNITY_Server Main|Server Main]]
-- [[_COMMUNITY_Service Layer|Service Layer]]
-- [[_COMMUNITY_Workspace Service|Workspace Service]]
-- [[_COMMUNITY_Compiler Core|Compiler Core]]
-- [[_COMMUNITY_AST Visitor|AST Visitor]]
-- [[_COMMUNITY_Project Structure|Project Structure]]
-- [[_COMMUNITY_Extension Entry|Extension Entry]]
-- [[_COMMUNITY_Brand Assets|Brand Assets]]
-- [[_COMMUNITY_Extension Icons|Extension Icons]]
+- [[_COMMUNITY_Grails Themes|Grails Themes]]
+- [[_COMMUNITY_Grails Icons Types|Grails Icons Types]]
+- [[_COMMUNITY_Run Gradle Script|Run Gradle Script]]
+- [[_COMMUNITY_Test JS Assets|Test JS Assets]]
+- [[_COMMUNITY_Test JS Assets Src|Test JS Assets Src]]
+- [[_COMMUNITY_Shared Grails Types|Shared Grails Types]]
+- [[_COMMUNITY_Auto Tool Skill|Auto Tool Skill]]
+- [[_COMMUNITY_User Guide Docs|User Guide Docs]]
+- [[_COMMUNITY_LSP Reference Provider|LSP Reference Provider]]
+- [[_COMMUNITY_Server Build Status|Server Build Status]]
+- [[_COMMUNITY_Slack SVG Asset|Slack SVG Asset]]
+- [[_COMMUNITY_Apple Touch Icon|Apple Touch Icon]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `GrailsTreeExplorer` - 40 edges
@@ -74,289 +79,313 @@
 10. `ServiceContainer` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Client Component (TypeScript)` --is_part_of--> `VS Code Grails Extension`  [EXTRACTED]
-  CLAUDE.md → README.md
-- `Server Component (Groovy LSP)` --is_part_of--> `VS Code Grails Extension`  [EXTRACTED]
-  CLAUDE.md → README.md
+- `Read Tests Before Change Skill` --semantically_similar_to--> `Comprehensive Test Cases Skill`  [INFERRED] [semantically similar]
+  read-tests-before-change/SKILL.md → comprehensive-test-cases/SKILL.md
+- `Grails SVG Test Asset` --semantically_similar_to--> `Grails SVG Brand Icon`  [INFERRED] [semantically similar]
+  server/src/test/resources/test-projects/grails-test-project/grails-app/assets/images/grails.svg → resources/icons/grails.svg
+- `Architecture for Performance Skill` --conceptually_related_to--> `GrailsCompiler`  [INFERRED]
+  architecture-for-performance/SKILL.md → CLAUDE.md
+- `Extension Settings grailsLsp` --references--> `Client TypeScript Extension`  [EXTRACTED]
+  README.md → CLAUDE.md
+- `Client API Reference` --references--> `Client TypeScript Extension`  [EXTRACTED]
+  docs/Client_API.md → CLAUDE.md
+
+## Hyperedges (group relationships)
+- **LSP Client-Server Communication Bridge** — claude_client_ts, claude_vscode_lsp_client, claude_lsp4j, claude_server_groovy [EXTRACTED 0.95]
+- **Core Compilation Pipeline** — claude_grails_compiler, claude_ast_visitor, claude_gradle_api, claude_incremental_compile [EXTRACTED 0.90]
+- **Modular LSP Provider System** — server_api_base_provider, server_api_completion_provider, server_api_hover_provider, server_api_definition_provider, server_api_diagnostics_provider, server_api_codelens_provider [EXTRACTED 0.95]
+- **Test Infrastructure** — server_testing_spock, server_testing_base_lsp_spec, server_testing_project_types, server_status_jacoco_60pct [EXTRACTED 0.90]
 
 ## Communities
 
-### Community 0 - "Core Lifecycle Management"
-Cohesion: 0.08
-Nodes (4): ActivationManager, copyServer(), StatusBarService, createProjectTreeProvider()
-
-### Community 1 - "Tree Explorer UI"
-Cohesion: 0.11
+### Community 0 - "Grails Tree Explorer"
+Cohesion: 0.12
 Nodes (1): GrailsTreeExplorer
 
-### Community 2 - "Error Handling Services"
-Cohesion: 0.11
-Nodes (2): ErrorService, GradleService
+### Community 1 - "Core Activation Manager"
+Cohesion: 0.09
+Nodes (3): ActivationManager, copyServer(), createProjectTreeProvider()
 
-### Community 3 - "Icon Theme Integration"
+### Community 2 - "LSP & Error Services"
+Cohesion: 0.11
+Nodes (2): ErrorService, LanguageServerManager
+
+### Community 3 - "Icon Theme Detector"
 Cohesion: 0.12
 Nodes (4): main(), activate(), deactivate(), IconThemeDetector
 
-### Community 4 - "Project Discovery Services"
+### Community 4 - "Project Discovery Service"
 Cohesion: 0.13
 Nodes (1): ProjectService
 
-### Community 5 - "Event Handling"
-Cohesion: 0.1
-Nodes (3): getClientOptions(), EventBus, OutputChannelService
-
-### Community 6 - "Configuration Management"
-Cohesion: 0.17
+### Community 5 - "Configuration Service"
+Cohesion: 0.18
 Nodes (1): ConfigurationService
 
-### Community 7 - "Icon Provider"
+### Community 6 - "Extension Architecture Maps"
+Cohesion: 0.11
+Nodes (20): GrailsASTVisitor, Client TypeScript Extension, esbuild Bundler, Gradle Tooling API 8.12, GradleService, GrailsCompiler, Incremental Compilation, LanguageServerManager (+12 more)
+
+### Community 7 - "Gradle Integration Service"
+Cohesion: 0.17
+Nodes (1): GradleService
+
+### Community 8 - "Icon Resolution Provider"
 Cohesion: 0.2
 Nodes (1): IconProvider
 
-### Community 8 - "Language Server Management"
-Cohesion: 0.18
-Nodes (1): LanguageServerManager
+### Community 9 - "Status Bar Service"
+Cohesion: 0.2
+Nodes (1): StatusBarService
 
-### Community 9 - "Service Container"
+### Community 10 - "Service Container DI"
 Cohesion: 0.14
 Nodes (1): ServiceContainer
 
-### Community 10 - "Commands and Wizards"
+### Community 11 - "Command Registration"
 Cohesion: 0.27
 Nodes (1): Commands
 
-### Community 11 - "Tree View Items"
+### Community 12 - "LSP Feature Providers"
+Cohesion: 0.15
+Nodes (14): BaseProvider, CodeLensProvider, CompletionProvider, DefinitionProvider, DiagnosticsProvider, GrailsLanguageServer, GrailsService, HoverProvider (+6 more)
+
+### Community 13 - "Output Channels"
+Cohesion: 0.18
+Nodes (2): getClientOptions(), OutputChannelService
+
+### Community 14 - "Grails Tree Items"
 Cohesion: 0.33
 Nodes (1): GrailsTreeItem
 
-### Community 12 - "File Utilities"
+### Community 15 - "File Scanning Utils"
 Cohesion: 0.24
 Nodes (2): FileScannerUtils, ProjectFolderUtils
 
-### Community 13 - "CSS Helpers"
+### Community 16 - "Event Bus"
+Cohesion: 0.25
+Nodes (1): EventBus
+
+### Community 17 - "Webview CSS & Wizard"
 Cohesion: 0.32
 Nodes (2): CSSHelper, GrailsArtifactWizard
 
-### Community 14 - "Debug Configuration"
+### Community 18 - "Server Debug Config"
 Cohesion: 0.48
 Nodes (5): getDebugConfiguration(), getJavaDebugArgs(), getLocalServerOptions(), getServerJarPath(), getServerOptions()
 
-### Community 15 - "Diagnostics UI"
+### Community 19 - "Diagnostic Decorator"
 Cohesion: 0.4
 Nodes (1): DiagnosticDecorationProvider
 
-### Community 16 - "Documentation"
+### Community 20 - "Visual Extension Icons"
 Cohesion: 0.4
-Nodes (4): Client Component (TypeScript), Root README.md, Server Component (Groovy LSP), VS Code Grails Extension
+Nodes (5): VS Code Extension Icon PNG, Grails Logo SVG Icon, Grails SVG Brand Icon, Grails Cupsonly Logo White SVG, Grails SVG Test Asset
 
-### Community 17 - "Dashboard UI"
+### Community 21 - "Grails Dashboard View"
 Cohesion: 0.67
 Nodes (1): GrailsDashboard
 
-### Community 18 - "Gradle Task Provider"
+### Community 22 - "Compiler Optimization Skills"
+Cohesion: 0.5
+Nodes (4): Full Compilation 2-5 Seconds, Compiler Incremental 50-200ms, Performance Optimization Skill, Profile Before Optimize Principle
+
+### Community 23 - "Testing Architecture"
+Cohesion: 0.5
+Nodes (4): JaCoCo 60% Coverage Threshold, BaseLspSpec Base Test Class, ProjectType DUMMY GROOVY GRAILS, Spock 2.3 Test Framework
+
+### Community 24 - "Gradle Task Types"
 Cohesion: 0.67
 Nodes (2): Api, GradleTaskProvider
 
-### Community 19 - "Grails Conventions"
+### Community 25 - "Naming Conventions View"
 Cohesion: 0.67
 Nodes (1): GrailsConventions
 
-### Community 20 - "Environment Indicator"
+### Community 26 - "Environment Indicator"
 Cohesion: 0.67
 Nodes (1): GrailsEnvironmentIndicator
 
-### Community 21 - "Project Card UI"
+### Community 27 - "Project Card View"
 Cohesion: 0.67
 Nodes (1): GrailsProjectCard
 
-### Community 22 - "Quick Actions UI"
+### Community 28 - "Quick Actions View"
 Cohesion: 0.67
 Nodes (1): GrailsQuickActions
 
-### Community 23 - "GSP Template Viewer"
+### Community 29 - "GSP Template Viewer"
 Cohesion: 0.67
 Nodes (1): GSPTemplateViewer
 
-### Community 24 - "Artifact Directories"
+### Community 30 - "Model Artifact Utils"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 25 - "Build Configuration"
+### Community 31 - "Testing Skills"
+Cohesion: 1.0
+Nodes (2): Comprehensive Test Cases Skill, Read Tests Before Change Skill
+
+### Community 32 - "LSP Execution Scope"
+Cohesion: 1.0
+Nodes (2): AST Node Level Execution Scope, Workspace Level Caching Strategy
+
+### Community 33 - "Test App Assets"
+Cohesion: 1.0
+Nodes (2): Advanced Grails SVG Asset, Documentation SVG Asset
+
+### Community 34 - "ESLint Config"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 26 - "Type Definitions"
+### Community 35 - "Service Registry"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 27 - "Test Framework"
+### Community 36 - "Event Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 28 - "Extension Constants"
+### Community 37 - "Error Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 29 - "Client Types"
+### Community 38 - "LSP Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 30 - "Test Utilities"
+### Community 39 - "Status Bar Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 31 - "Client Services"
+### Community 40 - "Client Test Entry"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 32 - "Client Features"
+### Community 41 - "Tree Item Kinds"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 33 - "Core Types"
+### Community 42 - "Extension Constants"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 34 - "Client Utils"
+### Community 43 - "Grails Themes"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 35 - "Client Models"
+### Community 44 - "Grails Icons Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 36 - "Client Scripts"
+### Community 45 - "Run Gradle Script"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 37 - "Build Scripts"
+### Community 46 - "Test JS Assets"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 38 - "Utility Scripts"
+### Community 47 - "Test JS Assets Src"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 39 - "TypeScript Config"
+### Community 48 - "Shared Grails Types"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 40 - "LSP4J Library"
+### Community 49 - "Auto Tool Skill"
 Cohesion: 1.0
-Nodes (1): Eclipse LSP4J
+Nodes (1): Auto Tool Selection Skill
 
-### Community 41 - "Server API"
+### Community 50 - "User Guide Docs"
 Cohesion: 1.0
-Nodes (1): Gradle Tooling API
+Nodes (1): User Guide
 
-### Community 42 - "Server Main"
+### Community 51 - "LSP Reference Provider"
 Cohesion: 1.0
-Nodes (1): Grails Language Server
+Nodes (1): ReferencesProvider
 
-### Community 43 - "Service Layer"
+### Community 52 - "Server Build Status"
 Cohesion: 1.0
-Nodes (1): GrailsTextDocumentService
+Nodes (1): Server Build Status - Passing
 
-### Community 44 - "Workspace Service"
+### Community 53 - "Slack SVG Asset"
 Cohesion: 1.0
-Nodes (1): GrailsWorkspaceService
+Nodes (1): Slack SVG Community Link
 
-### Community 45 - "Compiler Core"
+### Community 54 - "Apple Touch Icon"
 Cohesion: 1.0
-Nodes (1): GrailsCompiler
-
-### Community 46 - "AST Visitor"
-Cohesion: 1.0
-Nodes (1): GrailsASTVisitor
-
-### Community 47 - "Project Structure"
-Cohesion: 1.0
-Nodes (1): Monorepo Structure
-
-### Community 48 - "Extension Entry"
-Cohesion: 1.0
-Nodes (1): Grails Framework Extension Icon
-
-### Community 49 - "Brand Assets"
-Cohesion: 1.0
-Nodes (1): Grails Framework Logo
-
-### Community 50 - "Extension Icons"
-Cohesion: 1.0
-Nodes (1): Grails Activity Bar Icon
+Nodes (1): Apple Touch Icon PNG
 
 ## Knowledge Gaps
-- **16 isolated node(s):** `Api`, `GradleTaskProvider`, `Root README.md`, `Client Component (TypeScript)`, `Server Component (Groovy LSP)` (+11 more)
+- **46 isolated node(s):** `Api`, `GradleTaskProvider`, `LanguageServerManager`, `GradleService`, `LSP4J 0.23.1` (+41 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Artifact Directories`** (2 nodes): `modelTypes.ts`, `getArtifactDirectory()`
+- **Thin community `Model Artifact Utils`** (2 nodes): `modelTypes.ts`, `getArtifactDirectory()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Build Configuration`** (1 nodes): `eslint.config.mjs`
+- **Thin community `Testing Skills`** (2 nodes): `Comprehensive Test Cases Skill`, `Read Tests Before Change Skill`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Type Definitions`** (1 nodes): `ServiceRegistry.ts`
+- **Thin community `LSP Execution Scope`** (2 nodes): `AST Node Level Execution Scope`, `Workspace Level Caching Strategy`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Test Framework`** (1 nodes): `eventTypes.ts`
+- **Thin community `Test App Assets`** (2 nodes): `Advanced Grails SVG Asset`, `Documentation SVG Asset`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Extension Constants`** (1 nodes): `errorTypes.ts`
+- **Thin community `ESLint Config`** (1 nodes): `eslint.config.mjs`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Types`** (1 nodes): `languageServerTypes.ts`
+- **Thin community `Service Registry`** (1 nodes): `ServiceRegistry.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Test Utilities`** (1 nodes): `statusBarTypes.ts`
+- **Thin community `Event Types`** (1 nodes): `eventTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Services`** (1 nodes): `extension.test.ts`
+- **Thin community `Error Types`** (1 nodes): `errorTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Features`** (1 nodes): `TreeItemKind.ts`
+- **Thin community `LSP Types`** (1 nodes): `languageServerTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Core Types`** (1 nodes): `constants.ts`
+- **Thin community `Status Bar Types`** (1 nodes): `statusBarTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Utils`** (1 nodes): `grails-themes.ts`
+- **Thin community `Client Test Entry`** (1 nodes): `extension.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Models`** (1 nodes): `GrailsIcons.ts`
+- **Thin community `Tree Item Kinds`** (1 nodes): `TreeItemKind.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Client Scripts`** (1 nodes): `run-gradlew.js`
+- **Thin community `Extension Constants`** (1 nodes): `constants.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Build Scripts`** (1 nodes): `application.js`
+- **Thin community `Grails Themes`** (1 nodes): `grails-themes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Utility Scripts`** (1 nodes): `application.js`
+- **Thin community `Grails Icons Types`** (1 nodes): `GrailsIcons.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `TypeScript Config`** (1 nodes): `grails-types.ts`
+- **Thin community `Run Gradle Script`** (1 nodes): `run-gradlew.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `LSP4J Library`** (1 nodes): `Eclipse LSP4J`
+- **Thin community `Test JS Assets`** (1 nodes): `application.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Server API`** (1 nodes): `Gradle Tooling API`
+- **Thin community `Test JS Assets Src`** (1 nodes): `application.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Server Main`** (1 nodes): `Grails Language Server`
+- **Thin community `Shared Grails Types`** (1 nodes): `grails-types.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Service Layer`** (1 nodes): `GrailsTextDocumentService`
+- **Thin community `Auto Tool Skill`** (1 nodes): `Auto Tool Selection Skill`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Workspace Service`** (1 nodes): `GrailsWorkspaceService`
+- **Thin community `User Guide Docs`** (1 nodes): `User Guide`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Compiler Core`** (1 nodes): `GrailsCompiler`
+- **Thin community `LSP Reference Provider`** (1 nodes): `ReferencesProvider`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `AST Visitor`** (1 nodes): `GrailsASTVisitor`
+- **Thin community `Server Build Status`** (1 nodes): `Server Build Status - Passing`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Project Structure`** (1 nodes): `Monorepo Structure`
+- **Thin community `Slack SVG Asset`** (1 nodes): `Slack SVG Community Link`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Extension Entry`** (1 nodes): `Grails Framework Extension Icon`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Brand Assets`** (1 nodes): `Grails Framework Logo`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Extension Icons`** (1 nodes): `Grails Activity Bar Icon`
+- **Thin community `Apple Touch Icon`** (1 nodes): `Apple Touch Icon PNG`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `GrailsTreeExplorer` connect `Tree Explorer UI` to `Icon Theme Integration`?**
-  _High betweenness centrality (0.152) - this node is a cross-community bridge._
-- **Why does `IconThemeDetector` connect `Icon Theme Integration` to `Core Lifecycle Management`?**
-  _High betweenness centrality (0.098) - this node is a cross-community bridge._
-- **Why does `ProjectService` connect `Project Discovery Services` to `Core Lifecycle Management`?**
-  _High betweenness centrality (0.098) - this node is a cross-community bridge._
-- **What connects `Api`, `GradleTaskProvider`, `Root README.md` to the rest of the system?**
-  _16 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Core Lifecycle Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `Tree Explorer UI` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
-- **Should `Error Handling Services` be split into smaller, more focused modules?**
+- **Why does `GrailsTreeExplorer` connect `Grails Tree Explorer` to `Core Activation Manager`, `Icon Theme Detector`?**
+  _High betweenness centrality (0.122) - this node is a cross-community bridge._
+- **Why does `IconThemeDetector` connect `Icon Theme Detector` to `Core Activation Manager`?**
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **Why does `ProjectService` connect `Project Discovery Service` to `Core Activation Manager`?**
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **What connects `Api`, `GradleTaskProvider`, `LanguageServerManager` to the rest of the system?**
+  _46 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Grails Tree Explorer` be split into smaller, more focused modules?**
+  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+- **Should `Core Activation Manager` be split into smaller, more focused modules?**
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
+- **Should `LSP & Error Services` be split into smaller, more focused modules?**
   _Cohesion score 0.11 - nodes in this community are weakly interconnected._

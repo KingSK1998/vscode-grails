@@ -1,11 +1,11 @@
-# Grails & Groovy Support — extension client
+# Groovy & Grails Support — extension client
 
 This folder holds the **VS Code extension client** (TypeScript). The shipping manifest, marketplace metadata, and bundled assets live at the **repository root** [`package.json`](../package.json).
 
 ## Marketplace
 
-- **Extension id:** `KingSK1998.vscode-grails`
-- **Marketplace:** [Grails & Groovy Support](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-grails)
+- **Extension id:** `KingSK1998.vscode-gng-support`
+- **Marketplace:** [Groovy & Grails Support](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support)
 
 ## Requirements
 
@@ -25,4 +25,4 @@ npm ci
 npm run build:client    # compile + bundle → client/out/extension.js
 ```
 
-Do not rely on older marketplace ids (`vscode-grails-extension`) or JDK 11 notes — those referred to a different packaging era.
+Do not rely on older marketplace ids (`vscode-gng-support-extension`) or JDK 11 notes — those referred to a different packaging era.

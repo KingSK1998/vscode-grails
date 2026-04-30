@@ -1,6 +1,6 @@
 {
-  "name": "vscode-grails",
-  "displayName": "Grails & Groovy Support",
+  "name": "vscode-gng-support",
+  "displayName": "Groovy & Grails Support",
   "description": "Grails Framework Support for Visual Studio Code",
   "author": "Shivam Kashyap",
   "license": "MIT",
@@ -8,10 +8,10 @@
   "publisher": "KingSK1998",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KingSK1998/vscode-grails.git"
+    "url": "https://github.com/KingSK1998/vscode-gng-support.git"
   },
-  "bugs": "https://github.com/KingSK1998/vscode-grails/issues",
-  "homepage": "https://github.com/KingSK1998/vscode-grails#readme",
+  "bugs": "https://github.com/KingSK1998/vscode-gng-support/issues",
+  "homepage": "https://github.com/KingSK1998/vscode-gng-support#readme",
   "categories": [
     "Programming Languages",
     "Snippets",
@@ -506,7 +506,7 @@
     "check": "npm run lint && npm run format && npm run check-types",
     "clean": "rimraf client/out",
     "test": "npm run compile && node ./client/out/test/runTest.js",
-    "package": "vsce package --out dist/vscode-grails.vsix",
+    "package": "vsce package --out dist/vscode-gng-support.vsix",
     "vscode:prepublish": "npm run clean && npm run build",
     "pretest": "npm run build"
   },

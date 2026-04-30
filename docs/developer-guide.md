@@ -11,8 +11,8 @@ Monorepo: TypeScript **client** + Groovy **server** (LSP4J). Deep server interna
 ## Clone & build
 
 ```bash
-git clone https://github.com/KingSK1998/vscode-grails.git
-cd vscode-grails
+git clone https://github.com/KingSK1998/vscode-gng-support.git
+cd vscode-gng-support
 npm ci
 npm run build              # client compile+bundle + server shadowJar
 npm run build:client
@@ -89,7 +89,7 @@ Progress and `showMessage` use LSP4J client notifications.
 
 ## CI
 
-Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) · Runs: [GitHub Actions](https://github.com/KingSK1998/vscode-grails/actions)
+Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) · Runs: [GitHub Actions](https://github.com/KingSK1998/vscode-gng-support/actions)
 
 - Triggers: `main`, `develop` — push + PR.  
 - **Java 17**, **Node 20.18.1**, Ubuntu.  

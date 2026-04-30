@@ -5,12 +5,12 @@ export const EXTENSION_IDS = {
   GRADLE: "vscjava.vscode-gradle",
 } as const;
 
-export const EXTENSION_ID = "kingsk1998.vscode-grails";
-export const EXTENSION_NAME = "Grails";
+export const EXTENSION_ID = "kingsk1998.vscode-gng-support";
+export const EXTENSION_NAME = "Groovy & Grails";
 
 // -------- Status and Operation Messages --------
 export const Messages = {
-  EXTENSION_STARTING: "Starting Grails Extension...",
+  EXTENSION_STARTING: "Starting Groovy & Grails Extension...",
   EXTENSION_READY: "Grails Extension is ready.",
   EXTENSION_RUNNING: "Grails Extension is running.",
   EXTENSION_STOPPED: "Grails Extension is stopped.",

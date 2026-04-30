@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "📦 Packaging vscode-grails for distribution..."
+echo "📦 Packaging vscode-gng-support for distribution..."
 
 # Build everything first
 ./scripts/build.sh

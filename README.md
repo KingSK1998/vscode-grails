@@ -1,8 +1,8 @@
 # Grails Framework Support for VS Code
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/KingSK1998.vscode-grails)](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-grails)
-[![GitHub](https://img.shields.io/github/license/KingSK1998/vscode-grails)](https://github.com/KingSK1998/vscode-grails/blob/main/LICENSE)
-[![Build Status](https://github.com/KingSK1998/vscode-grails/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/KingSK1998/vscode-grails/actions)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/KingSK1998.vscode-gng-support)](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support)
+[![GitHub](https://img.shields.io/github/license/KingSK1998/vscode-gng-support)](https://github.com/KingSK1998/vscode-gng-support/blob/main/LICENSE)
+[![Build Status](https://github.com/KingSK1998/vscode-gng-support/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/KingSK1998/vscode-gng-support/actions)
 
 A comprehensive VS Code extension that provides full-featured support for **Grails** and **Groovy** development with intelligent Language Server Protocol (LSP) integration.
 
@@ -65,7 +65,7 @@ A comprehensive VS Code extension that provides full-featured support for **Grai
 
 ### For Users
 
-1. **Install from [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-grails)**
+1. **Install from [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support)**
 2. **Open a Grails project** (contains `build.gradle` and `grails-app/` folder)
 3. **Configure Java path** if needed: `Settings → Grails → Java Home`
 4. **Start developing** with full LSP support and IntelliSense!
@@ -128,8 +128,8 @@ This extension uses a **client-server architecture** for optimal performance:
 
 ```bash
 # Clone the repository
-git clone https://github.com/KingSK1998/vscode-grails.git
-cd vscode-grails
+git clone https://github.com/KingSK1998/vscode-gng-support.git
+cd vscode-gng-support
 
 # Initial setup (installs dependencies and builds both components)
 npm run setup
@@ -139,7 +139,7 @@ npm run setup
 
 **VS Code Workspace (Recommended for Extension Development):**
 
-- Open **root folder** (`vscode-grails/`) in VS Code
+- Open **root folder** (`vscode-gng-support/`) in VS Code
 - This gives you access to:
   - npm scripts for build automation
   - Launch configurations (F5 debugging)
@@ -148,7 +148,7 @@ npm run setup
 
 **IntelliJ IDEA Workspace (Recommended for Server Development):**
 
-- Open **server folder** (`vscode-grails/server/`) in IntelliJ IDEA
+- Open **server folder** (`vscode-gng-support/server/`) in IntelliJ IDEA
 - Import as Gradle project
 
 #### 3. Development Mode
@@ -269,7 +269,7 @@ See **[docs/user-guide.md#status-and-roadmap](./docs/user-guide.md#status-and-ro
 - GSP syntax highlighting may not work perfectly with complex nested expressions
 - **Rename** and **GSP** intelligence are best-effort; there is no LSP formatting / semantic highlighting / quick fixes yet ([developer guide — LSP reference](./docs/developer-guide.md#language-server-reference))
 
-Report issues on our [GitHub Issues page](https://github.com/KingSK1998/vscode-grails/issues).
+Report issues on our [GitHub Issues page](https://github.com/KingSK1998/vscode-gng-support/issues).
 
 ## 📄 License
 
@@ -294,7 +294,7 @@ Built with ❤️ for the Grails community using:
 
 **Happy Grails Development!** 🎉
 
-> 💡 **Need help?** Check our [documentation](./docs/) or [open an issue](https://github.com/KingSK1998/vscode-grails/issues/new)
+> 💡 **Need help?** Check our [documentation](./docs/) or [open an issue](https://github.com/KingSK1998/vscode-gng-support/issues/new)
 
 # VS Code Extension + Server
 
@@ -335,5 +335,5 @@ The server is built with **Gradle** (producing a `-all.jar`).
 
 ## 📦 CI/CD
 
-- Workflow: **[CI/CD Pipeline on GitHub Actions](https://github.com/KingSK1998/vscode-grails/actions)** (Java 17, Node 20.18.1; server build **skips tests**; client `compile` + `bundle`). Details: [docs/developer-guide.md#ci](./docs/developer-guide.md#ci).
+- Workflow: **[CI/CD Pipeline on GitHub Actions](https://github.com/KingSK1998/vscode-gng-support/actions)** (Java 17, Node 20.18.1; server build **skips tests**; client `compile` + `bundle`). Details: [docs/developer-guide.md#ci](./docs/developer-guide.md#ci).
 - Local release prep: **`npm ci && npm run vscode:prepublish`** for a clean, reproducible build.
