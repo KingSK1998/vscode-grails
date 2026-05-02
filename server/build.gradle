@@ -1,138 +1,148 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
-	id 'groovy'
-	id 'application'
-	id 'jacoco' // Add JaCoCo plugin for code coverage
-	id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'groovy'
+    id 'application'
+    id 'jacoco' // Add JaCoCo plugin for code coverage
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
+
+//=================== Project Configuration ===================
 
 group = 'kingsk.grails.lsp'
 version = '0.4.1-SNAPSHOT'
 description = 'An LSP for Groovy on Grails'
 
+//=================== Java Configuration ===================
+
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
-	mavenCentral()
-	gradlePluginPortal()
-	mavenLocal()
-
-	// Add Gradle's repository for Tooling API
-	maven { url = 'https://repo.gradle.org/gradle/libs-releases' }
+    mavenCentral()
+    gradlePluginPortal()
+    mavenLocal()
+    // Add Gradle's repository for Tooling API
+    maven { url = 'https://repo.gradle.org/gradle/libs-releases' }
 }
 
 dependencies {
-	implementation "org.apache.groovy:groovy:4.0.23"
-	implementation "org.apache.groovy:groovy-json:4.0.23"
+    // Groovy Core
+    implementation "org.apache.groovy:groovy:${groovyVersion}"
+    implementation "org.apache.groovy:groovy-json:${groovyVersion}"
 
-	// implementation "org.apache.groovy:groovy-all:4.0.23"
-	implementation "com.google.guava:guava:33.3.0-jre"
+    // Utilities // TODO: remove guava, useless, for legacy support only
+    implementation "com.google.guava:guava:33.3.0-jre"
+    implementation "io.github.classgraph:classgraph:${classgraphVersion}"
 
-	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1"
-	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1"
+    // LSP4J
+    implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:${lsp4jVersion}"
+    implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:${lsp4jVersion}"
 
-	implementation "org.gradle:gradle-tooling-api:8.12"
-	// implementation "org.apache.groovy:groovy-json:4.0.23"
+    // Gradle Tooling API
+    implementation "org.gradle:gradle-tooling-api:${gradleToolingApiVersion}"
 
-	implementation "org.slf4j:slf4j-api:2.0.16"
-	implementation 'ch.qos.logback:logback-classic:1.5.13'
+    // Logging
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
-	// Testing dependencies - Spock Framework
-	testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
-	testImplementation "junit:junit:4.13.2"
-	testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
-	testImplementation "org.mockito:mockito-core:5.11.0"
+    // Testing
+    testImplementation "org.spockframework:spock-core:${spockVersion}"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 }
 
+// Application Entry Point
 application {
-	mainClass = "kingsk.grails.lsp.GrailsLanguageServer"
+    mainClass = "kingsk.grails.lsp.GrailsLanguageServer"
 }
+
+//=================== JAR Packaging ===================
 
 jar {
-	enabled = false
+    enabled = false // Disable plain JAR, use shadowJar instead
 }
 
-tasks.named('shadowJar') {
-	archiveClassifier.set('all')
-	// Safe default for service files (SPI). Adjust if needed for specific frameworks.
-	mergeServiceFiles()
-	// After validating functionality, you can try to trim:
-	// minimize()
+tasks.named('shadowJar', ShadowJar) {
+    archiveClassifier.set('all') // Produce fat JAR with classifier
+    mergeServiceFiles()          // Merge SPI service files
+    minimize()                 // Optional: shrink JAR, test carefully
+
+    relocate "com.google.common", "kingsk.grails.lsp.shadow.guava"
+    relocate "io.github.classgraph", "kingsk.grails.lsp.shadow.classgraph"
 }
 
-test {
-	useJUnitPlatform()
-	testLogging {
-		events "passed", "skipped", "failed"
-		exceptionFormat = (System.getenv('CI') ? "short" : "full")
-		showStandardStreams = !System.getenv('CI')
-	}
-	// Fail the build on test failures
-	ignoreFailures = false
-	// Set system properties for tests
-	systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
+//============ JaCoCo Configuration ============
 
-	// Generate test reports
-	reports {
-		html.required = true
-		junitXml.required = true
-	}
-}
-
-// JaCoCo configuration for code coverage
 jacoco {
-	toolVersion = "0.8.11"
+    toolVersion = "0.8.11"
 }
+
+def jacocoExcludes = [
+    "**/generated/**" // Exclude generated files only
+]
 
 jacocoTestReport {
-	dependsOn test
-
-	reports {
-		xml.required = true
-		html.required = true
-		csv.required = false
-	}
-
-	// Set coverage thresholds
-	afterEvaluate {
-		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: [
-				// Exclude generated code
-				"**/generated/**",
-				// Exclude model classes that are mostly data holders
-				"**/model/**"
-			])
-		}))
-	}
+    dependsOn test  // Run after tests
+    classDirectories.setFrom(
+        files(sourceSets.main.output.classesDirs.files.collect { dir ->
+            fileTree(dir: dir, exclude: jacocoExcludes)
+        })
+    )
+    reports {
+        xml.required = true
+        html.required = true    // HTML report
+        csv.required = false
+    }
 }
 
-// JaCoCo verification task
 jacocoTestCoverageVerification {
-	dependsOn jacocoTestReport
-
-	violationRules {
-		rule {
-			limit {
-				minimum = 0.60 // 60% minimum coverage
-			}
-		}
-	}
+    dependsOn jacocoTestReport  // verify after report
+    classDirectories.setFrom(
+        files(sourceSets.main.output.classesDirs.files.collect { dir ->
+            fileTree(dir: dir, exclude: jacocoExcludes)
+        })
+    )
+    violationRules {
+        rule {
+            element = "BUNDLE" // Apply at project level
+            limit { counter = "LINE"; value = "COVEREDRATIO"; minimum = 0.60 }
+            limit { counter = "BRANCH"; value = "COVEREDRATIO"; minimum = 0.50 }
+        }
+    }
 }
 
-// Make sure JaCoCo report is generated after tests run
-test.finalizedBy jacocoTestReport
+test.finalizedBy jacocoTestReport   // Always generate report after tests
 
-// Task to run all checks including tests and coverage
 tasks.register('checkAll') {
-	description = 'Runs all checks including tests, coverage, and verification'
-	group = 'verification'
+    description = 'Runs all checks including tests, coverage, and verification'
+    group = 'verification'
+    dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
+}
 
-	dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
+//============ Spock Test Configuration ============
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat = (System.getenv('CI') ? "short" : "full")
+        showStandardStreams = !System.getenv('CI')
+    }
+    ignoreFailures = false  // Fail the build on test failures
+    // Set system properties for tests
+    systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
 }
 
 // Clean task enhancement
 clean {
-	delete layout.buildDirectory.dir("test-workspaces")
+    delete layout.buildDirectory.dir("test-workspaces")
 }

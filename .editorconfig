@@ -2,10 +2,13 @@ root = true
 
 # All files
 [*]
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = false
 trim_trailing_whitespace = true
 charset = utf-8
+
+[*.bat]
+end_of_line = crlf
 
 # Typescript/Javascript
 [client/**/*.{js,ts,json}]

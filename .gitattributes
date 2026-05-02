@@ -1,0 +1,14 @@
+# Source code always LF
+*.java text eol=lf
+*.groovy text eol=lf
+*.gradle text eol=lf
+*.sh text eol=lf
+
+# Windows scripts CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary untouched
+*.png binary
+*.jpg binary
+*.jar binary
