@@ -53,7 +53,7 @@ Grails projects. Designed to work seamlessly with VS Code and other LSP-compatib
 
 ### **VS Code Extension**
 
-*In development - VS Code extension for seamless integration (single developer project)*
+_In development - VS Code extension for seamless integration (single developer project)_
 
 ## 🏗️ Architecture
 

@@ -1,1 +1,145 @@
-{"nodes": [{"id": "client_src_utils_csshelper_ts", "label": "CSSHelper.ts", "file_type": "code", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L1"}, {"id": "csshelper_csshelper", "label": "CSSHelper", "file_type": "code", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L4"}, {"id": "csshelper_csshelper_getstylesheeturi", "label": ".getStylesheetUri()", "file_type": "code", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L5"}, {"id": "csshelper_csshelper_getwebviewstylesheet", "label": ".getWebViewStylesheet()", "file_type": "code", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L9"}, {"id": "csshelper_csshelper_getcommonwebviewhead", "label": ".getCommonWebviewHead()", "file_type": "code", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L17"}], "edges": [{"source": "client_src_utils_csshelper_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_utils_csshelper_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_utils_csshelper_ts", "target": "csshelper_csshelper", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L4", "weight": 1.0}, {"source": "csshelper_csshelper", "target": "csshelper_csshelper_getstylesheeturi", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L5", "weight": 1.0}, {"source": "csshelper_csshelper", "target": "csshelper_csshelper_getwebviewstylesheet", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L9", "weight": 1.0}, {"source": "csshelper_csshelper", "target": "csshelper_csshelper_getcommonwebviewhead", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L17", "weight": 1.0}, {"source": "csshelper_csshelper_getwebviewstylesheet", "target": "csshelper_csshelper_getstylesheeturi", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L14", "weight": 1.0}, {"source": "csshelper_csshelper_getcommonwebviewhead", "target": "csshelper_csshelper_getwebviewstylesheet", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L18", "weight": 1.0}], "raw_calls": [{"caller_nid": "csshelper_csshelper_getstylesheeturi", "callee": "joinPath", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L6"}, {"caller_nid": "csshelper_csshelper_getwebviewstylesheet", "callee": "asWebviewUri", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L14"}, {"caller_nid": "csshelper_csshelper_getcommonwebviewhead", "callee": "toString", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L26"}, {"caller_nid": "csshelper_csshelper_getcommonwebviewhead", "callee": "toString", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L27"}, {"caller_nid": "csshelper_csshelper_getcommonwebviewhead", "callee": "toString", "source_file": "client\\src\\utils\\CSSHelper.ts", "source_location": "L28"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_utils_csshelper_ts",
+      "label": "CSSHelper.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "csshelper_csshelper",
+      "label": "CSSHelper",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "csshelper_csshelper_getstylesheeturi",
+      "label": ".getStylesheetUri()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "csshelper_csshelper_getwebviewstylesheet",
+      "label": ".getWebViewStylesheet()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "csshelper_csshelper_getcommonwebviewhead",
+      "label": ".getCommonWebviewHead()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L17"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_utils_csshelper_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_csshelper_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_csshelper_ts",
+      "target": "csshelper_csshelper",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "csshelper_csshelper",
+      "target": "csshelper_csshelper_getstylesheeturi",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "csshelper_csshelper",
+      "target": "csshelper_csshelper_getwebviewstylesheet",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "csshelper_csshelper",
+      "target": "csshelper_csshelper_getcommonwebviewhead",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "csshelper_csshelper_getwebviewstylesheet",
+      "target": "csshelper_csshelper_getstylesheeturi",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "csshelper_csshelper_getcommonwebviewhead",
+      "target": "csshelper_csshelper_getwebviewstylesheet",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "csshelper_csshelper_getstylesheeturi",
+      "callee": "joinPath",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L6"
+    },
+    {
+      "caller_nid": "csshelper_csshelper_getwebviewstylesheet",
+      "callee": "asWebviewUri",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "csshelper_csshelper_getcommonwebviewhead",
+      "callee": "toString",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "csshelper_csshelper_getcommonwebviewhead",
+      "callee": "toString",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L27"
+    },
+    {
+      "caller_nid": "csshelper_csshelper_getcommonwebviewhead",
+      "callee": "toString",
+      "source_file": "client\\src\\utils\\CSSHelper.ts",
+      "source_location": "L28"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "fileTypes": [ "gsp" ],
+  "fileTypes": ["gsp"],
   "foldingStartMarker": "(?x)\n\t\t(<(?i:head|body|table|thead|tbody|tfoot|tr|div|select|fieldset|style|script|ul|ol|form|dl|g:javascript)\\b.*?>\n\t\t|<!--(?!.*-->)\n\t\t|\\{\\s*($|\\?>\\s*$|//|/\\*(.*\\*/\\s*$|(?!.*?\\*/)))\n\t\t)",
   "foldingStopMarker": "(?x)\n\t\t(</(?i:head|body|table|thead|tbody|tfoot|tr|div|select|fieldset|style|script|ul|ol|form|dl|g:javascript)>\n\t\t|^\\s*-->\n\t\t|(^|\\s)\\}\n\t\t)",
   "keyEquivalent": "^~G",
@@ -19,7 +19,7 @@
         "1": { "name": "source.groovy" }
       },
       "name": "source.groovy",
-      "patterns": [ { "include": "source.groovy" } ]
+      "patterns": [{ "include": "source.groovy" }]
     },
     { "include": "#embedded-groovy" },
     {
@@ -38,7 +38,7 @@
           "end": "/>|(?=>)",
           "endCaptures": { "0": { "name": "punctuation.definition.tag.html.grails" } },
           "name": "meta.tag.template.javascript.html.grails",
-          "patterns": [ { "include": "#tag-stuff" } ]
+          "patterns": [{ "include": "#tag-stuff" }]
         },
         {
           "captures": {
@@ -84,7 +84,7 @@
       },
       "end": "(/?>)",
       "name": "meta.tag.template.html.grails",
-      "patterns": [ { "include": "#tag-stuff" } ]
+      "patterns": [{ "include": "#tag-stuff" }]
     },
     { "include": "text.html.basic" }
   ],
@@ -96,7 +96,7 @@
           "captures": { "0": { "name": "punctuation.section.embedded.groovy" } },
           "end": "\\}",
           "name": "source.groovy.embedded.html.grails",
-          "patterns": [ { "include": "source.groovy" } ]
+          "patterns": [{ "include": "source.groovy" }]
         }
       ]
     },
@@ -106,7 +106,7 @@
       "end": "\"",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.html.grails" } },
       "name": "string.quoted.double.html.grails",
-      "patterns": [ { "include": "#embedded-groovy" } ]
+      "patterns": [{ "include": "#embedded-groovy" }]
     },
     "string-single-quoted": {
       "begin": "'",

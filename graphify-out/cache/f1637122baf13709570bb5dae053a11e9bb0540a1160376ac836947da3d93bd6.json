@@ -1,1 +1,55 @@
-{"nodes": [{"id": "esbuild_js", "label": "esbuild.js", "file_type": "code", "source_file": "esbuild.js", "source_location": "L1"}, {"id": "esbuild_main", "label": "main()", "file_type": "code", "source_file": "esbuild.js", "source_location": "L39"}], "edges": [{"source": "esbuild_js", "target": "esbuild_main", "relation": "contains", "confidence": "EXTRACTED", "source_file": "esbuild.js", "source_location": "L39", "weight": 1.0}], "raw_calls": [{"caller_nid": "esbuild_main", "callee": "context", "source_file": "esbuild.js", "source_location": "L40"}, {"caller_nid": "esbuild_main", "callee": "watch", "source_file": "esbuild.js", "source_location": "L59"}, {"caller_nid": "esbuild_main", "callee": "rebuild", "source_file": "esbuild.js", "source_location": "L61"}, {"caller_nid": "esbuild_main", "callee": "dispose", "source_file": "esbuild.js", "source_location": "L62"}]}
+{
+  "nodes": [
+    {
+      "id": "esbuild_js",
+      "label": "esbuild.js",
+      "file_type": "code",
+      "source_file": "esbuild.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "esbuild_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "esbuild.js",
+      "source_location": "L39"
+    }
+  ],
+  "edges": [
+    {
+      "source": "esbuild_js",
+      "target": "esbuild_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "esbuild.js",
+      "source_location": "L39",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "esbuild_main",
+      "callee": "context",
+      "source_file": "esbuild.js",
+      "source_location": "L40"
+    },
+    {
+      "caller_nid": "esbuild_main",
+      "callee": "watch",
+      "source_file": "esbuild.js",
+      "source_location": "L59"
+    },
+    {
+      "caller_nid": "esbuild_main",
+      "callee": "rebuild",
+      "source_file": "esbuild.js",
+      "source_location": "L61"
+    },
+    {
+      "caller_nid": "esbuild_main",
+      "callee": "dispose",
+      "source_file": "esbuild.js",
+      "source_location": "L62"
+    }
+  ]
+}

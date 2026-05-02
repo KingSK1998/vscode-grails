@@ -1,1 +1,121 @@
-{"nodes": [{"id": "client_src_ui_decorations_diagnosticdecorationprovider_ts", "label": "DiagnosticDecorationProvider.ts", "file_type": "code", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L1"}, {"id": "diagnosticdecorationprovider_diagnosticdecorationprovider", "label": "DiagnosticDecorationProvider", "file_type": "code", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L4"}, {"id": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor", "label": ".constructor()", "file_type": "code", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L7"}, {"id": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration", "label": ".provideFileDecoration()", "file_type": "code", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L29"}, {"id": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose", "label": ".dispose()", "file_type": "code", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L40"}], "edges": [{"source": "client_src_ui_decorations_diagnosticdecorationprovider_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_ui_decorations_diagnosticdecorationprovider_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_ui_decorations_diagnosticdecorationprovider_ts", "target": "diagnosticdecorationprovider_diagnosticdecorationprovider", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L4", "weight": 1.0}, {"source": "diagnosticdecorationprovider_diagnosticdecorationprovider", "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L7", "weight": 1.0}, {"source": "diagnosticdecorationprovider_diagnosticdecorationprovider", "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L29", "weight": 1.0}, {"source": "diagnosticdecorationprovider_diagnosticdecorationprovider", "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L40", "weight": 1.0}], "raw_calls": [{"caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor", "callee": "onDidChangeDiagnostics", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L9"}, {"caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration", "callee": "has", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L30"}, {"caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration", "callee": "toString", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L30"}, {"caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose", "callee": "clear", "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts", "source_location": "L41"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_decorations_diagnosticdecorationprovider_ts",
+      "label": "DiagnosticDecorationProvider.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "diagnosticdecorationprovider_diagnosticdecorationprovider",
+      "label": "DiagnosticDecorationProvider",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration",
+      "label": ".provideFileDecoration()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose",
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L40"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_ui_decorations_diagnosticdecorationprovider_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_decorations_diagnosticdecorationprovider_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_decorations_diagnosticdecorationprovider_ts",
+      "target": "diagnosticdecorationprovider_diagnosticdecorationprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "diagnosticdecorationprovider_diagnosticdecorationprovider",
+      "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "diagnosticdecorationprovider_diagnosticdecorationprovider",
+      "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "diagnosticdecorationprovider_diagnosticdecorationprovider",
+      "target": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L40",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor",
+      "callee": "onDidChangeDiagnostics",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L9"
+    },
+    {
+      "caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration",
+      "callee": "has",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration",
+      "callee": "toString",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose",
+      "callee": "clear",
+      "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
+      "source_location": "L41"
+    }
+  ]
+}

@@ -77,23 +77,17 @@
   },
   "GSP Message": {
     "prefix": "message",
-    "body": [
-      "<g:message code=\"${1:message.code}\" default=\"${0:// TODO: default text}\" />"
-    ],
+    "body": ["<g:message code=\"${1:message.code}\" default=\"${0:// TODO: default text}\" />"],
     "description": "GSP i18n message"
   },
   "GSP Render": {
     "prefix": "render",
-    "body": [
-      "<g:render template=\"${1:templateName}\" model=\"[${0:// TODO: add model}]\" />"
-    ],
+    "body": ["<g:render template=\"${1:templateName}\" model=\"[${0:// TODO: add model}]\" />"],
     "description": "GSP render template"
   },
   "GSP Set": {
     "prefix": "set",
-    "body": [
-      "<g:set var=\"${1:varName}\" value=\"${0:// TODO: set value}\" />"
-    ],
+    "body": ["<g:set var=\"${1:varName}\" value=\"${0:// TODO: set value}\" />"],
     "description": "GSP set variable"
   },
   "GSP Tag": {
@@ -105,18 +99,12 @@
   },
   "GSP Script": {
     "prefix": "script",
-    "body": [
-      "<%",
-      "    ${0:// TODO: add Groovy code}",
-      "%>"
-    ],
+    "body": ["<%", "    ${0:// TODO: add Groovy code}", "%>"],
     "description": "GSP scriptlet"
   },
   "GSP Comment": {
     "prefix": "comment",
-    "body": [
-      "<%-- ${0:TODO: add comment} --%>"
-    ],
+    "body": ["<%-- ${0:TODO: add comment} --%>"],
     "description": "GSP comment"
   }
 }

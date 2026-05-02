@@ -1,1 +1,13 @@
-{"nodes": [{"id": "client_src_ui_treeexplorer_treeitemkind_ts", "label": "TreeItemKind.ts", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\TreeItemKind.ts", "source_location": "L1"}], "edges": [], "raw_calls": []}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_treeexplorer_treeitemkind_ts",
+      "label": "TreeItemKind.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeItemKind.ts",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "raw_calls": []
+}

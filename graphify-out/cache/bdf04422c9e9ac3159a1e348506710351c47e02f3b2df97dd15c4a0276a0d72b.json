@@ -1,1 +1,178 @@
-{"nodes": [{"id": "client_src_ui_treeexplorer_treedataprovider_ts", "label": "TreeDataProvider.ts", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L1"}, {"id": "treedataprovider_createprojecttreeprovider", "label": "createProjectTreeProvider()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L8"}], "edges": [{"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "client_src_core_container_servicecontainer", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "client_src_features_models_modeltypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "client_src_ui_treeexplorer_grailstreeexplorer", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "client_src_ui_treeexplorer_treeitemkind", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L5", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_treedataprovider_ts", "target": "treedataprovider_createprojecttreeprovider", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L8", "weight": 1.0}], "raw_calls": [{"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L9"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L12"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "getInstance", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L14"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "getProjects", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L15"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L17"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "forEach", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L18"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L23"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "filter", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L28"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "filter", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L31"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L33"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L34"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L38"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L41"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L43"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "map", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L43"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "log", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L44"}, {"caller_nid": "treedataprovider_createprojecttreeprovider", "callee": "error", "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts", "source_location": "L47"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "label": "TreeDataProvider.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "treedataprovider_createprojecttreeprovider",
+      "label": "createProjectTreeProvider()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "client_src_core_container_servicecontainer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "client_src_features_models_modeltypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "client_src_ui_treeexplorer_grailstreeexplorer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "client_src_ui_treeexplorer_treeitemkind",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_treedataprovider_ts",
+      "target": "treedataprovider_createprojecttreeprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L9"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "getInstance",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "getProjects",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L15"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L17"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "forEach",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L18"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L23"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "filter",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "filter",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L31"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L33"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L34"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L38"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L41"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L43"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "map",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L43"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "log",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L44"
+    },
+    {
+      "caller_nid": "treedataprovider_createprojecttreeprovider",
+      "callee": "error",
+      "source_file": "client\\src\\ui\\treeExplorer\\TreeDataProvider.ts",
+      "source_location": "L47"
+    }
+  ]
+}

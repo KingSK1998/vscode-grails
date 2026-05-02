@@ -1,1 +1,484 @@
-{"nodes": [{"id": "client_src_ui_treeexplorer_grailstreeitem_ts", "label": "GrailsTreeItem.ts", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L1"}, {"id": "grailstreeitem_grailstreeitem", "label": "GrailsTreeItem", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L8"}, {"id": "grailstreeitem_grailstreeitem_constructor", "label": ".constructor()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L9"}, {"id": "grailstreeitem_grailstreeitem_buildcontextvalue", "label": ".buildContextValue()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L27"}, {"id": "grailstreeitem_grailstreeitem_setupicon", "label": ".setupIcon()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L42"}, {"id": "grailstreeitem_grailstreeitem_resolveicon", "label": ".resolveIcon()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L51"}, {"id": "grailstreeitem_grailstreeitem_buildtooltip", "label": ".buildTooltip()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L69"}, {"id": "grailstreeitem_grailstreeitem_buildprojecttooltip", "label": ".buildProjectTooltip()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L90"}, {"id": "grailstreeitem_grailstreeitem_buildfiletooltip", "label": ".buildFileTooltip()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L110"}, {"id": "grailstreeitem_grailstreeitem_buildcategorytooltip", "label": ".buildCategoryTooltip()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L126"}, {"id": "grailstreeitem_grailstreeitem_getrelativepath", "label": ".getRelativePath()", "file_type": "code", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L143"}], "edges": [{"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "client_src_features_models_modeltypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "client_src_ui_icons_iconprovider", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "client_src_ui_treeexplorer_treeitemkind", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L5", "weight": 1.0}, {"source": "client_src_ui_treeexplorer_grailstreeitem_ts", "target": "grailstreeitem_grailstreeitem", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L8", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_constructor", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L9", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_buildcontextvalue", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L27", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_setupicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L42", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_resolveicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L51", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_buildtooltip", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L69", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_buildprojecttooltip", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L90", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_buildfiletooltip", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L110", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_buildcategorytooltip", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L126", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem", "target": "grailstreeitem_grailstreeitem_getrelativepath", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L143", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_constructor", "target": "grailstreeitem_grailstreeitem_buildcontextvalue", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L21", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_constructor", "target": "grailstreeitem_grailstreeitem_setupicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L22", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_constructor", "target": "grailstreeitem_grailstreeitem_buildtooltip", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L23", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_setupicon", "target": "grailstreeitem_grailstreeitem_resolveicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L43", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_buildtooltip", "target": "grailstreeitem_grailstreeitem_buildprojecttooltip", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L72", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_buildtooltip", "target": "grailstreeitem_grailstreeitem_buildfiletooltip", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L77", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_buildtooltip", "target": "grailstreeitem_grailstreeitem_buildcategorytooltip", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L82", "weight": 1.0}, {"source": "grailstreeitem_grailstreeitem_buildfiletooltip", "target": "grailstreeitem_grailstreeitem_getrelativepath", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L112", "weight": 1.0}], "raw_calls": [{"caller_nid": "grailstreeitem_grailstreeitem_constructor", "callee": "super", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L19"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L31"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L35"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L38"}, {"caller_nid": "grailstreeitem_grailstreeitem_resolveicon", "callee": "getIcon", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L53"}, {"caller_nid": "grailstreeitem_grailstreeitem_resolveicon", "callee": "file", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L62"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildtooltip", "callee": "isLeafKind", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L76"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L95"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L98"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L101"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L104"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L106"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "pop", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L111"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "split", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L111"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "toUpperCase", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L116"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "charAt", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L116"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "slice", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L116"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L117"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "push", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L120"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L122"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip", "callee": "slice", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L127"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip", "callee": "toUpperCase", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L127"}, {"caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip", "callee": "charAt", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L127"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "split", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L148"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "findIndex", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L149"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L151"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "slice", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L151"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "findIndex", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L153"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L155"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "slice", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L155"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "join", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L157"}, {"caller_nid": "grailstreeitem_grailstreeitem_getrelativepath", "callee": "slice", "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts", "source_location": "L157"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "label": "GrailsTreeItem.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem",
+      "label": "GrailsTreeItem",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "label": ".buildContextValue()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_setupicon",
+      "label": ".setupIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L42"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_resolveicon",
+      "label": ".resolveIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L51"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_buildtooltip",
+      "label": ".buildTooltip()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L69"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "label": ".buildProjectTooltip()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L90"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "label": ".buildFileTooltip()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L110"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "label": ".buildCategoryTooltip()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L126"
+    },
+    {
+      "id": "grailstreeitem_grailstreeitem_getrelativepath",
+      "label": ".getRelativePath()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L143"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "client_src_features_models_modeltypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "client_src_ui_icons_iconprovider",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "client_src_ui_treeexplorer_treeitemkind",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_treeexplorer_grailstreeitem_ts",
+      "target": "grailstreeitem_grailstreeitem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_setupicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_resolveicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_buildtooltip",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem",
+      "target": "grailstreeitem_grailstreeitem_getrelativepath",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_constructor",
+      "target": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_constructor",
+      "target": "grailstreeitem_grailstreeitem_setupicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_constructor",
+      "target": "grailstreeitem_grailstreeitem_buildtooltip",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_setupicon",
+      "target": "grailstreeitem_grailstreeitem_resolveicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_buildtooltip",
+      "target": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_buildtooltip",
+      "target": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_buildtooltip",
+      "target": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "target": "grailstreeitem_grailstreeitem_getrelativepath",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L112",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_constructor",
+      "callee": "super",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L31"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L35"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcontextvalue",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L38"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_resolveicon",
+      "callee": "getIcon",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L53"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_resolveicon",
+      "callee": "file",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L62"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildtooltip",
+      "callee": "isLeafKind",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L76"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L95"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L98"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L101"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L104"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildprojecttooltip",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L106"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "pop",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L111"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "split",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L111"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "toUpperCase",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L116"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "charAt",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L116"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "slice",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L116"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L117"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L120"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildfiletooltip",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L122"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "callee": "slice",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L127"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "callee": "toUpperCase",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L127"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_buildcategorytooltip",
+      "callee": "charAt",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L127"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "split",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L148"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "findIndex",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L149"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L151"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "slice",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L151"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "findIndex",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L153"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L155"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "slice",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L155"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L157"
+    },
+    {
+      "caller_nid": "grailstreeitem_grailstreeitem_getrelativepath",
+      "callee": "slice",
+      "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
+      "source_location": "L157"
+    }
+  ]
+}

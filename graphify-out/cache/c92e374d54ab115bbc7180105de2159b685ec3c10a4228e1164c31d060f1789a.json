@@ -1,1 +1,573 @@
-{"nodes": [{"id": "client_src_ui_icons_iconprovider_ts", "label": "IconProvider.ts", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L1"}, {"id": "iconprovider_iconprovider", "label": "IconProvider", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L13"}, {"id": "iconprovider_iconprovider_getprojecticon", "label": ".getProjectIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L94"}, {"id": "iconprovider_iconprovider_geticon", "label": ".getIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L100"}, {"id": "iconprovider_iconprovider_getrooticons", "label": ".getRootIcons()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L143"}, {"id": "iconprovider_iconprovider_getsubcategoryicons", "label": ".getSubCategoryIcons()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L148"}, {"id": "iconprovider_iconprovider_getspecialtreeitem", "label": ".getSpecialTreeItem()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L153"}, {"id": "iconprovider_iconprovider_getfileicon", "label": ".getFileIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L159"}, {"id": "iconprovider_iconprovider_getspecialgrailsfileicon", "label": ".getSpecialGrailsFileIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L175"}, {"id": "iconprovider_iconprovider_isleafkind", "label": ".isLeafKind()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L187"}, {"id": "iconprovider_iconprovider_isspecialtreeitem", "label": ".isSpecialTreeItem()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L191"}, {"id": "iconprovider_iconprovider_isrootsection", "label": ".isRootSection()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L200"}, {"id": "iconprovider_iconprovider_issubcategory", "label": ".isSubCategory()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L204"}, {"id": "iconprovider_iconprovider_isleaf", "label": ".isLeaf()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L212"}, {"id": "iconprovider_iconprovider_createthemedicon", "label": ".createThemedIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L224"}, {"id": "iconprovider_iconprovider_isspecialgrailsfile", "label": ".isSpecialGrailsFile()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L236"}, {"id": "iconprovider_iconprovider_isgrailsartifactfile", "label": ".isGrailsArtifactFile()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L241"}, {"id": "iconprovider_iconprovider_getstatusicon", "label": ".getStatusIcon()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L257"}, {"id": "iconprovider_iconprovider_getbadgetext", "label": ".getBadgeText()", "file_type": "code", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L267"}], "edges": [{"source": "client_src_ui_icons_iconprovider_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_ui_icons_iconprovider_ts", "target": "client_src_features_models_modeltypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_ui_icons_iconprovider_ts", "target": "client_src_ui_treeexplorer_treeitemkind", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_ui_icons_iconprovider_ts", "target": "client_src_ui_icons_iconthemedetector", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_ui_icons_iconprovider_ts", "target": "iconprovider_iconprovider", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L13", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getprojecticon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L94", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_geticon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L100", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getrooticons", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L143", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getsubcategoryicons", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L148", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getspecialtreeitem", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L153", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getfileicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L159", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getspecialgrailsfileicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L175", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isleafkind", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L187", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isspecialtreeitem", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L191", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isrootsection", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L200", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_issubcategory", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L204", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isleaf", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L212", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_createthemedicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L224", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isspecialgrailsfile", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L236", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_isgrailsartifactfile", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L241", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getstatusicon", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L257", "weight": 1.0}, {"source": "iconprovider_iconprovider", "target": "iconprovider_iconprovider_getbadgetext", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L267", "weight": 1.0}, {"source": "iconprovider_iconprovider_getprojecticon", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L96", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L110", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_isspecialtreeitem", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L114", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_isrootsection", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L120", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_issubcategory", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L129", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_isleaf", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L135", "weight": 1.0}, {"source": "iconprovider_iconprovider_geticon", "target": "iconprovider_iconprovider_getfileicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L136", "weight": 1.0}, {"source": "iconprovider_iconprovider_getrooticons", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L145", "weight": 1.0}, {"source": "iconprovider_iconprovider_getsubcategoryicons", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L150", "weight": 1.0}, {"source": "iconprovider_iconprovider_getspecialtreeitem", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L155", "weight": 1.0}, {"source": "iconprovider_iconprovider_getfileicon", "target": "iconprovider_iconprovider_isspecialgrailsfile", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L161", "weight": 1.0}, {"source": "iconprovider_iconprovider_getfileicon", "target": "iconprovider_iconprovider_getspecialgrailsfileicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L162", "weight": 1.0}, {"source": "iconprovider_iconprovider_getfileicon", "target": "iconprovider_iconprovider_isgrailsartifactfile", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L166", "weight": 1.0}, {"source": "iconprovider_iconprovider_getfileicon", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L168", "weight": 1.0}, {"source": "iconprovider_iconprovider_getspecialgrailsfileicon", "target": "iconprovider_iconprovider_createthemedicon", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L180", "weight": 1.0}, {"source": "iconprovider_iconprovider_isleafkind", "target": "iconprovider_iconprovider_isleaf", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L188", "weight": 1.0}], "raw_calls": [{"caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon", "callee": "toLowerCase", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L176"}, {"caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon", "callee": "pop", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L176"}, {"caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon", "callee": "split", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L176"}, {"caller_nid": "iconprovider_iconprovider_isspecialtreeitem", "callee": "includes", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L192"}, {"caller_nid": "iconprovider_iconprovider_isrootsection", "callee": "call", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L201"}, {"caller_nid": "iconprovider_iconprovider_issubcategory", "callee": "includes", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L205"}, {"caller_nid": "iconprovider_iconprovider_isleaf", "callee": "includes", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L213"}, {"caller_nid": "iconprovider_iconprovider_createthemedicon", "callee": "shouldUseEnhancedIcons", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L225"}, {"caller_nid": "iconprovider_iconprovider_createthemedicon", "callee": "supportsColoredIcons", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L226"}, {"caller_nid": "iconprovider_iconprovider_isspecialgrailsfile", "callee": "toLowerCase", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L237"}, {"caller_nid": "iconprovider_iconprovider_isspecialgrailsfile", "callee": "pop", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L237"}, {"caller_nid": "iconprovider_iconprovider_isspecialgrailsfile", "callee": "split", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L237"}, {"caller_nid": "iconprovider_iconprovider_isspecialgrailsfile", "callee": "call", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L238"}, {"caller_nid": "iconprovider_iconprovider_isgrailsartifactfile", "callee": "some", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L253"}, {"caller_nid": "iconprovider_iconprovider_getbadgetext", "callee": "toString", "source_file": "client\\src\\ui\\icons\\IconProvider.ts", "source_location": "L268"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_icons_iconprovider_ts",
+      "label": "IconProvider.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "iconprovider_iconprovider",
+      "label": "IconProvider",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "iconprovider_iconprovider_getprojecticon",
+      "label": ".getProjectIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L94"
+    },
+    {
+      "id": "iconprovider_iconprovider_geticon",
+      "label": ".getIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L100"
+    },
+    {
+      "id": "iconprovider_iconprovider_getrooticons",
+      "label": ".getRootIcons()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L143"
+    },
+    {
+      "id": "iconprovider_iconprovider_getsubcategoryicons",
+      "label": ".getSubCategoryIcons()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L148"
+    },
+    {
+      "id": "iconprovider_iconprovider_getspecialtreeitem",
+      "label": ".getSpecialTreeItem()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L153"
+    },
+    {
+      "id": "iconprovider_iconprovider_getfileicon",
+      "label": ".getFileIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L159"
+    },
+    {
+      "id": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "label": ".getSpecialGrailsFileIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L175"
+    },
+    {
+      "id": "iconprovider_iconprovider_isleafkind",
+      "label": ".isLeafKind()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L187"
+    },
+    {
+      "id": "iconprovider_iconprovider_isspecialtreeitem",
+      "label": ".isSpecialTreeItem()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L191"
+    },
+    {
+      "id": "iconprovider_iconprovider_isrootsection",
+      "label": ".isRootSection()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L200"
+    },
+    {
+      "id": "iconprovider_iconprovider_issubcategory",
+      "label": ".isSubCategory()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L204"
+    },
+    {
+      "id": "iconprovider_iconprovider_isleaf",
+      "label": ".isLeaf()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L212"
+    },
+    {
+      "id": "iconprovider_iconprovider_createthemedicon",
+      "label": ".createThemedIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L224"
+    },
+    {
+      "id": "iconprovider_iconprovider_isspecialgrailsfile",
+      "label": ".isSpecialGrailsFile()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L236"
+    },
+    {
+      "id": "iconprovider_iconprovider_isgrailsartifactfile",
+      "label": ".isGrailsArtifactFile()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L241"
+    },
+    {
+      "id": "iconprovider_iconprovider_getstatusicon",
+      "label": ".getStatusIcon()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L257"
+    },
+    {
+      "id": "iconprovider_iconprovider_getbadgetext",
+      "label": ".getBadgeText()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L267"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_ui_icons_iconprovider_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_icons_iconprovider_ts",
+      "target": "client_src_features_models_modeltypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_icons_iconprovider_ts",
+      "target": "client_src_ui_treeexplorer_treeitemkind",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_icons_iconprovider_ts",
+      "target": "client_src_ui_icons_iconthemedetector",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_icons_iconprovider_ts",
+      "target": "iconprovider_iconprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getprojecticon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_geticon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getrooticons",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getsubcategoryicons",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getspecialtreeitem",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getfileicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isleafkind",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isspecialtreeitem",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isrootsection",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_issubcategory",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L204",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isleaf",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isspecialgrailsfile",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L236",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_isgrailsartifactfile",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L241",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getstatusicon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L257",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider",
+      "target": "iconprovider_iconprovider_getbadgetext",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L267",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getprojecticon",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_isspecialtreeitem",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_isrootsection",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_issubcategory",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_isleaf",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_geticon",
+      "target": "iconprovider_iconprovider_getfileicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getrooticons",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L145",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getsubcategoryicons",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getspecialtreeitem",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getfileicon",
+      "target": "iconprovider_iconprovider_isspecialgrailsfile",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L161",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getfileicon",
+      "target": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getfileicon",
+      "target": "iconprovider_iconprovider_isgrailsartifactfile",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getfileicon",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "target": "iconprovider_iconprovider_createthemedicon",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L180",
+      "weight": 1.0
+    },
+    {
+      "source": "iconprovider_iconprovider_isleafkind",
+      "target": "iconprovider_iconprovider_isleaf",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L188",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "callee": "toLowerCase",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L176"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "callee": "pop",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L176"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_getspecialgrailsfileicon",
+      "callee": "split",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L176"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isspecialtreeitem",
+      "callee": "includes",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L192"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isrootsection",
+      "callee": "call",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L201"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_issubcategory",
+      "callee": "includes",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L205"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isleaf",
+      "callee": "includes",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L213"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_createthemedicon",
+      "callee": "shouldUseEnhancedIcons",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L225"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_createthemedicon",
+      "callee": "supportsColoredIcons",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L226"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isspecialgrailsfile",
+      "callee": "toLowerCase",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L237"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isspecialgrailsfile",
+      "callee": "pop",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L237"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isspecialgrailsfile",
+      "callee": "split",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L237"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isspecialgrailsfile",
+      "callee": "call",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L238"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_isgrailsartifactfile",
+      "callee": "some",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L253"
+    },
+    {
+      "caller_nid": "iconprovider_iconprovider_getbadgetext",
+      "callee": "toString",
+      "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
+      "source_location": "L268"
+    }
+  ]
+}

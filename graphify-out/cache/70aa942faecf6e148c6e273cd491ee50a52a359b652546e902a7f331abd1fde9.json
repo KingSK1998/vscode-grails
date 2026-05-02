@@ -1,1 +1,622 @@
-{"nodes": [{"id": "client_src_services_workspace_statusbarservice_ts", "label": "StatusBarService.ts", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L1"}, {"id": "statusbarservice_statusbarservice", "label": "StatusBarService", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L10"}, {"id": "statusbarservice_statusbarservice_constructor", "label": ".constructor()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L14"}, {"id": "statusbarservice_statusbarservice_update", "label": ".update()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L32"}, {"id": "statusbarservice_statusbarservice_starting", "label": ".starting()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L59"}, {"id": "statusbarservice_statusbarservice_ready", "label": ".ready()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L63"}, {"id": "statusbarservice_statusbarservice_running", "label": ".running()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L67"}, {"id": "statusbarservice_statusbarservice_stopped", "label": ".stopped()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L71"}, {"id": "statusbarservice_statusbarservice_restarting", "label": ".restarting()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L75"}, {"id": "statusbarservice_statusbarservice_sync", "label": ".sync()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L81"}, {"id": "statusbarservice_statusbarservice_testing", "label": ".testing()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L85"}, {"id": "statusbarservice_statusbarservice_info", "label": ".info()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L91"}, {"id": "statusbarservice_statusbarservice_success", "label": ".success()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L95"}, {"id": "statusbarservice_statusbarservice_warning", "label": ".warning()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L99"}, {"id": "statusbarservice_statusbarservice_error", "label": ".error()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L103"}, {"id": "statusbarservice_statusbarservice_connecting", "label": ".connecting()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L109"}, {"id": "statusbarservice_statusbarservice_disconnected", "label": ".disconnected()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L113"}, {"id": "statusbarservice_statusbarservice_projectready", "label": ".projectReady()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L122"}, {"id": "statusbarservice_statusbarservice_serverrunning", "label": ".serverRunning()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L133"}, {"id": "statusbarservice_statusbarservice_gradletask", "label": ".gradleTask()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L146"}, {"id": "statusbarservice_statusbarservice_building", "label": ".building()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L158"}, {"id": "statusbarservice_statusbarservice_custom", "label": ".custom()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L172"}, {"id": "statusbarservice_statusbarservice_dispose", "label": ".dispose()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L177"}], "edges": [{"source": "client_src_services_workspace_statusbarservice_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_services_workspace_statusbarservice_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_services_workspace_statusbarservice_ts", "target": "client_src_features_models_modeltypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_services_workspace_statusbarservice_ts", "target": "client_src_utils_constants", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_services_workspace_statusbarservice_ts", "target": "client_src_services_workspace_statusbartypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L5", "weight": 1.0}, {"source": "client_src_services_workspace_statusbarservice_ts", "target": "statusbarservice_statusbarservice", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L10", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_constructor", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L14", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_update", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L32", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_starting", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L59", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_ready", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L63", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_running", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L67", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_stopped", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L71", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_restarting", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L75", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_sync", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L81", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_testing", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L85", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_info", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L91", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_success", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L95", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_warning", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L99", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_error", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L103", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_connecting", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L109", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_disconnected", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L113", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_projectready", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L122", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_serverrunning", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L133", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_gradletask", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L146", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_building", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L158", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_custom", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L172", "weight": 1.0}, {"source": "statusbarservice_statusbarservice", "target": "statusbarservice_statusbarservice_dispose", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L177", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_starting", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L60", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_ready", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L64", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_running", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L68", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_stopped", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L72", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_restarting", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L76", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_sync", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L82", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_testing", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L86", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_info", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L92", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_success", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L96", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_warning", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L100", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_error", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L104", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_connecting", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L110", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_disconnected", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L114", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_projectready", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L123", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_serverrunning", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L136", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_gradletask", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L147", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_building", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L159", "weight": 1.0}, {"source": "statusbarservice_statusbarservice_custom", "target": "statusbarservice_statusbarservice_update", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L173", "weight": 1.0}], "raw_calls": [{"caller_nid": "statusbarservice_statusbarservice_constructor", "callee": "log", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L15"}, {"caller_nid": "statusbarservice_statusbarservice_constructor", "callee": "createStatusBarItem", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L18"}, {"caller_nid": "statusbarservice_statusbarservice_constructor", "callee": "push", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L21"}, {"caller_nid": "statusbarservice_statusbarservice_constructor", "callee": "show", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L22"}, {"caller_nid": "statusbarservice_statusbarservice_update", "callee": "warn", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L39"}, {"caller_nid": "statusbarservice_statusbarservice_update", "callee": "show", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L46"}, {"caller_nid": "statusbarservice_statusbarservice_update", "callee": "setTimeout", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L49"}, {"caller_nid": "statusbarservice_statusbarservice_dispose", "callee": "log", "source_file": "client\\src\\services\\workspace\\StatusBarService.ts", "source_location": "L178"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_services_workspace_statusbarservice_ts",
+      "label": "StatusBarService.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "statusbarservice_statusbarservice",
+      "label": "StatusBarService",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_update",
+      "label": ".update()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_starting",
+      "label": ".starting()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L59"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_ready",
+      "label": ".ready()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L63"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_running",
+      "label": ".running()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L67"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_stopped",
+      "label": ".stopped()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L71"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_restarting",
+      "label": ".restarting()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_sync",
+      "label": ".sync()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L81"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_testing",
+      "label": ".testing()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L85"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_info",
+      "label": ".info()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L91"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_success",
+      "label": ".success()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L95"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_warning",
+      "label": ".warning()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L99"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_error",
+      "label": ".error()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L103"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_connecting",
+      "label": ".connecting()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L109"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_disconnected",
+      "label": ".disconnected()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L113"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_projectready",
+      "label": ".projectReady()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L122"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_serverrunning",
+      "label": ".serverRunning()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L133"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_gradletask",
+      "label": ".gradleTask()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L146"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_building",
+      "label": ".building()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L158"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_custom",
+      "label": ".custom()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L172"
+    },
+    {
+      "id": "statusbarservice_statusbarservice_dispose",
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L177"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "client_src_features_models_modeltypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "client_src_utils_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "client_src_services_workspace_statusbartypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_statusbarservice_ts",
+      "target": "statusbarservice_statusbarservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_starting",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_ready",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_running",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_stopped",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_restarting",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_sync",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_testing",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_info",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_success",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_warning",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_error",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_connecting",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_disconnected",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_projectready",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_serverrunning",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_gradletask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_building",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_custom",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice",
+      "target": "statusbarservice_statusbarservice_dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_starting",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_ready",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_running",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_stopped",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_restarting",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_sync",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_testing",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_info",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_success",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_warning",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_error",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_connecting",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_disconnected",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_projectready",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L123",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_serverrunning",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_gradletask",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_building",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "statusbarservice_statusbarservice_custom",
+      "target": "statusbarservice_statusbarservice_update",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L173",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "statusbarservice_statusbarservice_constructor",
+      "callee": "log",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L15"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_constructor",
+      "callee": "createStatusBarItem",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L18"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_constructor",
+      "callee": "push",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L21"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_constructor",
+      "callee": "show",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L22"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_update",
+      "callee": "warn",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_update",
+      "callee": "show",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L46"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_update",
+      "callee": "setTimeout",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L49"
+    },
+    {
+      "caller_nid": "statusbarservice_statusbarservice_dispose",
+      "callee": "log",
+      "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
+      "source_location": "L178"
+    }
+  ]
+}

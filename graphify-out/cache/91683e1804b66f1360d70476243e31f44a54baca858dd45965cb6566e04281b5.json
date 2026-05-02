@@ -1,1 +1,246 @@
-{"nodes": [{"id": "client_src_utils_filescannerutils_ts", "label": "FileScannerUtils.ts", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L1"}, {"id": "filescannerutils_filescannerutils", "label": "FileScannerUtils", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L10"}, {"id": "filescannerutils_filescannerutils_scandirectory", "label": ".scanDirectory()", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L14"}, {"id": "filescannerutils_filescannerutils_sortitems", "label": ".sortItems()", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L54"}, {"id": "filescannerutils_filescannerutils_pathexists", "label": ".pathExists()", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L67"}, {"id": "filescannerutils_filescannerutils_getsourcefileextensions", "label": ".getSourceFileExtensions()", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L78"}, {"id": "filescannerutils_filescannerutils_issupportedsourcefile", "label": ".isSupportedSourceFile()", "file_type": "code", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L99"}], "edges": [{"source": "client_src_utils_filescannerutils_ts", "target": "fs", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_utils_filescannerutils_ts", "target": "path", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_utils_filescannerutils_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_utils_filescannerutils_ts", "target": "client_src_features_models_modeltypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_utils_filescannerutils_ts", "target": "client_src_ui_treeexplorer_grailstreeitem", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L5", "weight": 1.0}, {"source": "client_src_utils_filescannerutils_ts", "target": "filescannerutils_filescannerutils", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L10", "weight": 1.0}, {"source": "filescannerutils_filescannerutils", "target": "filescannerutils_filescannerutils_scandirectory", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L14", "weight": 1.0}, {"source": "filescannerutils_filescannerutils", "target": "filescannerutils_filescannerutils_sortitems", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L54", "weight": 1.0}, {"source": "filescannerutils_filescannerutils", "target": "filescannerutils_filescannerutils_pathexists", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L67", "weight": 1.0}, {"source": "filescannerutils_filescannerutils", "target": "filescannerutils_filescannerutils_getsourcefileextensions", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L78", "weight": 1.0}, {"source": "filescannerutils_filescannerutils", "target": "filescannerutils_filescannerutils_issupportedsourcefile", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L99", "weight": 1.0}, {"source": "filescannerutils_filescannerutils_scandirectory", "target": "filescannerutils_filescannerutils_sortitems", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L48", "weight": 1.0}, {"source": "filescannerutils_filescannerutils_issupportedsourcefile", "target": "filescannerutils_filescannerutils_getsourcefileextensions", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L100", "weight": 1.0}], "raw_calls": [{"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "readdirSync", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L33"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "join", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L36"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "isDirectory", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L38"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "push", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L39"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "createDirectoryCallback", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L39"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "fileFilter", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L40"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "push", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L41"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "createFileCallback", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L41"}, {"caller_nid": "filescannerutils_filescannerutils_scandirectory", "callee": "error", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L45"}, {"caller_nid": "filescannerutils_filescannerutils_sortitems", "callee": "sort", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L55"}, {"caller_nid": "filescannerutils_filescannerutils_pathexists", "callee": "existsSync", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L69"}, {"caller_nid": "filescannerutils_filescannerutils_issupportedsourcefile", "callee": "some", "source_file": "client\\src\\utils\\FileScannerUtils.ts", "source_location": "L101"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_utils_filescannerutils_ts",
+      "label": "FileScannerUtils.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "filescannerutils_filescannerutils",
+      "label": "FileScannerUtils",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "filescannerutils_filescannerutils_scandirectory",
+      "label": ".scanDirectory()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "filescannerutils_filescannerutils_sortitems",
+      "label": ".sortItems()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L54"
+    },
+    {
+      "id": "filescannerutils_filescannerutils_pathexists",
+      "label": ".pathExists()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L67"
+    },
+    {
+      "id": "filescannerutils_filescannerutils_getsourcefileextensions",
+      "label": ".getSourceFileExtensions()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L78"
+    },
+    {
+      "id": "filescannerutils_filescannerutils_issupportedsourcefile",
+      "label": ".isSupportedSourceFile()",
+      "file_type": "code",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L99"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "fs",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "path",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "client_src_features_models_modeltypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "client_src_ui_treeexplorer_grailstreeitem",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_utils_filescannerutils_ts",
+      "target": "filescannerutils_filescannerutils",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils",
+      "target": "filescannerutils_filescannerutils_scandirectory",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils",
+      "target": "filescannerutils_filescannerutils_sortitems",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils",
+      "target": "filescannerutils_filescannerutils_pathexists",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils",
+      "target": "filescannerutils_filescannerutils_getsourcefileextensions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils",
+      "target": "filescannerutils_filescannerutils_issupportedsourcefile",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils_scandirectory",
+      "target": "filescannerutils_filescannerutils_sortitems",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "filescannerutils_filescannerutils_issupportedsourcefile",
+      "target": "filescannerutils_filescannerutils_getsourcefileextensions",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L100",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "readdirSync",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L33"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "join",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L36"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "isDirectory",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L38"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "push",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "createDirectoryCallback",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "fileFilter",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L40"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "push",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L41"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "createFileCallback",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L41"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_scandirectory",
+      "callee": "error",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L45"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_sortitems",
+      "callee": "sort",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L55"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_pathexists",
+      "callee": "existsSync",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L69"
+    },
+    {
+      "caller_nid": "filescannerutils_filescannerutils_issupportedsourcefile",
+      "callee": "some",
+      "source_file": "client\\src\\utils\\FileScannerUtils.ts",
+      "source_location": "L101"
+    }
+  ]
+}

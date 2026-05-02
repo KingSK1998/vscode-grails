@@ -20,6 +20,7 @@ Simple scales better than complex. Start with what works today, add complexity o
 - "We need to handle X events per second"
 
 **Red flags - STOP and simplify:**
+
 - Proposing microservices with <10 developers
 - Adding Kubernetes for <5 services
 - Choosing Kafka over simpler queues "for scale"
@@ -47,6 +48,7 @@ Simple scales better than complex. Start with what works today, add complexity o
 ```
 
 **Reality check questions:**
+
 - When do we predict hitting this scale? (next month? next year?)
 - What's the cost of being wrong? (can we migrate in 2 weeks?)
 - What's the simplest thing that might work?
@@ -69,6 +71,7 @@ autocannon -c 100 -d 30 http://localhost:3000/api/events
 ```
 
 **You might discover:**
+
 - PostgreSQL with partitioning handles 100k writes/sec
 - Node.js can process 50k events/sec with proper async patterns
 - Your bottleneck is JSON serialization, not the database
@@ -77,15 +80,15 @@ autocannon -c 100 -d 30 http://localhost:3000/api/events
 
 **Decision matrix:**
 
-| Requirement | Simple Choice | Complex Choice |
-|-------------|--------------|----------------|
-| 1-10k events/sec | In-memory queue | Kafka |
-| 10-100k events/sec | Redis Streams/RabbitMQ | Kafka cluster |
-| 100k+ events/sec | Kafka or cloud-managed | Self-managed Kafka |
-| 3-5 services | Monolith with modules | Microservices |
-| 10+ services | Modular monolith or SOA | Microservices + K8s |
-| Team <5 people | Managed services | Self-hosted anything |
-| Team >20 people | Platform team builds abstractions | Everyone deploys to K8s |
+| Requirement        | Simple Choice                     | Complex Choice          |
+| ------------------ | --------------------------------- | ----------------------- |
+| 1-10k events/sec   | In-memory queue                   | Kafka                   |
+| 10-100k events/sec | Redis Streams/RabbitMQ            | Kafka cluster           |
+| 100k+ events/sec   | Kafka or cloud-managed            | Self-managed Kafka      |
+| 3-5 services       | Monolith with modules             | Microservices           |
+| 10+ services       | Modular monolith or SOA           | Microservices + K8s     |
+| Team <5 people     | Managed services                  | Self-hosted anything    |
+| Team >20 people    | Platform team builds abstractions | Everyone deploys to K8s |
 
 **The rule:** Add complexity only when simpler option is PROVEN insufficient.
 
@@ -95,16 +98,19 @@ autocannon -c 100 -d 30 http://localhost:3000/api/events
 ## Architecture Decision: Event Processing
 
 **Phase 1 (Now):** Redis Streams → Node.js workers → PostgreSQL
+
 - Can handle: 50k events/sec
 - Migration cost if wrong: 2 days to add Kafka
 - Operational burden: Low (team knows Redis)
 
 **Phase 2 (When metrics show):** Add Kafka
+
 - Trigger: Hitting Redis memory limits OR need persistence
 - Migration: Gradual cutover with dual-write period
 - Timeline: When we have 2 more engineers
 
 **Phase 3 (Future):** Consider event sourcing
+
 - Trigger: Need audit trail, not performance
 - This is a data model change, not scaling need
 ```
@@ -117,16 +123,19 @@ autocannon -c 100 -d 30 http://localhost:3000/api/events
 **Decision:** Use PostgreSQL + Redis Streams (not Kafka)
 
 **Context:**
+
 - Need to handle 50k events/sec (measured)
 - Team of 4 developers
 - 2 months to production
 
 **Options Considered:**
+
 1. **Kafka cluster** - Rejected: 3 devs can't operate Kafka reliably
 2. **AWS SQS** - Rejected: Latency too high (P99 > 1s)
 3. **Redis Streams** - Accepted: Team knows Redis, sufficient throughput
 
 **Consequences:**
+
 - Positive: Ship in 2 months, team can operate it
 - Positive: Can migrate to Kafka later if needed
 - Risk: Redis is memory-only (mitigated: consumer commits offsets)
@@ -139,20 +148,21 @@ Estimated effort: 1 week.
 
 ## Quick Reference
 
-| Scenario | Simple First | Consider Complex When |
-|----------|-------------|---------------------|
-| Message queue | Bull Queue (Redis) | 100k+ msgs/sec, need persistence |
-| Database | PostgreSQL | 10TB+ data, specific query patterns |
-| Caching | Redis | High read load, simple caching not enough |
-| Search | PostgreSQL full-text | Complex search, faceting, relevance |
-| Async jobs | Bull/Queue | Thousands of jobs/sec, complex scheduling |
-| Containers | Docker + systemd | Need auto-scaling, 10+ services |
-| Orchestration | Docker Compose | Multi-node, need auto-healing |
-| API Gateway | Nginx | Complex auth, rate limiting, transforms |
+| Scenario      | Simple First         | Consider Complex When                     |
+| ------------- | -------------------- | ----------------------------------------- |
+| Message queue | Bull Queue (Redis)   | 100k+ msgs/sec, need persistence          |
+| Database      | PostgreSQL           | 10TB+ data, specific query patterns       |
+| Caching       | Redis                | High read load, simple caching not enough |
+| Search        | PostgreSQL full-text | Complex search, faceting, relevance       |
+| Async jobs    | Bull/Queue           | Thousands of jobs/sec, complex scheduling |
+| Containers    | Docker + systemd     | Need auto-scaling, 10+ services           |
+| Orchestration | Docker Compose       | Multi-node, need auto-healing             |
+| API Gateway   | Nginx                | Complex auth, rate limiting, transforms   |
 
 ## Common Mistakes
 
 ### ❌ Over-Engineering
+
 ```yaml
 # 3 developers, 2 months to ship
 architecture:
@@ -161,11 +171,11 @@ architecture:
   - 8 microservices
   - Event sourcing
   - CQRS
-  
 # Result: Never shipped, team burned out
 ```
 
 ### ✅ Simple First
+
 ```yaml
 # Same requirements
 architecture:
@@ -173,22 +183,24 @@ architecture:
   - PostgreSQL
   - Redis for caching
   - Deployed on ECS/VMs
-  
 # Result: Shipped in 6 weeks, handles 50k events/sec
 # Can migrate to Kafka later if needed
 ```
 
 ### ❌ Resume-Driven Development
+
 - Choosing tech because it's "hot" not because it fits
 - "Netflix uses it" (you're not Netflix)
 - "Good for my career" (shipping is good for your career)
 
 ### ✅ Team-Appropriate Tech
+
 - What can the team operate at 3am?
 - What can you debug when production is down?
 - What's the learning curve vs timeline?
 
 ### ❌ Optimizing for Hypothetical Scale
+
 ```markdown
 "What if we hit 1 million users next month?"
 → Current: 1,000 users
@@ -198,6 +210,7 @@ architecture:
 ```
 
 ### ✅ Optimize for Measured Pain
+
 ```markdown
 "Database CPU at 90%, query latency spiking"
 → Measured pain
@@ -220,22 +233,22 @@ architecture:
 
 **Good architecture is evolvable:**
 
-| Phase | Architecture | When to Move On |
-|-------|-------------|-----------------|
-| 1 | Monolith + single DB | Team grows >8, deployment conflicts |
-| 2 | Modular monolith + read replicas | Specific modules need different scaling |
-| 3 | Extract 1-2 services (not everything) | Those services have different lifecycle |
-| 4 | Add API gateway, service mesh | 10+ services, need observability |
+| Phase | Architecture                          | When to Move On                         |
+| ----- | ------------------------------------- | --------------------------------------- |
+| 1     | Monolith + single DB                  | Team grows >8, deployment conflicts     |
+| 2     | Modular monolith + read replicas      | Specific modules need different scaling |
+| 3     | Extract 1-2 services (not everything) | Those services have different lifecycle |
+| 4     | Add API gateway, service mesh         | 10+ services, need observability        |
 
 **Rule:** Each phase should last 6-12 months minimum.
 
 ## Real-World Results
 
-| Company | Started With | Grew To | Migration Cost |
-|---------|-------------|---------|----------------|
-| Startup A | Node.js + Postgres | 100k users | Add read replica: 1 day |
-| Startup B | Microservices day 1 | Didn't ship | Rewrite to monolith: 3 months |
-| Company C | Redis Streams | 500k events/sec | Migrate to Kafka: 2 weeks |
-| Company D | Kafka + K8s | Constant outages | Simplify to SQS: 1 month |
+| Company   | Started With        | Grew To          | Migration Cost                |
+| --------- | ------------------- | ---------------- | ----------------------------- |
+| Startup A | Node.js + Postgres  | 100k users       | Add read replica: 1 day       |
+| Startup B | Microservices day 1 | Didn't ship      | Rewrite to monolith: 3 months |
+| Company C | Redis Streams       | 500k events/sec  | Migrate to Kafka: 2 weeks     |
+| Company D | Kafka + K8s         | Constant outages | Simplify to SQS: 1 month      |
 
 **Bottom line:** Start simple. Ship fast. Scale based on metrics, not fear.

@@ -76,10 +76,10 @@ Configure the extension through VS Code settings:
 
 ```json
 {
- "grails.javaHome": "/path/to/java-17",
- "grailsLsp.completionDetail": "ADVANCED",
- "grailsLsp.enableGrailsMagic": true,
- "grailsLsp.codeLensMode": "ADVANCED"
+  "grails.javaHome": "/path/to/java-17",
+  "grailsLsp.completionDetail": "ADVANCED",
+  "grailsLsp.enableGrailsMagic": true,
+  "grailsLsp.codeLensMode": "ADVANCED"
 }
 ```
 
@@ -88,7 +88,6 @@ Configure the extension through VS Code settings:
 This extension uses a **client-server architecture** for optimal performance:
 
 - **[Client](./client/)** - VS Code extension (TypeScript)
-
   - User interface and VS Code integration
   - Command palette, views, and UI components
   - Language client that communicates with LSP server
@@ -193,24 +192,24 @@ npm run package # Create .vsix file for VS Code Marketplace
 
 ```json
 {
- "version": "0.2.0",
- "configurations": [
-  {
-   "name": "Launch Extension",
-   "type": "extensionHost",
-   "request": "launch",
-   "args": ["--extensionDevelopmentPath=${workspaceFolder}/client"],
-   "outFiles": ["${workspaceFolder}/client/out/**/*.js"],
-   "preLaunchTask": "npm: compile - client"
-  },
-  {
-   "name": "Debug LSP Server",
-   "type": "java",
-   "request": "attach",
-   "hostName": "localhost",
-   "port": 5005
-  }
- ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/client"],
+      "outFiles": ["${workspaceFolder}/client/out/**/*.js"],
+      "preLaunchTask": "npm: compile - client"
+    },
+    {
+      "name": "Debug LSP Server",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005
+    }
+  ]
 }
 ```
 
@@ -233,10 +232,10 @@ Create `.vscode/settings.json` in your Grails project:
 
 ```json
 {
- "grails.javaHome": "/usr/lib/jvm/java-17-openjdk",
- "grailsLsp.completionDetail": "ADVANCED",
- "grailsLsp.enableGrailsMagic": true,
- "java.import.gradle.enabled": true
+  "grails.javaHome": "/usr/lib/jvm/java-17-openjdk",
+  "grailsLsp.completionDetail": "ADVANCED",
+  "grailsLsp.enableGrailsMagic": true,
+  "java.import.gradle.enabled": true
 }
 ```
 

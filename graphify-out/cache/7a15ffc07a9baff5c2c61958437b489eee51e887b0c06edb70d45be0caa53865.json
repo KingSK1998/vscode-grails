@@ -1,1 +1,558 @@
-{"nodes": [{"id": "client_src_ui_commands_commands_ts", "label": "Commands.ts", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L1"}, {"id": "commands_commands", "label": "Commands", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L13"}, {"id": "commands_commands_constructor", "label": ".constructor()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L16"}, {"id": "commands_commands_registerallcommands", "label": ".registerAllCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L24"}, {"id": "commands_commands_registeruicommands", "label": ".registerUICommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L46"}, {"id": "commands_commands_registerprojectcommands", "label": ".registerProjectCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L115"}, {"id": "commands_commands_registergrailstaskcommands", "label": ".registerGrailsTaskCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L142"}, {"id": "commands_commands_registerartifactcommands", "label": ".registerArtifactCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L186"}, {"id": "commands_commands_registerextensioncommands", "label": ".registerExtensionCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L232"}, {"id": "commands_commands_registerlegacycommands", "label": ".registerLegacyCommands()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L259"}, {"id": "commands_commands_createartifactwizard", "label": ".createArtifactWizard()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L269"}, {"id": "commands_commands_setupgrailsworkspace", "label": ".setupGrailsWorkspace()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L303"}, {"id": "commands_commands_diagnoseextensionissues", "label": ".diagnoseExtensionIssues()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L326"}, {"id": "commands_commands_executegrailsterminalcommand", "label": ".executeGrailsTerminalCommand()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L344"}, {"id": "commands_commands_register", "label": ".register()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L375"}, {"id": "commands_commands_dispose", "label": ".dispose()", "file_type": "code", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L383"}], "edges": [{"source": "client_src_ui_commands_commands_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "client_src_core_container_servicecontainer", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L3", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "client_src_core_events_eventbus", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L4", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "client_src_core_events_eventtypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L5", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "client_src_services_errors_errortypes", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L6", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "client_src_ui_views_grailsdashboard", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L7", "weight": 1.0}, {"source": "client_src_ui_commands_commands_ts", "target": "commands_commands", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L13", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_constructor", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L16", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registerallcommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L24", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registeruicommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L46", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registerprojectcommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L115", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registergrailstaskcommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L142", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registerartifactcommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L186", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registerextensioncommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L232", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_registerlegacycommands", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L259", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_createartifactwizard", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L269", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_setupgrailsworkspace", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L303", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_diagnoseextensionissues", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L326", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_executegrailsterminalcommand", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L344", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_register", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L375", "weight": 1.0}, {"source": "commands_commands", "target": "commands_commands_dispose", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L383", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registeruicommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L26", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registerprojectcommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L29", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registergrailstaskcommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L32", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registerartifactcommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L35", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registerextensioncommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L38", "weight": 1.0}, {"source": "commands_commands_registerallcommands", "target": "commands_commands_registerlegacycommands", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L41", "weight": 1.0}, {"source": "commands_commands_registeruicommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L47", "weight": 1.0}, {"source": "commands_commands_registerprojectcommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L116", "weight": 1.0}, {"source": "commands_commands_registergrailstaskcommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L143", "weight": 1.0}, {"source": "commands_commands_registerartifactcommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L187", "weight": 1.0}, {"source": "commands_commands_registerextensioncommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L233", "weight": 1.0}, {"source": "commands_commands_registerlegacycommands", "target": "commands_commands_register", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L261", "weight": 1.0}], "raw_calls": [{"caller_nid": "commands_commands_createartifactwizard", "callee": "showQuickPick", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L280"}, {"caller_nid": "commands_commands_createartifactwizard", "callee": "showInputBox", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L289"}, {"caller_nid": "commands_commands_createartifactwizard", "callee": "showInformationMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L300"}, {"caller_nid": "commands_commands_setupgrailsworkspace", "callee": "getConfiguration", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L308"}, {"caller_nid": "commands_commands_setupgrailsworkspace", "callee": "get", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L309"}, {"caller_nid": "commands_commands_setupgrailsworkspace", "callee": "update", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L313"}, {"caller_nid": "commands_commands_setupgrailsworkspace", "callee": "showInformationMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L320"}, {"caller_nid": "commands_commands_setupgrailsworkspace", "callee": "showInformationMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L322"}, {"caller_nid": "commands_commands_diagnoseextensionissues", "callee": "healthCheck", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L327"}, {"caller_nid": "commands_commands_diagnoseextensionissues", "callee": "showInformationMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L330"}, {"caller_nid": "commands_commands_diagnoseextensionissues", "callee": "join", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L332"}, {"caller_nid": "commands_commands_diagnoseextensionissues", "callee": "then", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L333"}, {"caller_nid": "commands_commands_diagnoseextensionissues", "callee": "showErrorMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L333"}, {"caller_nid": "commands_commands_executegrailsterminalcommand", "callee": "getProjects", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L347"}, {"caller_nid": "commands_commands_executegrailsterminalcommand", "callee": "showWarningMessage", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L349"}, {"caller_nid": "commands_commands_executegrailsterminalcommand", "callee": "createTerminal", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L354"}, {"caller_nid": "commands_commands_executegrailsterminalcommand", "callee": "sendText", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L359"}, {"caller_nid": "commands_commands_executegrailsterminalcommand", "callee": "show", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L360"}, {"caller_nid": "commands_commands_register", "callee": "registerCommand", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L376"}, {"caller_nid": "commands_commands_register", "callee": "push", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L377"}, {"caller_nid": "commands_commands_register", "callee": "push", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L378"}, {"caller_nid": "commands_commands_dispose", "callee": "forEach", "source_file": "client\\src\\ui\\commands\\Commands.ts", "source_location": "L384"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_ui_commands_commands_ts",
+      "label": "Commands.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "commands_commands",
+      "label": "Commands",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "commands_commands_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "commands_commands_registerallcommands",
+      "label": ".registerAllCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L24"
+    },
+    {
+      "id": "commands_commands_registeruicommands",
+      "label": ".registerUICommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L46"
+    },
+    {
+      "id": "commands_commands_registerprojectcommands",
+      "label": ".registerProjectCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L115"
+    },
+    {
+      "id": "commands_commands_registergrailstaskcommands",
+      "label": ".registerGrailsTaskCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L142"
+    },
+    {
+      "id": "commands_commands_registerartifactcommands",
+      "label": ".registerArtifactCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L186"
+    },
+    {
+      "id": "commands_commands_registerextensioncommands",
+      "label": ".registerExtensionCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L232"
+    },
+    {
+      "id": "commands_commands_registerlegacycommands",
+      "label": ".registerLegacyCommands()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L259"
+    },
+    {
+      "id": "commands_commands_createartifactwizard",
+      "label": ".createArtifactWizard()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L269"
+    },
+    {
+      "id": "commands_commands_setupgrailsworkspace",
+      "label": ".setupGrailsWorkspace()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L303"
+    },
+    {
+      "id": "commands_commands_diagnoseextensionissues",
+      "label": ".diagnoseExtensionIssues()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L326"
+    },
+    {
+      "id": "commands_commands_executegrailsterminalcommand",
+      "label": ".executeGrailsTerminalCommand()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L344"
+    },
+    {
+      "id": "commands_commands_register",
+      "label": ".register()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L375"
+    },
+    {
+      "id": "commands_commands_dispose",
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L383"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "client_src_core_container_servicecontainer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "client_src_core_events_eventbus",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "client_src_core_events_eventtypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "client_src_services_errors_errortypes",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "client_src_ui_views_grailsdashboard",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_ui_commands_commands_ts",
+      "target": "commands_commands",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registerallcommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registeruicommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registerprojectcommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registergrailstaskcommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L142",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registerartifactcommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L186",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registerextensioncommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_registerlegacycommands",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_createartifactwizard",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_setupgrailsworkspace",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L303",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_diagnoseextensionissues",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L326",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_executegrailsterminalcommand",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L344",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_register",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L375",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands",
+      "target": "commands_commands_dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L383",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registeruicommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registerprojectcommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registergrailstaskcommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registerartifactcommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registerextensioncommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerallcommands",
+      "target": "commands_commands_registerlegacycommands",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registeruicommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerprojectcommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registergrailstaskcommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerartifactcommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerextensioncommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_commands_registerlegacycommands",
+      "target": "commands_commands_register",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L261",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "commands_commands_createartifactwizard",
+      "callee": "showQuickPick",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L280"
+    },
+    {
+      "caller_nid": "commands_commands_createartifactwizard",
+      "callee": "showInputBox",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L289"
+    },
+    {
+      "caller_nid": "commands_commands_createartifactwizard",
+      "callee": "showInformationMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L300"
+    },
+    {
+      "caller_nid": "commands_commands_setupgrailsworkspace",
+      "callee": "getConfiguration",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L308"
+    },
+    {
+      "caller_nid": "commands_commands_setupgrailsworkspace",
+      "callee": "get",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L309"
+    },
+    {
+      "caller_nid": "commands_commands_setupgrailsworkspace",
+      "callee": "update",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L313"
+    },
+    {
+      "caller_nid": "commands_commands_setupgrailsworkspace",
+      "callee": "showInformationMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L320"
+    },
+    {
+      "caller_nid": "commands_commands_setupgrailsworkspace",
+      "callee": "showInformationMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L322"
+    },
+    {
+      "caller_nid": "commands_commands_diagnoseextensionissues",
+      "callee": "healthCheck",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L327"
+    },
+    {
+      "caller_nid": "commands_commands_diagnoseextensionissues",
+      "callee": "showInformationMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L330"
+    },
+    {
+      "caller_nid": "commands_commands_diagnoseextensionissues",
+      "callee": "join",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L332"
+    },
+    {
+      "caller_nid": "commands_commands_diagnoseextensionissues",
+      "callee": "then",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L333"
+    },
+    {
+      "caller_nid": "commands_commands_diagnoseextensionissues",
+      "callee": "showErrorMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L333"
+    },
+    {
+      "caller_nid": "commands_commands_executegrailsterminalcommand",
+      "callee": "getProjects",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L347"
+    },
+    {
+      "caller_nid": "commands_commands_executegrailsterminalcommand",
+      "callee": "showWarningMessage",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L349"
+    },
+    {
+      "caller_nid": "commands_commands_executegrailsterminalcommand",
+      "callee": "createTerminal",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L354"
+    },
+    {
+      "caller_nid": "commands_commands_executegrailsterminalcommand",
+      "callee": "sendText",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L359"
+    },
+    {
+      "caller_nid": "commands_commands_executegrailsterminalcommand",
+      "callee": "show",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L360"
+    },
+    {
+      "caller_nid": "commands_commands_register",
+      "callee": "registerCommand",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L376"
+    },
+    {
+      "caller_nid": "commands_commands_register",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L377"
+    },
+    {
+      "caller_nid": "commands_commands_register",
+      "callee": "push",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L378"
+    },
+    {
+      "caller_nid": "commands_commands_dispose",
+      "callee": "forEach",
+      "source_file": "client\\src\\ui\\commands\\Commands.ts",
+      "source_location": "L384"
+    }
+  ]
+}

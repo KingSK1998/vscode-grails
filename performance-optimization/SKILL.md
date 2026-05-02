@@ -19,6 +19,7 @@ Measure first, optimize second. Profile before guessing. This skill prevents pre
 - You feel the urge to make code "more efficient"
 
 **Red flags - STOP and measure first:**
+
 - You don't know the bottleneck location
 - You're optimizing without profiling data
 - "This looks inefficient" (looks ≠ is)
@@ -48,6 +49,7 @@ py-spy top -- python script.py
 ```
 
 **What to look for:**
+
 - Hot paths (functions called most often)
 - Time per function call
 - I/O wait vs CPU time
@@ -58,6 +60,7 @@ Document your hypothesis before optimizing:
 
 ```markdown
 ## Performance Hypothesis
+
 **Problem:** [What the profile shows]
 **Hypothesis:** [What you think is slow and why]
 **Expected improvement:** [Quantified goal: "reduce from 500ms to <100ms"]
@@ -70,16 +73,17 @@ Apply ONE optimization at a time. Measure after each.
 
 **Common optimizations (in order of impact):**
 
-| Optimization | When to Apply |
-|--------------|---------------|
-| Algorithmic (O(n²) → O(n log n)) | Profile shows algorithm dominates |
-| Batch I/O operations | Profile shows many small I/O calls |
-| Add caching | Same data fetched repeatedly |
-| Parallelize CPU work | CPU-bound, independent work |
-| Pre-allocate arrays | Known size upfront, hot path |
-| Micro-optimizations | Everything else exhausted |
+| Optimization                     | When to Apply                      |
+| -------------------------------- | ---------------------------------- |
+| Algorithmic (O(n²) → O(n log n)) | Profile shows algorithm dominates  |
+| Batch I/O operations             | Profile shows many small I/O calls |
+| Add caching                      | Same data fetched repeatedly       |
+| Parallelize CPU work             | CPU-bound, independent work        |
+| Pre-allocate arrays              | Known size upfront, hot path       |
+| Micro-optimizations              | Everything else exhausted          |
 
 **Micro-optimizations to AVOID unless profile proves need:**
+
 - `for` loop vs `forEach` vs `map`
 - `const` vs `let` vs `var`
 - Property access caching (`const len = arr.length`)
@@ -101,6 +105,7 @@ stddev: 15ms
 ```
 
 **Statistical significance:**
+
 - Is improvement > 2× standard deviation?
 - Is improvement > 10%? (below this, likely noise)
 - Did you test with realistic data sizes?
@@ -109,6 +114,7 @@ stddev: 15ms
 
 ```markdown
 ## Optimization Result
+
 **Applied:** [What changed]
 **Measured improvement:** [Before → After, with context]
 **Trade-offs:** [Code complexity, memory usage]
@@ -119,18 +125,19 @@ If improvement < 10% or not statistically significant → **REVERT**.
 
 ## Quick Reference
 
-| Situation | First Action |
-|-----------|--------------|
-| "This is slow" | Profile it |
-| Database slow | Check query plan, add index |
-| API slow | Check N+1 queries, add caching |
-| Startup slow | Lazy load, defer init |
-| Build slow | Check incremental builds, caching |
+| Situation       | First Action                      |
+| --------------- | --------------------------------- |
+| "This is slow"  | Profile it                        |
+| Database slow   | Check query plan, add index       |
+| API slow        | Check N+1 queries, add caching    |
+| Startup slow    | Lazy load, defer init             |
+| Build slow      | Check incremental builds, caching |
 | Test suite slow | Parallelize, check setup/teardown |
 
 ## Common Mistakes
 
 ### ❌ Premature Optimization
+
 ```typescript
 // Optimized without profiling
 function processUsers(users: User[]) {
@@ -141,6 +148,7 @@ function processUsers(users: User[]) {
 ```
 
 ### ✅ Measure First
+
 ```typescript
 // Profile showed transformUser() takes 95% of time
 function processUsers(users: User[]) {
@@ -150,6 +158,7 @@ function processUsers(users: User[]) {
 ```
 
 ### ❌ Optimizing Cold Paths
+
 ```typescript
 // This runs once on startup - don't optimize
 function loadConfig() {
@@ -158,6 +167,7 @@ function loadConfig() {
 ```
 
 ### ✅ Optimizing Hot Paths
+
 ```typescript
 // This runs 1000x/second - optimize carefully
 function processEvent(event: Event) {
@@ -166,12 +176,14 @@ function processEvent(event: Event) {
 ```
 
 ### ❌ Micro-optimizations
+
 ```typescript
 // Don't do this without profiling proof
 const len = array.length;
-for (let i = 0; i < len; i++) { }
+for (let i = 0; i < len; i++) {}
 // vs
-for (const item of array) { }
+for (const item of array) {
+}
 ```
 
 ## Red Flags - STOP and Verify
@@ -184,10 +196,10 @@ for (const item of array) { }
 
 ## Real-World Results
 
-| Project | What We Measured | What Actually Helped |
-|---------|------------------|----------------------|
+| Project     | What We Measured   | What Actually Helped                                    |
+| ----------- | ------------------ | ------------------------------------------------------- |
 | API latency | Assumed DB queries | Actual issue: JSON serialization (50x faster after fix) |
-| Build time | Assumed TypeScript | Actual issue: unused imports causing full rebuilds |
-| Test suite | Assumed test logic | Actual issue: database setup/teardown per test |
+| Build time  | Assumed TypeScript | Actual issue: unused imports causing full rebuilds      |
+| Test suite  | Assumed test logic | Actual issue: database setup/teardown per test          |
 
 **Bottom line:** Profile first. 90% of assumptions about bottlenecks are wrong.

@@ -19,6 +19,7 @@ Don't wait for explicit tool requests. Analyze user prompts, identify intent, an
 - User says "find", "search", "analyze", "check", etc.
 
 **Red flags - use a tool:**
+
 - User wants to search → Use search tool
 - User wants file analysis → Use glob/read/grep
 - User wants web info → Use WebSearch/WebFetch
@@ -35,7 +36,7 @@ digraph tool_selection {
     "Use tool" [shape=box];
     "Proceed without tool" [shape=box];
     "Ask user" [shape=box];
-    
+
     "User prompt" -> "Tool available?";
     "Tool available?" -> "User explicitly said NO tools?" [label="yes"];
     "Tool available?" -> "Proceed without tool" [label="no"];
@@ -48,15 +49,16 @@ digraph tool_selection {
 
 ### Search Intent → Search Tools
 
-| User Says | Tool to Use |
-|-----------|-------------|
-| "find files with..." | `Glob` pattern |
-| "search for..." | `Grep` for code, `WebSearch` for info |
-| "where is X defined?" | `Grep` then `Read` |
-| "look for..." | `Grep` or `Glob` |
-| "check if..." | `Grep` or `Bash` |
+| User Says             | Tool to Use                           |
+| --------------------- | ------------------------------------- |
+| "find files with..."  | `Glob` pattern                        |
+| "search for..."       | `Grep` for code, `WebSearch` for info |
+| "where is X defined?" | `Grep` then `Read`                    |
+| "look for..."         | `Grep` or `Glob`                      |
+| "check if..."         | `Grep` or `Bash`                      |
 
 **Example:**
+
 ```
 User: "Find all test files"
 → DON'T: "I can help you find test files. Would you like me to..."
@@ -65,14 +67,15 @@ User: "Find all test files"
 
 ### Analysis Intent → Analysis Tools
 
-| User Says | Tool to Use |
-|-----------|-------------|
-| "analyze this codebase" | `Agent` with explore subagent_type |
-| "what does this file do?" | `Read` then explain |
-| "explain the structure" | `Glob` + `Read` key files |
-| "how does X work?" | `Grep` for X, `Read` definition |
+| User Says                 | Tool to Use                        |
+| ------------------------- | ---------------------------------- |
+| "analyze this codebase"   | `Agent` with explore subagent_type |
+| "what does this file do?" | `Read` then explain                |
+| "explain the structure"   | `Glob` + `Read` key files          |
+| "how does X work?"        | `Grep` for X, `Read` definition    |
 
 **Example:**
+
 ```
 User: "How does authentication work in this project?"
 → DON'T: Guess from file names
@@ -81,14 +84,15 @@ User: "How does authentication work in this project?"
 
 ### Web/Documentation Intent → Web Tools
 
-| User Says | Tool to Use |
-|-----------|-------------|
-| "what's the latest version of..." | `WebSearch` |
-| "documentation for..." | `WebFetch` the docs URL |
-| "how do I use X library?" | `WebSearch` + `WebFetch` |
-| "check the website..." | `WebFetch` |
+| User Says                         | Tool to Use              |
+| --------------------------------- | ------------------------ |
+| "what's the latest version of..." | `WebSearch`              |
+| "documentation for..."            | `WebFetch` the docs URL  |
+| "how do I use X library?"         | `WebSearch` + `WebFetch` |
+| "check the website..."            | `WebFetch`               |
 
 **Example:**
+
 ```
 User: "What's new in React 19?"
 → DON'T: "I can search for that"
@@ -97,24 +101,25 @@ User: "What's new in React 19?"
 
 ### Code Execution Intent → Execution Tools
 
-| User Says | Tool to Use |
-|-----------|-------------|
-| "run the tests" | `Bash` npm test |
-| "build this project" | `Bash` build command |
-| "check if it compiles" | `Bash` + `Read` for build config |
+| User Says                 | Tool to Use                       |
+| ------------------------- | --------------------------------- |
+| "run the tests"           | `Bash` npm test                   |
+| "build this project"      | `Bash` build command              |
+| "check if it compiles"    | `Bash` + `Read` for build config  |
 | "what's the output of..." | `Bash` or `mcp__ide__executeCode` |
 
 ### Plugin/Skill Mentioned → Use Plugin
 
-| User Says | Action |
-|-----------|--------|
-| "use graphify" | `Skill: graphify` |
-| "/graphify this" | `Skill: graphify` |
-| "analyze with graphify" | `Skill: graphify` |
-| "create a skill for..." | `Skill: writing-skills` |
-| mentions any plugin name | Use that plugin |
+| User Says                | Action                  |
+| ------------------------ | ----------------------- |
+| "use graphify"           | `Skill: graphify`       |
+| "/graphify this"         | `Skill: graphify`       |
+| "analyze with graphify"  | `Skill: graphify`       |
+| "create a skill for..."  | `Skill: writing-skills` |
+| mentions any plugin name | Use that plugin         |
 
 **Example:**
+
 ```
 User: "/graphify the codebase"
 → DON'T: "I can help with that. First, let me..."
@@ -165,6 +170,7 @@ User: "Fix the bug"
 Common tasks need multiple tools in sequence:
 
 ### Finding Code Patterns
+
 ```
 1. Glob("**/*.ts") - find candidate files
 2. Grep("pattern") - narrow to relevant
@@ -173,15 +179,17 @@ Common tasks need multiple tools in sequence:
 ```
 
 ### Debugging
+
 ```
 1. Grep("error pattern") - find error sources
-2. Read(error location) - understand context  
+2. Read(error location) - understand context
 3. WebSearch("error message") - find solutions
 4. Edit(fix) - apply fix
 5. Bash("run tests") - verify
 ```
 
 ### Documentation Research
+
 ```
 1. WebSearch("library documentation") - find official docs
 2. WebFetch(docs URL) - get details
@@ -191,22 +199,23 @@ Common tasks need multiple tools in sequence:
 
 ## Quick Reference
 
-| Intent | Primary Tool | Secondary Tools |
-|--------|-------------|-----------------|
-| Find files | `Glob` | `Bash` for ls/find |
-| Search code | `Grep` | `Read` for context |
-| Read content | `Read` | `Bash` cat/head |
-| Web search | `WebSearch` | `WebFetch` for details |
-| Run commands | `Bash` | `Bash` with scripts |
-| Explore codebase | `Agent` (explore) | `Glob` + `Grep` |
-| Use skill | `Skill` | Related tools |
-| Edit files | `Edit` | `Read` first |
-| Create files | `Write` | - |
-| Ask questions | `AskUserQuestion` | When uncertain |
+| Intent           | Primary Tool      | Secondary Tools        |
+| ---------------- | ----------------- | ---------------------- |
+| Find files       | `Glob`            | `Bash` for ls/find     |
+| Search code      | `Grep`            | `Read` for context     |
+| Read content     | `Read`            | `Bash` cat/head        |
+| Web search       | `WebSearch`       | `WebFetch` for details |
+| Run commands     | `Bash`            | `Bash` with scripts    |
+| Explore codebase | `Agent` (explore) | `Glob` + `Grep`        |
+| Use skill        | `Skill`           | Related tools          |
+| Edit files       | `Edit`            | `Read` first           |
+| Create files     | `Write`           | -                      |
+| Ask questions    | `AskUserQuestion` | When uncertain         |
 
 ## Common Mistakes
 
 ### ❌ Asking Permission for Everything
+
 ```
 User: "Find test files"
 Assistant: "Would you like me to search for test files using Glob?"
@@ -214,12 +223,14 @@ Assistant: "Would you like me to search for test files using Glob?"
 ```
 
 ### ✅ Automatic Execution
+
 ```
 User: "Find test files"
 Assistant: [Glob("**/*.test.ts")] "Found 12 test files..."
 ```
 
 ### ❌ Manual Search When Tools Available
+
 ```
 User: "Where is the auth middleware?"
 Assistant: "Let me look through the files..." [manually scans]
@@ -227,12 +238,14 @@ Assistant: "Let me look through the files..." [manually scans]
 ```
 
 ### ✅ Use Grep First
+
 ```
 User: "Where is the auth middleware?"
 Assistant: [Grep("auth|middleware")] "Found in src/middleware/auth.ts"
 ```
 
 ### ❌ Ignoring Available Skills
+
 ```
 User: "/graphify this codebase"
 Assistant: "I can analyze the codebase structure for you..." [manual analysis]
@@ -240,6 +253,7 @@ Assistant: "I can analyze the codebase structure for you..." [manual analysis]
 ```
 
 ### ✅ Invoke Skill Immediately
+
 ```
 User: "/graphify this codebase"
 Assistant: [Skill("graphify")] "Running graphify analysis..."
@@ -259,24 +273,28 @@ Assistant: [Skill("graphify")] "Running graphify analysis..."
 ## Edge Cases
 
 ### User Says "Don't Use Tools"
+
 ```
 User: "Without using any tools, tell me what you know..."
 → Respect the constraint. Use only context + training data.
 ```
 
 ### User Is Unclear
+
 ```
 User: "Analyze this"
 → Ambiguous. Ask: "I'll search the codebase. Any specific area to focus on?"
 ```
 
 ### Tool Might Fail
+
 ```
 User: "Check the website"
 → WebFetch might fail. Have fallback: "I'll try to fetch it, or search if unavailable."
 ```
 
 ### Multiple Valid Tools
+
 ```
 User: "Search for auth"
 → Could mean: code search (Grep), web search (WebSearch), or file search (Glob)
@@ -285,13 +303,13 @@ User: "Search for auth"
 
 ## Real-World Examples
 
-| Prompt | Wrong Response | Right Response |
-|--------|---------------|----------------|
-| "Find controllers" | "I can help find controllers" | [Glob] "Found 8 controllers..." |
-| "What's in README?" | "Let me check" | [Read] "README contains..." |
-| "How does auth work?" | Guess from file names | [Grep+Read] Explain based on code |
-| "/graphify this" | Explain graphify | [Skill] Execute graphify |
-| "Latest React version?" | Training data cutoff | [WebSearch] Current version |
+| Prompt                  | Wrong Response                | Right Response                    |
+| ----------------------- | ----------------------------- | --------------------------------- |
+| "Find controllers"      | "I can help find controllers" | [Glob] "Found 8 controllers..."   |
+| "What's in README?"     | "Let me check"                | [Read] "README contains..."       |
+| "How does auth work?"   | Guess from file names         | [Grep+Read] Explain based on code |
+| "/graphify this"        | Explain graphify              | [Skill] Execute graphify          |
+| "Latest React version?" | Training data cutoff          | [WebSearch] Current version       |
 
 ## Tool Selection Priority
 

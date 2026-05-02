@@ -1,1 +1,139 @@
-{"nodes": [{"id": "scripts_copy_server_js", "label": "copy-server.js", "file_type": "code", "source_file": "scripts\\copy-server.js", "source_location": "L1"}, {"id": "copy_server_copyserver", "label": "copyServer()", "file_type": "code", "source_file": "scripts\\copy-server.js", "source_location": "L4"}], "edges": [{"source": "scripts_copy_server_js", "target": "copy_server_copyserver", "relation": "contains", "confidence": "EXTRACTED", "source_file": "scripts\\copy-server.js", "source_location": "L4", "weight": 1.0}], "raw_calls": [{"caller_nid": "copy_server_copyserver", "callee": "join", "source_file": "scripts\\copy-server.js", "source_location": "L5"}, {"caller_nid": "copy_server_copyserver", "callee": "join", "source_file": "scripts\\copy-server.js", "source_location": "L6"}, {"caller_nid": "copy_server_copyserver", "callee": "existsSync", "source_file": "scripts\\copy-server.js", "source_location": "L9"}, {"caller_nid": "copy_server_copyserver", "callee": "error", "source_file": "scripts\\copy-server.js", "source_location": "L10"}, {"caller_nid": "copy_server_copyserver", "callee": "exit", "source_file": "scripts\\copy-server.js", "source_location": "L11"}, {"caller_nid": "copy_server_copyserver", "callee": "filter", "source_file": "scripts\\copy-server.js", "source_location": "L14"}, {"caller_nid": "copy_server_copyserver", "callee": "readdirSync", "source_file": "scripts\\copy-server.js", "source_location": "L14"}, {"caller_nid": "copy_server_copyserver", "callee": "error", "source_file": "scripts\\copy-server.js", "source_location": "L17"}, {"caller_nid": "copy_server_copyserver", "callee": "exit", "source_file": "scripts\\copy-server.js", "source_location": "L18"}, {"caller_nid": "copy_server_copyserver", "callee": "sort", "source_file": "scripts\\copy-server.js", "source_location": "L22"}, {"caller_nid": "copy_server_copyserver", "callee": "map", "source_file": "scripts\\copy-server.js", "source_location": "L22"}, {"caller_nid": "copy_server_copyserver", "callee": "join", "source_file": "scripts\\copy-server.js", "source_location": "L29"}, {"caller_nid": "copy_server_copyserver", "callee": "join", "source_file": "scripts\\copy-server.js", "source_location": "L30"}, {"caller_nid": "copy_server_copyserver", "callee": "mkdirSync", "source_file": "scripts\\copy-server.js", "source_location": "L32"}, {"caller_nid": "copy_server_copyserver", "callee": "copyFileSync", "source_file": "scripts\\copy-server.js", "source_location": "L33"}, {"caller_nid": "copy_server_copyserver", "callee": "log", "source_file": "scripts\\copy-server.js", "source_location": "L35"}, {"caller_nid": "copy_server_copyserver", "callee": "error", "source_file": "scripts\\copy-server.js", "source_location": "L37"}, {"caller_nid": "copy_server_copyserver", "callee": "exit", "source_file": "scripts\\copy-server.js", "source_location": "L38"}]}
+{
+  "nodes": [
+    {
+      "id": "scripts_copy_server_js",
+      "label": "copy-server.js",
+      "file_type": "code",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "copy_server_copyserver",
+      "label": "copyServer()",
+      "file_type": "code",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L4"
+    }
+  ],
+  "edges": [
+    {
+      "source": "scripts_copy_server_js",
+      "target": "copy_server_copyserver",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L4",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "join",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L5"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "join",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L6"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "existsSync",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L9"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "error",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L10"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "exit",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L11"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "filter",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "readdirSync",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "error",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L17"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "exit",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L18"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "sort",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L22"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "map",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L22"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "join",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L29"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "join",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "mkdirSync",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "copyFileSync",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L33"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "log",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L35"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "error",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L37"
+    },
+    {
+      "caller_nid": "copy_server_copyserver",
+      "callee": "exit",
+      "source_file": "scripts\\copy-server.js",
+      "source_location": "L38"
+    }
+  ]
+}

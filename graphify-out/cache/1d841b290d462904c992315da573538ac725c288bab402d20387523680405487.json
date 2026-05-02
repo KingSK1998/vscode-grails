@@ -1,1 +1,13 @@
-{"nodes": [{"id": "scripts_run_gradlew_js", "label": "run-gradlew.js", "file_type": "code", "source_file": "scripts\\run-gradlew.js", "source_location": "L1"}], "edges": [], "raw_calls": []}
+{
+  "nodes": [
+    {
+      "id": "scripts_run_gradlew_js",
+      "label": "run-gradlew.js",
+      "file_type": "code",
+      "source_file": "scripts\\run-gradlew.js",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "raw_calls": []
+}

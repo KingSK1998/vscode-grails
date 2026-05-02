@@ -1,1 +1,13 @@
-{"nodes": [{"id": "shared_types_grails_types_ts", "label": "grails-types.ts", "file_type": "code", "source_file": "shared\\types\\grails-types.ts", "source_location": "L1"}], "edges": [], "raw_calls": []}
+{
+  "nodes": [
+    {
+      "id": "shared_types_grails_types_ts",
+      "label": "grails-types.ts",
+      "file_type": "code",
+      "source_file": "shared\\types\\grails-types.ts",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "raw_calls": []
+}

@@ -1,1 +1,13 @@
-{"nodes": [{"id": "client_src_services_errors_errortypes_ts", "label": "errorTypes.ts", "file_type": "code", "source_file": "client\\src\\services\\errors\\errorTypes.ts", "source_location": "L1"}], "edges": [], "raw_calls": []}
+{
+  "nodes": [
+    {
+      "id": "client_src_services_errors_errortypes_ts",
+      "label": "errorTypes.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\errors\\errorTypes.ts",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "raw_calls": []
+}

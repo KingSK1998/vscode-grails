@@ -88,28 +88,17 @@
   },
   "Controller Action": {
     "prefix": "action",
-    "body": [
-      "def ${1:actionName}() {",
-      "    ${0:// TODO: implement action logic}",
-      "}"
-    ],
+    "body": ["def ${1:actionName}() {", "    ${0:// TODO: implement action logic}", "}"],
     "description": "Create a controller action"
   },
   "Service Method": {
     "prefix": "method",
-    "body": [
-      "def ${1:methodName}(${2:params}) {",
-      "    ${0:// TODO: implement method}",
-      "}"
-    ],
+    "body": ["def ${1:methodName}(${2:params}) {", "    ${0:// TODO: implement method}", "}"],
     "description": "Create a service method"
   },
   "Domain Property": {
     "prefix": "property",
-    "body": [
-      "${1:String} ${2:propertyName}",
-      "${0:// TODO: add more properties}"
-    ],
+    "body": ["${1:String} ${2:propertyName}", "${0:// TODO: add more properties}"],
     "description": "Add a domain property"
   },
   "Domain Constraints": {

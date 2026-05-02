@@ -1,1 +1,521 @@
-{"nodes": [{"id": "client_src_services_workspace_configurationservice_ts", "label": "ConfigurationService.ts", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L1"}, {"id": "configurationservice_configurationservice", "label": "ConfigurationService", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L29"}, {"id": "configurationservice_configurationservice_grailshome", "label": ".grailsHome()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L35"}, {"id": "configurationservice_configurationservice_javahome", "label": ".javaHome()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L40"}, {"id": "configurationservice_configurationservice_autostartserver", "label": ".autoStartServer()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L45"}, {"id": "configurationservice_configurationservice_serverport", "label": ".serverPort()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L50"}, {"id": "configurationservice_configurationservice_completiondetail", "label": ".completionDetail()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L55"}, {"id": "configurationservice_configurationservice_maxcompletionitems", "label": ".maxCompletionItems()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L60"}, {"id": "configurationservice_configurationservice_includesnippets", "label": ".includeSnippets()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L65"}, {"id": "configurationservice_configurationservice_codelensenabled", "label": ".codeLensEnabled()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L70"}, {"id": "configurationservice_configurationservice_diagnosticsenabled", "label": ".diagnosticsEnabled()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L75"}, {"id": "configurationservice_configurationservice_serverjvmargs", "label": ".serverJvmArgs()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L82"}, {"id": "configurationservice_configurationservice_tracelevel", "label": ".traceLevel()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L87"}, {"id": "configurationservice_configurationservice_cacheenabled", "label": ".cacheEnabled()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L92"}, {"id": "configurationservice_configurationservice_cachedirectory", "label": ".cacheDirectory()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L97"}, {"id": "configurationservice_configurationservice_smartrecompilation", "label": ".smartRecompilation()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L105"}, {"id": "configurationservice_configurationservice_loglevel", "label": ".logLevel()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L110"}, {"id": "configurationservice_configurationservice_developmentmode", "label": ".developmentMode()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L115"}, {"id": "configurationservice_configurationservice_get", "label": ".get()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L121"}, {"id": "configurationservice_configurationservice_setglobal", "label": ".setGlobal()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L125"}, {"id": "configurationservice_configurationservice_dispose", "label": ".dispose()", "file_type": "code", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L129"}], "edges": [{"source": "client_src_services_workspace_configurationservice_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L1", "weight": 1.0}, {"source": "client_src_services_workspace_configurationservice_ts", "target": "vscode", "relation": "imports_from", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L2", "weight": 1.0}, {"source": "client_src_services_workspace_configurationservice_ts", "target": "configurationservice_configurationservice", "relation": "contains", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L29", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_grailshome", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L35", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_javahome", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L40", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_autostartserver", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L45", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_serverport", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L50", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_completiondetail", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L55", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_maxcompletionitems", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L60", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_includesnippets", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L65", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_codelensenabled", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L70", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_diagnosticsenabled", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L75", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_serverjvmargs", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L82", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_tracelevel", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L87", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_cacheenabled", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L92", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_cachedirectory", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L97", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_smartrecompilation", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L105", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_loglevel", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L110", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_developmentmode", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L115", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_get", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L121", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_setglobal", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L125", "weight": 1.0}, {"source": "configurationservice_configurationservice", "target": "configurationservice_configurationservice_dispose", "relation": "method", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L129", "weight": 1.0}, {"source": "configurationservice_configurationservice_grailshome", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L36", "weight": 1.0}, {"source": "configurationservice_configurationservice_javahome", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L41", "weight": 1.0}, {"source": "configurationservice_configurationservice_autostartserver", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L46", "weight": 1.0}, {"source": "configurationservice_configurationservice_serverport", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L51", "weight": 1.0}, {"source": "configurationservice_configurationservice_completiondetail", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L56", "weight": 1.0}, {"source": "configurationservice_configurationservice_maxcompletionitems", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L61", "weight": 1.0}, {"source": "configurationservice_configurationservice_includesnippets", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L66", "weight": 1.0}, {"source": "configurationservice_configurationservice_codelensenabled", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L71", "weight": 1.0}, {"source": "configurationservice_configurationservice_diagnosticsenabled", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L76", "weight": 1.0}, {"source": "configurationservice_configurationservice_serverjvmargs", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L83", "weight": 1.0}, {"source": "configurationservice_configurationservice_tracelevel", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L88", "weight": 1.0}, {"source": "configurationservice_configurationservice_cacheenabled", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L93", "weight": 1.0}, {"source": "configurationservice_configurationservice_cachedirectory", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L98", "weight": 1.0}, {"source": "configurationservice_configurationservice_smartrecompilation", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L106", "weight": 1.0}, {"source": "configurationservice_configurationservice_loglevel", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L111", "weight": 1.0}, {"source": "configurationservice_configurationservice_developmentmode", "target": "configurationservice_configurationservice_get", "relation": "calls", "confidence": "EXTRACTED", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L116", "weight": 1.0}], "raw_calls": [{"caller_nid": "configurationservice_configurationservice_get", "callee": "getConfiguration", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L122"}, {"caller_nid": "configurationservice_configurationservice_setglobal", "callee": "update", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L126"}, {"caller_nid": "configurationservice_configurationservice_setglobal", "callee": "getConfiguration", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L126"}, {"caller_nid": "configurationservice_configurationservice_dispose", "callee": "forEach", "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts", "source_location": "L130"}]}
+{
+  "nodes": [
+    {
+      "id": "client_src_services_workspace_configurationservice_ts",
+      "label": "ConfigurationService.ts",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "configurationservice_configurationservice",
+      "label": "ConfigurationService",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "configurationservice_configurationservice_grailshome",
+      "label": ".grailsHome()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "configurationservice_configurationservice_javahome",
+      "label": ".javaHome()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L40"
+    },
+    {
+      "id": "configurationservice_configurationservice_autostartserver",
+      "label": ".autoStartServer()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L45"
+    },
+    {
+      "id": "configurationservice_configurationservice_serverport",
+      "label": ".serverPort()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L50"
+    },
+    {
+      "id": "configurationservice_configurationservice_completiondetail",
+      "label": ".completionDetail()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L55"
+    },
+    {
+      "id": "configurationservice_configurationservice_maxcompletionitems",
+      "label": ".maxCompletionItems()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L60"
+    },
+    {
+      "id": "configurationservice_configurationservice_includesnippets",
+      "label": ".includeSnippets()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L65"
+    },
+    {
+      "id": "configurationservice_configurationservice_codelensenabled",
+      "label": ".codeLensEnabled()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L70"
+    },
+    {
+      "id": "configurationservice_configurationservice_diagnosticsenabled",
+      "label": ".diagnosticsEnabled()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "configurationservice_configurationservice_serverjvmargs",
+      "label": ".serverJvmArgs()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L82"
+    },
+    {
+      "id": "configurationservice_configurationservice_tracelevel",
+      "label": ".traceLevel()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L87"
+    },
+    {
+      "id": "configurationservice_configurationservice_cacheenabled",
+      "label": ".cacheEnabled()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L92"
+    },
+    {
+      "id": "configurationservice_configurationservice_cachedirectory",
+      "label": ".cacheDirectory()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L97"
+    },
+    {
+      "id": "configurationservice_configurationservice_smartrecompilation",
+      "label": ".smartRecompilation()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "configurationservice_configurationservice_loglevel",
+      "label": ".logLevel()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L110"
+    },
+    {
+      "id": "configurationservice_configurationservice_developmentmode",
+      "label": ".developmentMode()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L115"
+    },
+    {
+      "id": "configurationservice_configurationservice_get",
+      "label": ".get()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L121"
+    },
+    {
+      "id": "configurationservice_configurationservice_setglobal",
+      "label": ".setGlobal()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L125"
+    },
+    {
+      "id": "configurationservice_configurationservice_dispose",
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L129"
+    }
+  ],
+  "edges": [
+    {
+      "source": "client_src_services_workspace_configurationservice_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_configurationservice_ts",
+      "target": "vscode",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "client_src_services_workspace_configurationservice_ts",
+      "target": "configurationservice_configurationservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_grailshome",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_javahome",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_autostartserver",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_serverport",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_completiondetail",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_maxcompletionitems",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_includesnippets",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_codelensenabled",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_diagnosticsenabled",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_serverjvmargs",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_tracelevel",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_cacheenabled",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_cachedirectory",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_smartrecompilation",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_loglevel",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_developmentmode",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_setglobal",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice",
+      "target": "configurationservice_configurationservice_dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_grailshome",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_javahome",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_autostartserver",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_serverport",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_completiondetail",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_maxcompletionitems",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_includesnippets",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_codelensenabled",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_diagnosticsenabled",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_serverjvmargs",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_tracelevel",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_cacheenabled",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_cachedirectory",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L98",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_smartrecompilation",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_loglevel",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "configurationservice_configurationservice_developmentmode",
+      "target": "configurationservice_configurationservice_get",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L116",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "configurationservice_configurationservice_get",
+      "callee": "getConfiguration",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L122"
+    },
+    {
+      "caller_nid": "configurationservice_configurationservice_setglobal",
+      "callee": "update",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L126"
+    },
+    {
+      "caller_nid": "configurationservice_configurationservice_setglobal",
+      "callee": "getConfiguration",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L126"
+    },
+    {
+      "caller_nid": "configurationservice_configurationservice_dispose",
+      "callee": "forEach",
+      "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
+      "source_location": "L130"
+    }
+  ]
+}

@@ -16,6 +16,7 @@ information for contributors.
 ### Development Setup
 
 1. **Fork and Clone**
+
    ```bash
    # Contact the developer for access (single developer project, not open-source yet)
    # git clone <repository-url>
@@ -23,11 +24,13 @@ information for contributors.
    ```
 
 2. **Build the Project**
+
    ```bash
    ./gradlew build
    ```
 
 3. **Run Tests**
+
    ```bash
    ./gradlew test
    ```
@@ -108,10 +111,10 @@ class MyFeatureSpec extends CompletionTestSpec {
 	def "should provide meaningful test description"() {
 		given: "What is provided or auto-initialized"
 		// Setup code
-		
+
 		when: "When the action is performed"
 		// Action code
-		
+
 		then: "Expected results are as expected"
 		// Assertions
 	}
@@ -145,6 +148,7 @@ class MyFeatureSpec extends CompletionTestSpec {
 ### Adding New LSP Features
 
 1. **Create Provider Class**
+
    ```groovy
    @Slf4j
    @CompileStatic
@@ -154,18 +158,18 @@ class MyFeatureSpec extends CompletionTestSpec {
    ```
 
 2. **Add to Service Layer**
-    - Update `GrailsTextDocumentService` or `GrailsWorkspaceService`
-    - Wire the provider in the service constructor
+   - Update `GrailsTextDocumentService` or `GrailsWorkspaceService`
+   - Wire the provider in the service constructor
 
 3. **Create Tests**
-    - Extend appropriate base test class
-    - Test with different project types
-    - Include edge cases and error scenarios
+   - Extend appropriate base test class
+   - Test with different project types
+   - Include edge cases and error scenarios
 
 4. **Update Documentation**
-    - Add feature to README.md
-    - Update FEATURE_RESPONSIBILITIES.md
-    - Add usage examples
+   - Add feature to README.md
+   - Update FEATURE_RESPONSIBILITIES.md
+   - Add usage examples
 
 ### Performance Considerations
 
@@ -179,40 +183,42 @@ class MyFeatureSpec extends CompletionTestSpec {
 ### Before Submitting
 
 1. **Run All Tests**
+
    ```bash
    ./gradlew checkAll
    ```
 
 2. **Check Code Coverage**
+
    ```bash
    ./gradlew jacocoTestCoverageVerification
    ```
 
 3. **Update Documentation**
-    - Update relevant documentation files
-    - Add changelog entry
-    - Update feature matrix if needed
+   - Update relevant documentation files
+   - Add changelog entry
+   - Update feature matrix if needed
 
 ### PR Guidelines
 
 1. **Clear Description**
-    - Describe what the PR does
-    - Explain why the change is needed
-    - Include any breaking changes
+   - Describe what the PR does
+   - Explain why the change is needed
+   - Include any breaking changes
 
 2. **Small, Focused Changes**
-    - Keep PRs focused on a single feature/fix
-    - Split large changes into multiple PRs
+   - Keep PRs focused on a single feature/fix
+   - Split large changes into multiple PRs
 
 3. **Tests Required**
-    - All new features must have tests
-    - Bug fixes should include regression tests
-    - Maintain or improve code coverage
+   - All new features must have tests
+   - Bug fixes should include regression tests
+   - Maintain or improve code coverage
 
 4. **Documentation Updates**
-    - Update README.md for new features
-    - Update relevant documentation files
-    - Add changelog entry
+   - Update README.md for new features
+   - Update relevant documentation files
+   - Add changelog entry
 
 ### Review Process
 
