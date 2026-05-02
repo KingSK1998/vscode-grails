@@ -1,5 +1,5 @@
 /* grails-components.css - Reusable components */
-@import url("./grails-variables.css");
+@import url('./grails-variables.css');
 
 .grails-button {
   background: linear-gradient(135deg, var(--grails-green-primary), var(--grails-green-accent));

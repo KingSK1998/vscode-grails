@@ -12,16 +12,16 @@ The extension exports the following API for other extensions to interact with:
 interface GrailsExtensionAPI {
   readonly version: string;
   readonly isActive: boolean;
-
+  
   // Services
   getGradleService(): GradleService;
   getStatusBarService(): StatusBarService;
   getErrorService(): ErrorService;
-
+  
   // Language Server
   getLanguageClient(): LanguageClient | undefined;
   restartLanguageServer(): Promise<void>;
-
+  
   // Project Information
   getProjectInfo(): Promise<GrailsProjectInfo>;
   isGrailsProject(workspaceFolder: string): boolean;
@@ -31,19 +31,19 @@ interface GrailsExtensionAPI {
 ### Usage Example
 
 ```typescript
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 // Get the Grails extension
-const grailsExtension = vscode.extensions.getExtension("KingSK1998.vscode-gng-support");
+const grailsExtension = vscode.extensions.getExtension('KingSK1998.vscode-gng-support');
 
 if (grailsExtension) {
   await grailsExtension.activate();
   const api = grailsExtension.exports as GrailsExtensionAPI;
-
+  
   // Check if current workspace is a Grails project
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (workspaceFolder && api.isGrailsProject(workspaceFolder.uri.fsPath)) {
-    console.log("This is a Grails project!");
+    console.log('This is a Grails project!');
   }
 }
 ```
@@ -60,7 +60,7 @@ class GradleService {
    * Initialize the Gradle API
    */
   async sync(): Promise<boolean>;
-
+  
   /**
    * Run a Gradle task
    */
@@ -94,22 +94,22 @@ class StatusBarService {
     type?: MODULE_TYPE,
     timeoutMs?: number
   ): void;
-
+  
   /**
    * Show ready state
    */
   ready(type?: MODULE_TYPE, tooltip?: string): void;
-
+  
   /**
    * Show syncing state
    */
   sync(type?: MODULE_TYPE, tooltip?: string): void;
-
+  
   /**
    * Show error state
    */
   error(type?: MODULE_TYPE, tooltip?: string): void;
-
+  
   /**
    * Show warning state
    */
@@ -126,14 +126,18 @@ class ErrorService {
   /**
    * Handle and report an error
    */
-  handle(error: unknown, source: MODULE_TYPE, severity?: ERROR_SEVERITY): void;
+  handle(
+    error: unknown,
+    source: MODULE_TYPE,
+    severity?: ERROR_SEVERITY
+  ): void;
 }
 
 enum ERROR_SEVERITY {
   INFO = "INFO",
-  WARNING = "WARNING",
+  WARNING = "WARNING", 
   ERROR = "ERROR",
-  FATAL = "FATAL",
+  FATAL = "FATAL"
 }
 ```
 
@@ -149,12 +153,12 @@ class LanguageServerManager {
    * Start the language server
    */
   async start(): Promise<LanguageClient | undefined>;
-
+  
   /**
    * Stop the language server
    */
   async stop(): Promise<void>;
-
+  
   /**
    * Dispose resources
    */
@@ -171,10 +175,10 @@ function getClientOptions(): LanguageClientOptions {
   return {
     documentSelector: [
       { scheme: "file", language: "groovy" },
-      { scheme: "file", language: "gsp" },
+      { scheme: "file", language: "gsp" }
     ],
     synchronize: {
-      fileEvents: workspace.createFileSystemWatcher("**/*.{groovy,gsp}"),
+      fileEvents: workspace.createFileSystemWatcher("**/*.{groovy,gsp}")
     },
     // ... other options
   };
@@ -203,12 +207,12 @@ class GrailsExplorerProvider implements vscode.TreeDataProvider<GrailsItem> {
    * Get tree item representation
    */
   getTreeItem(element: GrailsItem): vscode.TreeItem;
-
+  
   /**
    * Get children of a tree item
    */
   getChildren(element?: GrailsItem): Promise<GrailsItem[]>;
-
+  
   /**
    * Refresh the tree view
    */
@@ -236,32 +240,32 @@ class GrailsConfig {
    * Check if Grails is configured
    */
   static isGrailsConfigured(): boolean;
-
+  
   /**
    * Get Grails installation path
    */
   static getGrailsPath(): string;
-
+  
   /**
    * Get Java home for language server
    */
   static getJavaHome(): string | undefined;
-
+  
   /**
    * Get Grails version
    */
   static getGrailsVersion(projectRoot?: string): string | undefined;
-
+  
   /**
    * Get project root directory
    */
   static getProjectRoot(): string | undefined;
-
+  
   /**
    * Check if directory is a Grails project
    */
   static isGrailsProjectFolder(folderPath: string): boolean;
-
+  
   /**
    * Validate configuration
    */
@@ -285,16 +289,16 @@ export function registerCommands(
 
 ### Available Commands
 
-| Command ID              | Title                           | Description                     |
-| ----------------------- | ------------------------------- | ------------------------------- |
-| `grails.run`            | Grails: Run Application         | Start the Grails application    |
-| `grails.test`           | Grails: Run Tests               | Execute project tests           |
-| `grails.clean`          | Grails: Clean                   | Clean the project               |
-| `grails.compile`        | Grails: Compile                 | Compile the project             |
-| `grails.createArtifact` | Grails: Create New Artifact     | Launch artifact creation wizard |
-| `grails.setupWorkspace` | Grails: Setup Workspace         | Configure workspace settings    |
-| `grails.restartServer`  | Grails: Restart Language Server | Restart the language server     |
-| `grails.runGradleTask`  | Grails: Run Gradle Task         | Execute Gradle tasks            |
+| Command ID | Title | Description |
+|------------|-------|-------------|
+| `grails.run` | Grails: Run Application | Start the Grails application |
+| `grails.test` | Grails: Run Tests | Execute project tests |
+| `grails.clean` | Grails: Clean | Clean the project |
+| `grails.compile` | Grails: Compile | Compile the project |
+| `grails.createArtifact` | Grails: Create New Artifact | Launch artifact creation wizard |
+| `grails.setupWorkspace` | Grails: Setup Workspace | Configure workspace settings |
+| `grails.restartServer` | Grails: Restart Language Server | Restart the language server |
+| `grails.runGradleTask` | Grails: Run Gradle Task | Execute Gradle tasks |
 
 ## Events and Notifications
 
@@ -304,23 +308,23 @@ The extension fires the following events:
 
 ```typescript
 // Extension activation
-vscode.commands.executeCommand("setContext", "grails:activated", true);
+vscode.commands.executeCommand('setContext', 'grails:activated', true);
 
 // Project detection
-vscode.commands.executeCommand("setContext", "grails:projectDetected", true);
+vscode.commands.executeCommand('setContext', 'grails:projectDetected', true);
 
 // Language server status
-vscode.commands.executeCommand("setContext", "grails:serverRunning", true);
+vscode.commands.executeCommand('setContext', 'grails:serverRunning', true);
 ```
 
 ### Language Server Notifications
 
 ```typescript
 // Configuration changes
-client.sendNotification("workspace/didChangeConfiguration", { settings });
+client.sendNotification('workspace/didChangeConfiguration', { settings });
 
 // Progress notifications
-client.onNotification("$/progress", params => {
+client.onNotification('$/progress', (params) => {
   // Handle server progress updates
 });
 ```
@@ -372,10 +376,10 @@ Add items to Grails Explorer context menu:
 // Module types
 enum MODULE_TYPE {
   GRADLE = "Gradle",
-  SERVER = "Server",
+  SERVER = "Server", 
   CLIENT = "Client",
   PROJECT = "Project",
-  EXTENSION = "GFS",
+  EXTENSION = "GFS"
 }
 
 // Status bar icons
@@ -384,7 +388,7 @@ enum STATUS_BAR_ICONS {
   ROCKET = "$(rocket)",
   ERROR = "$(error)",
   WARNING = "$(warning)",
-  SUCCESS = "$(check)",
+  SUCCESS = "$(check)"
 }
 
 // File paths
@@ -393,7 +397,7 @@ const FILE_PATHS = {
   BUILD_GRADLE: "build.gradle",
   CONTROLLERS_DIR: "grails-app/controllers",
   SERVICES_DIR: "grails-app/services",
-  DOMAIN_DIR: "grails-app/domain",
+  DOMAIN_DIR: "grails-app/domain"
 };
 ```
 
@@ -419,7 +423,7 @@ class GrailsExtensionError extends Error {
     public readonly severity: ERROR_SEVERITY
   ) {
     super(message);
-    this.name = "GrailsExtensionError";
+    this.name = 'GrailsExtensionError';
   }
 }
 ```

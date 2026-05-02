@@ -1,5 +1,8 @@
 {
-  "fileTypes": ["groovy", "gvy"],
+  "fileTypes": [
+    "groovy",
+    "gvy"
+  ],
   "foldingStartMarker": "(\\{\\s*$|^\\s*// \\{\\{\\{)",
   "foldingStopMarker": "^\\s*(\\}|// \\}\\}\\}$)",
   "keyEquivalent": "^~G",
@@ -87,9 +90,7 @@
             "2": { "name": "punctuation.definition.annotation-arguments.begin.groovy" }
           },
           "end": "(\\))",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.annotation-arguments.end.groovy" }
-          },
+          "endCaptures": { "1": { "name": "punctuation.definition.annotation-arguments.end.groovy" } },
           "name": "meta.declaration.annotation.groovy",
           "patterns": [
             {
@@ -125,12 +126,12 @@
             {
               "begin": "\\[",
               "end": "\\]",
-              "patterns": [{ "include": "#groovy" }]
+              "patterns": [ { "include": "#groovy" } ]
             },
             {
               "begin": "{",
               "end": "(?=})",
-              "patterns": [{ "include": "#groovy" }]
+              "patterns": [ { "include": "#groovy" } ]
             }
           ]
         },
@@ -143,7 +144,7 @@
               "begin": "\\(",
               "beginCaptures": { "1": { "name": "storage.type.groovy" } },
               "end": "\\)",
-              "patterns": [{ "include": "#groovy" }]
+              "patterns": [ { "include": "#groovy" } ]
             }
           ]
         },
@@ -151,14 +152,14 @@
           "begin": "{",
           "end": "}",
           "name": "meta.inner-class.groovy",
-          "patterns": [{ "include": "#class-body" }]
+          "patterns": [ { "include": "#class-body" } ]
         }
       ]
     },
     "braces": {
       "begin": "\\{",
       "end": "\\}",
-      "patterns": [{ "include": "#groovy-code" }]
+      "patterns": [ { "include": "#groovy-code" } ]
     },
     "class": {
       "begin": "(?=\\w?[\\w\\s]*(?:class|(?:@)?interface|enum)\\s+\\w+)",
@@ -181,20 +182,26 @@
           "beginCaptures": { "0": { "name": "storage.modifier.extends.groovy" } },
           "end": "(?={|implements)",
           "name": "meta.definition.class.inherited.classes.groovy",
-          "patterns": [{ "include": "#object-types-inherited" }, { "include": "#comments" }]
+          "patterns": [
+            { "include": "#object-types-inherited" },
+            { "include": "#comments" }
+          ]
         },
         {
           "begin": "(implements)\\s",
           "beginCaptures": { "1": { "name": "storage.modifier.implements.groovy" } },
           "end": "(?=\\s*extends|\\{)",
           "name": "meta.definition.class.implemented.interfaces.groovy",
-          "patterns": [{ "include": "#object-types-inherited" }, { "include": "#comments" }]
+          "patterns": [
+            { "include": "#object-types-inherited" },
+            { "include": "#comments" }
+          ]
         },
         {
           "begin": "{",
           "end": "(?=})",
           "name": "meta.class.body.groovy",
-          "patterns": [{ "include": "#class-body" }]
+          "patterns": [ { "include": "#class-body" } ]
         }
       ]
     },
@@ -229,7 +236,7 @@
                       "beginCaptures": { "0": { "name": "keyword.operator.assignment.groovy" } },
                       "end": "(?=,|->)",
                       "name": "meta.parameter.default.groovy",
-                      "patterns": [{ "include": "#groovy-code" }]
+                      "patterns": [ { "include": "#groovy-code" } ]
                     },
                     { "include": "#parameters" }
                   ]
@@ -241,7 +248,7 @@
         {
           "begin": "(?=[^}])",
           "end": "(?=\\})",
-          "patterns": [{ "include": "#groovy-code" }]
+          "patterns": [ { "include": "#groovy-code" } ]
         }
       ]
     },
@@ -283,7 +290,7 @@
       "applyEndPatternLast": 1,
       "begin": "(?<=;|^)(?=\\s*(?:(?:private|protected|public|native|synchronized|abstract|threadsafe|transient|static|final)\\s+)*[A-Z]\\w*\\()",
       "end": "}",
-      "patterns": [{ "include": "#method-content" }]
+      "patterns": [ { "include": "#method-content" } ]
     },
     "enum-values": {
       "patterns": [
@@ -319,7 +326,10 @@
       ]
     },
     "groovy-code": {
-      "patterns": [{ "include": "#groovy-code-minus-map-keys" }, { "include": "#map-keys" }]
+      "patterns": [
+        { "include": "#groovy-code-minus-map-keys" },
+        { "include": "#map-keys" }
+      ]
     },
     "groovy-code-minus-map-keys": {
       "comment": "In some situations, maps can't be declared without enclosing []'s, \n\t\t\t\ttherefore we create a collection of everything but that",
@@ -339,7 +349,10 @@
       ]
     },
     "keyword": {
-      "patterns": [{ "include": "#keyword-operator" }, { "include": "#keyword-language" }]
+      "patterns": [
+        { "include": "#keyword-operator" },
+        { "include": "#keyword-language" }
+      ]
     },
     "keyword-language": {
       "patterns": [
@@ -357,7 +370,7 @@
           "end": ":",
           "endCaptures": { "0": { "name": "punctuation.definition.case-terminator.groovy" } },
           "name": "meta.case.groovy",
-          "patterns": [{ "include": "#groovy-code-minus-map-keys" }]
+          "patterns": [ { "include": "#groovy-code-minus-map-keys" } ]
         },
         {
           "begin": "\\b(assert)\\s",
@@ -507,7 +520,10 @@
           "begin": "(?=(?:\\w|<)[^\\(]*\\s+(?:[\\w$]|<)+\\s*\\()",
           "end": "(?=[\\w$]+\\s*\\()",
           "name": "meta.method.return-type.java",
-          "patterns": [{ "include": "#storage-modifiers" }, { "include": "#types" }]
+          "patterns": [
+            { "include": "#storage-modifiers" },
+            { "include": "#types" }
+          ]
         },
         {
           "begin": "([\\w$]+)\\s*\\(",
@@ -534,7 +550,7 @@
                       "beginCaptures": { "0": { "name": "keyword.operator.assignment.groovy" } },
                       "end": "(?=,|\\))",
                       "name": "meta.parameter.default.groovy",
-                      "patterns": [{ "include": "#groovy-code" }]
+                      "patterns": [ { "include": "#groovy-code" } ]
                     },
                     { "include": "#parameters" }
                   ]
@@ -567,13 +583,13 @@
           "beginCaptures": { "0": { "name": "storage.modifier.groovy" } },
           "end": "(?={|;)|^(?=\\s*(?:[^{\\s]|$))",
           "name": "meta.throwables.groovy",
-          "patterns": [{ "include": "#object-types" }]
+          "patterns": [ { "include": "#object-types" } ]
         },
         {
           "begin": "{",
           "end": "(?=})",
           "name": "meta.method.body.java",
-          "patterns": [{ "include": "#groovy-code" }]
+          "patterns": [ { "include": "#groovy-code" } ]
         }
       ]
     },
@@ -582,13 +598,13 @@
       "begin": "(?x:(?<=;|^|{)(?=\\s*\n                (?:\n                    (?:private|protected|public|native|synchronized|abstract|threadsafe|transient|static|final) # visibility/modifier\n                        |\n                    (?:def)\n                        |\n                    (?:\n                        (?:\n                            (?:void|boolean|byte|char|short|int|float|long|double)\n                                |\n                            (?:@?(?:[a-zA-Z]\\w*\\.)*[A-Z]+\\w*) # object type\n                        )\n                        [\\[\\]]*\n                        (?:<.*>)?\n                    ) \n                    \n                )\n                \\s+\n                ([^=]+\\s+)?\\w+\\s*\\(\n\t\t\t))",
       "end": "}|(?=[^{])",
       "name": "meta.definition.method.groovy",
-      "patterns": [{ "include": "#method-content" }]
+      "patterns": [ { "include": "#method-content" } ]
     },
     "nest_curly": {
       "begin": "\\{",
       "captures": { "0": { "name": "punctuation.section.scope.groovy" } },
       "end": "\\}",
-      "patterns": [{ "include": "#nest_curly" }]
+      "patterns": [ { "include": "#nest_curly" } ]
     },
     "numbers": {
       "patterns": [
@@ -622,7 +638,7 @@
             {
               "begin": "\\[",
               "end": "\\]",
-              "patterns": [{ "include": "#groovy" }]
+              "patterns": [ { "include": "#groovy" } ]
             }
           ]
         },
@@ -669,7 +685,7 @@
     "parens": {
       "begin": "\\(",
       "end": "\\)",
-      "patterns": [{ "include": "#groovy-code" }]
+      "patterns": [ { "include": "#groovy-code" } ]
     },
     "primitive-arrays": {
       "patterns": [
@@ -743,7 +759,7 @@
       "end": "\"",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.groovy" } },
       "name": "string.quoted.double.groovy",
-      "patterns": [{ "include": "#string-quoted-double-contents" }]
+      "patterns": [ { "include": "#string-quoted-double-contents" } ]
     },
     "string-quoted-double-contents": {
       "patterns": [
@@ -772,7 +788,7 @@
           "captures": { "0": { "name": "punctuation.section.embedded.groovy" } },
           "end": "\\}",
           "name": "source.groovy.embedded.source",
-          "patterns": [{ "include": "#nest_curly" }]
+          "patterns": [ { "include": "#nest_curly" } ]
         }
       ]
     },
@@ -782,7 +798,7 @@
       "end": "\"\"\"",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.groovy" } },
       "name": "string.quoted.double.multiline.groovy",
-      "patterns": [{ "include": "#string-quoted-double-contents" }]
+      "patterns": [ { "include": "#string-quoted-double-contents" } ]
     },
     "string-quoted-single": {
       "begin": "'",
@@ -790,7 +806,7 @@
       "end": "'",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.groovy" } },
       "name": "string.quoted.single.groovy",
-      "patterns": [{ "include": "#string-quoted-single-contents" }]
+      "patterns": [ { "include": "#string-quoted-single-contents" } ]
     },
     "string-quoted-single-contents": {
       "patterns": [
@@ -806,7 +822,7 @@
       "end": "'''",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.groovy" } },
       "name": "string.quoted.single.multiline.groovy",
-      "patterns": [{ "include": "#string-quoted-single-contents" }]
+      "patterns": [ { "include": "#string-quoted-single-contents" } ]
     },
     "strings": {
       "patterns": [
@@ -884,7 +900,7 @@
           "begin": "=",
           "beginCaptures": { "0": { "name": "keyword.operator.assignment.groovy" } },
           "end": "$",
-          "patterns": [{ "include": "#groovy-code" }]
+          "patterns": [ { "include": "#groovy-code" } ]
         },
         {
           "captures": { "1": { "name": "meta.definition.variable.name.groovy" } },

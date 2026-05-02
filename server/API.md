@@ -13,14 +13,14 @@ The main entry point implementing the Language Server Protocol.
 class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
 	// LSP lifecycle methods
 	CompletableFuture<InitializeResult> initialize(InitializeParams params)
-
+	
 	CompletableFuture<Object> shutdown()
-
+	
 	void exit()
-
+	
 	// Service providers
 	TextDocumentService getTextDocumentService()
-
+	
 	WorkspaceService getWorkspaceService()
 }
 ```
@@ -37,25 +37,25 @@ class GrailsService implements LanguageClientAware {
 	final GrailsWorkspaceService workspace
 	final GradleService gradle
 	final GrailsCompiler compiler
-
+	
 	// Project management
 	void setupWorkspace(String projectDir, boolean asyncCompile = true)
-
+	
 	// Document lifecycle
 	void onDocumentOpened(TextFile textFile)
-
+	
 	void onDocumentChanged(TextFile textFile)
-
+	
 	void onDocumentClosed(TextFile textFile)
-
+	
 	// Dependency management (live project updates)
 	File getJavaDocJarFile(DependencyNode dependency)
-
+	
 	File getSourcesJarFile(DependencyNode dependency)
-
+	
 	// Project lifecycle management
 	void invalidateProjectCache(String projectDir)
-
+	
 	// For live project updates
 }
 ```
@@ -70,30 +70,30 @@ Advanced compilation engine with incremental updates and smart caching.
 class GrailsCompiler {
 	// Project compilation
 	void compileProject()
-
+	
 	void compileSourceFile(TextFile textFile)
-
+	
 	// State management
 	void invalidateCompiler()
-
+	
 	void updateCompilerOptions(CompilerOptions option = CompilerOptions.DEFAULT)
-
+	
 	void updateClassLoader()
-
+	
 	// Compilation control
 	boolean compileDefaultOrTillPhase(int phase = grailsService.config.compilerPhase)
-
+	
 	// Error handling
 	ErrorCollector getErrorCollectorOrNull()
-
+	
 	// Source unit access
 	SourceUnit getSourceUnit(TextFile textFile)
-
+	
 	List<SourceUnit> getSourceUnits()
-
+	
 	// Smart patching
 	String getPatchedSourceUnitText(TextFile textFile)
-
+	
 	TextFile getPatchedSourceUnitTextFile(TextFile file)
 }
 ```
@@ -106,15 +106,15 @@ Gradle integration for project structure and dependency resolution.
 class GradleService {
 	// Project management
 	GrailsProject getGrailsProject(String projectDir)
-
+	
 	// Cache management
 	void invalidateCache()
-
+	
 	void invalidateProjectCache(String projectDir)
-
+	
 	// Dependency artifact downloads
 	File downloadJavaDocJarFile(File rootDirectory, DependencyNode dependency)
-
+	
 	File downloadSourcesJarFile(File rootDirectory, DependencyNode dependency)
 }
 ```
@@ -123,49 +123,49 @@ class GradleService {
 
 ### GrailsTextDocumentService
 
-Implements LSP textDocument/\* methods.
+Implements LSP textDocument/* methods.
 
 ```groovy
 class GrailsTextDocumentService implements TextDocumentService {
 	// Completion
 	CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params)
-
+	
 	// Hover
 	CompletableFuture<Hover> hover(HoverParams params)
-
+	
 	// Definition
 	CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params)
-
+	
 	// References
 	CompletableFuture<List<? extends Location>> references(ReferenceParams params)
-
+	
 	// Document symbols
 	CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
-
+	
 	// Diagnostics
 	CompletableFuture<List<Diagnostic>> diagnostic(DocumentDiagnosticParams params)
-
+	
 	// Additional features
 	CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
-
+	
 	CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
-
+	
 	CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
 }
 ```
 
 ### GrailsWorkspaceService
 
-Implements LSP workspace/\* methods.
+Implements LSP workspace/* methods.
 
 ```groovy
 class GrailsWorkspaceService implements WorkspaceService {
 	// Workspace symbols
 	CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params)
-
+	
 	// Configuration changes
 	void didChangeConfiguration(DidChangeConfigurationParams params)
-
+	
 	void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
 }
 ```
@@ -180,7 +180,7 @@ Modular completion system with strategy pattern.
 // Base completion strategy
 abstract class BaseCompletionStrategy implements CompletionStrategy {
 	abstract boolean canHandle(CompletionRequest request)
-
+	
 	abstract List<CompletionItem> getCompletions(CompletionRequest request)
 }
 
@@ -208,7 +208,7 @@ class ConstructorStrategy extends BaseCompletionStrategy {}
 // Base provider with common functionality
 abstract class BaseProvider {
 	protected final GrailsService grailsService
-
+	
 	protected final ASTContext getASTContext(TextFile textFile)
 }
 
@@ -298,23 +298,23 @@ enum GrailsArtifactType {
 class ASTUtils {
 	// Node finding
 	static ASTNode findNodeAtPosition(ModuleNode moduleNode, Position position)
-
+	
 	static ClassNode findClassNode(ModuleNode moduleNode, String className)
-
+	
 	static MethodNode findMethodNode(ClassNode classNode, String methodName)
-
+	
 	// Type resolution
 	static ClassNode resolveType(ASTNode node)
-
+	
 	static List<ClassNode> getInterfaces(ClassNode classNode)
-
+	
 	static ClassNode getSuperClass(ClassNode classNode)
-
+	
 	// Member extraction
 	static List<MethodNode> getMethods(ClassNode classNode)
-
+	
 	static List<PropertyNode> getProperties(ClassNode classNode)
-
+	
 	static List<FieldNode> getFields(ClassNode classNode)
 }
 ```
@@ -325,24 +325,24 @@ class ASTUtils {
 class PositionHelper {
 	// Position conversion
 	static Position offsetToPosition(String text, int offset)
-
+	
 	static int positionToOffset(String text, Position position)
-
+	
 	// Range operations
 	static Range createRange(int startLine, int startChar, int endLine, int endChar)
-
+	
 	static boolean isPositionInRange(Position position, Range range)
 }
 
 class RangeHelper {
 	// Range creation from AST nodes
 	static Range createRange(ASTNode node)
-
+	
 	static Range createRange(int startLine, int startColumn, int endLine, int endColumn)
-
+	
 	// Range validation
 	static boolean isValidRange(Range range)
-
+	
 	static boolean containsPosition(Range range, Position position)
 }
 ```
@@ -353,14 +353,14 @@ class RangeHelper {
 class DocumentationHelper {
 	// Javadoc extraction
 	static String getJavadocContent(ClassNode classNode)
-
+	
 	static String getJavadocContent(MethodNode methodNode)
-
+	
 	// External documentation
 	static String getContentFromJavadocJar(DependencyNode dependency, String className)
-
+	
 	static String getGroovydocContent(ASTNode node)
-
+	
 	// Markdown conversion
 	static String convertToMarkdown(String javadoc)
 }
@@ -372,19 +372,19 @@ class DocumentationHelper {
 class GrailsUtils {
 	// Artifact detection
 	static GrailsArtifactType getArtifactType(String filePath)
-
+	
 	static boolean isGrailsArtifact(String filePath)
-
+	
 	// Convention helpers
 	static String getControllerName(String className)
-
+	
 	static String getServiceName(String className)
-
+	
 	static String getDomainName(String className)
-
+	
 	// Project structure
 	static boolean isGrailsProject(String projectDir)
-
+	
 	static List<String> getGrailsSourceDirectories(String projectDir)
 }
 ```
@@ -400,7 +400,7 @@ class MyCustomStrategy extends BaseCompletionStrategy {
 	boolean canHandle(CompletionRequest request) {
 		// Custom logic to determine if this strategy applies
 	}
-
+	
 	@Override
 	List<CompletionItem> getCompletions(CompletionRequest request) {
 		// Custom completion logic
@@ -419,7 +419,7 @@ class MyCustomProvider extends BaseProvider {
 	MyCustomProvider(GrailsService grailsService) {
 		super(grailsService)
 	}
-
+	
 	// Custom provider methods
 	def provideCustomFeature(CustomParams params) {
 		ASTContext context = getASTContext(params.textFile)
@@ -437,12 +437,12 @@ class MyCustomProvider extends BaseProvider {
 abstract class BaseLspSpec extends Specification {
 	// Test infrastructure setup
 	protected GrailsService createGrailsService(ProjectType projectType = ProjectType.DUMMY)
-
+	
 	protected TextFile createTextFile(String content, String fileName = "Test.groovy")
-
+	
 	// Assertion helpers
 	protected void assertCompletionContains(List<CompletionItem> completions, String label)
-
+	
 	protected void assertDiagnosticContains(List<Diagnostic> diagnostics, String message)
 }
 
@@ -467,9 +467,9 @@ enum ProjectType {
 // Test helpers
 class TestUtils {
 	static TextFile createGroovyFile(String content, String fileName = "Test.groovy")
-
+	
 	static GrailsProject createTestProject(ProjectType type)
-
+	
 	static Position createPosition(int line, int character)
 }
 ```
@@ -511,16 +511,16 @@ class ClientCapabilities {
 // AST caching
 class ASTCache {
 	void cacheSourceUnit(String uri, SourceUnit sourceUnit)
-
+	
 	SourceUnit getCachedSourceUnit(String uri)
-
+	
 	void invalidateCache(String uri)
 }
 
 // Compilation caching
 class CompilationCache {
 	void cacheCompilationResult(String projectDir, CompilationResult result)
-
+	
 	CompilationResult getCachedResult(String projectDir)
 }
 ```
@@ -530,11 +530,11 @@ class CompilationCache {
 ```groovy
 class ProgressReportService {
 	void sendProgressReport(String message, int percentage)
-
+	
 	void startProgress(String title)
-
+	
 	void updateProgress(String message, int percentage)
-
+	
 	void endProgress()
 }
 ```

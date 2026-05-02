@@ -16,6 +16,7 @@ Grails projects. Designed to work seamlessly with VS Code and other LSP-compatib
 ### **Grails-Specific Support**
 
 - **Artifact Recognition** - Controllers, Services, Domains, TagLibs, Jobs, and more
+- **GSP Compilation** - Virtual Groovy transpilation for GSP files, enabling full IDE support within scriptlets and expressions
 - **Convention Awareness** - Understands Grails project structure and conventions
 - **Plugin Support** - Works with Grails plugins and extensions
 - **Build Integration** - Gradle Tooling API integration for dependency resolution
@@ -53,7 +54,7 @@ Grails projects. Designed to work seamlessly with VS Code and other LSP-compatib
 
 ### **VS Code Extension**
 
-_In development - VS Code extension for seamless integration (single developer project)_
+*In development - VS Code extension for seamless integration (single developer project)*
 
 ## 🏗️ Architecture
 

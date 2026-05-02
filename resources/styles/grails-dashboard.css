@@ -1,10 +1,6 @@
 /* Enhanced Grails Dashboard Styling */
 .grails-dashboard {
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 20px;
 }
@@ -82,7 +78,7 @@
 }
 
 .grails-artifact-item::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -109,6 +105,7 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;

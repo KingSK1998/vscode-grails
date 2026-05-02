@@ -14,20 +14,17 @@ Thank you for your interest in contributing to the Grails Framework Support VS C
 ### Development Setup
 
 1. **Fork and Clone**
-
    ```bash
    git clone https://github.com/YOUR_USERNAME/vscode-gng-support.git
    cd vscode-gng-support
    ```
 
 2. **Install Dependencies**
-
    ```bash
    npm install
    ```
 
 3. **Build the Extension**
-
    ```bash
    npm run compile
    ```
@@ -39,7 +36,6 @@ Thank you for your interest in contributing to the Grails Framework Support VS C
 ## 🛠️ Development Workflow
 
 ### Project Structure
-
 ```
 src/
 ├── commands/          # Grails command implementations
@@ -61,7 +57,6 @@ We use the following tools for code quality:
 - **EditorConfig**: For consistent editor settings
 
 Run linting and formatting:
-
 ```bash
 npm run lint          # Check for linting errors
 npm run lint --fix    # Auto-fix linting issues
@@ -93,7 +88,6 @@ Before creating an issue, please:
 ### Submitting Pull Requests
 
 1. **Create a Feature Branch**
-
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -105,11 +99,10 @@ Before creating an issue, please:
    - Ensure all tests pass
 
 3. **Commit Your Changes**
-
    ```bash
    git commit -m "feat: add new feature description"
    ```
-
+   
    Use conventional commit messages:
    - `feat:` for new features
    - `fix:` for bug fixes
@@ -120,11 +113,10 @@ Before creating an issue, please:
    - `chore:` for maintenance tasks
 
 4. **Push and Create PR**
-
    ```bash
    git push origin feature/your-feature-name
    ```
-
+   
    Then create a pull request on GitHub with:
    - Clear title and description
    - Reference to related issues
@@ -140,21 +132,18 @@ Before creating an issue, please:
 ## 🎯 Areas for Contribution
 
 ### High Priority
-
 - **Language Server Features**: Improve Groovy/GSP language support
 - **Performance Optimization**: Reduce extension startup time
 - **Error Handling**: Better error messages and recovery
 - **Testing**: Increase test coverage
 
 ### Medium Priority
-
 - **Documentation**: Improve user guides and API docs
 - **Snippets**: Add more Grails code snippets
 - **Commands**: New Grails-specific commands
 - **UI/UX**: Improve project explorer and status indicators
 
 ### Good First Issues
-
 - **Bug Fixes**: Small, well-defined bugs
 - **Documentation**: Fix typos, improve clarity
 - **Snippets**: Add missing Grails patterns
@@ -187,14 +176,12 @@ Before creating an issue, please:
 ## 📚 Resources
 
 ### Documentation
-
 - [VS Code Extension API](https://code.visualstudio.com/api)
 - [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
 - [Grails Framework](https://grails.org/documentation.html)
 - [Groovy Language](https://groovy-lang.org/documentation.html)
 
 ### Tools
-
 - [VS Code Extension Generator](https://github.com/Microsoft/vscode-generator-code)
 - [Extension Test Runner](https://github.com/microsoft/vscode-test)
 

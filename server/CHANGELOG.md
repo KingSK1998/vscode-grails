@@ -8,20 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
 - Comprehensive documentation suite (README.md, CHANGELOG.md, CONTRIBUTING.md)
 - Progress reporting system for long-running operations
 - Enhanced error handling and graceful degradation
 
 ### Changed
-
 - Updated documentation to reflect current project state
 - Improved logging standardization with component-based format
 
 ## [0.1.0-SNAPSHOT] - 2024
 
 ### Added
-
 - **Central AST Resolution Architecture** - Revolutionary performance improvements
 - **Provider Infrastructure Refactoring** - 33% average code reduction across providers
 - **Enhanced Utility Usage** - Better integration of DocumentationHelper, ASTUtils, etc.
@@ -32,7 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive Test Infrastructure** - Spock-based testing with specialized base classes
 
 ### Core Features
-
 - **Code Completion** - Context-aware autocomplete for Grails and Groovy
 - **Real-time Diagnostics** - Syntax errors and Grails-specific validations
 - **Go to Definition** - Navigate to classes, methods, properties
@@ -45,21 +41,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Workspace Symbols** - Project-wide symbol search
 
 ### Grails Support
-
 - **Artifact Recognition** - Controllers, Services, Domains, TagLibs, Jobs
 - **Convention Awareness** - Full Grails project structure understanding
 - **Plugin Support** - Works with Grails plugins and extensions
 - **Build Integration** - Gradle Tooling API for dependency resolution
 
 ### Technical Achievements
-
 - **Performance Optimized** - Fast compilation and incremental updates
 - **Memory Efficient** - Intelligent state management and resource cleanup
 - **Thread-Safe Operations** - Reliable concurrent access
 - **Robust Error Handling** - Graceful handling of edge cases
 
 ### Dependencies
-
 - Groovy 4.0.23
 - Eclipse LSP4J 0.23.1
 - Gradle Tooling API 7.3
@@ -70,7 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JaCoCo for code coverage
 
 ### Build System
-
 - Gradle 8.12+ with Groovy plugin
 - Java 17.0.8+ LTS support
 - Configuration cache enabled
@@ -80,7 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Initial Development] - 2023-2024
 
 ### Foundation
-
 - Initial LSP4J integration
 - Basic Groovy compilation support
 - Core project structure establishment
