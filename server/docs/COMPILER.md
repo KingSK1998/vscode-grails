@@ -45,32 +45,32 @@ The GrailsCompiler **successfully provides**:
 class GrailsCompiler {
 	// Project-wide compilation
 	void compileProject()
-
+	
 	// Incremental file compilation
 	void compileSourceFile(TextFile textFile)
-
+	
 	// State management
 	void invalidateCompiler()
-
+	
 	void updateCompilerOptions(CompilerOptions option = CompilerOptions.DEFAULT)
-
+	
 	void updateClassLoader()
-
+	
 	boolean compileDefaultOrTillPhase(int phase = grailsService.config.compilerPhase)
-
+	
 	// Error handling
 	ErrorCollector getErrorCollectorOrNull()
-
+	
 	// Access compiled units
 	SourceUnit getSourceUnit(TextFile textFile)
-
+	
 	ErrorCollector getErrorCollectorOrNull()
-
+	
 	// Advanced features
 	String getPatchedSourceUnitText(TextFile textFile)
-
+	
 	TextFile getPatchedSourceUnitTextFile(TextFile file)
-
+	
 	List<SourceUnit> getSourceUnits()
 }
 ```

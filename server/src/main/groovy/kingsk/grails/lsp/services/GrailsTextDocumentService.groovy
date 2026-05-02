@@ -35,12 +35,21 @@ class GrailsTextDocumentService implements TextDocumentService {
     private final GrailsHoverProvider hoverProvider
     private final GrailsDefinitionProvider definitionProvider
     private final GrailsTypeDefinitionProvider typeDefinitionProvider
+    private final GrailsImplementationProvider implementationProvider
+    private final GrailsFormattingProvider formattingProvider
+    private final GrailsFoldingRangeProvider foldingRangeProvider
+    private final GrailsCodeActionProvider codeActionProvider
     private final GrailsReferenceProvider referenceProvider
     private final GrailsSignatureHelpProvider signatureHelpProvider
     private final GrailsDocumentSymbolProvider documentSymbolProvider
     private final GrailsCodeLensProvider codeLensProvider
     private final GrailsInlayHintProvider inlayHintProvider
     private final GrailsRenameProvider renameProvider
+    private final GrailsSemanticTokensProvider semanticTokensProvider
+    final GrailsYamlIntelligenceProvider yamlProvider
+
+    private final java.util.concurrent.ScheduledExecutorService debounceExecutor = java.util.concurrent.Executors.newScheduledThreadPool(1)
+    private final Map<String, java.util.concurrent.ScheduledFuture<?>> compileTasks = new java.util.concurrent.ConcurrentHashMap<>()
 
     GrailsTextDocumentService(GrailsService service) {
         this.service = service
@@ -50,12 +59,18 @@ class GrailsTextDocumentService implements TextDocumentService {
         this.hoverProvider = new GrailsHoverProvider(service)
         this.definitionProvider = new GrailsDefinitionProvider(service)
         this.typeDefinitionProvider = new GrailsTypeDefinitionProvider(service)
+        this.implementationProvider = new GrailsImplementationProvider(service)
+        this.formattingProvider = new GrailsFormattingProvider(service)
+        this.foldingRangeProvider = new GrailsFoldingRangeProvider(service)
+        this.codeActionProvider = new GrailsCodeActionProvider(service)
         this.referenceProvider = new GrailsReferenceProvider(service)
         this.signatureHelpProvider = new GrailsSignatureHelpProvider(service)
         this.documentSymbolProvider = new GrailsDocumentSymbolProvider(service)
         this.codeLensProvider = new GrailsCodeLensProvider(service)
         this.inlayHintProvider = new GrailsInlayHintProvider(service)
         this.renameProvider = new GrailsRenameProvider(service.visitor, service.fileTracker)
+        this.semanticTokensProvider = new GrailsSemanticTokensProvider(service)
+        this.yamlProvider = new GrailsYamlIntelligenceProvider(service)
 
         log.debug("[DOCUMENT] GrailsTextDocumentService service initialized with all providers")
     }
@@ -68,6 +83,7 @@ class GrailsTextDocumentService implements TextDocumentService {
     @Override
     void didOpen(DidOpenTextDocumentParams params) {
         log.info("[DOCUMENT] - Opened: ${params.textDocument.uri}")
+        service.activeProjectUri = service.projects.keySet().find { params.textDocument.uri.startsWith(it) } ?: service.activeProjectUri
         TextFile textFile = service.fileTracker.didOpenFile(params)
         if (!textFile) return
         service.compileAndVisitAST(textFile)
@@ -82,7 +98,20 @@ class GrailsTextDocumentService implements TextDocumentService {
         // Clear cache for this file before reprocessing
         completionProvider.clearCaches(textFile.uri)
 
-        service.compileAndVisitAST(textFile)
+        // Debounce actual compilation by 500ms
+        compileTasks.remove(textFile.uri)?.cancel(false)
+        def uriString = textFile.uri
+        compileTasks[uriString] = debounceExecutor.schedule({ ->
+            try {
+                // Fetch the latest state before compiling
+                TextFile latestTextFile = service.fileTracker.getTextFile(uriString)
+                if (latestTextFile) {
+                    service.compileAndVisitAST(latestTextFile)
+                }
+            } catch (Exception e) {
+                log.error("[DOCUMENT] Error in debounced compile: ${e.message}", e)
+            }
+        } as Runnable, 500L, java.util.concurrent.TimeUnit.MILLISECONDS)
     }
 
     @Override
@@ -109,6 +138,10 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     @Override
     CompletableFuture<Hover> hover(HoverParams params) {
+        TextFile textFile = service.fileTracker.getTextFile(params.textDocument.uri)
+        if (textFile?.uri?.endsWith(".yml") || textFile?.uri?.endsWith(".yaml")) {
+            return yamlProvider.provideHover(textFile, params.position)
+        }
         return hoverProvider.provideHover(params.textDocument, params.position)
     }
 
@@ -123,6 +156,10 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     @Override
     CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params) {
+        TextFile textFile = service.fileTracker.getTextFile(params.textDocument.uri)
+        if (textFile?.uri?.endsWith(".yml") || textFile?.uri?.endsWith(".yaml")) {
+            return yamlProvider.provideDefinition(textFile, params.position).thenApply { list -> Either.forLeft(list) }
+        }
         return definitionProvider.provideDefinition(params.textDocument, params.position)
     }
 
@@ -133,11 +170,28 @@ class GrailsTextDocumentService implements TextDocumentService {
         return typeDefinitionProvider.provideTypeDefinition(params.textDocument, params.position)
     }
 
+    //------------------- IMPLEMENTATION ------------//
+
+    @Override
+    CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> implementation(ImplementationParams params) {
+        return implementationProvider.provideImplementation(params.textDocument, params.position)
+    }
+
     //------------------- REFERENCES -----------------//
 
     @Override
     CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
         return referenceProvider.provideReferences(params.textDocument, params.position, params.context)
+    }
+
+    @Override
+    CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
+        return formattingProvider.provideFormatting(params.textDocument, params.options)
+    }
+
+    @Override
+    CompletableFuture<List<FoldingRange>> foldingRange(FoldingRangeRequestParams params) {
+        return foldingRangeProvider.provideFoldingRanges(params.textDocument)
     }
 
     //------------------- RENAME ---------------------//
@@ -158,6 +212,10 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     @Override
     CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params) {
+        TextFile textFile = service.fileTracker.getTextFile(params.textDocument.uri)
+        if (textFile?.uri?.endsWith(".yml") || textFile?.uri?.endsWith(".yaml")) {
+            return yamlProvider.provideCompletions(textFile, params.position)
+        }
         return completionProvider.provideCompletions(params.textDocument, params.position, params.context)
     }
 
@@ -200,6 +258,11 @@ class GrailsTextDocumentService implements TextDocumentService {
     //------------------- COMMANDS ------------------//
     @Override
     CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
-        return CompletableFuture.completedFuture([])
+        return codeActionProvider.provideCodeActions(params)
+    }
+
+    @Override
+    CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
+        return semanticTokensProvider.provideSemanticTokens(params)
     }
 }

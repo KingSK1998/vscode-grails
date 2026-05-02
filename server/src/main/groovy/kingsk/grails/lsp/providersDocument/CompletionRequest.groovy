@@ -97,6 +97,18 @@ class CompletionRequest {
 	}
 	
 	/**
+	 * Adds a predefined Grails completion item.
+	 * @param name The name to complete.
+	 * @param description A brief description (e.g. 'Grails Logger').
+	 */
+	void addGrailsCompletion(String name, String description) {
+		CompletionItem item = new CompletionItem(name)
+		item.detail = description
+		item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+		addCompletion(item)
+	}
+
+	/**
 	 * Add all items from MemberExtractor's CompletionItems, i.e. Properties/Fields/Methods
 	 * @param items The MemberExtractor.CompletionItems to add
 	 */

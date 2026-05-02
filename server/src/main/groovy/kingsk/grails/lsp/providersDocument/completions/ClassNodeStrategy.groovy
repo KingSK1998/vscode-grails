@@ -85,86 +85,24 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	}
 	
 	private void addClassNamesFromDependencies() {
-		List<File> allJars = new ArrayList<>()
-		
-		// 1. Add all project dependency jars
-		request.service.project.dependencies.each { dep ->
-			if (ServiceUtils.getValidURL(dep.jarFileClasspath)) {
-				allJars << dep.jarFileClasspath
-			}
-		}
-		
-		// 2. Add JDK jars (from JAVA_HOME/lib)
-		def javaHome = request.service.project.javaHome
-		if (javaHome?.exists()) {
-			def libDir = new File(javaHome, 'lib')
-			def classlist = new File(libDir, 'classlist')
-			if (classlist.exists()) {
-				log.debug("Using classlist!!!")
+		def uri = request.service?.project?.rootDirectory?.toURI()?.toString()
+		def scanResult = kingsk.grails.lsp.utils.DynamicDiscoveryUtil.getClassGraphScanResult(uri)
+		if (scanResult) {
+			int count = 0
+			// Search classes using ClassGraph which already scanned JDK and project dependencies
+			for (def classInfo : scanResult.allClasses) {
+				if (count >= 150) break // Prevent overloading completion list
 				
-				classlist.eachLine { line ->
-					if (line.startsWithAny("@", "#", "jdk/internal/")) return
-					if (line.contains('$')) return
-					int lastIndex = line.lastIndexOf('/')
-					String className = line.substring(lastIndex + 1)
-					String packageName = line.substring(0, lastIndex).replace('/', '.')
-					addClassNameCompletion(className, packageName)
-				}
-			} else {
-				// 🔁 Fallback to JMODs (Java 9+)
-				def jmodsDir = new File(javaHome, 'jmods')
-				if (jmodsDir.exists()) {
-					log.debug("classlist not found. Falling back to jmods in: ${jmodsDir}")
-					jmodsDir.listFiles()?.findAll { it.name.endsWith('.jmod') }?.each { jmodFile ->
-						try (def jf = new JarFile(jmodFile)) {
-							def entries = jf.entries()
-							while (entries.hasMoreElements()) {
-								def entry = entries.nextElement()
-								def name = entry.name
-								if (isSkippableClass(name)) continue
-								def className = name.replace('/', '.').replace('.class', '')
-								if (className ==~ /.+\$\d+$/) continue
-								
-								def simpleName = ServiceUtils.getSimpleNameFromFQCN(className)
-								if (!simpleName.toLowerCase().startsWith(request.prefix.toLowerCase())) continue
-								
-								def pkg = ServiceUtils.getPackageNameFromFQCN(className)
-								addClassNameCompletion(simpleName, pkg)
-							}
-						} catch (Exception e) {
-							log.warn("Failed to process jmod: ${jmodFile}", e)
-						}
-					}
-				} else {
-					log.warn("No classlist or jmods found under JAVA_HOME: ${javaHome}")
+				String simpleName = classInfo.simpleName
+				if (simpleName.toLowerCase().startsWith(request.prefix.toLowerCase())) {
+					addClassNameCompletion(simpleName, classInfo.packageName)
+					count++
 				}
 			}
+		} else {
+			// Fallback placeholder when ClassGraph isn't ready
+			log.debug("ClassGraph scan result not available yet.")
 		}
-		
-		// 3. Extract class names
-		allJars.findAll { ServiceUtils.getValidURL(it) }.each { jarFile ->
-			try (def jar = new JarFile(jarFile)) {
-				def entries = jar.entries()
-				while (entries.hasMoreElements()) {
-					def entry = entries.nextElement()
-					def name = entry.name
-					if (isSkippableClass(name)) continue
-					def className = name.replace('/', '.').replace('.class', '')
-					if (className ==~ /.+\$\d+$/) continue // skip anonymous inner classes
-					def simpleName = ServiceUtils.getSimpleNameFromFQCN(className)
-					if (!simpleName.toLowerCase().startsWith(request.prefix.toLowerCase())) continue
-					def pkg = ServiceUtils.getPackageNameFromFQCN(className)
-					addClassNameCompletion(simpleName, pkg)
-				}
-			} catch (Exception e) {
-				log.warn("Failed to process jar: ${jarFile}", e)
-			}
-		}
-	}
-	
-	private static boolean isSkippableClass(String name) {
-		return !name.endsWith('.class') || name.contains('$$') ||
-				name.endsWith('package-info.class') || name ==~ /.+\$\d+$/
 	}
 	
 	

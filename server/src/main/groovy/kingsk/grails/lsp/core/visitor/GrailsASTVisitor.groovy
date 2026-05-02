@@ -24,7 +24,16 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
     private final Stack<ASTNode> stack = new Stack<>()
     private final Map<String, Set<ASTNode>> nodesByURI = new ConcurrentHashMap<>()
     private final Map<String, Set<ClassNode>> classNodesByURI = new ConcurrentHashMap<>()
+    private final Map<String, ModuleNode> moduleNodesByURI = new ConcurrentHashMap<>()
     private final Map<ASTLookupKey, ASTNodeLookupData> lookup = new ConcurrentHashMap<>()
+
+    Map<String, Set<ClassNode>> getAllClassNodes() {
+        return classNodesByURI
+    }
+
+    ModuleNode getModuleNode(String uri) {
+        return moduleNodesByURI.get(TextFile.normalizePath(uri))
+    }
 
     // Reference to GrailsService for cross-file resolution
     final GrailsService service
@@ -144,6 +153,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
 
         nodesByURI.clear()
         classNodesByURI.clear()
+        moduleNodesByURI.clear()
         nodesByLineIndex.clear()
         lookup.clear()
         stack.clear()
@@ -194,6 +204,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
 
         nodesByURI.remove(uri)
         classNodesByURI.remove(uri)
+        moduleNodesByURI.remove(uri)
         nodesByLineIndex.remove(uri)
         lookup.entrySet().removeIf { entry -> entry.value.uri == uri }
 
@@ -328,15 +339,12 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
         if (candidates.empty) return null
 
         return candidates.sort { n1, n2 ->
-            // Prefer nodes that start later
             int startCompare = PositionHelper.compareStartPositions(n1, n2)
             if (startCompare != 0) return startCompare
 
-            // Prefer nodes that end earlier
             int endCompare = PositionHelper.compareEndPositions(n1, n2)
             if (endCompare != 0) return endCompare
 
-            // Parent nodes before children
             return contains(n1, n2) ? -1 : contains(n2, n1) ? 1 : 0
         }.first()
     }
@@ -378,6 +386,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
         // Initialize fresh state
         nodesByURI[uri] = [] as Set
         classNodesByURI[uri] = [] as Set
+        moduleNodesByURI.remove(uri)
 
         sourceUnit = unit
         visitModule(unit.AST)
@@ -388,6 +397,8 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
 
     void visitModule(ModuleNode node) {
         if (!node) return
+        def uri = TextFile.normalizePath(sourceUnit.name)
+        moduleNodesByURI[uri] = node
         pushASTNode(node)
         try {
             node.classes.each { visitClass(it) }

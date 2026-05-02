@@ -4,7 +4,7 @@
   "description": "Grails Framework Support for Visual Studio Code",
   "author": "Shivam Kashyap",
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "publisher": "KingSK1998",
   "repository": {
     "type": "git",
@@ -82,6 +82,30 @@
         "command": "grails.runApp",
         "title": "Run Application",
         "icon": "$(play)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.debugApp",
+        "title": "Debug Application",
+        "icon": "$(debug-alt)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showDependencyGraph",
+        "title": "Show Dependency Graph",
+        "icon": "$(graph)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.showGormSqlPreview",
+        "title": "Show GORM SQL Preview",
+        "icon": "$(database)",
+        "category": "Grails"
+      },
+      {
+        "command": "grails.compileProject",
+        "title": "Compile Project",
+        "icon": "$(check)",
         "category": "Grails"
       },
       {
@@ -189,6 +213,158 @@
         "command": "grails.runGradleTask",
         "title": "Run Gradle Task (Legacy)",
         "category": "Grails"
+      },
+      {
+        "command": "grails.openDashboard",
+        "title": "Open Project Dashboard",
+        "category": "Grails"
+      }
+    ],
+    "configuration": [
+      {
+        "type": "object",
+        "title": "Grails Forge",
+        "properties": {
+          "grails.dashboard.autoOpen": {
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically open the Grails dashboard when a project is detected."
+          },
+          "grails.server.port": {
+            "type": "integer",
+            "default": 8080,
+            "description": "The default port for the Grails application."
+          },
+          "grails.developer.experimentalFlags": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable internal maintenance flags and developer tools."
+          }
+        }
+      },
+      {
+        "title": "Grails",
+        "properties": {
+          "grails.grailsHome": {
+            "type": "string",
+            "default": "",
+            "description": "Path to Grails installation directory (leave empty to use system PATH)",
+            "scope": "machine-overridable"
+          },
+          "grails.javaHome": {
+            "type": "string",
+            "default": "",
+            "description": "Path to Java installation for Grails (leave empty to use JAVA_HOME or system default)",
+            "scope": "machine-overridable"
+          },
+          "grails.server.autoStart": {
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically start Grails development server when opening a project"
+          },
+          "grails.server.port": {
+            "type": "number",
+            "default": 5007,
+            "description": "Deafult port for Grails development server",
+            "minimum": 1024,
+            "maximum": 65535
+          },
+          "grails.completion.detail": {
+            "type": "string",
+            "enum": [
+              "basic",
+              "standard",
+              "advanced"
+            ],
+            "enumDescriptions": [
+              "Basic completion (faster)",
+              "Standard completion with moderate detail",
+              "Advanced completion with full details (slower)"
+            ],
+            "default": "advanced",
+            "description": "Level of detail in code completion"
+          },
+          "grails.completion.maxItems": {
+            "type": "number",
+            "default": 1000,
+            "description": "Maximum completion items to show",
+            "minimum": 50,
+            "maximum": 2000
+          },
+          "grails.includeSnippets": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include code snippets in completion suggestions"
+          },
+          "grails.codeLens.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show CodeLens annotations (run buttons, references, etc.)"
+          },
+          "grails.diagnostics.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable error and warning diagnostics"
+          },
+          "grails.server.jvmArgs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "-Xmx1g",
+              "-XX:+UseG1GC"
+            ],
+            "description": "JVM arguments for Grails Language Server",
+            "scope": "machine-overridable"
+          },
+          "grails.languageServer.trace": {
+            "type": "string",
+            "enum": [
+              "off",
+              "messages",
+              "verbose"
+            ],
+            "default": "off",
+            "description": "Language server communication trace level (for debugging)"
+          },
+          "grails.cache.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable project information caching for faster startup"
+          },
+          "grails.cache.directory": {
+            "type": "string",
+            "default": ".grails-lsp",
+            "description": "Cache directory name (relative to project root)"
+          },
+          "grails.experimental.smartRecompilation": {
+            "type": "boolean",
+            "default": false,
+            "description": "⚠️ EXPERIMENTAL: Smart recompilation on file changes (may be unstable)"
+          },
+          "grails.debug.logLevel": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warn",
+              "info",
+              "debug"
+            ],
+            "default": "warn",
+            "description": "Extension logging level (restart required)"
+          },
+          "grails.server.developmentMode": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable development mode for Language Server"
+          },
+          "grails.icons.suggestMaterialTheme": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show suggestion to install Material Icon Theme for better icons"
+          }
+        }
       }
     ],
     "menus": {
@@ -202,11 +378,19 @@
           "when": "workspaceContains:**/build.gradle"
         },
         {
+          "command": "grails.debugApp",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
           "command": "grails.testApp",
           "when": "workspaceContains:**/build.gradle"
         },
         {
           "command": "grails.buildProject",
+          "when": "workspaceContains:**/build.gradle"
+        },
+        {
+          "command": "grails.compileProject",
           "when": "workspaceContains:**/build.gradle"
         },
         {
@@ -265,6 +449,16 @@
           "group": "1_run@1"
         },
         {
+          "command": "grails.debugApp",
+          "when": "view == grailsExplorer && viewItem == grailsProject",
+          "group": "1_run@2"
+        },
+        {
+          "command": "grails.showDependencyGraph",
+          "when": "view == grailsExplorer && viewItem == grailsProject",
+          "group": "1_run@3"
+        },
+        {
           "command": "grails.testApp",
           "when": "view == grailsExplorer && viewItem == grailsProject",
           "group": "1_run@2"
@@ -273,6 +467,11 @@
           "command": "grails.buildProject",
           "when": "view == grailsExplorer && viewItem == grailsProject",
           "group": "1_run@3"
+        },
+        {
+          "command": "grails.showGormSqlPreview",
+          "when": "view == grailsExplorer && viewItem == grailsDomain",
+          "group": "1_run@4"
         }
       ],
       "explorer/context": [
@@ -337,130 +536,47 @@
         "path": "./resources/syntaxes/gsp.tmLanguage.json"
       }
     ],
-    "configuration": {
-      "title": "Grails",
-      "properties": {
-        "grails.grailsHome": {
-          "type": "string",
-          "default": "",
-          "description": "Path to Grails installation directory (leave empty to use system PATH)",
-          "scope": "machine-overridable"
-        },
-        "grails.javaHome": {
-          "type": "string",
-          "default": "",
-          "description": "Path to Java installation for Grails (leave empty to use JAVA_HOME or system default)",
-          "scope": "machine-overridable"
-        },
-        "grails.server.autoStart": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically start Grails development server when opening a project"
-        },
-        "grails.server.port": {
-          "type": "number",
-          "default": 5007,
-          "description": "Deafult port for Grails development server",
-          "minimum": 1024,
-          "maximum": 65535
-        },
-        "grails.completion.detail": {
-          "type": "string",
-          "enum": [
-            "basic",
-            "standard",
-            "advanced"
+    "semanticTokenTypes": [
+      {
+        "id": "grailsVariable",
+        "description": "Injected Grails variables like params, flash, session",
+        "superType": "variable"
+      },
+      {
+        "id": "gspTag",
+        "description": "Grails TagLib tags",
+        "superType": "function"
+      },
+      {
+        "id": "i18nKey",
+        "description": "Grails i18n property keys",
+        "superType": "property"
+      }
+    ],
+    "semanticTokenModifiers": [
+      {
+        "id": "injected",
+        "description": "For variables automatically injected by Grails framework"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "grailsVariable": [
+            "variable.other.readwrite.instance.groovy",
+            "support.variable.grails"
           ],
-          "enumDescriptions": [
-            "Basic completion (faster)",
-            "Standard completion with moderate detail",
-            "Advanced completion with full details (slower)"
+          "gspTag": [
+            "entity.name.tag.grails",
+            "support.class.grails"
           ],
-          "default": "advanced",
-          "description": "Level of detail in code completion"
-        },
-        "grails.completion.maxItems": {
-          "type": "number",
-          "default": 1000,
-          "description": "Maximum completion items to show",
-          "minimum": 50,
-          "maximum": 2000
-        },
-        "grails.includeSnippets": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include code snippets in completion suggestions"
-        },
-        "grails.codeLens.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show CodeLens annotations (run buttons, references, etc.)"
-        },
-        "grails.diagnostics.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable error and warning diagnostics"
-        },
-        "grails.server.jvmArgs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "-Xmx1g",
-            "-XX:+UseG1GC"
-          ],
-          "description": "JVM arguments for Grails Language Server",
-          "scope": "machine-overridable"
-        },
-        "grails.languageServer.trace": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "off",
-          "description": "Language server communication trace level (for debugging)"
-        },
-        "grails.cache.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable project information caching for faster startup"
-        },
-        "grails.cache.directory": {
-          "type": "string",
-          "default": ".grails-lsp",
-          "description": "Cache directory name (relative to project root)"
-        },
-        "grails.experimental.smartRecompilation": {
-          "type": "boolean",
-          "default": false,
-          "description": "⚠️ EXPERIMENTAL: Smart recompilation on file changes (may be unstable)"
-        },
-        "grails.debug.logLevel": {
-          "type": "string",
-          "enum": [
-            "error",
-            "warn",
-            "info",
-            "debug"
-          ],
-          "default": "warn",
-          "description": "Extension logging level (restart required)"
-        },
-        "grails.server.developmentMode": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable development mode for Language Server"
-        },
-        "grails.icons.suggestMaterialTheme": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show suggestion to install Material Icon Theme for better icons"
+          "i18nKey": [
+            "constant.other.key.properties",
+            "support.type.property-name.grails"
+          ]
         }
       }
-    },
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -489,6 +605,15 @@
         "path": "./resources/snippets/gsp.json"
       }
     ]
+  },
+  "configurationDefaults": {
+    "editor.semanticTokenColorCustomizations": {
+      "rules": {
+        "grailsVariable": "#C586C0",
+        "i18nKey": "#C586C0",
+        "gspTag": "#4EC9B0"
+      }
+    }
   },
   "scripts": {
     "build": "npm run build:client && npm run build:server",

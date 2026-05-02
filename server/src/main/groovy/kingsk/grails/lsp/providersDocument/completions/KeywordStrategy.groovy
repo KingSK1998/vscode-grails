@@ -4,6 +4,8 @@ import groovy.transform.CompileStatic
 import kingsk.grails.lsp.providersDocument.CompletionRequest
 import kingsk.grails.lsp.utils.DynamicDiscoveryUtil
 import org.codehaus.groovy.ast.ASTNode
+import org.eclipse.lsp4j.CompletionItem
+import org.eclipse.lsp4j.CompletionItemKind
 
 /**
  * Handles keyword completions
@@ -41,7 +43,10 @@ class KeywordStrategy extends BaseCompletionStrategy {
 		List<String> keywords = DynamicDiscoveryUtil.getLanguageKeywords()
 		
 		keywords.each { keyword ->
-			//request.addCompletion(keyword, CompletionItemKind.Keyword, 'Language keyword')
+			CompletionItem item = new CompletionItem(keyword)
+			item.kind = CompletionItemKind.Keyword
+			item.detail = 'Language keyword'
+			request.addCompletion(item)
 		}
 	}
 	
@@ -51,7 +56,10 @@ class KeywordStrategy extends BaseCompletionStrategy {
 		]
 		
 		groovyKeywords.each { keyword ->
-			//request.addCompletion(keyword, CompletionItemKind.Keyword, 'Groovy keyword')
+			CompletionItem item = new CompletionItem(keyword)
+			item.kind = CompletionItemKind.Keyword
+			item.detail = 'Groovy keyword'
+			request.addCompletion(item)
 		}
 	}
 	
@@ -61,7 +69,10 @@ class KeywordStrategy extends BaseCompletionStrategy {
 		]
 		
 		grailsKeywords.each { keyword ->
-			//request.addCompletion(keyword, CompletionItemKind.Keyword, 'Grails keyword')
+			CompletionItem item = new CompletionItem(keyword)
+			item.kind = CompletionItemKind.Keyword
+			item.detail = 'Grails keyword'
+			request.addCompletion(item)
 		}
 	}
 }

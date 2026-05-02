@@ -33,65 +33,56 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
             throw new ResponseErrorException(new ResponseError(ResponseErrorCode.InvalidParams, errorMessage, null))
         }
 
-        String projectDir = params.workspaceFolders[0].uri
-        if (!projectDir) {
-            def errorMessage = "[GrailsLanguageServer] Not a valid gradle project"
-            grailsService.progressService.error(errorMessage)
-            throw new ResponseErrorException(new ResponseError(ResponseErrorCode.InvalidParams, errorMessage, null))
+        // Setup initial workspace folders
+        params.workspaceFolders?.each { folder ->
+            grailsService.setupWorkspace(folder.uri, true)
         }
-
-        // Setup the workspace with async compile
-        grailsService.setupWorkspace(projectDir, true)
 
         // Store client capabilities for later use
         clientCapabilities.complete(params.getCapabilities())
 
         // Configure server capabilities
         ServerCapabilities capabilities = new ServerCapabilities().tap {
-            textDocumentSync = TextDocumentSyncKind.Incremental
+            textDocumentSync = new TextDocumentSyncOptions().tap {
+                openClose = true
+                change = TextDocumentSyncKind.Incremental
+                save = new SaveOptions(includeText: true)
+            }
             hoverProvider = true
             completionProvider = new CompletionOptions().tap {
                 resolveProvider = true
-                triggerCharacters = ['.', '@', '"', '\''] // Add more as needed
+                triggerCharacters = ['.', '@', '"', '\'', '<']
             }
-            // Signature Help (method call signature tooltips)
             signatureHelpProvider = new SignatureHelpOptions(['(', ','])
             definitionProvider = true
             implementationProvider = true
             referencesProvider = true
-            //			documentHighlightProvider = true
             documentSymbolProvider = true
             workspaceSymbolProvider = true
-            //			codeActionProvider = true
+            codeActionProvider = new CodeActionOptions([CodeActionKind.QuickFix, CodeActionKind.Refactor])
             codeLensProvider = new CodeLensOptions(true)
             renameProvider = new RenameOptions(false)
-            inlayHintProvider = true
-            //			semanticTokensProvider = new SemanticTokensWithRegistrationOptions().tap {
-            //				legend = new SemanticTokensLegend(
-            //						['namespace', 'type', 'class', 'enum', 'interface', 'struct', 'typeParameter', 'parameter', 'variable', 'property', 'enumMember', 'event', 'function', 'method', 'macro', 'keyword', 'modifier', 'comment', 'string', 'number', 'regexp', 'operator'],
-            //						['declaration', 'definition', 'readonly', 'static', 'deprecated', 'abstract', 'async', 'modification', 'documentation', 'defaultLibrary']
-            //				)
-            //				full = true
-            //				range = true
-            //			}
-//            diagnosticProvider = new DiagnosticRegistrationOptions().tap {
-//                identifier = 'grails-diagnostics'
-//                interFileDependencies = true
-//                workspaceDiagnostics = true
-//            }
+            executeCommandProvider = new ExecuteCommandOptions(["grails.getDependencyGraph", "grails.getGormSql", "grails.discoverTests"])
+            inlayHintProvider = new InlayHintRegistrationOptions().tap {
+                resolveProvider = false
+            }
+            documentFormattingProvider = true
+            foldingRangeProvider = true
+            semanticTokensProvider = new SemanticTokensWithRegistrationOptions().tap {
+                legend = new SemanticTokensLegend(
+                        ['grailsVariable', 'gspTag', 'i18nKey', 'class', 'method', 'property', 'string'],
+                        ['injected', 'declaration', 'definition']
+                )
+                full = true
+                range = false
+            }
 
-            // documentFormattingProvider = true
-            // foldingRangeProvider = true
-            // documentLinkProvider = new DocumentLinkOptions(true)
-            // executeCommandProvider = new ExecuteCommandOptions(['grails.downloadSource'])
-
-            //			workspace = new WorkspaceServerCapabilities().tap {
-            //				workspaceFolders = new WorkspaceFoldersOptions().tap {
-            //					supported = true
-            //					changeNotifications = true
-            //				}
-            //				fileOperations = new FileOperationsServerCapabilities()
-            //			}
+            workspace = new WorkspaceServerCapabilities().tap {
+                workspaceFolders = new WorkspaceFoldersOptions().tap {
+                    supported = true
+                    changeNotifications = true
+                }
+            }
         }
 
         return CompletableFuture.completedFuture(new InitializeResult(capabilities))

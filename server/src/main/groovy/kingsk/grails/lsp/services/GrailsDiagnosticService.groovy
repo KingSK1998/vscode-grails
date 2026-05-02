@@ -180,6 +180,15 @@ class GrailsDiagnosticService {
     }
 
     /**
+     * Publishes a list of diagnostics for a file.
+     */
+    void publishDiagnostics(String uri, List<Diagnostic> diagnostics) {
+        if (grailsService.client) {
+            grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics))
+        }
+    }
+
+    /**
      * Clears all diagnostics cache
      */
     void clearAllDiagnostics() {

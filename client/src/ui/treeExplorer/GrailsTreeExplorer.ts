@@ -1293,7 +1293,9 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
     project: ProjectInfo,
     artifactType?: ArtifactType
   ): GrailsTreeItem[] {
-    if (!this.folderExists(currentPath)) return [];
+    if (!this.folderExists(currentPath)) {
+      return [];
+    }
 
     try {
       const entries = fs.readdirSync(currentPath, { withFileTypes: true });

@@ -12,12 +12,12 @@ import java.security.CodeSource
 @Slf4j
 @CompileStatic
 class GrailsCU extends CompilationUnit {
-	
+
 	GrailsCU(CompilerConfiguration config, CodeSource security, GroovyClassLoader classLoader) {
 		super(config, security, classLoader)
 		this.errorCollector = new MyErrorCollector(config)
 	}
-	
+
 	/**
 	 * Removes the given source unit from the compilation unit
 	 * @param sourceUnit
@@ -25,12 +25,12 @@ class GrailsCU extends CompilationUnit {
 	 */
 	void removeSourceUnit(SourceUnit sourceUnit) {
 		if (!sourceUnit) return
-		
+
 		log.info("[COMPILER] Removing source unit: ${sourceUnit.name}")
 		boolean generatedClassRemoved = removeGeneratedClass(sourceUnit)
 		boolean sourceRemoved = removeSource(sourceUnit)
 		boolean astRefreshed = refreshAST(sourceUnit)
-		
+
 		if (generatedClassRemoved && sourceRemoved && astRefreshed) {
 			log.info("[COMPILER] Successfully removed source unit: ${sourceUnit.name}")
 		} else {
@@ -39,22 +39,22 @@ class GrailsCU extends CompilationUnit {
 			queuedSources.removeIf { it.name == sourceUnit.name }
 		}
 	}
-	
+
 	private boolean removeGeneratedClass(SourceUnit sourceUnit) {
 		log.info("[COMPILER] Removing generated classes for: ${TextFile.extractFileName(sourceUnit.name)}")
-		
+
 		if (!sourceUnit?.AST) {
 			log.warn("[COMPILER] Cannot remove generated classes: sourceUnit or AST is null")
 			return false
 		}
-		
+
 		try {
 			List<String> oldGeneratedClasses = sourceUnit.AST.classes?.collect { it?.name }?.findAll { it != null } ?: []
 			if (oldGeneratedClasses.empty) {
 				log.info("[COMPILER] No generated classes to remove")
 				return false
 			}
-			
+
 			boolean removed = classes.removeIf { it?.name in oldGeneratedClasses }
 			log.info("[COMPILER] Removed ${oldGeneratedClasses.size()} generated classes: ${oldGeneratedClasses.join(', ')}")
 			return removed
@@ -63,25 +63,25 @@ class GrailsCU extends CompilationUnit {
 			return false
 		}
 	}
-	
+
 	private boolean removeSource(SourceUnit sourceUnit) {
 		log.info("[COMPILER] Removing source unit from compilation unit: ${TextFile.extractFileName(sourceUnit.name)}")
 		return sources.remove(sourceUnit.name) != null
 	}
-	
+
 	private boolean refreshAST(SourceUnit sourceUnit) {
 		log.info("[COMPILER] Refreshing AST, excluding: ${TextFile.extractFileName(sourceUnit.name)}")
 		if (!ast || !sourceUnit) {
 			log.warn("[COMPILER] Cannot refresh AST: ast or sourceUnit is null")
 			return false
 		}
-		
+
 		List<ModuleNode> modules = ast.modules ?: []
 		int originalSize = modules.size()
-		
+
 		// Create new AST with proper validation
 		ast = new CompileUnit(classLoader, null, configuration)
-		
+
 		int retainedCount = 0
 		modules.each { module ->
 			if (module && module.context != sourceUnit) {
@@ -94,19 +94,19 @@ class GrailsCU extends CompilationUnit {
 				}
 			}
 		}
-		
+
 		log.info("[COMPILER] AST refresh complete: retained ${retainedCount}/${originalSize} modules")
 		return originalSize != ast.modules.size()
 	}
-	
+
 	@Slf4j
 	private class MyErrorCollector extends ErrorCollector {
 		private static final long serialVersionUID = 1L
-		
+
 		MyErrorCollector(CompilerConfiguration configuration) {
 			super(configuration)
 		}
-		
+
 		void clearErrors() {
 			try {
 				int errorCount = errors?.size() ?: 0
@@ -118,7 +118,7 @@ class GrailsCU extends CompilationUnit {
 				log.warn("[COMPILER] Failed to clear errors from MyErrorCollector", e)
 			}
 		}
-		
+
 		protected void failIfErrors() throws CompilationFailedException {
 			// Don't throw exceptions - let compiler continue processing
 			// This allows us to get hidden compile and runtime errors
@@ -128,7 +128,7 @@ class GrailsCU extends CompilationUnit {
 			}
 		}
 	}
-	
+
 	void clearErrors() {
 		if (errorCollector instanceof MyErrorCollector) {
 			((MyErrorCollector) errorCollector).clearErrors()
@@ -142,7 +142,7 @@ class GrailsCU extends CompilationUnit {
 			}
 		}
 	}
-	
+
 	List<SourceUnit> getSourceUnits() {
 		return sources?.values()?.toList()
 	}

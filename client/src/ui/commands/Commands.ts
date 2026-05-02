@@ -1,4 +1,6 @@
+import * as path from "path";
 import type { Disposable, ExtensionContext } from "vscode";
+import * as vscode from "vscode";
 import { commands, ConfigurationTarget, window, workspace } from "vscode";
 import type { ServiceContainer } from "../../core/container/ServiceContainer";
 import { EventBus } from "../../core/events/EventBus";
@@ -34,11 +36,177 @@ export class Commands implements Disposable {
     // Artifact creation commands
     this.registerArtifactCommands();
 
+    // Log streaming commands
+    this.registerLogCommands();
+
     // Extension management commands
     this.registerExtensionCommands();
 
+    // Dashboard commands
+    this.registerDashboardCommands();
+
+    // Navigation commands
+    this.registerNavigationCommands();
+
     // Legacy terminal-based commands (for compatibility)
     this.registerLegacyCommands();
+  }
+
+  /* ================= NAVIGATION COMMANDS ========================== */
+
+  private registerDashboardCommands(): void {
+    this.register("grails.openDashboard", () => {
+      const isDev = vscode.workspace
+        .getConfiguration("grails.developer")
+        .get<boolean>("experimentalFlags", false);
+      this.container.dashboardService.openDashboard(isDev ? "developer" : "user");
+    });
+  }
+
+  private registerNavigationCommands(): void {
+    this.register("grails.goToView", async (docUri: vscode.Uri, actionName: string) => {
+      try {
+        const filePath = docUri.fsPath;
+        // Controller name is e.g. UserController -> user
+        const controllerPart = path
+          .basename(filePath)
+          .replace("Controller.groovy", "")
+          .toLowerCase();
+
+        // Find view in grails-app/views/controller/action.gsp
+        const rootPath = this.container.projectService.getProjects()[0]?.rootPath;
+        if (!rootPath) {
+          return;
+        }
+
+        const viewPath = path.join(
+          rootPath,
+          "grails-app",
+          "views",
+          controllerPart,
+          `${actionName}.gsp`
+        );
+        const viewUri = vscode.Uri.file(viewPath);
+
+        try {
+          const doc = await workspace.openTextDocument(viewUri);
+          await window.showTextDocument(doc);
+        } catch {
+          window.showWarningMessage(`View not found: ${controllerPart}/${actionName}.gsp`);
+        }
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    });
+
+    this.register("grails.goToController", async (controllerName: string) => {
+      try {
+        const projects = this.container.projectService.getProjects();
+        if (projects.length === 0) {
+          return;
+        }
+
+        // Search for file named {ControllerName}Controller.groovy (case insensitive)
+        const pattern = `**/grails-app/controllers/**/${controllerName.charAt(0).toUpperCase() + controllerName.slice(1)}Controller.groovy`;
+        const files = await workspace.findFiles(pattern, null, 1);
+
+        if (files.length > 0) {
+          const doc = await workspace.openTextDocument(files[0]);
+          await window.showTextDocument(doc);
+        } else {
+          window.showWarningMessage(`Controller implementation not found: ${controllerName}`);
+        }
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    });
+
+    this.register("grails.goToService", async (serviceName: string) => {
+      try {
+        const projects = this.container.projectService.getProjects();
+        if (projects.length === 0) {
+          return;
+        }
+
+        // Search for file named serviceName.groovy
+        const files = await workspace.findFiles(
+          `**/grails-app/services/**/${serviceName}.groovy`,
+          null,
+          1
+        );
+        if (files.length > 0) {
+          const doc = await workspace.openTextDocument(files[0]);
+          await window.showTextDocument(doc);
+        } else {
+          window.showWarningMessage(`Service implementation not found: ${serviceName}`);
+        }
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    });
+
+    this.register("grails.goToDomain", async (domainName: string) => {
+      try {
+        const projects = this.container.projectService.getProjects();
+        if (projects.length === 0) {
+          return;
+        }
+
+        const files = await workspace.findFiles(
+          `**/grails-app/domain/**/${domainName}.groovy`,
+          null,
+          1
+        );
+        if (files.length > 0) {
+          const doc = await workspace.openTextDocument(files[0]);
+          await window.showTextDocument(doc);
+        } else {
+          window.showWarningMessage(`Domain class not found: ${domainName}`);
+        }
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    });
+
+    this.register("grails.goToTagLib", async (tagLibName: string) => {
+      try {
+        const projects = this.container.projectService.getProjects();
+        if (projects.length === 0) {
+          return;
+        }
+
+        const files = await workspace.findFiles(
+          `**/grails-app/taglib/**/${tagLibName}TagLib.groovy`,
+          null,
+          1
+        );
+        if (files.length > 0) {
+          const doc = await workspace.openTextDocument(files[0]);
+          await window.showTextDocument(doc);
+        } else {
+          window.showWarningMessage(`TagLib implementation not found: ${tagLibName}`);
+        }
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
+    });
+  }
+
+  /* ================= LOG COMMANDS ================================= */
+
+  private registerLogCommands(): void {
+    this.register("grails.runAppWithTailing", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        window.showWarningMessage("No Grails projects found");
+        return;
+      }
+      await this.container.logStreamingService.startAppWithTailing(projects[0]);
+    });
+
+    this.register("grails.showLogs", () => {
+      this.container.logStreamingService.showLogs();
+    });
   }
 
   /* ================= UI COMMANDS ================================== */
@@ -150,6 +318,34 @@ export class Commands implements Disposable {
       await this.container.gradleService.runGrailsApp(projects[0]);
     });
 
+    this.register("grails.debugApp", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        window.showWarningMessage("No Grails projects found");
+        return;
+      }
+
+      await this.container.debugService.debugGrailsApp(projects[0]);
+    });
+
+    this.register("grails.showDependencyGraph", () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        window.showWarningMessage("No Grails projects found");
+        return;
+      }
+
+      this.container.dependencyGraphService.openGraph(projects[0]);
+    });
+
+    this.register("grails.showGormSqlPreview", (uri?: vscode.Uri) => {
+      const targetUri = uri ?? window.activeTextEditor?.document.uri;
+      if (!targetUri) {
+        return;
+      }
+      this.container.gormSqlPreviewService.openPreview(targetUri);
+    });
+
     this.register("grails.testApp", async () => {
       const projects = this.container.projectService.getProjects();
       if (projects.length === 0) {
@@ -179,12 +375,52 @@ export class Commands implements Disposable {
 
       await this.container.gradleService.cleanProject(projects[0]);
     });
+
+    this.register("grails.compileProject", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        window.showWarningMessage("No Grails projects found");
+        return;
+      }
+
+      await this.container.gradleService.buildProject(projects[0], "compileGroovy");
+    });
+    this.register("grails.generateAction", async (uri: string, actionName: string) => {
+      try {
+        const editor = window.activeTextEditor;
+        if (!editor || editor.document.uri.toString() !== uri) {
+          return;
+        }
+
+        // Naive implementation: append at the end of the class
+        const text = editor.document.getText();
+        const lastBraceIndex = text.lastIndexOf("}");
+        if (lastBraceIndex !== -1) {
+          const edit = new vscode.WorkspaceEdit();
+          const pos = editor.document.positionAt(lastBraceIndex);
+          edit.insert(
+            editor.document.uri,
+            pos,
+            `\n    def ${actionName}() {\n        render "Hello from ${actionName}"\n    }\n`
+          );
+          await vscode.workspace.applyEdit(edit);
+          window.showInformationMessage(`Action ${actionName} generated`);
+        }
+      } catch (error) {
+        console.error("Action generation error:", error);
+      }
+    });
   }
 
   /* ================= ARTIFACT CREATION ========================= */
 
   private registerArtifactCommands(): void {
     this.register("grails.createController", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        return;
+      }
+
       const name = await window.showInputBox({
         prompt: "Enter controller name",
         placeHolder: "BookController",
@@ -192,12 +428,16 @@ export class Commands implements Disposable {
       });
 
       if (name) {
-        // TODO: Use service-based artifact creation
-        window.showInformationMessage(`Creating controller: ${name}`);
+        await this.container.artifactService.createController(projects[0], name);
       }
     });
 
     this.register("grails.createService", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        return;
+      }
+
       const name = await window.showInputBox({
         prompt: "Enter service name",
         placeHolder: "UserService",
@@ -205,11 +445,16 @@ export class Commands implements Disposable {
       });
 
       if (name) {
-        window.showInformationMessage(`Creating service: ${name}`);
+        await this.container.artifactService.createService(projects[0], name);
       }
     });
 
     this.register("grails.createDomain", async () => {
+      const projects = this.container.projectService.getProjects();
+      if (projects.length === 0) {
+        return;
+      }
+
       const name = await window.showInputBox({
         prompt: "Enter domain name",
         placeHolder: "User",
@@ -217,7 +462,7 @@ export class Commands implements Disposable {
       });
 
       if (name) {
-        window.showInformationMessage(`Creating domain: ${name}`);
+        await this.container.artifactService.createDomain(projects[0], name);
       }
     });
 
@@ -296,8 +541,30 @@ export class Commands implements Disposable {
       return;
     }
 
-    // TODO: Implement service-based artifact creation
-    window.showInformationMessage(`Creating ${selectedType.label}: ${name}`);
+    const projects = this.container.projectService.getProjects();
+    if (projects.length === 0) {
+      return;
+    }
+    const project = projects[0];
+
+    switch (selectedType.label) {
+      case "Controller":
+        await this.container.artifactService.createController(project, name);
+        break;
+      case "Service":
+        await this.container.artifactService.createService(project, name);
+        break;
+      case "Domain":
+        await this.container.artifactService.createDomain(project, name);
+        break;
+      case "TagLib":
+        await this.container.artifactService.createTagLib(project, name);
+        break;
+      default:
+        window.showInformationMessage(
+          `Creating ${selectedType.label}: ${name} (Simplified implementation)`
+        );
+    }
   }
 
   private async setupGrailsWorkspace(): Promise<void> {
@@ -332,7 +599,7 @@ export class Commands implements Disposable {
       const issues = health.issues.join("\n• ");
       window
         .showErrorMessage(`❌ Issues detected:\n• ${issues}`, "Show Details")
-        .then(selection => {
+        .then((selection: string | undefined) => {
           if (selection === "Show Details") {
             // Could open output channel or detailed diagnostics
             console.log("Detailed health issues:", health.issues);
@@ -372,7 +639,8 @@ export class Commands implements Disposable {
 
   /* ================= REGISTRATION HELPER ======================== */
 
-  private register(command: string, callback: (...args: unknown[]) => unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private register(command: string, callback: (...args: any[]) => unknown): void {
     const disposable = commands.registerCommand(command, callback);
     this.disposables.push(disposable);
     this.context.subscriptions.push(disposable);

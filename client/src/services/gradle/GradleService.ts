@@ -209,7 +209,8 @@ export class GradleService implements Disposable {
   async runTask(
     projectInfo: ProjectInfo,
     taskName: GrailsTask | string,
-    _args: string[] = []
+    _args: string[] = [],
+    onOutputProxy?: (message: string) => void
   ): Promise<boolean> {
     const synced = await this.sync();
     if (!synced) {
@@ -232,6 +233,9 @@ export class GradleService implements Disposable {
           const message = new TextDecoder("utf-8").decode(output.getOutputBytes_asU8());
           if (message.trim()) {
             console.log(`[${taskName}]`, message.trim());
+            if (onOutputProxy) {
+              onOutputProxy(message);
+            }
           }
         },
       };
@@ -269,8 +273,11 @@ export class GradleService implements Disposable {
     return this.runTask(projectInfo, GrailsTask.TestApp);
   }
 
-  async buildProject(projectInfo: ProjectInfo): Promise<boolean> {
-    return this.runTask(projectInfo, GrailsTask.Build);
+  async buildProject(
+    projectInfo: ProjectInfo,
+    taskName: string = GrailsTask.Build
+  ): Promise<boolean> {
+    return this.runTask(projectInfo, taskName);
   }
 
   async cleanProject(projectInfo: ProjectInfo): Promise<boolean> {

@@ -9,6 +9,10 @@ import org.eclipse.lsp4j.CompletionItemKind
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import io.github.classgraph.ClassGraph
+import io.github.classgraph.ClassInfo
+import io.github.classgraph.ScanResult
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -21,6 +25,39 @@ class DynamicDiscoveryUtil {
 	
 	private static final Map<String, List<String>> KEYWORD_CACHE = new ConcurrentHashMap<>()
 	private static final Map<Class<?>, List<Method>> METHOD_CACHE = new ConcurrentHashMap<>()
+	
+	private static final Map<String, ScanResult> classGraphScanResults = new ConcurrentHashMap<>()
+	private static final Map<String, ClassLoader> projectClassLoaders = new ConcurrentHashMap<>()
+
+	static void updateClassGraph(String projectUri, ClassLoader newClassLoader) {
+		if (newClassLoader != null && !newClassLoader.equals(projectClassLoaders.get(projectUri))) {
+			projectClassLoaders.put(projectUri, newClassLoader)
+			CompletableFuture.runAsync {
+				try {
+					log.info("Starting ClassGraph scan on background thread for project: ${projectUri}...")
+					ScanResult newResult = new ClassGraph()
+							.overrideClassLoaders(newClassLoader)
+							.enableClassInfo()
+							.enableSystemJarsAndModules()
+							.scan()
+					ScanResult oldResult = classGraphScanResults.put(projectUri, newResult)
+					if (oldResult != null) {
+						oldResult.close()
+					}
+					log.info("ClassGraph scan complete for ${projectUri}. Found ${newResult.allClasses.size()} classes.")
+				} catch (Exception e) {
+					log.warn("Failed to update ClassGraph for ${projectUri}: ${e.message}")
+				}
+			}
+		}
+	}
+	
+	static ScanResult getClassGraphScanResult(String projectUri) {
+		if (!projectUri) return classGraphScanResults.values().find() // Fallback to any if null
+		// Find best matching project URI (since we might be queried with a file URI)
+		def match = classGraphScanResults.find { uri, result -> projectUri.startsWith(uri) }
+		return match?.value
+	}
 	
 	/**
 	 * Get Java/Groovy language keywords dynamically

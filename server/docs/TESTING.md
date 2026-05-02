@@ -28,7 +28,7 @@ for different LSP features.
 
 ```groovy
 class MyFeatureSpec extends CompletionTestSpec {
-
+    
     def "should provide specific functionality"() {
         given: "A clear description of the setup"
         initializeProject(ProjectType.DUMMY) // or GROOVY/GRAILS if needed
@@ -39,10 +39,10 @@ class MyFeatureSpec extends CompletionTestSpec {
                 }
             }
         '''
-
+        
         when: "A clear description of the action"
         List<CompletionItem> items = getCompletionItems(content, 3, 10)
-
+        
         then: "A clear description of the expected result"
         assertContainsItem(items, "expectedItem")
         assertNotContainsItem(items, "unexpectedItem")
@@ -157,7 +157,7 @@ class MockLanguageClient implements LanguageClient {
     List<PublishDiagnosticsParams> diagnostics = []
     List<MessageParams> messages = []
     List<ProgressParams> progressUpdates = []
-
+    
     // Methods to capture and verify LSP interactions
     List<Diagnostic> getDiagnosticsForUri(String uri)
     void clear()

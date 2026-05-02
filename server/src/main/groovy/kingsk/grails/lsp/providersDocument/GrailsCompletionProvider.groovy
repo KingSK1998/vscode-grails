@@ -277,9 +277,7 @@ class GrailsCompletionProvider {
                     String uri = data.uri
                     TextFile file = service.fileTracker.getTextFile(uri)
                     if (file) {
-                        ClassNode classNode = service.visitor.getClassNodes(file.uri).find { it.name == fqcn }
-                        // def imports = new ImportNode(unresolved.detail, unresolved.label)
-                        ModuleNode moduleNode = GrailsASTHelper.getEnclosingModuleNode(classNode, service.visitor)
+                        ModuleNode moduleNode = service.visitor.getNodes(file.uri).find { it instanceof ModuleNode } as ModuleNode
                         if (moduleNode && !CompletionUtil.hasImport(moduleNode, fqcn)) {
                             Range range = CompletionUtil.findAddImportRange(moduleNode)
                             TextEdit importEdit = new TextEdit(range, "import ${fqcn}\n")

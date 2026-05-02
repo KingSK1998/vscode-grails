@@ -1,6 +1,13 @@
+import type { ArtifactService } from "../../services/artifacts/ArtifactService";
+import type { DebugService } from "../../services/debugging/DebugService";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import type { GradleService } from "../../services/gradle/GradleService";
+import type { LogStreamingService } from "../../services/gradle/LogStreamingService";
 import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import type { GrailsTestService } from "../../services/testing/GrailsTestService";
+import type { DashboardService } from "../../services/ui/DashboardService";
+import type { DependencyGraphService } from "../../services/ui/DependencyGraphService";
+import type { GormSqlPreviewService } from "../../services/ui/GormSqlPreviewService";
 import type { ConfigurationService } from "../../services/workspace/ConfigurationService";
 import type { ProjectService } from "../../services/workspace/ProjectService";
 import type { StatusBarService } from "../../services/workspace/StatusBarService";
@@ -11,7 +18,14 @@ export interface ServiceRegistry {
   ConfigurationService: ConfigurationService;
   ProjectService: ProjectService;
   GradleService: GradleService;
+  LogStreamingService: LogStreamingService;
   LanguageServerManager: LanguageServerManager;
+  ArtifactService: ArtifactService;
+  DashboardService: DashboardService;
+  DebugService: DebugService;
+  DependencyGraphService: DependencyGraphService;
+  GormSqlPreviewService: GormSqlPreviewService;
+  GrailsTestService: GrailsTestService;
 }
 
 /** Service names that match the interface keys exactly */

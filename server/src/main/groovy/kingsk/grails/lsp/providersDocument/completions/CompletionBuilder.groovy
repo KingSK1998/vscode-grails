@@ -25,8 +25,11 @@ class CompletionBuilder {
         ArgumentListStrategy, // {BOTH - 82 - High - method argument} - method argument completion
         ClassNodeStrategy, // {OFFSET} {80 - High - type completions}
         DeclarationExpressionStrategy, // {BOTH - 75 - Medium - High} - variable declarations, assignments
+        ClosureDelegateStrategy, // {OFFSET} {65}
         VariableExpressionStrategy, // {OFFSET} {70 - Medium - High}
         MethodNodeStrategy, // {OFFSET - 60 - Medium - method signatures, parameters}
+        GrailsSnippetStrategy, // {OFFSET - 55 - Medium - snippets}
+        GspTagStrategy, // {OFFSET - 50 - Medium - GSP tags}
         ScopeStrategy, // {BOTH - 30 - Low - fallback strategy}
     ]
 

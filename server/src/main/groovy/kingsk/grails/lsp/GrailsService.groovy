@@ -9,6 +9,8 @@ import kingsk.grails.lsp.model.GrailsLspConfig
 import kingsk.grails.lsp.model.GrailsProject
 import kingsk.grails.lsp.model.TextFile
 import kingsk.grails.lsp.services.*
+import kingsk.grails.lsp.providersDocument.*
+import kingsk.grails.lsp.providersWorkspace.*
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 
@@ -21,10 +23,19 @@ import java.util.concurrent.TimeUnit
 @CompileStatic
 class GrailsService implements LanguageClientAware {
     LanguageClient client
-    GrailsProject project
+    Map<String, GrailsProject> projects = [:]
+    String activeProjectUri
 
-    final GrailsTextDocumentService document
+    GrailsProject getProject() {
+        return projects[activeProjectUri]
+    }
+
+    GrailsProject getProjectForUri(String uri) {
+        GrailsProject project = projects.values().find { GrailsProject p -> uri.startsWith(p.rootDirectory.toURI().toString()) }
+        return project ?: getProject()
+    }
     final GrailsWorkspaceService workspace
+    final GrailsTextDocumentService document
 
     final GradleService gradle
     final GrailsCompiler compiler
@@ -33,6 +44,9 @@ class GrailsService implements LanguageClientAware {
     final GrailsASTVisitor visitor
     final GrailsDiagnosticService diagnostics
     final ProgressService progressService
+    final GrailsDependencyProvider dependencyProvider
+    final GrailsGormSqlProvider gormSqlProvider
+    final GrailsTestDiscoveryProvider testDiscoveryProvider
 
     final GrailsLspConfig config
 
@@ -47,6 +61,9 @@ class GrailsService implements LanguageClientAware {
         this.document = new GrailsTextDocumentService(this)
         this.workspace = new GrailsWorkspaceService(this)
         this.visitor = new GrailsASTVisitor(this)
+        this.dependencyProvider = new GrailsDependencyProvider(this)
+        this.gormSqlProvider = new GrailsGormSqlProvider(this)
+        this.testDiscoveryProvider = new GrailsTestDiscoveryProvider(this)
         this.config = new GrailsLspConfig()
     }
 
@@ -72,12 +89,15 @@ class GrailsService implements LanguageClientAware {
     void refreshAndReindexWorkspace(String projectDir, String title = "Workspace Refresh", boolean async = true) {
         Runnable task = {
             progressService.begin(title, "Loading project...")
-            this.project = gradle.getGrailsProject(projectDir)
-            if (!project) {
+            GrailsProject newProject = gradle.getGrailsProject(projectDir)
+            if (!newProject) {
                 progressService.error("Invalid Grails project at $projectDir")
                 log.warn("[GrailsService] Invalid project: $projectDir")
                 return
             }
+            
+            projects[projectDir] = newProject
+            if (!activeProjectUri) activeProjectUri = projectDir
 
             progressService.update("Project loaded", 20)
 
@@ -109,6 +129,12 @@ class GrailsService implements LanguageClientAware {
     void compileAndVisitAST(TextFile textFile) {
         if (!textFile) return
         long t0 = System.nanoTime()
+
+        if (textFile.uri.endsWith(".yml") || textFile.uri.endsWith(".yaml")) {
+            document.yamlProvider.analyzeSensitiveInfo(textFile)
+            return
+        }
+
         compiler.compileSourceFile(textFile)
         visitAST(textFile)
         diagnostics.publishDiagnosticsForFile(textFile.uri)
@@ -141,12 +167,13 @@ class GrailsService implements LanguageClientAware {
      * String content = DocumentationHelper.getContentFromJavadocJar(dependency, "className")
      */
     File getJavaDocJarFile(DependencyNode dependency) {
-        if (!dependency || !project) return null
+        GrailsProject currentProject = getProject()
+        if (!dependency || !currentProject) return null
 
-        DependencyNode dep = project.dependencies.find { it == dependency }
+        DependencyNode dep = currentProject.dependencies.find { it == dependency }
         if (dep?.javadocFileClasspath) return dep.javadocFileClasspath
 
-        File downloaded = gradle?.downloadJavaDocJarFile(project.rootDirectory, dependency)
+        File downloaded = gradle?.downloadJavaDocJarFile(currentProject.rootDirectory, dependency)
         if (downloaded) {
             dep?.javadocFileClasspath = downloaded
             return downloaded
@@ -159,12 +186,13 @@ class GrailsService implements LanguageClientAware {
      * Retrieve or download the Sources JAR for a dependency.
      */
     File getSourcesJarFile(DependencyNode dependency) {
-        if (!dependency || !project) return null
+        GrailsProject currentProject = getProject()
+        if (!dependency || !currentProject) return null
 
-        DependencyNode dep = project.dependencies.find { it == dependency }
+        DependencyNode dep = currentProject.dependencies.find { it == dependency }
         if (dep?.sourceJarFileClasspath) return dep.sourceJarFileClasspath
 
-        File download = gradle?.downloadSourcesJarFile(project.rootDirectory, dependency)
+        File download = gradle?.downloadSourcesJarFile(currentProject.rootDirectory, dependency)
         if (download) {
             dep?.sourceJarFileClasspath = download
             return download

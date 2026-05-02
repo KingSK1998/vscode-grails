@@ -1,7 +1,14 @@
 import type { Disposable, ExtensionContext } from "vscode";
+import { ArtifactService } from "../../services/artifacts/ArtifactService";
+import { DebugService } from "../../services/debugging/DebugService";
 import { ErrorService } from "../../services/errors/ErrorService";
 import { GradleService } from "../../services/gradle/GradleService";
+import { LogStreamingService } from "../../services/gradle/LogStreamingService";
 import { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import { GrailsTestService } from "../../services/testing/GrailsTestService";
+import { DashboardService } from "../../services/ui/DashboardService";
+import { DependencyGraphService } from "../../services/ui/DependencyGraphService";
+import { GormSqlPreviewService } from "../../services/ui/GormSqlPreviewService";
 import { ConfigurationService } from "../../services/workspace/ConfigurationService";
 import { ProjectService } from "../../services/workspace/ProjectService";
 import { StatusBarService } from "../../services/workspace/StatusBarService";
@@ -56,9 +63,44 @@ export class ServiceContainer {
     return this._services.GradleService!;
   }
 
+  /** Get LogStreamingService - always available */
+  get logStreamingService(): LogStreamingService {
+    return this._services.LogStreamingService!;
+  }
+
   /** Get LanguageServerManager - always available */
   get languageServerManager(): LanguageServerManager {
     return this._services.LanguageServerManager!;
+  }
+
+  /** Get ArtifactService - always available */
+  get artifactService(): ArtifactService {
+    return this._services.ArtifactService!;
+  }
+
+  /** Get DashboardService - always available */
+  get dashboardService(): DashboardService {
+    return this._services.DashboardService!;
+  }
+
+  /** Get DebugService - always available */
+  get debugService(): DebugService {
+    return this._services.DebugService!;
+  }
+
+  /** Get DependencyGraphService - always available */
+  get dependencyGraphService(): DependencyGraphService {
+    return this._services.DependencyGraphService!;
+  }
+
+  /** Get GormSqlPreviewService - always available */
+  get gormSqlPreviewService(): GormSqlPreviewService {
+    return this._services.GormSqlPreviewService!;
+  }
+
+  /** Get GrailsTestService - always available */
+  get grailsTestService(): GrailsTestService {
+    return this._services.GrailsTestService!;
   }
 
   /* ================= GENERIC ACCESS (for special cases) ============ */
@@ -86,6 +128,12 @@ export class ServiceContainer {
       this._services.ErrorService
     );
 
+    this._services.LogStreamingService = new LogStreamingService(
+      this._services.GradleService,
+      this._services.StatusBarService,
+      this._services.ErrorService
+    );
+
     this._services.ProjectService = new ProjectService(
       this._services.StatusBarService,
       this._services.ErrorService,
@@ -98,6 +146,13 @@ export class ServiceContainer {
       this._services.ErrorService,
       this._services.ConfigurationService
     );
+
+    this._services.ArtifactService = new ArtifactService();
+    this._services.DashboardService = new DashboardService(this.context);
+    this._services.DebugService = new DebugService(this._services.GradleService);
+    this._services.DependencyGraphService = new DependencyGraphService(this.context);
+    this._services.GormSqlPreviewService = new GormSqlPreviewService(this.context);
+    this._services.GrailsTestService = new GrailsTestService(this.context);
   }
 
   /**

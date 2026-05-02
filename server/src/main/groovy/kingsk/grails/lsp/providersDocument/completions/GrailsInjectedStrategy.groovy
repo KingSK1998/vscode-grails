@@ -112,11 +112,14 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 	 * Add common Grails injected properties available in all artifacts
 	 */
 	private void addCommonGrailsInjectedProperties() {
-		// Common injected properties
-		// request.addGrailsCompletion('log', 'Grails Logger')
-		// request.addGrailsCompletion('grailsApplication', 'Grails Application Context')
-		// request.addGrailsCompletion('applicationContext', 'Spring Application Context')
-		// request.addGrailsCompletion('servletContext', 'Servlet Context')
+		// Common injected properties from helper
+		kingsk.grails.lsp.utils.GrailsHelperIntegration.getGrailsConfigurationKeys().take(5).each { String propName ->
+			request.addGrailsCompletion(propName, 'Grails Configuration Property')
+		}
+		// Core injected properties
+		['log', 'grailsApplication'].each { String propName ->
+			request.addGrailsCompletion(propName, "Grails Injected Property")
+		}
 	}
 	
 	/**
@@ -149,43 +152,35 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 	 * Add controller-specific injected properties
 	 */
 	private void addControllerInjectedProperties() {
-		// request.addGrailsCompletion('request', 'HTTP Request')
-		// request.addGrailsCompletion('response', 'HTTP Response')
-		// request.addGrailsCompletion('session', 'HTTP Session')
-		// request.addGrailsCompletion('params', 'Request Parameters')
-		// request.addGrailsCompletion('flash', 'Flash Scope')
-		// request.addGrailsCompletion('actionName', 'Current Action Name')
-		// request.addGrailsCompletion('controllerName', 'Current Controller Name')
+		kingsk.grails.lsp.utils.GrailsHelperIntegration.getControllerProperties().each { String propName ->
+			request.addGrailsCompletion(propName, 'Controller Injected Property')
+		}
 	}
 	
 	/**
 	 * Add service-specific injected properties
 	 */
 	private void addServiceInjectedProperties() {
-		// Services typically have fewer injected properties
-		// Most are covered by common injected properties
-		// request.addGrailsCompletion('transactionStatus', 'Transaction Status')
+		kingsk.grails.lsp.utils.GrailsHelperIntegration.getServiceProperties().each { String propName ->
+			request.addGrailsCompletion(propName, 'Service Injected Property')
+		}
 	}
 	
 	/**
 	 * Add domain-specific injected properties
 	 */
 	private void addDomainInjectedProperties() {
-		// Domain classes have GORM-related properties
-		// request.addGrailsCompletion('errors', 'Validation Errors')
-		// request.addGrailsCompletion('constraints', 'Domain Constraints')
+		kingsk.grails.lsp.utils.GrailsHelperIntegration.getPropertiesForArtifactType('domain').each { String propName ->
+			request.addGrailsCompletion(propName, 'Domain Injected Property')
+		}
 	}
 	
 	/**
 	 * Add TagLib-specific injected properties
 	 */
 	private void addTagLibInjectedProperties() {
-		// request.addGrailsCompletion('out', 'Output Writer')
-		// request.addGrailsCompletion('request', 'HTTP Request')
-		// request.addGrailsCompletion('response', 'HTTP Response')
-		// request.addGrailsCompletion('session', 'HTTP Session')
-		// request.addGrailsCompletion('params', 'Request Parameters')
-		// request.addGrailsCompletion('pageScope', 'Page Scope')
-		// request.addGrailsCompletion('applicationScope', 'Application Scope')
+		kingsk.grails.lsp.utils.GrailsHelperIntegration.getTagLibProperties().each { String propName ->
+			request.addGrailsCompletion(propName, 'TagLib Injected Property')
+		}
 	}
 }

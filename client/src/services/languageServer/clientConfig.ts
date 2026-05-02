@@ -14,10 +14,11 @@ export function getClientOptions(config: ConfigurationService): LanguageClientOp
     documentSelector: [
       { scheme: "file", language: "groovy" },
       { scheme: "file", language: "gsp" },
+      { scheme: "file", language: "properties" },
     ],
     synchronize: {
       fileEvents: [
-        workspace.createFileSystemWatcher("**/*.{groovy,gsp}"),
+        workspace.createFileSystemWatcher("**/*.{groovy,gsp,properties}"),
         workspace.createFileSystemWatcher("**/build.gradle"),
         workspace.createFileSystemWatcher("**/application.{yml,yaml,properties}"),
       ],

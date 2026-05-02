@@ -1,10 +1,9 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id 'groovy'
     id 'application'
     id 'jacoco' // Add JaCoCo plugin for code coverage
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '8.3.3'
 }
 
 //=================== Project Configuration ===================
@@ -33,6 +32,7 @@ dependencies {
     // Groovy Core
     implementation "org.apache.groovy:groovy:${groovyVersion}"
     implementation "org.apache.groovy:groovy-json:${groovyVersion}"
+    implementation "org.apache.groovy:groovy-yaml:${groovyVersion}"
 
     // Utilities // TODO: remove guava, useless, for legacy support only
     implementation "com.google.guava:guava:33.3.0-jre"
@@ -67,10 +67,10 @@ jar {
     enabled = false // Disable plain JAR, use shadowJar instead
 }
 
-tasks.named('shadowJar', ShadowJar) {
+tasks.named('shadowJar') {
     archiveClassifier.set('all') // Produce fat JAR with classifier
     mergeServiceFiles()          // Merge SPI service files
-    minimize()                 // Optional: shrink JAR, test carefully
+    // minimize()                 // Optional: shrink JAR, test carefully
 
     relocate "com.google.common", "kingsk.grails.lsp.shadow.guava"
     relocate "io.github.classgraph", "kingsk.grails.lsp.shadow.classgraph"

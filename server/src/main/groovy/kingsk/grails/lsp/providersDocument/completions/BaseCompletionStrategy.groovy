@@ -77,6 +77,20 @@ abstract class BaseCompletionStrategy {
 		if (!expression) return
 		def items = MemberExtractor.collectMembers(expression, request.visitor)
 		request.addAllCompletions(items)
+		
+		// Add Groovy dynamic extension methods (e.g. DefaultGroovyMethods)
+		ClassNode expressionType = GrailsASTHelper.getTypeOfNode(expression, request.visitor)
+		if (expressionType) {
+			kingsk.grails.lsp.utils.DynamicDiscoveryUtil.getMethodsForType(expressionType).each { String dgmMethod ->
+				// don't add if already collected from MemberExtractor
+				if (!items.methods.any { it.name == dgmMethod }) {
+					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(dgmMethod)
+					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+					item.detail = 'Groovy Default Method'
+					request.addCompletion(item)
+				}
+			}
+		}
 	}
 	
 	/**
@@ -86,6 +100,29 @@ abstract class BaseCompletionStrategy {
 		if (!classType) return
 		def items = MemberExtractor.collectMembers(classType, true, request.getCurrentClass())
 		request.addAllCompletions(items)
+		
+		if (request.isGrailsProject) {
+			kingsk.grails.lsp.model.GrailsArtifactType type = kingsk.grails.lsp.utils.GrailsArtefactUtils.getGrailsArtifactType(classType)
+			if (type == kingsk.grails.lsp.model.GrailsArtifactType.DOMAIN) {
+				kingsk.grails.lsp.utils.GrailsHelperIntegration.getGormStaticMethods().each { String m ->
+					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(m)
+					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+					item.detail = 'GORM Static Method'
+					request.addCompletion(item)
+				}
+				
+				// Generate basic dynamic finders for each property
+				classType.properties.each { org.codehaus.groovy.ast.PropertyNode p ->
+					String capitalized = p.name.capitalize()
+					['findBy', 'findAllBy', 'countBy', 'existsBy', 'findOrCreateBy'].each { prefix ->
+						org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(prefix + capitalized)
+						item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+						item.detail = 'GORM Dynamic Finder'
+						request.addCompletion(item)
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -95,6 +132,18 @@ abstract class BaseCompletionStrategy {
 		if (!classType) return
 		def items = MemberExtractor.collectMembers(classType, false, request.getCurrentClass())
 		request.addAllCompletions(items)
+		
+		if (request.isGrailsProject) {
+			kingsk.grails.lsp.model.GrailsArtifactType type = kingsk.grails.lsp.utils.GrailsArtefactUtils.getGrailsArtifactType(classType)
+			if (type == kingsk.grails.lsp.model.GrailsArtifactType.DOMAIN) {
+				kingsk.grails.lsp.utils.GrailsHelperIntegration.getGormInstanceMethods().each { String m ->
+					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(m)
+					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+					item.detail = 'GORM Instance Method'
+					request.addCompletion(item)
+				}
+			}
+		}
 	}
 	
 	/**

@@ -92,4 +92,27 @@ class GrailsWorkspaceService implements WorkspaceService {
             }
         }
     }
+
+    @Override
+    CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
+        log.info "[WORKSPACE] Executing command: ${params.command}"
+        switch (params.command) {
+            case "grails.getDependencyGraph":
+                String projectUri = params.arguments[0]?.toString() ?: grailsService.activeProjectUri
+                return CompletableFuture.supplyAsync({ ->
+                    return grailsService.dependencyProvider.getDependencyGraphJson(new URI(projectUri).path)
+                })
+            case "grails.getGormSql":
+                String uri = params.arguments[0]?.toString()
+                return CompletableFuture.supplyAsync({ ->
+                    return grailsService.gormSqlProvider.generateSql(uri)
+                })
+            case "grails.discoverTests":
+                String projectUri = params.arguments[0]?.toString() ?: grailsService.activeProjectUri
+                return CompletableFuture.supplyAsync({ ->
+                    return grailsService.testDiscoveryProvider.discoverTests(projectUri)
+                })
+        }
+        return CompletableFuture.completedFuture(null)
+    }
 }

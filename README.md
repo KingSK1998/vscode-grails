@@ -6,40 +6,33 @@
 
 A comprehensive VS Code extension that provides full-featured support for **Grails** and **Groovy** development with intelligent Language Server Protocol (LSP) integration.
 
-## ✨ Features
+![Grails Action](resources/images/action.png)
 
-### 🚀 Language Server Capabilities
+## ✨ Core Features
 
-- **Smart Code Completion** - Context-aware autocomplete for Grails artifacts, services, and controllers
-- **Real-time Diagnostics** - Syntax errors, compilation issues, and Grails-specific validations
-- **Go to Definition** - Navigate to classes, methods, and properties across your entire project
-- **Find References** - Locate all symbol usages throughout your codebase
-- **Hover Information** - Rich documentation, type information, and method signatures
-- **Inlay Hints** - Type hints for local variables and method parameters
-- **Code Lens** - Test runners and method execution shortcuts
-- **Document Symbols** - AST-based file structure navigation
-- **Workspace Symbols** - Project-wide symbol search and navigation
-- **Go to Implementation** - Navigate to implementing types where resolved
-- **Rename** - Best-effort symbol rename (complex Groovy may not cover every case)
-
-### 📝 VS Code Integration
-
-- **Project Explorer** - Dedicated Grails project tree view with Controllers, Services, and Domains
-- **Command Palette** - Quick access to Grails commands (run, test, clean, compile)
-- **Artifact Creation** - Interactive wizard for Controllers, Services, Domains, TagLibs, and Jobs
-- **Syntax Highlighting** - Full Groovy and GSP (Groovy Server Pages) support
-- **Code Snippets** - Rich snippet library for common Grails patterns and boilerplate
-- **Terminal Integration** - Execute Grails commands directly in VS Code terminal
-- **Status Bar** - Real-time extension status and language server connection indicators
-
-### 🛠️ Development Tools
-
-- **Gradle Integration** - Seamless integration with VS Code Gradle extension
-- **Build Automation** - Automatic project compilation and dependency resolution
-- **Error Handling** - Comprehensive error reporting with actionable suggestions
-- **Hot Reload** - Development mode with automatic reconnection
-
-**Workspace note:** The language server loads **one folder per window** — the **first** workspace root. Extra folders in a multi-root workspace are not indexed yet. See [docs/user-guide.md](./docs/user-guide.md).
+- **Grails 7+ Support**: Full compatibility with the latest Grails framework versions, Groovy 4 dependencies, and Spring Boot 3 integration.
+- **Advanced Type Interference**: Robust type analysis for Groovy's dynamic capabilities, ensuring accurate intellisense.
+- **Auto Import Generation**: Automatically suggests and manages your class imports based on context and workspace index powered by ClassGraph.
+- **Closure Delegates DSL**: Intelligent processing of standard Grails closures (e.g. constraints, mapping) giving precise auto-completions.
+- **Named Parameters**: Seamless completion for Grails-specific named params (e.g. renders, redirects, mapping rules).
+- **Multi Root Workspace**: Out-of-the-box support for multiple Grails applications and plugins loaded in the same VS Code window.
+- **Advanced Language Support**: Powered by a robust Core LSP engine with AST Visitor and comprehensive symbol diagnostics.
+- **Experimental AI Intellisense**: Context-aware line completion explorations using ML-based offline suggestions trained on Groovy and Grails code.
+- **Operational Dashboards**: Dual-mode management webview dashboards (User Insights and Developer Diagnostics) running inside the IDE.
+- **In-Editor Quick Fixes**: Smart code actions for missing dependencies (Auto-Dependency Injection for services) and missing methods.
+- **Project Tree Explorer**: Graphical hierarchy specifically structured for Grails artifacts (Controllers, Domains, Services, Views).
+- **Artifact Wizards**: Command-based UI for instantly generating Controllers, Services, and Domains.
+- **Core LSP Engine**: Efficient multi-threaded server architecture communicating instantaneously with the extension client.
+- **Inlay Type Hints**: Semantic type and parameter hints seamlessly floating inline in variable assignments and method calls.
+- **Gutter Navigation**: Intuitive decorators allowing rapid jumps between a Controller action and its View equivalent.
+- **Virtual Groovy Mapping**: Abstracted GSP scriptlet capabilities simulating Groovy script parsing for framework wiring.
+- **Smart Action Links**: Readily identifying actions and domain mapping relationships.
+- **Asset Pipeline Support**: Asset pipeline static resolution improvements for Javascript and CSS imports.
+- **i18n Property Indexing**: Full autocompletion and diagnostic capabilities for your message bundle property files.
+- **Semantic Highlighting**: Syntactic text decoration mapping injected properties, variables, and Grails tags.
+- **Custom TagLib Discovery**: Discovers workspace GSP tags and evaluates them dynamically in GSP templates.
+- **In-Editor Log Stream**: Developer application logs streamed in realtime directly within VS Code's Output channels.
+- **Documentations**: Extended documentation and reference hovering derived straight from standard Groovy, Java, and Grails API/sources.
 
 ## 📋 Requirements
 
@@ -76,10 +69,10 @@ Configure the extension through VS Code settings:
 
 ```json
 {
-  "grails.javaHome": "/path/to/java-17",
-  "grailsLsp.completionDetail": "ADVANCED",
-  "grailsLsp.enableGrailsMagic": true,
-  "grailsLsp.codeLensMode": "ADVANCED"
+ "grails.javaHome": "/path/to/java-17",
+ "grailsLsp.completionDetail": "ADVANCED",
+ "grailsLsp.enableGrailsMagic": true,
+ "grailsLsp.codeLensMode": "ADVANCED"
 }
 ```
 
@@ -88,6 +81,7 @@ Configure the extension through VS Code settings:
 This extension uses a **client-server architecture** for optimal performance:
 
 - **[Client](./client/)** - VS Code extension (TypeScript)
+
   - User interface and VS Code integration
   - Command palette, views, and UI components
   - Language client that communicates with LSP server
@@ -192,24 +186,24 @@ npm run package # Create .vsix file for VS Code Marketplace
 
 ```json
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Launch Extension",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/client"],
-      "outFiles": ["${workspaceFolder}/client/out/**/*.js"],
-      "preLaunchTask": "npm: compile - client"
-    },
-    {
-      "name": "Debug LSP Server",
-      "type": "java",
-      "request": "attach",
-      "hostName": "localhost",
-      "port": 5005
-    }
-  ]
+ "version": "0.2.0",
+ "configurations": [
+  {
+   "name": "Launch Extension",
+   "type": "extensionHost",
+   "request": "launch",
+   "args": ["--extensionDevelopmentPath=${workspaceFolder}/client"],
+   "outFiles": ["${workspaceFolder}/client/out/**/*.js"],
+   "preLaunchTask": "npm: compile - client"
+  },
+  {
+   "name": "Debug LSP Server",
+   "type": "java",
+   "request": "attach",
+   "hostName": "localhost",
+   "port": 5005
+  }
+ ]
 }
 ```
 
@@ -232,10 +226,10 @@ Create `.vscode/settings.json` in your Grails project:
 
 ```json
 {
-  "grails.javaHome": "/usr/lib/jvm/java-17-openjdk",
-  "grailsLsp.completionDetail": "ADVANCED",
-  "grailsLsp.enableGrailsMagic": true,
-  "java.import.gradle.enabled": true
+ "grails.javaHome": "/usr/lib/jvm/java-17-openjdk",
+ "grailsLsp.completionDetail": "ADVANCED",
+ "grailsLsp.enableGrailsMagic": true,
+ "java.import.gradle.enabled": true
 }
 ```
 
@@ -265,8 +259,8 @@ See **[docs/user-guide.md#status-and-roadmap](./docs/user-guide.md#status-and-ro
 
 - Language server may take a few moments to initialize on first startup
 - Large projects (1000+ files) might experience slower completion response times
-- GSP syntax highlighting may not work perfectly with complex nested expressions
-- **Rename** and **GSP** intelligence are best-effort; there is no LSP formatting / semantic highlighting / quick fixes yet ([developer guide — LSP reference](./docs/developer-guide.md#language-server-reference))
+- **Rename** is best-effort; complex Groovy AST transformations (metaprogramming) may not always be tracked perfectly
+- No LSP formatting, semantic highlighting, or quick fixes yet ([developer guide — LSP reference](./docs/developer-guide.md#language-server-reference))
 
 Report issues on our [GitHub Issues page](https://github.com/KingSK1998/vscode-gng-support/issues).
 

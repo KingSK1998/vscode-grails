@@ -140,9 +140,12 @@ class GrailsCompiler {
      * NOTE: Resets the compilation unit
      */
     void updateClassLoader() {
-        def urls = grailsService.project.dependencies
-            .collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) }
+        def urls = grailsService.projects.values()
+            .collectMany { project -> 
+                project.dependencies.collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) } 
+            }
             .findAll()
+            .unique()
 
         def paths = urls.collect { it.path }
         if (paths.hashCode() == lastClasspathHash && classLoader) {
@@ -156,7 +159,15 @@ class GrailsCompiler {
 
         def urlCl = new URLClassLoader(urls as URL[], this.class.classLoader)
         classLoader = new GroovyClassLoader(urlCl, compilerConfig, true)
-        log.info("[COMPILER] Classloader created with ${urls.size()} entries")
+        log.info("[COMPILER] Unified Classloader created with ${urls.size()} entries across ${grailsService.projects.size()} projects")
+        try {
+            def uri = grailsService.project?.rootDirectory?.toURI()?.toString()
+            if (uri) {
+                kingsk.grails.lsp.utils.DynamicDiscoveryUtil.updateClassGraph(uri, classLoader)
+            }
+        } catch (Exception e) {
+            log.warn("[COMPILER] Failed to initialize ClassGraph: ${e.message}")
+        }
         refreshCompilationUnit()
     }
 
@@ -173,38 +184,54 @@ class GrailsCompiler {
 
         compileLock.lock()
         try {
-            log.info("[COMPILER] Incremental compilation: ${textFile.name}")
+            log.info("[COMPILER] Incremental compilation trigger: ${textFile.name}")
             // Ensure compiler is properly initialized
             if (!compilerConfig) updateCompilerOptions()
             if (!classLoader) updateClassLoader()
-            if (!compilationUnit) invalidateCompiler()
+            
+            // If we don't have a compilation unit, we should probably do a full compile or at least initialize one
+            if (!compilationUnit) {
+                log.info("[COMPILER] No compilation unit found, initializing fresh for incremental build")
+                invalidateCompiler()
+            }
 
             isFullCompilation = false
 
-            if (previousContext == textFile.uri) {
-                // Same file -> no need to update dependencies
-                removeSource(textFile)
-                compilationUnit.addSource(textFile.uri, textFile.text)
+            // True incremental: instead of refreshing the whole unit, we update only the specific source and its dependents
+            // The GrailsCU.removeSourceUnit method handles AST-level module preservation
+            
+            Set<TextFile> filesToUpdate = []
+            if (textFile.uri.endsWith('.gsp')) {
+                // For GSP, we usually only care about the modified file context
+                filesToUpdate.add(textFile)
             } else {
-                // Add all dependent files to the compilation unit
-                refreshCompilationUnit()
-                Set<TextFile> dependentFiles = grailsService.fileTracker?.getFileAndItsDependencies(textFile)
-                if (dependentFiles) {
-                    log.info("[COMPILER] Total ${dependentFiles.size()} files found")
-                    dependentFiles.each { depFile ->
-                        if (depFile?.uri && depFile?.text) {
-                            compilationUnit.addSource(depFile.uri, depFile.text)
-                            log.debug("[COMPILER] Source file added: ${depFile.name}")
-                        }
-                    }
-                } else {
-                    // Fallback: compile just the single file
-                    compilationUnit.addSource(textFile.uri, textFile.text)
-                }
-                previousContext = textFile.uri
+                // For Groovy files, we should update dependencies too
+                filesToUpdate = grailsService.fileTracker?.getFileAndItsDependencies(textFile) ?: [textFile] as Set
             }
 
-            compileDefaultOrTillPhase()
+            log.info("[COMPILER] Incremental update for ${filesToUpdate.size()} files")
+            
+            filesToUpdate.each { file ->
+                // 1. Remove old version if it exists in current CU
+                if (compilationUnit.sources.containsKey(file.uri)) {
+                    SourceUnit old = compilationUnit.sources[file.uri]
+                    compilationUnit.removeSourceUnit(old)
+                }
+                
+                // 2. Add new version (handling GSP transpilation if needed)
+                String compilationText = file.uri.endsWith('.gsp') ? 
+                    kingsk.grails.lsp.utils.GspToGroovyConverter.convertToVirtualGroovy(file.text) : 
+                    file.text
+                
+                compilationUnit.addSource(file.uri, compilationText)
+                log.debug("[COMPILER] Source unit updated in CU: ${file.name}")
+            }
+            
+            previousContext = textFile.uri
+
+            // Determine optimal phase for incremental developer feedback
+            int targetPhase = determineProjectAnalysisPhase()
+            compileDefaultOrTillPhase(targetPhase)
         } catch (Exception e) {
             log.error("[COMPILER] Incremental compilation failed for ${textFile.name}", e)
         } finally {
@@ -396,6 +423,12 @@ class GrailsCompiler {
         int phase = grailsService.config.compilerPhase
         // if some phase is set by user then use that phase
         if (phase != GrailsUtils.DEFAULT_COMPILATION_PHASE) return phase
+        
+        // For project-wide indexing, stick to CONVERSION to avoid loading the user's dev environment heavily
+        if (isFullCompilation) {
+            return Phases.CONVERSION
+        }
+        
         // if no phase and is big project then use semantic analysis
         if (grailsService.project.sourceFileCount > 100) return Phases.SEMANTIC_ANALYSIS
         // if small project then can use more detailed analysis

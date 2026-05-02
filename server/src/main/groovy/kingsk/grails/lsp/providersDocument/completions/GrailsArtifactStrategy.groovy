@@ -80,23 +80,22 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
             // Use GrailsHelperIntegration for official GORM instance methods
             List<String> gormInstanceMethods = GrailsHelperIntegration.getGormInstanceMethods()
             gormInstanceMethods.each { method ->
-                //request.addCompletion(method, CompletionItemKind.Method, 'GORM Instance Method')
+                org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
+                item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+                item.detail = 'GORM Instance Method'
+                request.addCompletion(item)
             }
 
             // Use GrailsHelperIntegration for official GORM static methods
             List<String> gormStaticMethods = GrailsHelperIntegration.getGormStaticMethods()
             gormStaticMethods.each { method ->
-                //request.addCompletion(method, CompletionItemKind.Method, 'GORM Static Method')
+                org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
+                item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+                item.detail = 'GORM Static Method'
+                request.addCompletion(item)
             }
         } catch (Exception e) {
             logDebug("Error getting GORM completions: %s", e.message)
-            // Fallback to basic GORM completions
-            // ['save', 'delete', 'validate', 'hasErrors'].each { method ->
-            //request.addCompletion(method, CompletionItemKind.Method, 'GORM Instance Method')
-            //}
-            // ['get', 'load', 'findBy', 'findAllBy', 'list'].each { method ->
-            //request.addCompletion(method, CompletionItemKind.Method, 'GORM Static Method')
-            //}
         }
 
         // Domain properties
@@ -109,10 +108,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         domainProperties.each { property, description ->
-            //			if (matchesPrefix(property, request.prefix)) {
-            //				request.addCompletion(property, CompletionItemKind.Property,
-            //						"Domain property: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(property)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Domain property: ${description}"
+            request.addCompletion(item)
         }
 
         // Add constraint completions
@@ -134,10 +133,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         serviceProperties.each { property, description ->
-            //			if (matchesPrefix(property, request.prefix)) {
-            //				request.addCompletion(property, CompletionItemKind.Property,
-            //						"Service property: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(property)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Service property: ${description}"
+            request.addCompletion(item)
         }
 
         // Add transaction annotations
@@ -162,10 +161,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         tagLibProperties.each { property, description ->
-            //			if (matchesPrefix(property, request.prefix)) {
-            //				request.addCompletion(property, CompletionItemKind.Property,
-            //						"TagLib property: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(property)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "TagLib property: ${description}"
+            request.addCompletion(item)
         }
 
         // Add common tag patterns
@@ -184,10 +183,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         commandMethods.each { method, description ->
-            //			if (matchesPrefix(method, request.prefix)) {
-            //				//request.addCompletion(method, CompletionItemKind.Method,
-            //						"Command method: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+            item.detail = "Command method: ${description}"
+            request.addCompletion(item)
         }
 
         // Add constraint completions for command objects
@@ -207,17 +206,11 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         jobProperties.each { property, description ->
-            //			if (matchesPrefix(property, request.prefix)) {
-            //				request.addCompletion(property, CompletionItemKind.Property,
-            //						"Job property: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(property)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Job property: ${description}"
+            request.addCompletion(item)
         }
-
-        // Job methods
-        //		if (matchesPrefix('execute', request.prefix)) {
-        //			request.addCompletion('execute', CompletionItemKind.Method,
-        //					'Job execution method')
-        //		}
     }
 
     /**
@@ -232,10 +225,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         interceptorMethods.each { method, description ->
-            //			if (matchesPrefix(method, request.prefix)) {
-            //				//request.addCompletion(method, CompletionItemKind.Method,
-            //						"Interceptor method: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+            item.detail = "Interceptor method: ${description}"
+            request.addCompletion(item)
         }
 
         // Interceptor properties
@@ -245,10 +238,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         interceptorProperties.each { property, description ->
-            //			if (matchesPrefix(property, request.prefix)) {
-            //				request.addCompletion(property, CompletionItemKind.Property,
-            //						"Interceptor property: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(property)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Interceptor property: ${description}"
+            request.addCompletion(item)
         }
     }
 
@@ -263,7 +256,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         grailsAnnotations.each { annotation ->
-            //request.addCompletion(annotation, CompletionItemKind.Class, 'Grails annotation')
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(annotation)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Class
+            item.detail = 'Grails annotation'
+            request.addCompletion(item)
         }
     }
 
@@ -279,10 +275,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         commonObjects.each { object, description ->
-            //			if (matchesPrefix(object, request.prefix)) {
-            //				request.addCompletion(object, CompletionItemKind.Variable,
-            //						"Grails object: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(object)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Variable
+            item.detail = "Grails object: ${description}"
+            request.addCompletion(item)
         }
     }
 
@@ -294,7 +290,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         actionPatterns.each { pattern ->
-            //request.addCompletion(pattern, CompletionItemKind.Method, 'Controller action pattern')
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(pattern)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+            item.detail = 'Controller action pattern'
+            request.addCompletion(item)
         }
     }
 
@@ -304,7 +303,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         formats.each { format ->
-            //request.addCompletion(format, CompletionItemKind.EnumMember, 'Response format')
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(format)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.EnumMember
+            item.detail = 'Response format'
+            request.addCompletion(item)
         }
     }
 
@@ -327,10 +329,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         constraints.each { constraint, description ->
-            //			if (matchesPrefix(constraint, request.prefix)) {
-            //				request.addCompletion(constraint, CompletionItemKind.Property,
-            //						"Constraint: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(constraint)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Constraint: ${description}"
+            request.addCompletion(item)
         }
     }
 
@@ -347,10 +349,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         mappings.each { mapping, description ->
-            //			if (matchesPrefix(mapping, request.prefix)) {
-            //				request.addCompletion(mapping, CompletionItemKind.Property,
-            //						"Mapping: ${description}")
-            //			}
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(mapping)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = "Mapping: ${description}"
+            request.addCompletion(item)
         }
     }
 
@@ -360,7 +362,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         transactionAnnotations.each { annotation ->
-            //request.addCompletion(annotation, CompletionItemKind.Class, 'Transaction annotation')
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(annotation)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Class
+            item.detail = 'Transaction annotation'
+            request.addCompletion(item)
         }
     }
 
@@ -371,7 +376,10 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
         ]
 
         tagPatterns.each { pattern ->
-            //request.addCompletion(pattern, CompletionItemKind.Snippet, 'Tag pattern')
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(pattern)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Snippet
+            item.detail = 'Tag pattern'
+            request.addCompletion(item)
         }
     }
 }
