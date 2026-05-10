@@ -2,13 +2,14 @@ import * as fs from "fs";
 import * as path from "path";
 import type { Disposable, WorkspaceFolder } from "vscode";
 import { RelativePattern, workspace } from "vscode";
-import { EventBus } from "../../core/events/EventBus";
+
+import type { EventBus } from "../../core/events/EventBus";
 import { EventType } from "../../core/events/eventTypes";
 import type { ArtifactCounts, ProjectInfo } from "../../features/models/modelTypes";
 import { ProjectType } from "../../features/models/modelTypes";
+
 import type { ErrorService } from "../errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
-import type { LanguageServerManager } from "../languageServer/LanguageServerManager";
 import type { ConfigurationService } from "./ConfigurationService";
 import type { StatusBarService } from "./StatusBarService";
 
@@ -23,19 +24,22 @@ import type { StatusBarService } from "./StatusBarService";
  */
 export class ProjectService implements Disposable {
   private readonly projects = new Map<string, ProjectInfo>();
-  private activeProjectId: string | null = null; // Track active project for UI
+  private activeProjectId: string | undefined;
+
   private readonly watchers: Disposable[] = [];
   private disposables: Disposable[] = [];
-  private eventBus = EventBus.getInstance();
-  private cachedDiscovery?: ProjectInfo[] | undefined;
+
+  private cachedDiscovery: ProjectInfo[] | undefined;
   private lastDiscoveryTime = 0;
   private readonly CACHE_DURATION = 30000; // 30 seconds
+
+  private _intialized = false;
 
   constructor(
     private readonly statusBarService: StatusBarService,
     private readonly errorService: ErrorService,
     private readonly config: ConfigurationService,
-    private readonly lspManager?: LanguageServerManager // Optional LSP integration
+    private readonly eventBus: EventBus
   ) {}
 
   /* ================= PUBLIC API ===================================== */
@@ -48,35 +52,38 @@ export class ProjectService implements Disposable {
    *  - Optimized discovery with caching and parallel processing
    */
   async discoverProjects(): Promise<ProjectInfo[]> {
-    console.log("📦 ProjectService.discoverProjects: Started");
-    const discoveryStart = performance.now();
+    const start = performance.now();
 
     try {
       this.statusBarService.sync("🔍 Analyzing projects...");
 
       // Use cache if recent
-      if (this.isCacheValid()) {
+      if (this.isCacheValid() && this.cachedDiscovery) {
         console.log("📊 Using cached project data");
-        return this.cachedDiscovery!;
+        return this.cachedDiscovery;
       }
 
       const roots = workspace.workspaceFolders ?? [];
       console.log(`📦 Found ${roots.length} workspace folders`);
 
-      // Process projects in parallel - 5 seconds timeout per project
-      const discoveryPromises = roots.map(folder => this.loadProjectWithTimeout(folder, 5000));
+      this.projects.clear();
 
       // Use Promise.allSettled to not fail on single project issues
-      const results = await Promise.allSettled(discoveryPromises);
+      const results = await Promise.allSettled(
+        // Process projects in parallel - 5 seconds timeout per project
+        roots.map(folder => this.loadProjectWithTimeout(folder, 5000))
+      );
 
       const discovered: ProjectInfo[] = [];
-      results.forEach((result, index) => {
+
+      results.forEach((result, i) => {
         if (result.status === "fulfilled" && result.value) {
-          discovered.push(result.value);
-          this.projects.set(result.value.id, result.value);
+          const project = result.value;
+          discovered.push(project);
+          this.projects.set(project.id, project);
         } else {
           console.warn(
-            `Project discovery failed for ${roots[index].name}:`,
+            `Project discovery failed for ${roots[i].name}:`,
             result.status === "rejected" ? result.reason : "No project info"
           );
         }
@@ -87,8 +94,10 @@ export class ProjectService implements Disposable {
       this.lastDiscoveryTime = Date.now();
 
       // Set first project as active
-      if (discovered.length > 0 && !this.activeProjectId) {
-        this.activeProjectId = discovered[0].id;
+      if (!this.activeProjectId || !this.projects.has(this.activeProjectId)) {
+        if (discovered.length > 0) {
+          this.activeProjectId = discovered[0]?.id;
+        }
       }
 
       console.log(`📦 Final discovered projects: ${discovered.length}`);
@@ -98,22 +107,22 @@ export class ProjectService implements Disposable {
 
       // Emit discovery event
       // Check if EventBus exists and is working
-      try {
-        console.log("📡 Publishing PROJECTS_DISCOVERED event...");
-        this.eventBus.publish({
-          type: EventType.PROJECTS_DISCOVERED,
-          projects: discovered,
-          timestamp: Date.now(),
-          source: "ProjectService",
-        });
-        console.log("✅ Event published successfully");
-      } catch (eventError) {
-        console.error("❌ Failed to publish event:", eventError);
-      }
+      console.log("📡 Publishing PROJECTS_DISCOVERED event...");
+      this.eventBus.publish({
+        type: EventType.PROJECTS_DISCOVERED,
+        projects: discovered,
+        timestamp: Date.now(),
+        source: ProjectService.name,
+      });
+      console.log("✅ Event published successfully");
 
-      const discoveryTime = performance.now() - discoveryStart;
-      console.log(`📊 Optimized discovery: ${discoveryTime.toFixed(1)}ms`);
+      this.initWatchers();
+
       this.statusBarService.success(`✅ ${discovered.length} projects analyzed`);
+
+      console.log(`📊 Optimized discovery: ${(performance.now() - start).toFixed(1)}ms`);
+
+      this._intialized = true;
 
       return discovered;
     } catch (error) {
@@ -126,6 +135,103 @@ export class ProjectService implements Disposable {
       return this.cachedDiscovery ?? [];
     }
   }
+
+  /**
+   * Quick project scan - Checks for build.gradle files
+   * Used for immediate UI feedback during activation.
+   */
+  quickScan(): ProjectInfo[] {
+    try {
+      this.statusBarService.sync("🔍 Scanning for projects...");
+      const start = performance.now();
+
+      const roots = workspace.workspaceFolders ?? [];
+      const quickInfo: ProjectInfo[] = [];
+
+      for (const folder of roots) {
+        const root = folder.uri.fsPath;
+        const build = path.join(root, "build.gradle");
+
+        if (!fs.existsSync(build)) continue;
+
+        // Minimal project info for immediate UI
+        quickInfo.push({
+          id: root,
+          rootPath: root,
+          name: path.basename(root),
+          type: this.quickDetectType(root),
+          dependencies: [], // Will be filled during full discovery
+        });
+      }
+
+      console.log(`📊 Quick scan: ${(performance.now() - start).toFixed(1)}ms`);
+
+      return quickInfo;
+    } catch (error) {
+      this.errorService.handleError(
+        "Quick scan failed",
+        error,
+        ErrorSource.ProjectService,
+        ErrorSeverity.Warning
+      );
+      return [];
+    }
+  }
+
+  /** Get all discovered projects */
+  getProjects(): readonly ProjectInfo[] {
+    return Array.from(this.projects.values());
+  }
+
+  /** Get project by ID */
+  getProjectById(id: string): ProjectInfo | undefined {
+    return this.projects.get(id);
+  }
+
+  /** Get active project */
+  getActiveProject(): ProjectInfo | undefined {
+    if (!this.activeProjectId) return undefined;
+    return this.projects.get(this.activeProjectId);
+  }
+
+  /** Set active project - triggers UI updates */
+  setActiveProject(projectId: string): boolean {
+    const project = this.projects.get(projectId);
+
+    if (!project) {
+      this.errorService.handleError(
+        `Invalid project selected: ${projectId}`,
+        new Error(`Project ${projectId} not found`),
+        ErrorSource.ProjectService,
+        ErrorSeverity.Warning
+      );
+      return false;
+    }
+
+    this.activeProjectId = projectId;
+
+    this.eventBus.publish({
+      type: EventType.PROJECT_CHANGED,
+      timestamp: Date.now(),
+      source: ProjectService.name,
+      project,
+    });
+
+    return true;
+  }
+
+  dispose() {
+    this.watchers.forEach(w => void w.dispose());
+    this.watchers.length = 0;
+
+    this.disposables.forEach(d => void d.dispose());
+    this.disposables.length = 0;
+
+    this.projects.clear();
+    this.activeProjectId = undefined;
+  }
+
+  /* ================= INTERNAL =================================== */
 
   private isCacheValid(): boolean {
     return (
@@ -143,122 +249,6 @@ export class ProjectService implements Disposable {
       new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), timeoutMs)),
     ]);
   }
-
-  /**
-   * Invalidate cache when projects change
-   */
-  private invalidateCache(): void {
-    this.cachedDiscovery = undefined;
-    this.lastDiscoveryTime = 0;
-  }
-
-  /**
-   * Quick project scan - Checks for build.gradle files
-   * Used for immediate UI feedback during activation.
-   */
-  quickScan(): ProjectInfo[] {
-    try {
-      this.statusBarService.sync("🔍 Scanning for projects...");
-      const scanStart = performance.now();
-
-      const roots = workspace.workspaceFolders ?? [];
-      const quickProjects: ProjectInfo[] = [];
-
-      for (const folder of roots) {
-        const buildFile = path.join(folder.uri.fsPath, "build.gradle");
-        if (fs.existsSync(buildFile)) {
-          // Minimal project info for immediate UI
-          const quickProject: ProjectInfo = {
-            id: folder.uri.fsPath,
-            rootPath: folder.uri.fsPath,
-            name: path.basename(folder.uri.fsPath),
-            type: this.quickDetectType(folder.uri.fsPath),
-            dependencies: [], // Will be filled during full discovery
-          };
-
-          quickProjects.push(quickProject);
-          this.projects.set(quickProject.id, quickProject);
-        }
-      }
-
-      // Set first project as active if none selected
-      if (quickProjects.length > 0 && !this.activeProjectId) {
-        this.activeProjectId = quickProjects[0].id;
-      }
-
-      // Emit quick discovery event
-      this.eventBus.publish({
-        type: EventType.PROJECTS_DISCOVERED,
-        projects: quickProjects,
-        timestamp: Date.now(),
-        source: "ProjectService.quickScan",
-      });
-
-      const scanTime = performance.now() - scanStart;
-      console.log(`📊 Quick scan: ${scanTime.toFixed(1)}ms`);
-
-      return quickProjects;
-    } catch (error) {
-      this.errorService.handleError(
-        "Quick scan failed",
-        error,
-        ErrorSource.ProjectService,
-        ErrorSeverity.Warning
-      );
-      return [];
-    }
-  }
-
-  /**
-   * Fast type detection - just checks for grails-app directory
-   */
-  private quickDetectType(root: string): ProjectType {
-    const grailsDir = path.join(root, "grails-app");
-    if (fs.existsSync(grailsDir)) {
-      return ProjectType.Grails;
-    }
-    return ProjectType.Groovy;
-  }
-
-  /** Get all discovered projects */
-  getProjects(): ProjectInfo[] {
-    return [...this.projects.values()];
-  }
-
-  /** Get project by ID */
-  getProjectById(id: string): ProjectInfo | undefined {
-    return this.projects.get(id);
-  }
-
-  /** Get active project */
-  getActiveProject(): ProjectInfo | undefined {
-    if (!this.activeProjectId) {
-      return undefined;
-    }
-    return this.projects.get(this.activeProjectId);
-  }
-
-  /** Set active project - triggers UI updates */
-  setActiveProject(projectId: string): void {
-    const project = this.projects.get(projectId);
-    if (project) {
-      this.activeProjectId = projectId;
-      this.eventBus.publish({
-        type: EventType.PROJECT_CHANGED,
-        timestamp: Date.now(),
-        source: "ProjectService",
-        project,
-      });
-    }
-  }
-
-  dispose() {
-    this.watchers.forEach(w => void w.dispose());
-    this.watchers.length = 0;
-    this.projects.clear();
-  }
-
-  /* ================= PRIVATE IMPL =================================== */
 
   /** Load project from LSP cache or fallback to file scanning */
   private loadProject(folder: WorkspaceFolder): ProjectInfo | undefined {
@@ -299,65 +289,57 @@ export class ProjectService implements Disposable {
 
   /** Scan project structure and build ProjectInfo */
   private scanFolder(root: string): ProjectInfo | undefined {
-    const buildFile = path.join(root, "build.gradle");
-    if (!fs.existsSync(buildFile)) {
-      return undefined;
-    }
+    const build = path.join(root, "build.gradle");
+    if (!fs.existsSync(build)) return undefined;
 
     const type = this.detectProjectType(root);
-    if (!type) {
-      return undefined;
-    }
-
-    const name = path.basename(root);
-    const dependencies = this.parseDependencies(buildFile);
+    if (!type) return undefined;
 
     const info: ProjectInfo = {
       id: root,
       rootPath: root,
-      name,
+      name: path.basename(root),
       type,
-      dependencies,
+      dependencies: [],
+      artifactCounts: this.countArtifacts(root),
     };
 
-    // Add project-specific metadata
     if (type === ProjectType.Grails || type === ProjectType.GrailsPlugin) {
-      info.grailsVersion = this.extractVersion(buildFile, /grailsVersion\s*=\s*['"]([^'"]+)['"]/);
-      info.groovyVersion = this.extractVersion(buildFile, /groovyVersion\s*=\s*['"]([^'"]+)['"]/);
+      const gv = this.extractVersion(build, /grailsVersion\s*=\s*['"]([^'"]+)['"]/);
+      if (gv) info.grailsVersion = gv;
+      const groovyV = this.extractVersion(build, /groovyVersion\s*=\s*['"]([^'"]+)['"]/);
+      if (groovyV) info.groovyVersion = groovyV;
     }
 
     if (type === ProjectType.GrailsPlugin) {
-      info.pluginVersion = this.extractVersion(buildFile, /version\s*=\s*['"]([^'"]+)['"]/);
+      const pv = this.extractVersion(build, /version\s*=\s*['"]([^'"]+)['"]/);
+      if (pv) info.pluginVersion = pv;
     }
-
-    info.artifactCounts = this.countArtifacts(root);
 
     return info;
   }
 
   private detectProjectType(root: string): ProjectType | undefined {
     const grailsDir = path.join(root, "grails-app");
-    const buildGradle = path.join(root, "build.gradle");
+    const build = path.join(root, "build.gradle");
 
-    if (!fs.existsSync(buildGradle)) {
-      return undefined;
-    }
+    if (!fs.existsSync(build)) return undefined;
 
     const hasGrailsApp = fs.existsSync(grailsDir);
     if (hasGrailsApp) {
       // Check for plugin markers
       if (
-        this.fileContains(buildGradle, "org.grails.grails-plugin") ||
-        this.fileContains(buildGradle, "grails-plugin")
+        this.fileContains(build, "org.grails.grails-plugin") ||
+        this.fileContains(build, "grails-plugin")
       ) {
         return ProjectType.GrailsPlugin;
       }
       return ProjectType.Grails;
     }
 
-    // Check if it's a Groovy project
+    // Check if it's a Groovy project not spring boot
     if (
-      this.fileContains(buildGradle, "groovy") ||
+      this.fileContains(build, "groovy") ||
       fs.existsSync(path.join(root, "src", "main", "groovy"))
     ) {
       return ProjectType.Groovy;
@@ -372,14 +354,111 @@ export class ProjectService implements Disposable {
       const text = fs.readFileSync(buildFile, "utf8");
       const regex = /(implementation|compile|api|runtimeOnly)\s+['"]([^'"]+)['"]/g;
       const deps: string[] = [];
-      let match;
-      while ((match = regex.exec(text))) {
-        deps.push(match[2]);
+      let match: RegExpExecArray | null = null;
+
+      while ((match = regex.exec(text)) !== null) {
+        const dep = match[2];
+        if (dep) deps.push(dep);
       }
+
       return deps;
     } catch {
       return [];
     }
+  }
+
+  private countInDirectory(dir: string, ...extensions: string[]): number {
+    if (!fs.existsSync(dir)) {
+      return 0;
+    }
+
+    try {
+      const files = fs.readdirSync(dir, { withFileTypes: true });
+      return files.filter(file => {
+        if (!file.isFile()) {
+          return false;
+        }
+        if (extensions.length === 0) {
+          return true;
+        }
+        return extensions.some(ext => file.name.endsWith(ext));
+      }).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Extract version from build.gradle */
+  private extractVersion(file: string, regex: RegExp): string | undefined {
+    try {
+      const content = fs.readFileSync(file, "utf8");
+      return content.match(regex)?.[1];
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Fast type detection - just checks for grails-app directory
+   */
+  private quickDetectType(root: string): ProjectType {
+    return fs.existsSync(path.join(root, "grails-app")) ? ProjectType.Grails : ProjectType.Groovy;
+  }
+
+  /** Check if file contains text */
+  private fileContains(file: string, needle: string): boolean {
+    try {
+      return fs.readFileSync(file, "utf8").includes(needle);
+    } catch {
+      return false;
+    }
+  }
+
+  /* ------------- Watchers: refresh project on build.gradle change --- */
+
+  /** Initialize file watchers for live updates */
+  private initWatchers(): void {
+    // Already watching
+    if (this.watchers.length > 0) return;
+
+    workspace.workspaceFolders?.forEach(folder => {
+      const pattern = new RelativePattern(folder, "build.gradle");
+      const watcher = workspace.createFileSystemWatcher(pattern);
+
+      const refresh = () => this.reloadProject(folder);
+
+      watcher.onDidChange(refresh);
+      watcher.onDidCreate(refresh);
+      watcher.onDidDelete(refresh);
+
+      this.watchers.push(watcher);
+    });
+  }
+
+  /** Reload project and notify if changed */
+  private reloadProject(folder: WorkspaceFolder): void {
+    const updated = this.scanFolder(folder.uri.fsPath);
+    if (!updated) return;
+
+    const previous = this.projects.get(updated.id);
+    const prevDeps = previous?.dependencies ?? [];
+    const updatedDeps = updated.dependencies ?? [];
+
+    const changed =
+      !previous || previous.type !== updated.type || prevDeps.length !== updatedDeps.length;
+
+    if (!changed) return;
+
+    console.log(`📦 ProjectService: Project ${updated.name} changed`);
+
+    this.projects.set(updated.id, updated);
+
+    this.eventBus.publish({
+      type: EventType.PROJECT_CHANGED,
+      timestamp: Date.now(),
+      source: ProjectService.name,
+      project: updated,
+    });
   }
 
   /** Count Grails artifacts for UI display */
@@ -496,91 +575,5 @@ export class ProjectService implements Disposable {
     counts.javaSrc = this.countInDirectory(path.join(root, "src/main/java"), ".java");
 
     return counts;
-  }
-
-  private countInDirectory(dir: string, ...extensions: string[]): number {
-    if (!fs.existsSync(dir)) {
-      return 0;
-    }
-
-    try {
-      const files = fs.readdirSync(dir, { withFileTypes: true });
-      return files.filter(file => {
-        if (!file.isFile()) {
-          return false;
-        }
-        if (extensions.length === 0) {
-          return true;
-        }
-        return extensions.some(ext => file.name.endsWith(ext));
-      }).length;
-    } catch {
-      return 0;
-    }
-  }
-
-  /** Extract version from build.gradle */
-  private extractVersion(buildFile: string, regex: RegExp): string | undefined {
-    try {
-      const content = fs.readFileSync(buildFile, "utf8");
-      const match = content.match(regex);
-      return match?.[1];
-    } catch {
-      return undefined;
-    }
-  }
-
-  /** Check if file contains text */
-  private fileContains(file: string, needle: string): boolean {
-    try {
-      return fs.readFileSync(file, "utf8").includes(needle);
-    } catch {
-      return false;
-    }
-  }
-
-  /* ------------- Watchers: refresh project on build.gradle change --- */
-
-  /** Initialize file watchers for live updates */
-  private initWatchers(): void {
-    if (this.watchers.length > 0) {
-      return;
-    } // Already watching
-
-    workspace.workspaceFolders?.forEach(folder => {
-      const pattern = new RelativePattern(folder, "build.gradle");
-      const watcher = workspace.createFileSystemWatcher(pattern);
-
-      const refresh = () => this.reloadProject(folder);
-      watcher.onDidChange(refresh);
-      watcher.onDidCreate(refresh);
-      watcher.onDidDelete(refresh);
-
-      this.watchers.push(watcher);
-    });
-  }
-
-  /** Reload project and notify if changed */
-  private reloadProject(folder: WorkspaceFolder): void {
-    const updated = this.loadProject(folder);
-    if (!updated) {
-      return;
-    }
-
-    const previous = this.projects.get(updated.id);
-    const hasChanged = !previous || JSON.stringify(previous) !== JSON.stringify(updated);
-
-    if (hasChanged) {
-      console.log(`📦 ProjectService: Project ${updated.name} changed`);
-
-      this.projects.set(updated.id, updated);
-
-      this.eventBus.publish({
-        type: EventType.PROJECT_CHANGED,
-        timestamp: Date.now(),
-        source: "ProjectService",
-        project: updated,
-      });
-    }
   }
 }
