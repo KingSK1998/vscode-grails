@@ -1,7 +1,7 @@
 # ISSUE-005 · Synchronous File Reading in ProjectService
 **Severity**: 🔴 Critical
 **Service**: ProjectService.ts
-**Status**: TODO
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -455,16 +455,16 @@ private async reloadProject(folder: WorkspaceFolder): Promise<void> {
 ```
 
 ## Subtasks
-- [ ] Convert parseDependencies() to async
-- [ ] Convert fileContains() to async
-- [ ] Convert extractVersion() to async
-- [ ] Convert countInDirectory() to async
-- [ ] Convert scanFolder() to async
-- [ ] Convert detectProjectType() to async
-- [ ] Convert countArtifacts() to async
-- [ ] Convert reloadProject() to async
-- [ ] Update discoverProjects() to await async operations
-- [ ] Add helper methods for async file/directory existence checks
+- [x] Convert parseDependencies() to async
+- [x] Convert fileContains() to async
+- [x] Convert extractVersion() to async
+- [x] Convert countInDirectory() to async
+- [x] Convert scanFolder() to async
+- [x] Convert detectProjectType() to async
+- [x] Convert countArtifacts() to async
+- [x] Convert reloadProject() to async
+- [x] Update discoverProjects() to await async operations
+- [x] Add helper methods for async file/directory existence checks
 
 ## Tradeoffs
 - More async/await complexity throughout ProjectService

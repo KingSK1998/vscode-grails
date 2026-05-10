@@ -1,12 +1,12 @@
 # Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-11)
 
 ## Corpus Check
-- 75 files · ~105,911 words
+- 76 files · ~106,136 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 544 nodes · 865 edges · 63 communities detected
-- Extraction: 77% EXTRACTED · 23% INFERRED · 0% AMBIGUOUS · INFERRED: 202 edges (avg confidence: 0.8)
+- 547 nodes · 879 edges · 63 communities detected
+- Extraction: 76% EXTRACTED · 24% INFERRED · 0% AMBIGUOUS · INFERRED: 207 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -76,12 +76,12 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `GrailsTreeExplorer` - 40 edges
-2. `log()` - 33 edges
+2. `log()` - 34 edges
 3. `ProjectService` - 25 edges
 4. `StatusBarService` - 22 edges
 5. `ConfigurationService` - 20 edges
-6. `ActivationManager` - 19 edges
-7. `ServiceContainer` - 18 edges
+6. `ServiceContainer` - 19 edges
+7. `ActivationManager` - 19 edges
 8. `IconProvider` - 18 edges
 9. `IconThemeDetector` - 18 edges
 10. `GradleService` - 16 edges
@@ -107,24 +107,24 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (10): ActivationManager, getClientOptions(), copyServer(), ErrorService, activate(), deactivate(), log(), run_update() (+2 more)
+Cohesion: 0.09
+Nodes (8): ActivationManager, copyServer(), activate(), deactivate(), log(), run_update(), LanguageServerManager, createProjectTreeProvider()
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
+Cohesion: 0.1
 Nodes (2): main(), GrailsTreeExplorer
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (9): ArtifactCommands, register(), GrailsTaskCommands, GrailsTestService, LegacyCommands, LogCommands, NavigationCommands, ProjectCommands (+1 more)
+Cohesion: 0.09
+Nodes (4): ProjectMapper, ProjectService, ProjectStore, RunGrailsAppUseCase
 
 ### Community 3 - "Community 3"
-Cohesion: 0.08
-Nodes (4): DebugService, GradleService, LogStreamingService, RunGrailsAppUseCase
+Cohesion: 0.07
+Nodes (4): getClientOptions(), ErrorService, EventBus, OutputChannelService
 
 ### Community 4 - "Community 4"
-Cohesion: 0.11
-Nodes (3): ProjectMapper, ProjectService, ProjectStore
+Cohesion: 0.06
+Nodes (9): ArtifactCommands, register(), ExtensionCommands, GrailsTaskCommands, LegacyCommands, LogCommands, NavigationCommands, ProjectCommands (+1 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.11
@@ -135,68 +135,68 @@ Cohesion: 0.12
 Nodes (2): GrailsTreeItem, IconProvider
 
 ### Community 7 - "Community 7"
-Cohesion: 0.09
-Nodes (2): ExtensionCommands, ServiceContainer
+Cohesion: 0.14
+Nodes (2): DebugService, GradleService
 
 ### Community 8 - "Community 8"
-Cohesion: 0.11
-Nodes (20): GrailsASTVisitor, Client TypeScript Extension, esbuild Bundler, Gradle Tooling API 8.12, GradleService, GrailsCompiler, Incremental Compilation, LanguageServerManager (+12 more)
+Cohesion: 0.15
+Nodes (1): ServiceContainer
 
 ### Community 9 - "Community 9"
 Cohesion: 0.18
-Nodes (1): IconThemeDetector
-
-### Community 10 - "Community 10"
-Cohesion: 0.2
 Nodes (1): StatusBarService
 
+### Community 10 - "Community 10"
+Cohesion: 0.11
+Nodes (20): GrailsASTVisitor, Client TypeScript Extension, esbuild Bundler, Gradle Tooling API 8.12, GradleService, GrailsCompiler, Incremental Compilation, LanguageServerManager (+12 more)
+
 ### Community 11 - "Community 11"
+Cohesion: 0.18
+Nodes (1): IconThemeDetector
+
+### Community 12 - "Community 12"
+Cohesion: 0.14
+Nodes (3): DependencyGraphService, GormSqlPreviewService, createWebviewStateManager()
+
+### Community 13 - "Community 13"
 Cohesion: 0.3
 Nodes (1): ArtifactService
 
-### Community 12 - "Community 12"
+### Community 14 - "Community 14"
 Cohesion: 0.15
 Nodes (14): BaseProvider, CodeLensProvider, CompletionProvider, DefinitionProvider, DiagnosticsProvider, GrailsLanguageServer, GrailsService, HoverProvider (+6 more)
 
-### Community 13 - "Community 13"
-Cohesion: 0.25
-Nodes (1): EventBus
-
-### Community 14 - "Community 14"
-Cohesion: 0.39
-Nodes (1): GspCompletionProvider
-
 ### Community 15 - "Community 15"
-Cohesion: 0.25
+Cohesion: 0.24
 Nodes (2): FileScannerUtils, ProjectFolderUtils
 
 ### Community 16 - "Community 16"
+Cohesion: 0.39
+Nodes (1): GspCompletionProvider
+
+### Community 17 - "Community 17"
 Cohesion: 0.32
 Nodes (2): CSSHelper, GrailsArtifactWizard
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 0.43
 Nodes (1): DashboardService
 
-### Community 18 - "Community 18"
-Cohesion: 0.33
-Nodes (1): DependencyGraphService
-
 ### Community 19 - "Community 19"
-Cohesion: 0.33
-Nodes (1): GormSqlPreviewService
-
-### Community 20 - "Community 20"
 Cohesion: 0.48
 Nodes (6): connectToRemoteServer(), getDebugConfiguration(), getJavaDebugArgs(), getLocalServerOptions(), getServerJarPath(), getServerOptions()
 
-### Community 21 - "Community 21"
-Cohesion: 0.29
-Nodes (1): OutputChannelService
+### Community 20 - "Community 20"
+Cohesion: 0.4
+Nodes (1): LogStreamingService
 
-### Community 22 - "Community 22"
+### Community 21 - "Community 21"
 Cohesion: 0.53
 Nodes (1): GrailsCodeActionProvider
+
+### Community 22 - "Community 22"
+Cohesion: 0.4
+Nodes (1): GrailsTestService
 
 ### Community 23 - "Community 23"
 Cohesion: 0.4
@@ -419,17 +419,17 @@ Nodes (1): Apple Touch Icon PNG
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `log()` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 9`, `Community 10`, `Community 20`, `Community 27`?**
-  _High betweenness centrality (0.139) - this node is a cross-community bridge._
-- **Why does `GrailsTreeExplorer` connect `Community 1` to `Community 0`, `Community 2`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Are the 31 inferred relationships involving `log()` (e.g. with `activate()` and `deactivate()`) actually correct?**
-  _`log()` has 31 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `log()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 5`, `Community 8`, `Community 9`, `Community 11`, `Community 19`, `Community 27`?**
+  _High betweenness centrality (0.163) - this node is a cross-community bridge._
+- **Why does `GrailsTreeExplorer` connect `Community 1` to `Community 3`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Are the 32 inferred relationships involving `log()` (e.g. with `activate()` and `deactivate()`) actually correct?**
+  _`log()` has 32 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Api`, `GradleTaskProvider`, `LanguageServerManager` to the rest of the system?**
   _46 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._

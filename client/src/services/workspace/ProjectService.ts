@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as fsPromises from "fs/promises";
 import * as path from "path";
 import type { Disposable, FileSystemWatcher, WorkspaceFolder } from "vscode";
 import { RelativePattern, workspace } from "vscode";
@@ -13,15 +14,6 @@ import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
 import type { ConfigurationService } from "./ConfigurationService";
 import type { StatusBarService } from "./StatusBarService";
 
-/**
- * Discovers Groovy / Grails / Grails-plugin projects in a multi-root workspace.
- * Client-side project service.
- * Responsibilities:
- * - Fast folder-based project discovery
- * - File system watching and change detection
- * - Basic artifact counting and organization
- * - Artifact metadata caching
- */
 export class ProjectService implements Disposable {
   private readonly projects = new Map<string, ProjectInfo>();
   private activeProjectId: string | undefined;
@@ -33,7 +25,7 @@ export class ProjectService implements Disposable {
 
   private cachedDiscovery: ProjectInfo[] | undefined;
   private lastDiscoveryTime = 0;
-  private readonly CACHE_DURATION = 30000; // 30 seconds
+  private readonly CACHE_DURATION = 30000;
 
   private _intialized = false;
   private _disposed = false;
@@ -45,22 +37,12 @@ export class ProjectService implements Disposable {
     private readonly eventBus: EventBus
   ) {}
 
-  /* ================= PUBLIC API ===================================== */
-
-  /**
-   * Scan every workspace folder and build ProjectInfo for each root.
-   * Emits PROJECTS_DISCOVERED when done.
-   *
-   * Improvements:
-   *  - Optimized discovery with caching and parallel processing
-   */
   async discoverProjects(): Promise<ProjectInfo[]> {
     const start = performance.now();
 
     try {
       this.statusBarService.sync("🔍 Analyzing projects...");
 
-      // Use cache if recent
       if (this.isCacheValid() && this.cachedDiscovery) {
         console.log("📊 Using cached project data");
         return this.cachedDiscovery;
@@ -71,9 +53,7 @@ export class ProjectService implements Disposable {
 
       this.projects.clear();
 
-      // Use Promise.allSettled to not fail on single project issues
       const results = await Promise.allSettled(
-        // Process projects in parallel - 5 seconds timeout per project
         roots.map(folder => this.loadProjectWithTimeout(folder, 5000))
       );
 
@@ -92,11 +72,9 @@ export class ProjectService implements Disposable {
         }
       });
 
-      // Cache the results
       this.cachedDiscovery = discovered;
       this.lastDiscoveryTime = Date.now();
 
-      // Set first project as active
       if (!this.activeProjectId || !this.projects.has(this.activeProjectId)) {
         if (discovered.length > 0) {
           this.activeProjectId = discovered[0]?.id;
@@ -108,8 +86,6 @@ export class ProjectService implements Disposable {
         console.log(`📦   ${i + 1}. ${p.name} (${p.type}) at ${p.rootPath}`);
       });
 
-      // Emit discovery event
-      // Check if EventBus exists and is working
       console.log("📡 Publishing PROJECTS_DISCOVERED event...");
       this.eventBus.publish({
         type: EventType.PROJECTS_DISCOVERED,
@@ -139,10 +115,6 @@ export class ProjectService implements Disposable {
     }
   }
 
-  /**
-   * Quick project scan - Checks for build.gradle files
-   * Used for immediate UI feedback during activation.
-   */
   quickScan(): ProjectInfo[] {
     try {
       this.statusBarService.sync("🔍 Scanning for projects...");
@@ -157,13 +129,12 @@ export class ProjectService implements Disposable {
 
         if (!fs.existsSync(build)) continue;
 
-        // Minimal project info for immediate UI
         quickInfo.push({
           id: root,
           rootPath: root,
           name: path.basename(root),
           type: this.quickDetectType(root),
-          dependencies: [], // Will be filled during full discovery
+          dependencies: [],
         });
       }
 
@@ -181,23 +152,19 @@ export class ProjectService implements Disposable {
     }
   }
 
-  /** Get all discovered projects */
   getProjects(): readonly ProjectInfo[] {
     return Array.from(this.projects.values());
   }
 
-  /** Get project by ID */
   getProjectById(id: string): ProjectInfo | undefined {
     return this.projects.get(id);
   }
 
-  /** Get active project */
   getActiveProject(): ProjectInfo | undefined {
     if (!this.activeProjectId) return undefined;
     return this.projects.get(this.activeProjectId);
   }
 
-  /** Set active project - triggers UI updates */
   setActiveProject(projectId: string): boolean {
     const project = this.projects.get(projectId);
 
@@ -244,9 +211,6 @@ export class ProjectService implements Disposable {
     this.lastDiscoveryTime = 0;
   }
 
-  /**
-   * Clean up a specific watcher.
-   */
   private disposeWatcher(watcher: FileSystemWatcher): void {
     try {
       const eventDisposables = this.watcherDisposables.get(watcher);
@@ -271,9 +235,6 @@ export class ProjectService implements Disposable {
     }
   }
 
-  /**
-   * Clean up all watchers.
-   */
   private disposeAllWatchers(): void {
     const watchersCopy = Array.from(this.watchers);
 
@@ -286,9 +247,6 @@ export class ProjectService implements Disposable {
     this.folderWatchers.clear();
   }
 
-  /**
-   * Reinitialize watchers when workspace folders change.
-   */
   reinitWatchersOnFolderChange(): void {
     this.disposeAllWatchers();
     this.initWatchers();
@@ -313,50 +271,27 @@ export class ProjectService implements Disposable {
     ]);
   }
 
-  /** Load project from LSP cache or fallback to file scanning */
-  private loadProject(folder: WorkspaceFolder): ProjectInfo | undefined {
+  private async loadProject(folder: WorkspaceFolder): Promise<ProjectInfo | undefined> {
     const root = folder.uri.fsPath;
-
-    // 1. Try LSP cache first (configurable paths)
-    // const cacheDir = path.join(root, this.config.cacheDirectory);
-    // const cacheFile = path.join(cacheDir, this.config.cacheFile);
-
-    // if (fs.existsSync(cacheFile)) {
-    //   try {
-    //     // Handle both .json and .cache files
-    //     if (cacheFile.endsWith(".json")) {
-    //       const cached = JSON.parse(fs.readFileSync(cacheFile, "utf8")) as ProjectInfo;
-    //       // Ensure required fields
-    //       cached.id ??= root;
-    //       cached.rootPath ??= root;
-    //       return cached;
-    //     } else {
-    //       // Binary cache - skip for now (LSP will provide JSON alternative)
-    //       this.statusBarService.info(
-    //         `Binary cache detected for ${path.basename(root)} - using fallback detection`
-    //       );
-    //     }
-    //   } catch (error) {
-    //     this.errorService.handleError(
-    //       `Failed to read cache for ${path.basename(root)}`,
-    //       error,
-    //       ErrorSource.ProjectService,
-    //       ErrorSeverity.Warning
-    //     );
-    //   }
-    // }
-
-    // 2. Fallback: scan project structure
     return this.scanFolder(root);
   }
 
-  /** Scan project structure and build ProjectInfo */
-  private scanFolder(root: string): ProjectInfo | undefined {
+  private async scanFolder(root: string): Promise<ProjectInfo | undefined> {
     const build = path.join(root, "build.gradle");
-    if (!fs.existsSync(build)) return undefined;
 
-    const type = this.detectProjectType(root);
+    try {
+      await fsPromises.access(build);
+    } catch {
+      return undefined;
+    }
+
+    const type = await this.detectProjectType(root);
     if (!type) return undefined;
+
+    const [, artifactCounts] = await Promise.all([
+      this.parseDependencies(build),
+      this.countArtifacts(root),
+    ]);
 
     const info: ProjectInfo = {
       id: root,
@@ -364,57 +299,64 @@ export class ProjectService implements Disposable {
       name: path.basename(root),
       type,
       dependencies: [],
-      artifactCounts: this.countArtifacts(root),
+      artifactCounts,
     };
 
     if (type === ProjectType.Grails || type === ProjectType.GrailsPlugin) {
-      const gv = this.extractVersion(build, /grailsVersion\s*=\s*['"]([^'"]+)['"]/);
+      const [gv, groovyV] = await Promise.all([
+        this.extractVersion(build, /grailsVersion\s*=\s*['"]([^'"]+)['"]/),
+        this.extractVersion(build, /groovyVersion\s*=\s*['"]([^'"]+)['"]/),
+      ]);
       if (gv) info.grailsVersion = gv;
-      const groovyV = this.extractVersion(build, /groovyVersion\s*=\s*['"]([^'"]+)['"]/);
       if (groovyV) info.groovyVersion = groovyV;
     }
 
     if (type === ProjectType.GrailsPlugin) {
-      const pv = this.extractVersion(build, /version\s*=\s*['"]([^'"]+)['"]/);
+      const pv = await this.extractVersion(build, /version\s*=\s*['"]([^'"]+)['"]/);
       if (pv) info.pluginVersion = pv;
     }
 
     return info;
   }
 
-  private detectProjectType(root: string): ProjectType | undefined {
+  private async detectProjectType(root: string): Promise<ProjectType | undefined> {
     const grailsDir = path.join(root, "grails-app");
     const build = path.join(root, "build.gradle");
 
-    if (!fs.existsSync(build)) return undefined;
+    try {
+      await fsPromises.access(build);
+    } catch {
+      return undefined;
+    }
 
-    const hasGrailsApp = fs.existsSync(grailsDir);
+    const hasGrailsApp = await this.directoryExists(grailsDir);
     if (hasGrailsApp) {
-      // Check for plugin markers
-      if (
-        this.fileContains(build, "org.grails.grails-plugin") ||
-        this.fileContains(build, "grails-plugin")
-      ) {
+      const [hasPluginMarker1, hasPluginMarker2] = await Promise.all([
+        this.fileContains(build, "org.grails.grails-plugin"),
+        this.fileContains(build, "grails-plugin"),
+      ]);
+
+      if (hasPluginMarker1 || hasPluginMarker2) {
         return ProjectType.GrailsPlugin;
       }
       return ProjectType.Grails;
     }
 
-    // Check if it's a Groovy project not spring boot
-    if (
-      this.fileContains(build, "groovy") ||
-      fs.existsSync(path.join(root, "src", "main", "groovy"))
-    ) {
+    const [hasGroovyDep, hasGroovySrc] = await Promise.all([
+      this.fileContains(build, "groovy"),
+      this.directoryExists(path.join(root, "src", "main", "groovy")),
+    ]);
+
+    if (hasGroovyDep || hasGroovySrc) {
       return ProjectType.Groovy;
     }
 
     return undefined;
   }
 
-  /** Parse Gradle dependencies */
-  private parseDependencies(buildFile: string): string[] {
+  private async parseDependencies(buildFile: string): Promise<string[]> {
     try {
-      const text = fs.readFileSync(buildFile, "utf8");
+      const text = await fsPromises.readFile(buildFile, "utf8");
       const regex = /(implementation|compile|api|runtimeOnly)\s+['"]([^'"]+)['"]/g;
       const deps: string[] = [];
       let match: RegExpExecArray | null = null;
@@ -430,13 +372,18 @@ export class ProjectService implements Disposable {
     }
   }
 
-  private countInDirectory(dir: string, ...extensions: string[]): number {
-    if (!fs.existsSync(dir)) {
+  private async countInDirectory(dir: string, ...extensions: string[]): Promise<number> {
+    try {
+      const stat = await fsPromises.stat(dir);
+      if (!stat.isDirectory()) {
+        return 0;
+      }
+    } catch {
       return 0;
     }
 
     try {
-      const files = fs.readdirSync(dir, { withFileTypes: true });
+      const files = await fsPromises.readdir(dir, { withFileTypes: true });
       return files.filter(file => {
         if (!file.isFile()) {
           return false;
@@ -451,27 +398,41 @@ export class ProjectService implements Disposable {
     }
   }
 
-  /** Extract version from build.gradle */
-  private extractVersion(file: string, regex: RegExp): string | undefined {
+  private async extractVersion(file: string, regex: RegExp): Promise<string | undefined> {
     try {
-      const content = fs.readFileSync(file, "utf8");
+      const content = await fsPromises.readFile(file, "utf8");
       return content.match(regex)?.[1];
     } catch {
       return undefined;
     }
   }
 
-  /**
-   * Fast type detection - just checks for grails-app directory
-   */
   private quickDetectType(root: string): ProjectType {
     return fs.existsSync(path.join(root, "grails-app")) ? ProjectType.Grails : ProjectType.Groovy;
   }
 
-  /** Check if file contains text */
-  private fileContains(file: string, needle: string): boolean {
+  private async fileContains(file: string, needle: string): Promise<boolean> {
     try {
-      return fs.readFileSync(file, "utf8").includes(needle);
+      const content = await fsPromises.readFile(file, "utf8");
+      return content.includes(needle);
+    } catch {
+      return false;
+    }
+  }
+
+  private async directoryExists(dir: string): Promise<boolean> {
+    try {
+      const stat = await fsPromises.stat(dir);
+      return stat.isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
+  private async fileExists(file: string): Promise<boolean> {
+    try {
+      await fsPromises.access(file);
+      return true;
     } catch {
       return false;
     }
@@ -479,7 +440,6 @@ export class ProjectService implements Disposable {
 
   /* ------------- Watchers: refresh project on build.gradle change --- */
 
-  /** Initialize file watchers for live updates */
   private initWatchers(): void {
     if (this._disposed) return;
     if (this.watchers.size > 0) return;
@@ -524,9 +484,8 @@ export class ProjectService implements Disposable {
     }
   }
 
-  /** Reload project and notify if changed */
-  private reloadProject(folder: WorkspaceFolder): void {
-    const updated = this.scanFolder(folder.uri.fsPath);
+  private async reloadProject(folder: WorkspaceFolder): Promise<void> {
+    const updated = await this.scanFolder(folder.uri.fsPath);
     if (!updated) return;
 
     const previous = this.projects.get(updated.id);
@@ -550,118 +509,124 @@ export class ProjectService implements Disposable {
     });
   }
 
-  /** Count Grails artifacts for UI display */
-  private countArtifacts(root: string): ArtifactCounts {
+  private async countArtifacts(root: string): Promise<ArtifactCounts> {
     const grailsApp = path.join(root, "grails-app");
     const counts: ArtifactCounts = {
-      // Core MVC
       controllers: 0,
       services: 0,
       domains: 0,
       views: 0,
       taglibs: 0,
-
-      // Interceptors & Filters
       interceptors: 0,
       filters: 0,
-
-      // Configuration
       config: 0,
       urlMappings: 0,
       bootstrap: 0,
       applicationConfig: 0,
       springConfigs: 0,
       hibernateConfigs: 0,
-
-      // Testing
       unitTests: 0,
       integrationTests: 0,
       spockSpecs: 0,
       functionalTests: 0,
-
-      // Assets & Resources
       assets: 0,
       i18n: 0,
       resources: 0,
       gspFiles: 0,
       staticFiles: 0,
-
-      // Commands & Scripts
       commands: 0,
       scripts: 0,
-
-      // Plugin artifacts
       jobs: 0,
       utils: 0,
       codecs: 0,
-
-      // Source code
       groovySrc: 0,
       javaSrc: 0,
       dependencies: 0,
       tasks: 0,
     };
 
-    // Count core artifacts
-    counts.controllers = this.countInDirectory(
-      path.join(grailsApp, "controllers"),
-      "Controller.groovy"
-    );
-    counts.urlMappings = this.countInDirectory(
-      path.join(grailsApp, "controllers"),
-      "UrlMappings.groovy"
-    );
-    counts.services = this.countInDirectory(path.join(grailsApp, "services"), "Service.groovy");
-    counts.domains = this.countInDirectory(path.join(grailsApp, "domain"), ".groovy");
-    counts.taglibs = this.countInDirectory(path.join(grailsApp, "taglib"), "TagLib.groovy");
-    counts.views = this.countInDirectory(path.join(grailsApp, "views"), ".gsp");
+    const [
+      controllers,
+      urlMappings,
+      services,
+      domains,
+      taglibs,
+      views,
+      interceptors,
+      filters,
+      config,
+      springConfigs,
+      hibernateConfigs,
+      unitTests,
+      integrationTests,
+      spockSpecs,
+      functionalTests,
+      assets,
+      i18n,
+      gspFiles,
+      commands,
+      scripts,
+      jobs,
+      utils,
+      codecs,
+      groovySrc,
+      javaSrc,
+      bootstrap,
+    ] = await Promise.all([
+      this.countInDirectory(path.join(grailsApp, "controllers"), "Controller.groovy"),
+      this.countInDirectory(path.join(grailsApp, "controllers"), "UrlMappings.groovy"),
+      this.countInDirectory(path.join(grailsApp, "services"), "Service.groovy"),
+      this.countInDirectory(path.join(grailsApp, "domain"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "taglib"), "TagLib.groovy"),
+      this.countInDirectory(path.join(grailsApp, "views"), ".gsp"),
+      this.countInDirectory(path.join(grailsApp, "controllers"), "Interceptor.groovy"),
+      this.countInDirectory(path.join(grailsApp, "conf"), "Filters.groovy"),
+      this.countInDirectory(path.join(grailsApp, "conf"), ".groovy", ".yml", ".properties"),
+      this.countInDirectory(path.join(grailsApp, "conf", "spring"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "conf", "hibernate"), ".groovy"),
+      this.countInDirectory(path.join(root, "src/test/groovy"), "Test.groovy"),
+      this.countInDirectory(path.join(root, "src/integration-test/groovy"), "Spec.groovy"),
+      this.countInDirectory(path.join(root, "src/test/groovy"), "Spec.groovy"),
+      this.countInDirectory(path.join(root, "src/test/functional"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "assets"), ".js", ".css", ".scss"),
+      this.countInDirectory(path.join(grailsApp, "i18n"), ".properties"),
+      this.countInDirectory(path.join(grailsApp, "views"), ".gsp"),
+      this.countInDirectory(path.join(grailsApp, "commands"), "Command.groovy"),
+      this.countInDirectory(path.join(root, "src/main/scripts"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "jobs"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "utils"), ".groovy"),
+      this.countInDirectory(path.join(grailsApp, "utils"), "Codec.groovy"),
+      this.countInDirectory(path.join(root, "src/main/groovy"), ".groovy"),
+      this.countInDirectory(path.join(root, "src/main/java"), ".java"),
+      this.fileExists(path.join(grailsApp, "conf", "BootStrap.groovy")),
+    ]);
 
-    // Count interceptors (in controllers directory)
-    counts.interceptors = this.countInDirectory(
-      path.join(grailsApp, "controllers"),
-      "Interceptor.groovy"
-    );
-
-    // Count filters (in conf directory)
-    counts.filters = this.countInDirectory(path.join(grailsApp, "conf"), "Filters.groovy");
-
-    // Count configuration files
-    const confDir = path.join(grailsApp, "conf");
-    counts.config = this.countInDirectory(confDir, ".groovy", ".yml", ".properties");
-    counts.bootstrap = fs.existsSync(path.join(confDir, "BootStrap.groovy")) ? 1 : 0;
-    counts.springConfigs = this.countInDirectory(path.join(confDir, "spring"), ".groovy");
-    counts.hibernateConfigs = this.countInDirectory(path.join(confDir, "hibernate"), ".groovy");
-
-    // Count testing artifacts
-    counts.unitTests = this.countInDirectory(path.join(root, "src/test/groovy"), "Test.groovy");
-    counts.integrationTests = this.countInDirectory(
-      path.join(root, "src/integration-test/groovy"),
-      "Spec.groovy"
-    );
-    counts.spockSpecs = this.countInDirectory(path.join(root, "src/test/groovy"), "Spec.groovy");
-    counts.functionalTests = this.countInDirectory(
-      path.join(root, "src/test/functional"),
-      ".groovy"
-    );
-
-    // Count assets & resources
-    counts.assets = this.countInDirectory(path.join(grailsApp, "assets"), ".js", ".css", ".scss");
-    counts.i18n = this.countInDirectory(path.join(grailsApp, "i18n"), ".properties");
-    counts.resources = this.countInDirectory(path.join(root, "src/main/resources"), "");
-    counts.gspFiles = this.countInDirectory(path.join(grailsApp, "views"), ".gsp");
-
-    // Count commands & scripts
-    counts.commands = this.countInDirectory(path.join(grailsApp, "commands"), "Command.groovy");
-    counts.scripts = this.countInDirectory(path.join(root, "src/main/scripts"), ".groovy");
-
-    // Count plugin artifacts
-    counts.jobs = this.countInDirectory(path.join(grailsApp, "jobs"), ".groovy");
-    counts.utils = this.countInDirectory(path.join(grailsApp, "utils"), ".groovy");
-    counts.codecs = this.countInDirectory(path.join(grailsApp, "utils"), "Codec.groovy");
-
-    // Count source files
-    counts.groovySrc = this.countInDirectory(path.join(root, "src/main/groovy"), ".groovy");
-    counts.javaSrc = this.countInDirectory(path.join(root, "src/main/java"), ".java");
+    counts.controllers = controllers;
+    counts.urlMappings = urlMappings;
+    counts.services = services;
+    counts.domains = domains;
+    counts.taglibs = taglibs;
+    counts.views = views;
+    counts.interceptors = interceptors;
+    counts.filters = filters;
+    counts.config = config;
+    counts.springConfigs = springConfigs;
+    counts.hibernateConfigs = hibernateConfigs;
+    counts.unitTests = unitTests;
+    counts.integrationTests = integrationTests;
+    counts.spockSpecs = spockSpecs;
+    counts.functionalTests = functionalTests;
+    counts.assets = assets;
+    counts.i18n = i18n;
+    counts.gspFiles = gspFiles;
+    counts.commands = commands;
+    counts.scripts = scripts;
+    counts.jobs = jobs;
+    counts.utils = utils;
+    counts.codecs = codecs;
+    counts.groovySrc = groovySrc;
+    counts.javaSrc = javaSrc;
+    counts.bootstrap = bootstrap ? 1 : 0;
 
     return counts;
   }
