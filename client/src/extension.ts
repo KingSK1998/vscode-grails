@@ -1,5 +1,7 @@
 import type { ExtensionContext } from "vscode";
+import { ServiceContainer } from "./core/container/ServiceContainer";
 import { ActivationManager } from "./core/lifecycle/ActivationManager";
+import { ErrorSeverity, ErrorSource } from "./services/errors/errorTypes";
 import { OutputChannelService } from "./services/workspace/OutputChannelService";
 
 const EXTENSION_ACTIVATION_TIMER = "🚀 Extension Activation";
@@ -24,7 +26,16 @@ export function activate(context: ExtensionContext): void {
     context.subscriptions.push(activationManager);
     console.log("✅ Grails extension ACTIVATED successfully");
   } catch (error) {
-    console.error("❌ Grails extension activation failed:", error);
+    try {
+      ServiceContainer.getInstance().errorService.handleError(
+        "Grails extension activation failed",
+        error,
+        ErrorSource.Extension,
+        ErrorSeverity.Error
+      );
+    } catch {
+      console.error("❌ Grails extension activation failed:", error);
+    }
     throw error;
   }
 

@@ -1,4 +1,6 @@
 import type { Disposable } from "vscode";
+import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
+import { ServiceContainer } from "../container/ServiceContainer";
 import type { GrailsEventMap } from "./eventTypes";
 
 /**
@@ -58,7 +60,16 @@ export class EventBus implements Disposable {
         try {
           handler(event);
         } catch (error) {
-          console.error(`EventBus: Error in event handler for ${eventType}:`, error);
+          try {
+            ServiceContainer.getInstance().errorService.handleError(
+              `Error in event handler for ${String(eventType)}`,
+              error,
+              ErrorSource.Extension,
+              ErrorSeverity.Warning
+            );
+          } catch {
+            console.error(`EventBus: Error in event handler for ${String(eventType)}:`, error);
+          }
         }
       }
     }
