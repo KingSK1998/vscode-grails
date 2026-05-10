@@ -48,7 +48,7 @@ export default tseslint.config(
     },
     rules: {
       // VS Code recommended rules
-      curly: "warn",
+      curly: "off",
       eqeqeq: "warn",
       "no-throw-literal": "warn",
 

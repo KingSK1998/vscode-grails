@@ -23,7 +23,7 @@ npm run build:server
 
 1. Open the **repo root** in VS Code.  
 2. `npm run watch` (or compile + bundle watch).  
-3. **F5** — Extension Development Host ([`.vscode/launch.json`](../.vscode/launch.json)).  
+3. **Press F5** — Extension Development Host ([`.vscode/launch.json`](../.vscode/launch.json)).  
 4. Optional: attach a Java debugger to the LSP (`GrailsLanguageServer.main`, remote debug flags).
 
 **Server only:** `cd server && ./gradlew run`
