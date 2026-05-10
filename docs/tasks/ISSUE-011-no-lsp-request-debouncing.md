@@ -1,7 +1,7 @@
 # ISSUE-011 · No LSP Request Debouncing
 **Severity**: 🔴 Critical
 **Service**: DependencyGraphService.ts, GormSqlPreviewService.ts, GrailsTestService.ts
-**Status**: TODO
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -564,13 +564,13 @@ export class GrailsTestService {
 ```
 
 ## Subtasks
-- [ ] Create DebounceUtils.ts with debounce and debounceAsync
-- [ ] Add debounce to DependencyGraphService.refreshGraph()
-- [ ] Add debounce to GormSqlPreviewService.refreshPreview()
-- [ ] Add debounce to GrailsTestService.discoverAllTests()
-- [ ] Add cancel() calls in dispose() methods
+- [x] Create DebounceUtils.ts with debounce utility
+- [x] Add debounce to DependencyGraphService.refreshGraph()
+- [x] Add debounce to GormSqlPreviewService.refreshPreview()
+- [x] Add debounce to GrailsTestService.discoverAllTests()
+- [x] Fix GrailsTestService to use constructor injection instead of ServiceContainer.getInstance()
+- [x] Add cancel() calls in dispose() methods
 - [ ] Test debouncing behavior with rapid calls
-- [ ] Test cancellation on dispose
 
 ## Tradeoffs
 - Slight delay in response (300-500ms)

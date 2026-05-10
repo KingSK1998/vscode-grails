@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { Disposable, WorkspaceFolder } from "vscode";
+import type { Disposable, FileSystemWatcher, WorkspaceFolder } from "vscode";
 import { RelativePattern, workspace } from "vscode";
 
 import type { EventBus } from "../../core/events/EventBus";
@@ -26,7 +26,9 @@ export class ProjectService implements Disposable {
   private readonly projects = new Map<string, ProjectInfo>();
   private activeProjectId: string | undefined;
 
-  private readonly watchers: Disposable[] = [];
+  private readonly watchers = new Set<FileSystemWatcher>();
+  private readonly watcherDisposables = new Map<FileSystemWatcher, Disposable[]>();
+  private readonly folderWatchers = new Map<string, FileSystemWatcher>();
   private disposables: Disposable[] = [];
 
   private cachedDiscovery: ProjectInfo[] | undefined;
@@ -34,6 +36,7 @@ export class ProjectService implements Disposable {
   private readonly CACHE_DURATION = 30000; // 30 seconds
 
   private _intialized = false;
+  private _disposed = false;
 
   constructor(
     private readonly statusBarService: StatusBarService,
@@ -221,14 +224,74 @@ export class ProjectService implements Disposable {
   }
 
   dispose() {
-    this.watchers.forEach(w => void w.dispose());
-    this.watchers.length = 0;
+    if (this._disposed) return;
+    this._disposed = true;
 
-    this.disposables.forEach(d => void d.dispose());
+    this.disposeAllWatchers();
+
+    this.disposables.forEach(d => {
+      try {
+        d.dispose();
+      } catch (error) {
+        console.error("[ProjectService] Error disposing disposable:", error);
+      }
+    });
     this.disposables.length = 0;
 
     this.projects.clear();
     this.activeProjectId = undefined;
+    this.cachedDiscovery = undefined;
+    this.lastDiscoveryTime = 0;
+  }
+
+  /**
+   * Clean up a specific watcher.
+   */
+  private disposeWatcher(watcher: FileSystemWatcher): void {
+    try {
+      const eventDisposables = this.watcherDisposables.get(watcher);
+      if (eventDisposables) {
+        for (const disposable of eventDisposables) {
+          disposable.dispose();
+        }
+        this.watcherDisposables.delete(watcher);
+      }
+
+      watcher.dispose();
+      this.watchers.delete(watcher);
+
+      for (const [key, w] of this.folderWatchers.entries()) {
+        if (w === watcher) {
+          this.folderWatchers.delete(key);
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("[ProjectService] Error disposing watcher:", error);
+    }
+  }
+
+  /**
+   * Clean up all watchers.
+   */
+  private disposeAllWatchers(): void {
+    const watchersCopy = Array.from(this.watchers);
+
+    for (const watcher of watchersCopy) {
+      this.disposeWatcher(watcher);
+    }
+
+    this.watchers.clear();
+    this.watcherDisposables.clear();
+    this.folderWatchers.clear();
+  }
+
+  /**
+   * Reinitialize watchers when workspace folders change.
+   */
+  reinitWatchersOnFolderChange(): void {
+    this.disposeAllWatchers();
+    this.initWatchers();
   }
 
   /* ================= INTERNAL =================================== */
@@ -418,21 +481,47 @@ export class ProjectService implements Disposable {
 
   /** Initialize file watchers for live updates */
   private initWatchers(): void {
-    // Already watching
-    if (this.watchers.length > 0) return;
+    if (this._disposed) return;
+    if (this.watchers.size > 0) return;
 
-    workspace.workspaceFolders?.forEach(folder => {
-      const pattern = new RelativePattern(folder, "build.gradle");
-      const watcher = workspace.createFileSystemWatcher(pattern);
+    const roots = workspace.workspaceFolders ?? [];
 
-      const refresh = () => this.reloadProject(folder);
+    for (const folder of roots) {
+      const folderKey = folder.uri.toString();
 
-      watcher.onDidChange(refresh);
-      watcher.onDidCreate(refresh);
-      watcher.onDidDelete(refresh);
+      if (this.folderWatchers.has(folderKey)) {
+        continue;
+      }
 
-      this.watchers.push(watcher);
-    });
+      try {
+        const pattern = new RelativePattern(folder, "build.gradle");
+        const watcher = workspace.createFileSystemWatcher(pattern);
+
+        this.watchers.add(watcher);
+        this.folderWatchers.set(folderKey, watcher);
+
+        const eventDisposables: Disposable[] = [];
+
+        const refresh = () => {
+          if (!this._disposed) {
+            void this.reloadProject(folder);
+          }
+        };
+
+        eventDisposables.push(watcher.onDidChange(refresh));
+        eventDisposables.push(watcher.onDidCreate(refresh));
+        eventDisposables.push(watcher.onDidDelete(refresh));
+
+        this.watcherDisposables.set(watcher, eventDisposables);
+      } catch (error) {
+        this.errorService.handleError(
+          `Failed to create watcher for ${folder.name}`,
+          error,
+          ErrorSource.ProjectService,
+          ErrorSeverity.Warning
+        );
+      }
+    }
   }
 
   /** Reload project and notify if changed */

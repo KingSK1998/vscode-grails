@@ -1,15 +1,25 @@
 import * as vscode from "vscode";
-import { ServiceContainer } from "../../core/container/ServiceContainer";
+import { debounce } from "../../utils/DebounceUtils";
 import type { ErrorService } from "../errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
+import type { LanguageServerManager } from "../languageServer/LanguageServerManager";
+import type { ProjectService } from "../workspace/ProjectService";
 
-export class GrailsTestService {
+export class GrailsTestService implements vscode.Disposable {
   private controller: vscode.TestController;
-  private container: ServiceContainer = ServiceContainer.getInstance();
+  private disposed = false;
+
+  private readonly debouncedDiscover = debounce(() => {
+    if (!this.disposed) {
+      void this.doDiscoverAllTests();
+    }
+  }, 500);
 
   constructor(
-    private context: vscode.ExtensionContext,
-    private errorService: ErrorService
+    private readonly context: vscode.ExtensionContext,
+    private readonly errorService: ErrorService,
+    private readonly languageServerManager: LanguageServerManager,
+    private readonly projectService: ProjectService
   ) {
     this.controller = vscode.tests.createTestController("grailsTests", "Grails Tests");
     this.context.subscriptions.push(this.controller);
@@ -18,21 +28,30 @@ export class GrailsTestService {
       void this.runTests(request, token);
     });
 
-    this.controller.resolveHandler = async item => {
+    this.controller.resolveHandler = item => {
       if (!item) {
-        await this.discoverAllTests();
+        this.debouncedDiscover();
       }
     };
   }
 
-  private async discoverAllTests() {
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.debouncedDiscover.cancel();
+    this.controller.dispose();
+  }
+
+  private async doDiscoverAllTests(): Promise<void> {
     try {
-      const client = this.container.languageServerManager.languageClient;
+      const client = this.languageServerManager.languageClient;
       if (!client) {
         return;
       }
 
-      const projects = this.container.projectService.getProjects();
+      const projects = this.projectService.getProjects();
+      this.controller.items.replace([]);
+
       for (const project of projects) {
         interface DiscoveredTest {
           className: string;
@@ -88,7 +107,6 @@ export class GrailsTestService {
       const test = queue.pop()!;
       run.started(test);
 
-      // Mock run: In real scenario, we would trigger 'gradle test --tests <className>'
       await new Promise(resolve => setTimeout(resolve, 500));
 
       if (Math.random() > 0.1) {

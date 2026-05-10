@@ -138,7 +138,9 @@ export class ServiceContainer {
     );
     this._services.GrailsTestService = new GrailsTestService(
       this.context,
-      this._services.ErrorService
+      this._services.ErrorService,
+      this._services.LanguageServerManager,
+      this._services.ProjectService
     );
   }
 

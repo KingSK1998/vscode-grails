@@ -2,10 +2,20 @@ import * as vscode from "vscode";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import { debounce } from "../../utils/DebounceUtils";
 
 export class GormSqlPreviewService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
+
+  private readonly debouncedRefresh = debounce(
+    (uri: vscode.Uri) => {
+      if (!this.disposed) {
+        void this.doRefreshPreview(uri);
+      }
+    },
+    300
+  );
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -16,6 +26,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.debouncedRefresh.cancel();
     if (this.currentPanel) {
       this.currentPanel.dispose();
       this.currentPanel = null;
@@ -25,7 +36,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
   public openPreview(uri: vscode.Uri) {
     if (this.currentPanel) {
       this.currentPanel.reveal(vscode.ViewColumn.Beside);
-      void this.refreshPreview(uri);
+      this.debouncedRefresh(uri);
       return;
     }
 
@@ -49,10 +60,10 @@ export class GormSqlPreviewService implements vscode.Disposable {
       this.context.subscriptions
     );
 
-    void this.refreshPreview(uri);
+    this.debouncedRefresh(uri);
   }
 
-  private async refreshPreview(uri: vscode.Uri) {
+  private async doRefreshPreview(uri: vscode.Uri): Promise<void> {
     if (!this.currentPanel) {
       return;
     }

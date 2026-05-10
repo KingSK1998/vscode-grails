@@ -3,11 +3,21 @@ import * as vscode from "vscode";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import { debounce } from "../../utils/DebounceUtils";
 import type { ProjectInfo } from "../models/modelTypes";
 
 export class DependencyGraphService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
+
+  private readonly debouncedRefresh = debounce(
+    (project: ProjectInfo) => {
+      if (!this.disposed) {
+        void this.doRefreshGraph(project);
+      }
+    },
+    300
+  );
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -18,6 +28,7 @@ export class DependencyGraphService implements vscode.Disposable {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.debouncedRefresh.cancel();
     if (this.currentPanel) {
       this.currentPanel.dispose();
       this.currentPanel = null;
@@ -31,7 +42,7 @@ export class DependencyGraphService implements vscode.Disposable {
 
     if (this.currentPanel) {
       this.currentPanel.reveal(column);
-      void this.refreshGraph(project);
+      this.debouncedRefresh(project);
       return;
     }
 
@@ -57,10 +68,10 @@ export class DependencyGraphService implements vscode.Disposable {
     );
 
     // Initial load
-    void this.refreshGraph(project);
+    this.debouncedRefresh(project);
   }
 
-  private async refreshGraph(project: ProjectInfo) {
+  private async doRefreshGraph(project: ProjectInfo) {
     if (!this.currentPanel) {
       return;
     }

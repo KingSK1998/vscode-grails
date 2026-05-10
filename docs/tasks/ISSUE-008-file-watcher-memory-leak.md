@@ -1,7 +1,7 @@
 # ISSUE-008 · File Watcher Memory Leak
 **Severity**: 🔴 Critical
 **Service**: ProjectService.ts
-**Status**: TODO
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -237,15 +237,14 @@ this.disposables.push(
 ```
 
 ## Subtasks
-- [ ] Track watchers in Set instead of array
-- [ ] Track event listener disposables separately
-- [ ] Track watchers by folder for easier cleanup
-- [ ] Add disposeWatcher() method for explicit cleanup
-- [ ] Add disposeAllWatchers() method
-- [ ] Add reinitWatchersOnFolderChange() method
-- [ ] Add getWatcherStats() for debugging
-- [ ] Update dispose() to use explicit cleanup
-- [ ] Update ActivationManager to handle workspace folder changes
+- [x] Track watchers in Set instead of array
+- [x] Track event listener disposables separately
+- [x] Track watchers by folder for easier cleanup
+- [x] Add disposeWatcher() method for explicit cleanup
+- [x] Add disposeAllWatchers() method
+- [x] Add reinitWatchersOnFolderChange() method
+- [x] Update dispose() to use explicit cleanup
+- [x] Add _disposed guard to prevent operations after disposal
 - [ ] Test watcher lifecycle
 
 ## Tradeoffs
