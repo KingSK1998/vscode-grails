@@ -46,6 +46,7 @@
 | Production mode LSP connection | Uses local JAR `server/grails-language-server-1.0-all.jar` |
 | **ISSUE-004** | Activation timeout wrapper (30s) with user notification |
 | **ISSUE-006** | EventBus async handler execution with error isolation |
+| **ISSUE-015** | Bundle D3.js locally for offline support |
 
 ### 🟡 In Progress
 

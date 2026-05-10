@@ -110,8 +110,13 @@ export class DependencyGraphService implements vscode.Disposable {
     }
   }
 
+  private getD3ScriptUri(): vscode.Uri {
+    return vscode.Uri.joinPath(this.context.extensionUri, "resources", "lib", "d3.min.js");
+  }
+
   private getHtmlContent(savedState?: GraphState): string {
     const currentConfig = savedState?.currentConfig ?? "compileClasspath";
+    const d3ScriptUri = this.currentPanel!.webview.asWebviewUri(this.getD3ScriptUri()).toString();
 
     return `<!DOCTYPE html>
         <html lang="en">
@@ -119,7 +124,7 @@ export class DependencyGraphService implements vscode.Disposable {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Dependency Graph</title>
-            <script src="https://d3js.org/d3.v7.min.js"></script>
+            <script src="${d3ScriptUri}"></script>
             <style>
                 body { margin: 0; padding: 0; overflow: hidden; background-color: var(--vscode-editor-background); color: var(--vscode-foreground); font-family: sans-serif; }
                 #graph { width: 100vw; height: 100vh; }
