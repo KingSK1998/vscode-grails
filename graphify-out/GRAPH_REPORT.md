@@ -1,12 +1,12 @@
 # Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-11)
 
 ## Corpus Check
-- 74 files · ~105,021 words
+- 75 files · ~105,489 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 538 nodes · 853 edges · 64 communities detected
-- Extraction: 77% EXTRACTED · 23% INFERRED · 0% AMBIGUOUS · INFERRED: 198 edges (avg confidence: 0.8)
+- 544 nodes · 865 edges · 63 communities detected
+- Extraction: 77% EXTRACTED · 23% INFERRED · 0% AMBIGUOUS · INFERRED: 202 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -73,16 +73,15 @@
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
-- [[_COMMUNITY_Community 63|Community 63]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `GrailsTreeExplorer` - 40 edges
 2. `log()` - 33 edges
-3. `ProjectService` - 22 edges
+3. `ProjectService` - 25 edges
 4. `StatusBarService` - 22 edges
-5. `ServiceContainer` - 21 edges
-6. `ConfigurationService` - 20 edges
-7. `ActivationManager` - 19 edges
+5. `ConfigurationService` - 20 edges
+6. `ActivationManager` - 19 edges
+7. `ServiceContainer` - 18 edges
 8. `IconProvider` - 18 edges
 9. `IconThemeDetector` - 18 edges
 10. `GradleService` - 16 edges
@@ -94,10 +93,10 @@
   comprehensive-test-cases/SKILL.md → read-tests-before-change/SKILL.md
 - `Grails SVG Brand Icon` --semantically_similar_to--> `Grails SVG Test Asset`  [INFERRED] [semantically similar]
   resources/icons/grails.svg → server/src/test/resources/test-projects/grails-test-project/grails-app/assets/images/grails.svg
-- `deactivate()` --calls--> `log()`  [INFERRED]
-  D:\Grails_Framework_Support_Extension\vscode-gng-support\client\src\extension.ts → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
 - `getServerJarPath()` --calls--> `log()`  [INFERRED]
   client\src\services\languageServer\serverConfig.ts → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
+- `GrailsCompiler` --conceptually_related_to--> `Architecture for Performance Skill`  [INFERRED]
+  CLAUDE.md → architecture-for-performance/SKILL.md
 
 ## Hyperedges (group relationships)
 - **LSP Client-Server Communication Bridge** — claude_client_ts, claude_vscode_lsp_client, claude_lsp4j, claude_server_groovy [EXTRACTED 0.95]
@@ -108,36 +107,36 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.07
-Nodes (9): ActivationManager, getClientOptions(), copyServer(), ErrorService, activate(), log(), run_update(), LanguageServerManager (+1 more)
+Cohesion: 0.06
+Nodes (10): ActivationManager, getClientOptions(), copyServer(), ErrorService, activate(), deactivate(), log(), run_update() (+2 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.12
-Nodes (1): GrailsTreeExplorer
+Cohesion: 0.11
+Nodes (2): main(), GrailsTreeExplorer
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
 Nodes (9): ArtifactCommands, register(), GrailsTaskCommands, GrailsTestService, LegacyCommands, LogCommands, NavigationCommands, ProjectCommands (+1 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.11
-Nodes (3): ProjectMapper, ProjectService, ProjectStore
+Cohesion: 0.08
+Nodes (4): DebugService, GradleService, LogStreamingService, RunGrailsAppUseCase
 
 ### Community 4 - "Community 4"
 Cohesion: 0.11
-Nodes (2): ConfigurationService, GrailsGutterProvider
+Nodes (3): ProjectMapper, ProjectService, ProjectStore
 
 ### Community 5 - "Community 5"
+Cohesion: 0.11
+Nodes (2): ConfigurationService, GrailsGutterProvider
+
+### Community 6 - "Community 6"
 Cohesion: 0.12
 Nodes (2): GrailsTreeItem, IconProvider
 
-### Community 6 - "Community 6"
-Cohesion: 0.08
-Nodes (2): ExtensionCommands, ServiceContainer
-
 ### Community 7 - "Community 7"
-Cohesion: 0.11
-Nodes (3): DebugService, GradleService, RunGrailsAppUseCase
+Cohesion: 0.09
+Nodes (2): ExtensionCommands, ServiceContainer
 
 ### Community 8 - "Community 8"
 Cohesion: 0.11
@@ -180,84 +179,84 @@ Cohesion: 0.43
 Nodes (1): DashboardService
 
 ### Community 18 - "Community 18"
+Cohesion: 0.33
+Nodes (1): DependencyGraphService
+
+### Community 19 - "Community 19"
+Cohesion: 0.33
+Nodes (1): GormSqlPreviewService
+
+### Community 20 - "Community 20"
 Cohesion: 0.48
 Nodes (6): connectToRemoteServer(), getDebugConfiguration(), getJavaDebugArgs(), getLocalServerOptions(), getServerJarPath(), getServerOptions()
 
-### Community 19 - "Community 19"
+### Community 21 - "Community 21"
 Cohesion: 0.29
 Nodes (1): OutputChannelService
 
-### Community 20 - "Community 20"
-Cohesion: 0.47
-Nodes (1): DependencyGraphService
-
-### Community 21 - "Community 21"
-Cohesion: 0.47
-Nodes (1): GormSqlPreviewService
-
 ### Community 22 - "Community 22"
-Cohesion: 0.4
-Nodes (1): LogStreamingService
-
-### Community 23 - "Community 23"
 Cohesion: 0.53
 Nodes (1): GrailsCodeActionProvider
 
-### Community 24 - "Community 24"
-Cohesion: 0.4
-Nodes (2): main(), deactivate()
-
-### Community 25 - "Community 25"
+### Community 23 - "Community 23"
 Cohesion: 0.4
 Nodes (1): Commands
 
-### Community 26 - "Community 26"
+### Community 24 - "Community 24"
 Cohesion: 0.4
 Nodes (1): DiagnosticDecorationProvider
 
-### Community 27 - "Community 27"
+### Community 25 - "Community 25"
 Cohesion: 0.4
 Nodes (5): VS Code Extension Icon PNG, Grails Logo SVG Icon, Grails SVG Brand Icon, Grails Cupsonly Logo White SVG, Grails SVG Test Asset
 
-### Community 28 - "Community 28"
+### Community 26 - "Community 26"
 Cohesion: 0.67
 Nodes (1): GrailsCodeLensProvider
 
-### Community 29 - "Community 29"
+### Community 27 - "Community 27"
 Cohesion: 0.67
 Nodes (1): GrailsDashboard
 
-### Community 30 - "Community 30"
+### Community 28 - "Community 28"
 Cohesion: 0.5
 Nodes (4): Full Compilation 2-5 Seconds, Compiler Incremental 50-200ms, Performance Optimization Skill, Profile Before Optimize Principle
 
-### Community 31 - "Community 31"
+### Community 29 - "Community 29"
 Cohesion: 0.5
 Nodes (4): JaCoCo 60% Coverage Threshold, BaseLspSpec Base Test Class, ProjectType DUMMY GROOVY GRAILS, Spock 2.3 Test Framework
 
-### Community 32 - "Community 32"
+### Community 30 - "Community 30"
 Cohesion: 0.67
 Nodes (2): Api, GradleTaskProvider
 
-### Community 33 - "Community 33"
+### Community 31 - "Community 31"
 Cohesion: 0.67
 Nodes (1): GrailsConventions
 
-### Community 34 - "Community 34"
+### Community 32 - "Community 32"
 Cohesion: 0.67
 Nodes (1): GrailsEnvironmentIndicator
 
-### Community 35 - "Community 35"
+### Community 33 - "Community 33"
 Cohesion: 0.67
 Nodes (1): GrailsProjectCard
 
-### Community 36 - "Community 36"
+### Community 34 - "Community 34"
 Cohesion: 0.67
 Nodes (1): GrailsQuickActions
 
-### Community 37 - "Community 37"
+### Community 35 - "Community 35"
 Cohesion: 0.67
 Nodes (1): GSPTemplateViewer
+
+### Community 36 - "Community 36"
+Cohesion: 1.0
+Nodes (0): 
+
+### Community 37 - "Community 37"
+Cohesion: 1.0
+Nodes (0): 
 
 ### Community 38 - "Community 38"
 Cohesion: 1.0
@@ -265,19 +264,19 @@ Nodes (0):
 
 ### Community 39 - "Community 39"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (2): Comprehensive Test Cases Skill, Read Tests Before Change Skill
 
 ### Community 40 - "Community 40"
 Cohesion: 1.0
-Nodes (2): Comprehensive Test Cases Skill, Read Tests Before Change Skill
+Nodes (2): AST Node Level Execution Scope, Workspace Level Caching Strategy
 
 ### Community 41 - "Community 41"
 Cohesion: 1.0
-Nodes (2): AST Node Level Execution Scope, Workspace Level Caching Strategy
+Nodes (2): Advanced Grails SVG Asset, Documentation SVG Asset
 
 ### Community 42 - "Community 42"
 Cohesion: 1.0
-Nodes (2): Advanced Grails SVG Asset, Documentation SVG Asset
+Nodes (0): 
 
 ### Community 43 - "Community 43"
 Cohesion: 1.0
@@ -337,102 +336,100 @@ Nodes (0):
 
 ### Community 57 - "Community 57"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (1): Auto Tool Selection Skill
 
 ### Community 58 - "Community 58"
 Cohesion: 1.0
-Nodes (1): Auto Tool Selection Skill
+Nodes (1): User Guide
 
 ### Community 59 - "Community 59"
 Cohesion: 1.0
-Nodes (1): User Guide
+Nodes (1): ReferencesProvider
 
 ### Community 60 - "Community 60"
 Cohesion: 1.0
-Nodes (1): ReferencesProvider
+Nodes (1): Server Build Status - Passing
 
 ### Community 61 - "Community 61"
 Cohesion: 1.0
-Nodes (1): Server Build Status - Passing
-
-### Community 62 - "Community 62"
-Cohesion: 1.0
 Nodes (1): Slack SVG Community Link
 
-### Community 63 - "Community 63"
+### Community 62 - "Community 62"
 Cohesion: 1.0
 Nodes (1): Apple Touch Icon PNG
 
 ## Knowledge Gaps
 - **46 isolated node(s):** `Api`, `GradleTaskProvider`, `LanguageServerManager`, `GradleService`, `LSP4J 0.23.1` (+41 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 38`** (2 nodes): `modelTypes.ts`, `getArtifactDirectory()`
+- **Thin community `Community 36`** (2 nodes): `modelTypes.ts`, `getArtifactDirectory()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (2 nodes): `handlers.ts`, `registerProjectHandlers()`
+- **Thin community `Community 37`** (2 nodes): `handlers.ts`, `registerProjectHandlers()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (2 nodes): `Comprehensive Test Cases Skill`, `Read Tests Before Change Skill`
+- **Thin community `Community 38`** (2 nodes): `DebounceUtils.ts`, `debounce()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (2 nodes): `AST Node Level Execution Scope`, `Workspace Level Caching Strategy`
+- **Thin community `Community 39`** (2 nodes): `Comprehensive Test Cases Skill`, `Read Tests Before Change Skill`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (2 nodes): `Advanced Grails SVG Asset`, `Documentation SVG Asset`
+- **Thin community `Community 40`** (2 nodes): `AST Node Level Execution Scope`, `Workspace Level Caching Strategy`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 43`** (1 nodes): `eslint.config.mjs`
+- **Thin community `Community 41`** (2 nodes): `Advanced Grails SVG Asset`, `Documentation SVG Asset`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 44`** (1 nodes): `ServiceRegistry.ts`
+- **Thin community `Community 42`** (1 nodes): `eslint.config.mjs`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 45`** (1 nodes): `eventTypes.ts`
+- **Thin community `Community 43`** (1 nodes): `ServiceRegistry.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 46`** (1 nodes): `errorTypes.ts`
+- **Thin community `Community 44`** (1 nodes): `eventTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (1 nodes): `languageServerTypes.ts`
+- **Thin community `Community 45`** (1 nodes): `errorTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (1 nodes): `statusBarTypes.ts`
+- **Thin community `Community 46`** (1 nodes): `languageServerTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 49`** (1 nodes): `project.ts`
+- **Thin community `Community 47`** (1 nodes): `statusBarTypes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 50`** (1 nodes): `extension.test.ts`
+- **Thin community `Community 48`** (1 nodes): `project.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 51`** (1 nodes): `TreeItemKind.ts`
+- **Thin community `Community 49`** (1 nodes): `extension.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 52`** (1 nodes): `constants.ts`
+- **Thin community `Community 50`** (1 nodes): `TreeItemKind.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 53`** (1 nodes): `grails-themes.ts`
+- **Thin community `Community 51`** (1 nodes): `constants.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 54`** (1 nodes): `GrailsIcons.ts`
+- **Thin community `Community 52`** (1 nodes): `grails-themes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 55`** (1 nodes): `run-gradlew.js`
+- **Thin community `Community 53`** (1 nodes): `GrailsIcons.ts`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 54`** (1 nodes): `run-gradlew.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 55`** (1 nodes): `application.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 56`** (1 nodes): `application.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 57`** (1 nodes): `application.js`
+- **Thin community `Community 57`** (1 nodes): `Auto Tool Selection Skill`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 58`** (1 nodes): `Auto Tool Selection Skill`
+- **Thin community `Community 58`** (1 nodes): `User Guide`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 59`** (1 nodes): `User Guide`
+- **Thin community `Community 59`** (1 nodes): `ReferencesProvider`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 60`** (1 nodes): `ReferencesProvider`
+- **Thin community `Community 60`** (1 nodes): `Server Build Status - Passing`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 61`** (1 nodes): `Server Build Status - Passing`
+- **Thin community `Community 61`** (1 nodes): `Slack SVG Community Link`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 62`** (1 nodes): `Slack SVG Community Link`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 63`** (1 nodes): `Apple Touch Icon PNG`
+- **Thin community `Community 62`** (1 nodes): `Apple Touch Icon PNG`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `log()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 9`, `Community 10`, `Community 18`, `Community 24`, `Community 29`?**
-  _High betweenness centrality (0.143) - this node is a cross-community bridge._
-- **Why does `GrailsTreeExplorer` connect `Community 1` to `Community 0`, `Community 24`, `Community 2`?**
-  _High betweenness centrality (0.084) - this node is a cross-community bridge._
+- **Why does `log()` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 9`, `Community 10`, `Community 20`, `Community 27`?**
+  _High betweenness centrality (0.139) - this node is a cross-community bridge._
+- **Why does `GrailsTreeExplorer` connect `Community 1` to `Community 0`, `Community 2`?**
+  _High betweenness centrality (0.083) - this node is a cross-community bridge._
 - **Are the 31 inferred relationships involving `log()` (e.g. with `activate()` and `deactivate()`) actually correct?**
   _`log()` has 31 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Api`, `GradleTaskProvider`, `LanguageServerManager` to the rest of the system?**
   _46 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._

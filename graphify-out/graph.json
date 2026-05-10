@@ -70,7 +70,7 @@
       "source_file": "esbuild.js",
       "source_location": "L1",
       "id": "esbuild_js",
-      "community": 24,
+      "community": 1,
       "norm_label": "esbuild.js"
     },
     {
@@ -79,7 +79,7 @@
       "source_file": "esbuild.js",
       "source_location": "L39",
       "id": "esbuild_main",
-      "community": 24,
+      "community": 1,
       "norm_label": "main()"
     },
     {
@@ -88,7 +88,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\eslint.config.mjs",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_eslint_config_mjs",
-      "community": 43,
+      "community": 42,
       "norm_label": "eslint.config.mjs"
     },
     {
@@ -97,7 +97,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\extension.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_extension_ts",
-      "community": 24,
+      "community": 0,
       "norm_label": "extension.ts"
     },
     {
@@ -115,7 +115,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\extension.ts",
       "source_location": "L58",
       "id": "extension_deactivate",
-      "community": 24,
+      "community": 0,
       "norm_label": "deactivate()"
     },
     {
@@ -124,196 +124,169 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_core_container_servicecontainer_ts",
-      "community": 6,
+      "community": 7,
       "norm_label": "servicecontainer.ts"
     },
     {
       "label": "ServiceContainer",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L18",
+      "source_location": "L15",
       "id": "servicecontainer_servicecontainer",
-      "community": 6,
+      "community": 7,
       "norm_label": "servicecontainer"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L22",
+      "source_location": "L19",
       "id": "servicecontainer_servicecontainer_constructor",
-      "community": 6,
+      "community": 7,
       "norm_label": ".constructor()"
     },
     {
       "label": ".intialize()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L26",
+      "source_location": "L23",
       "id": "servicecontainer_servicecontainer_intialize",
-      "community": 6,
+      "community": 7,
       "norm_label": ".intialize()"
     },
     {
       "label": ".getInstance()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L33",
+      "source_location": "L30",
       "id": "servicecontainer_servicecontainer_getinstance",
-      "community": 6,
+      "community": 7,
       "norm_label": ".getinstance()"
     },
     {
       "label": ".errorService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L43",
+      "source_location": "L40",
       "id": "servicecontainer_servicecontainer_errorservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".errorservice()"
     },
     {
       "label": ".statusBarService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L48",
+      "source_location": "L45",
       "id": "servicecontainer_servicecontainer_statusbarservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".statusbarservice()"
     },
     {
       "label": ".configurationService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L53",
+      "source_location": "L50",
       "id": "servicecontainer_servicecontainer_configurationservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".configurationservice()"
     },
     {
       "label": ".projectService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L58",
+      "source_location": "L55",
       "id": "servicecontainer_servicecontainer_projectservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".projectservice()"
     },
     {
       "label": ".gradleService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L63",
+      "source_location": "L60",
       "id": "servicecontainer_servicecontainer_gradleservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".gradleservice()"
     },
     {
       "label": ".logStreamingService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L68",
+      "source_location": "L65",
       "id": "servicecontainer_servicecontainer_logstreamingservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".logstreamingservice()"
     },
     {
       "label": ".languageServerManager()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L73",
+      "source_location": "L70",
       "id": "servicecontainer_servicecontainer_languageservermanager",
-      "community": 6,
+      "community": 7,
       "norm_label": ".languageservermanager()"
     },
     {
       "label": ".artifactService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L78",
+      "source_location": "L75",
       "id": "servicecontainer_servicecontainer_artifactservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".artifactservice()"
-    },
-    {
-      "label": ".dashboardService()",
-      "file_type": "code",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L83",
-      "id": "servicecontainer_servicecontainer_dashboardservice",
-      "community": 6,
-      "norm_label": ".dashboardservice()"
     },
     {
       "label": ".debugService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L88",
+      "source_location": "L80",
       "id": "servicecontainer_servicecontainer_debugservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".debugservice()"
-    },
-    {
-      "label": ".dependencyGraphService()",
-      "file_type": "code",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L93",
-      "id": "servicecontainer_servicecontainer_dependencygraphservice",
-      "community": 6,
-      "norm_label": ".dependencygraphservice()"
-    },
-    {
-      "label": ".gormSqlPreviewService()",
-      "file_type": "code",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L98",
-      "id": "servicecontainer_servicecontainer_gormsqlpreviewservice",
-      "community": 6,
-      "norm_label": ".gormsqlpreviewservice()"
     },
     {
       "label": ".grailsTestService()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L103",
+      "source_location": "L85",
       "id": "servicecontainer_servicecontainer_grailstestservice",
-      "community": 6,
+      "community": 7,
       "norm_label": ".grailstestservice()"
     },
     {
       "label": ".get()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L110",
+      "source_location": "L92",
       "id": "servicecontainer_servicecontainer_get",
-      "community": 6,
+      "community": 7,
       "norm_label": ".get()"
     },
     {
       "label": ".initializeServices()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L120",
+      "source_location": "L102",
       "id": "servicecontainer_servicecontainer_initializeservices",
-      "community": 6,
+      "community": 7,
       "norm_label": ".initializeservices()"
     },
     {
       "label": ".healthCheck()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L178",
+      "source_location": "L150",
       "id": "servicecontainer_servicecontainer_healthcheck",
-      "community": 6,
+      "community": 7,
       "norm_label": ".healthcheck()"
     },
     {
       "label": ".dispose()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L226",
+      "source_location": "L198",
       "id": "servicecontainer_servicecontainer_dispose",
-      "community": 6,
+      "community": 7,
       "norm_label": ".dispose()"
     },
     {
@@ -322,7 +295,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceRegistry.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_core_container_serviceregistry_ts",
-      "community": 44,
+      "community": 43,
       "norm_label": "serviceregistry.ts"
     },
     {
@@ -430,7 +403,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\events\\eventTypes.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_core_events_eventtypes_ts",
-      "community": 45,
+      "community": 44,
       "norm_label": "eventtypes.ts"
     },
     {
@@ -457,7 +430,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\lifecycle\\ActivationManager.ts",
       "source_location": "L29",
       "id": "activationmanager_activationmanager_constructor",
-      "community": 6,
+      "community": 7,
       "norm_label": ".constructor()"
     },
     {
@@ -682,52 +655,61 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_dependency_graph_dependencygraphservice_ts",
-      "community": 20,
+      "community": 18,
       "norm_label": "dependencygraphservice.ts"
     },
     {
       "label": "DependencyGraphService",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "id": "dependencygraphservice_dependencygraphservice",
-      "community": 20,
+      "community": 18,
       "norm_label": "dependencygraphservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L12",
+      "source_location": "L22",
       "id": "dependencygraphservice_dependencygraphservice_constructor",
-      "community": 20,
+      "community": 18,
       "norm_label": ".constructor()"
+    },
+    {
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
+      "source_location": "L28",
+      "id": "dependencygraphservice_dependencygraphservice_dispose",
+      "community": 18,
+      "norm_label": ".dispose()"
     },
     {
       "label": ".openGraph()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L17",
+      "source_location": "L38",
       "id": "dependencygraphservice_dependencygraphservice_opengraph",
-      "community": 20,
+      "community": 18,
       "norm_label": ".opengraph()"
     },
     {
-      "label": ".refreshGraph()",
+      "label": ".doRefreshGraph()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L53",
-      "id": "dependencygraphservice_dependencygraphservice_refreshgraph",
-      "community": 20,
-      "norm_label": ".refreshgraph()"
+      "source_location": "L74",
+      "id": "dependencygraphservice_dependencygraphservice_dorefreshgraph",
+      "community": 18,
+      "norm_label": ".dorefreshgraph()"
     },
     {
       "label": ".getHtmlContent()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L85",
+      "source_location": "L106",
       "id": "dependencygraphservice_dependencygraphservice_gethtmlcontent",
-      "community": 20,
+      "community": 18,
       "norm_label": ".gethtmlcontent()"
     },
     {
@@ -736,52 +718,61 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_gorm_sql_preview_gormsqlpreviewservice_ts",
-      "community": 21,
+      "community": 19,
       "norm_label": "gormsqlpreviewservice.ts"
     },
     {
       "label": "GormSqlPreviewService",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L6",
+      "source_location": "L7",
       "id": "gormsqlpreviewservice_gormsqlpreviewservice",
-      "community": 21,
+      "community": 19,
       "norm_label": "gormsqlpreviewservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L10",
+      "source_location": "L20",
       "id": "gormsqlpreviewservice_gormsqlpreviewservice_constructor",
-      "community": 21,
+      "community": 19,
       "norm_label": ".constructor()"
+    },
+    {
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
+      "source_location": "L26",
+      "id": "gormsqlpreviewservice_gormsqlpreviewservice_dispose",
+      "community": 19,
+      "norm_label": ".dispose()"
     },
     {
       "label": ".openPreview()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L15",
+      "source_location": "L36",
       "id": "gormsqlpreviewservice_gormsqlpreviewservice_openpreview",
-      "community": 21,
+      "community": 19,
       "norm_label": ".openpreview()"
     },
     {
-      "label": ".refreshPreview()",
+      "label": ".doRefreshPreview()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L45",
-      "id": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
-      "community": 21,
-      "norm_label": ".refreshpreview()"
+      "source_location": "L66",
+      "id": "gormsqlpreviewservice_gormsqlpreviewservice_dorefreshpreview",
+      "community": 19,
+      "norm_label": ".dorefreshpreview()"
     },
     {
       "label": ".getHtmlContent()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L76",
+      "source_location": "L97",
       "id": "gormsqlpreviewservice_gormsqlpreviewservice_gethtmlcontent",
-      "community": 21,
+      "community": 19,
       "norm_label": ".gethtmlcontent()"
     },
     {
@@ -790,7 +781,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\models\\modelTypes.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_models_modeltypes_ts",
-      "community": 38,
+      "community": 36,
       "norm_label": "modeltypes.ts"
     },
     {
@@ -799,7 +790,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\models\\modelTypes.ts",
       "source_location": "L207",
       "id": "modeltypes_getartifactdirectory",
-      "community": 38,
+      "community": 36,
       "norm_label": "getartifactdirectory()"
     },
     {
@@ -808,7 +799,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\projects\\mappers\\projectMapper.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_projects_mappers_projectmapper_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectmapper.ts"
     },
     {
@@ -817,7 +808,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\projects\\mappers\\projectMapper.ts",
       "source_location": "L5",
       "id": "projectmapper_projectmapper",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectmapper"
     },
     {
@@ -826,7 +817,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\projects\\mappers\\projectMapper.ts",
       "source_location": "L6",
       "id": "projectmapper_projectmapper_toprojectinfo",
-      "community": 3,
+      "community": 4,
       "norm_label": ".toprojectinfo()"
     },
     {
@@ -835,7 +826,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\projects\\mappers\\projectMapper.ts",
       "source_location": "L16",
       "id": "projectmapper_projectmapper_mapprojecttype",
-      "community": 3,
+      "community": 4,
       "norm_label": ".mapprojecttype()"
     },
     {
@@ -970,7 +961,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\debugging\\DebugService.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_debugging_debugservice_ts",
-      "community": 7,
+      "community": 3,
       "norm_label": "debugservice.ts"
     },
     {
@@ -979,7 +970,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\debugging\\DebugService.ts",
       "source_location": "L7",
       "id": "debugservice_debugservice",
-      "community": 7,
+      "community": 3,
       "norm_label": "debugservice"
     },
     {
@@ -988,7 +979,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\debugging\\DebugService.ts",
       "source_location": "L8",
       "id": "debugservice_debugservice_constructor",
-      "community": 7,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -997,7 +988,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\debugging\\DebugService.ts",
       "source_location": "L13",
       "id": "debugservice_debugservice_debuggrailsapp",
-      "community": 7,
+      "community": 3,
       "norm_label": ".debuggrailsapp()"
     },
     {
@@ -1123,7 +1114,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\errors\\errorTypes.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_errors_errortypes_ts",
-      "community": 46,
+      "community": 45,
       "norm_label": "errortypes.ts"
     },
     {
@@ -1132,7 +1123,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L1",
       "id": "client_src_services_gradle_gradleservice_ts",
-      "community": 7,
+      "community": 3,
       "norm_label": "gradleservice.ts"
     },
     {
@@ -1141,7 +1132,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L15",
       "id": "gradleservice_gradleservice",
-      "community": 7,
+      "community": 3,
       "norm_label": "gradleservice"
     },
     {
@@ -1150,7 +1141,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L21",
       "id": "gradleservice_gradleservice_constructor",
-      "community": 7,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -1159,7 +1150,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L32",
       "id": "gradleservice_gradleservice_quicksync",
-      "community": 7,
+      "community": 3,
       "norm_label": ".quicksync()"
     },
     {
@@ -1168,7 +1159,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L46",
       "id": "gradleservice_gradleservice_fullsync",
-      "community": 7,
+      "community": 3,
       "norm_label": ".fullsync()"
     },
     {
@@ -1177,7 +1168,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L80",
       "id": "gradleservice_gradleservice_performgradlesync",
-      "community": 7,
+      "community": 3,
       "norm_label": ".performgradlesync()"
     },
     {
@@ -1186,7 +1177,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L95",
       "id": "gradleservice_gradleservice_createtimeoutpromise",
-      "community": 7,
+      "community": 3,
       "norm_label": ".createtimeoutpromise()"
     },
     {
@@ -1195,7 +1186,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L105",
       "id": "gradleservice_gradleservice_sync",
-      "community": 7,
+      "community": 3,
       "norm_label": ".sync()"
     },
     {
@@ -1204,7 +1195,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L179",
       "id": "gradleservice_gradleservice_waitfortaskproviderready",
-      "community": 7,
+      "community": 3,
       "norm_label": ".waitfortaskproviderready()"
     },
     {
@@ -1213,7 +1204,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L209",
       "id": "gradleservice_gradleservice_runtask",
-      "community": 7,
+      "community": 3,
       "norm_label": ".runtask()"
     },
     {
@@ -1222,7 +1213,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L259",
       "id": "gradleservice_gradleservice_rungrailsapp",
-      "community": 7,
+      "community": 3,
       "norm_label": ".rungrailsapp()"
     },
     {
@@ -1231,7 +1222,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L272",
       "id": "gradleservice_gradleservice_testgrailsapp",
-      "community": 7,
+      "community": 3,
       "norm_label": ".testgrailsapp()"
     },
     {
@@ -1240,7 +1231,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L276",
       "id": "gradleservice_gradleservice_buildproject",
-      "community": 7,
+      "community": 3,
       "norm_label": ".buildproject()"
     },
     {
@@ -1249,7 +1240,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L283",
       "id": "gradleservice_gradleservice_cleanproject",
-      "community": 7,
+      "community": 3,
       "norm_label": ".cleanproject()"
     },
     {
@@ -1258,7 +1249,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L289",
       "id": "gradleservice_gradleservice_hasgrailstasks",
-      "community": 7,
+      "community": 3,
       "norm_label": ".hasgrailstasks()"
     },
     {
@@ -1267,7 +1258,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L293",
       "id": "gradleservice_gradleservice_isready",
-      "community": 7,
+      "community": 3,
       "norm_label": ".isready()"
     },
     {
@@ -1276,7 +1267,7 @@
       "source_file": "client\\src\\services\\gradle\\GradleService.ts",
       "source_location": "L297",
       "id": "gradleservice_gradleservice_dispose",
-      "community": 7,
+      "community": 3,
       "norm_label": ".dispose()"
     },
     {
@@ -1285,7 +1276,7 @@
       "source_file": "client\\src\\services\\gradle\\gradleTypes.ts",
       "source_location": "L1",
       "id": "client_src_services_gradle_gradletypes_ts",
-      "community": 32,
+      "community": 30,
       "norm_label": "gradletypes.ts"
     },
     {
@@ -1294,7 +1285,7 @@
       "source_file": "client\\src\\services\\gradle\\gradleTypes.ts",
       "source_location": "L4",
       "id": "gradletypes_api",
-      "community": 32,
+      "community": 30,
       "norm_label": "api"
     },
     {
@@ -1303,7 +1294,7 @@
       "source_file": "client\\src\\services\\gradle\\gradleTypes.ts",
       "source_location": "L15",
       "id": "gradletypes_gradletaskprovider",
-      "community": 32,
+      "community": 30,
       "norm_label": "gradletaskprovider"
     },
     {
@@ -1312,7 +1303,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L1",
       "id": "client_src_services_gradle_logstreamingservice_ts",
-      "community": 22,
+      "community": 3,
       "norm_label": "logstreamingservice.ts"
     },
     {
@@ -1321,7 +1312,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L14",
       "id": "logstreamingservice_logstreamingservice",
-      "community": 22,
+      "community": 3,
       "norm_label": "logstreamingservice"
     },
     {
@@ -1330,7 +1321,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L18",
       "id": "logstreamingservice_logstreamingservice_constructor",
-      "community": 22,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -1339,7 +1330,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L24",
       "id": "logstreamingservice_logstreamingservice_getoroutputchannel",
-      "community": 22,
+      "community": 3,
       "norm_label": ".getoroutputchannel()"
     },
     {
@@ -1348,7 +1339,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L32",
       "id": "logstreamingservice_logstreamingservice_startappwithtailing",
-      "community": 0,
+      "community": 3,
       "norm_label": ".startappwithtailing()"
     },
     {
@@ -1357,7 +1348,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L88",
       "id": "logstreamingservice_logstreamingservice_showlogs",
-      "community": 22,
+      "community": 3,
       "norm_label": ".showlogs()"
     },
     {
@@ -1366,7 +1357,7 @@
       "source_file": "client\\src\\services\\gradle\\LogStreamingService.ts",
       "source_location": "L92",
       "id": "logstreamingservice_logstreamingservice_dispose",
-      "community": 22,
+      "community": 3,
       "norm_label": ".dispose()"
     },
     {
@@ -1528,7 +1519,7 @@
       "source_file": "client\\src\\services\\languageServer\\languageServerTypes.ts",
       "source_location": "L1",
       "id": "client_src_services_languageserver_languageservertypes_ts",
-      "community": 47,
+      "community": 46,
       "norm_label": "languageservertypes.ts"
     },
     {
@@ -1537,7 +1528,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L1",
       "id": "client_src_services_languageserver_serverconfig_ts",
-      "community": 18,
+      "community": 20,
       "norm_label": "serverconfig.ts"
     },
     {
@@ -1546,7 +1537,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L16",
       "id": "serverconfig_getserveroptions",
-      "community": 18,
+      "community": 20,
       "norm_label": "getserveroptions()"
     },
     {
@@ -1555,7 +1546,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L33",
       "id": "serverconfig_getlocalserveroptions",
-      "community": 18,
+      "community": 20,
       "norm_label": "getlocalserveroptions()"
     },
     {
@@ -1564,7 +1555,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L64",
       "id": "serverconfig_getserverjarpath",
-      "community": 18,
+      "community": 20,
       "norm_label": "getserverjarpath()"
     },
     {
@@ -1573,7 +1564,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L90",
       "id": "serverconfig_getdebugconfiguration",
-      "community": 18,
+      "community": 20,
       "norm_label": "getdebugconfiguration()"
     },
     {
@@ -1582,7 +1573,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L100",
       "id": "serverconfig_getjavadebugargs",
-      "community": 18,
+      "community": 20,
       "norm_label": "getjavadebugargs()"
     },
     {
@@ -1591,7 +1582,7 @@
       "source_file": "client\\src\\services\\languageServer\\serverConfig.ts",
       "source_location": "L110",
       "id": "serverconfig_connecttoremoteserver",
-      "community": 18,
+      "community": 20,
       "norm_label": "connecttoremoteserver()"
     },
     {
@@ -1600,7 +1591,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_lsp_handlers_ts",
-      "community": 39,
+      "community": 37,
       "norm_label": "handlers.ts"
     },
     {
@@ -1609,7 +1600,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers.ts",
       "source_location": "L5",
       "id": "handlers_registerprojecthandlers",
-      "community": 39,
+      "community": 37,
       "norm_label": "registerprojecthandlers()"
     },
     {
@@ -1618,7 +1609,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_lsp_handlers_grailscodeactionprovider_ts",
-      "community": 23,
+      "community": 22,
       "norm_label": "grailscodeactionprovider.ts"
     },
     {
@@ -1627,7 +1618,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L16",
       "id": "grailscodeactionprovider_grailscodeactionprovider",
-      "community": 23,
+      "community": 22,
       "norm_label": "grailscodeactionprovider"
     },
     {
@@ -1636,7 +1627,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L19",
       "id": "grailscodeactionprovider_grailscodeactionprovider_providecodeactions",
-      "community": 23,
+      "community": 22,
       "norm_label": ".providecodeactions()"
     },
     {
@@ -1645,7 +1636,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L53",
       "id": "grailscodeactionprovider_grailscodeactionprovider_isservicedeclared",
-      "community": 23,
+      "community": 22,
       "norm_label": ".isservicedeclared()"
     },
     {
@@ -1654,7 +1645,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L63",
       "id": "grailscodeactionprovider_grailscodeactionprovider_createfix",
-      "community": 23,
+      "community": 22,
       "norm_label": ".createfix()"
     },
     {
@@ -1663,7 +1654,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeActionProvider.ts",
       "source_location": "L82",
       "id": "grailscodeactionprovider_grailscodeactionprovider_capitalize",
-      "community": 23,
+      "community": 22,
       "norm_label": ".capitalize()"
     },
     {
@@ -1672,7 +1663,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeLensProvider.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_lsp_handlers_grailscodelensprovider_ts",
-      "community": 28,
+      "community": 26,
       "norm_label": "grailscodelensprovider.ts"
     },
     {
@@ -1681,7 +1672,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeLensProvider.ts",
       "source_location": "L8",
       "id": "grailscodelensprovider_grailscodelensprovider",
-      "community": 28,
+      "community": 26,
       "norm_label": "grailscodelensprovider"
     },
     {
@@ -1690,7 +1681,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeLensProvider.ts",
       "source_location": "L9",
       "id": "grailscodelensprovider_grailscodelensprovider_providecodelenses",
-      "community": 28,
+      "community": 26,
       "norm_label": ".providecodelenses()"
     },
     {
@@ -1699,7 +1690,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\lsp\\handlers\\GrailsCodeLensProvider.ts",
       "source_location": "L67",
       "id": "grailscodelensprovider_grailscodelensprovider_getcontrollernamefrompath",
-      "community": 28,
+      "community": 26,
       "norm_label": ".getcontrollernamefrompath()"
     },
     {
@@ -1796,7 +1787,7 @@
       "label": "GrailsTestService",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L6",
+      "source_location": "L8",
       "id": "grailstestservice_grailstestservice",
       "community": 2,
       "norm_label": "grailstestservice"
@@ -1805,25 +1796,34 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L10",
+      "source_location": "L18",
       "id": "grailstestservice_grailstestservice_constructor",
       "community": 2,
       "norm_label": ".constructor()"
     },
     {
-      "label": ".discoverAllTests()",
+      "label": ".dispose()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L28",
-      "id": "grailstestservice_grailstestservice_discoveralltests",
+      "source_location": "L38",
+      "id": "grailstestservice_grailstestservice_dispose",
       "community": 2,
-      "norm_label": ".discoveralltests()"
+      "norm_label": ".dispose()"
+    },
+    {
+      "label": ".doDiscoverAllTests()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
+      "source_location": "L45",
+      "id": "grailstestservice_grailstestservice_dodiscoveralltests",
+      "community": 2,
+      "norm_label": ".dodiscoveralltests()"
     },
     {
       "label": ".runTests()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L77",
+      "source_location": "L96",
       "id": "grailstestservice_grailstestservice_runtests",
       "community": 2,
       "norm_label": ".runtests()"
@@ -1834,7 +1834,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\useCase\\RunGrailsAppUseCase.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_usecase_rungrailsappusecase_ts",
-      "community": 7,
+      "community": 3,
       "norm_label": "rungrailsappusecase.ts"
     },
     {
@@ -1843,7 +1843,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\useCase\\RunGrailsAppUseCase.ts",
       "source_location": "L6",
       "id": "rungrailsappusecase_rungrailsappusecase",
-      "community": 7,
+      "community": 3,
       "norm_label": "rungrailsappusecase"
     },
     {
@@ -1852,7 +1852,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\useCase\\RunGrailsAppUseCase.ts",
       "source_location": "L11",
       "id": "rungrailsappusecase_rungrailsappusecase_constructor",
-      "community": 7,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -1861,7 +1861,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\useCase\\RunGrailsAppUseCase.ts",
       "source_location": "L21",
       "id": "rungrailsappusecase_rungrailsappusecase_execute",
-      "community": 7,
+      "community": 3,
       "norm_label": ".execute()"
     },
     {
@@ -1870,7 +1870,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L1",
       "id": "client_src_services_workspace_configurationservice_ts",
-      "community": 4,
+      "community": 5,
       "norm_label": "configurationservice.ts"
     },
     {
@@ -1879,7 +1879,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L29",
       "id": "configurationservice_configurationservice",
-      "community": 4,
+      "community": 5,
       "norm_label": "configurationservice"
     },
     {
@@ -1888,7 +1888,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L35",
       "id": "configurationservice_configurationservice_grailshome",
-      "community": 4,
+      "community": 5,
       "norm_label": ".grailshome()"
     },
     {
@@ -1897,7 +1897,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L40",
       "id": "configurationservice_configurationservice_javahome",
-      "community": 4,
+      "community": 5,
       "norm_label": ".javahome()"
     },
     {
@@ -1906,7 +1906,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L45",
       "id": "configurationservice_configurationservice_autostartserver",
-      "community": 4,
+      "community": 5,
       "norm_label": ".autostartserver()"
     },
     {
@@ -1915,7 +1915,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L50",
       "id": "configurationservice_configurationservice_serverport",
-      "community": 4,
+      "community": 5,
       "norm_label": ".serverport()"
     },
     {
@@ -1924,7 +1924,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L55",
       "id": "configurationservice_configurationservice_completiondetail",
-      "community": 4,
+      "community": 5,
       "norm_label": ".completiondetail()"
     },
     {
@@ -1933,7 +1933,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L60",
       "id": "configurationservice_configurationservice_maxcompletionitems",
-      "community": 4,
+      "community": 5,
       "norm_label": ".maxcompletionitems()"
     },
     {
@@ -1942,7 +1942,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L65",
       "id": "configurationservice_configurationservice_includesnippets",
-      "community": 4,
+      "community": 5,
       "norm_label": ".includesnippets()"
     },
     {
@@ -1951,7 +1951,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L70",
       "id": "configurationservice_configurationservice_codelensenabled",
-      "community": 4,
+      "community": 5,
       "norm_label": ".codelensenabled()"
     },
     {
@@ -1960,7 +1960,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L75",
       "id": "configurationservice_configurationservice_diagnosticsenabled",
-      "community": 4,
+      "community": 5,
       "norm_label": ".diagnosticsenabled()"
     },
     {
@@ -1969,7 +1969,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L82",
       "id": "configurationservice_configurationservice_serverjvmargs",
-      "community": 4,
+      "community": 5,
       "norm_label": ".serverjvmargs()"
     },
     {
@@ -1978,7 +1978,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L87",
       "id": "configurationservice_configurationservice_tracelevel",
-      "community": 4,
+      "community": 5,
       "norm_label": ".tracelevel()"
     },
     {
@@ -1987,7 +1987,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L92",
       "id": "configurationservice_configurationservice_cacheenabled",
-      "community": 4,
+      "community": 5,
       "norm_label": ".cacheenabled()"
     },
     {
@@ -1996,7 +1996,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L97",
       "id": "configurationservice_configurationservice_cachedirectory",
-      "community": 4,
+      "community": 5,
       "norm_label": ".cachedirectory()"
     },
     {
@@ -2005,7 +2005,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L105",
       "id": "configurationservice_configurationservice_smartrecompilation",
-      "community": 4,
+      "community": 5,
       "norm_label": ".smartrecompilation()"
     },
     {
@@ -2014,7 +2014,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L110",
       "id": "configurationservice_configurationservice_loglevel",
-      "community": 4,
+      "community": 5,
       "norm_label": ".loglevel()"
     },
     {
@@ -2023,7 +2023,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L115",
       "id": "configurationservice_configurationservice_developmentmode",
-      "community": 4,
+      "community": 5,
       "norm_label": ".developmentmode()"
     },
     {
@@ -2032,7 +2032,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L121",
       "id": "configurationservice_configurationservice_get",
-      "community": 4,
+      "community": 5,
       "norm_label": ".get()"
     },
     {
@@ -2041,7 +2041,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L125",
       "id": "configurationservice_configurationservice_setglobal",
-      "community": 4,
+      "community": 5,
       "norm_label": ".setglobal()"
     },
     {
@@ -2050,7 +2050,7 @@
       "source_file": "client\\src\\services\\workspace\\ConfigurationService.ts",
       "source_location": "L129",
       "id": "configurationservice_configurationservice_dispose",
-      "community": 4,
+      "community": 5,
       "norm_label": ".dispose()"
     },
     {
@@ -2059,7 +2059,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L1",
       "id": "client_src_services_workspace_outputchannelservice_ts",
-      "community": 19,
+      "community": 21,
       "norm_label": "outputchannelservice.ts"
     },
     {
@@ -2068,7 +2068,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L7",
       "id": "outputchannelservice_outputchannelservice",
-      "community": 19,
+      "community": 21,
       "norm_label": "outputchannelservice"
     },
     {
@@ -2077,7 +2077,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L12",
       "id": "outputchannelservice_outputchannelservice_constructor",
-      "community": 19,
+      "community": 21,
       "norm_label": ".constructor()"
     },
     {
@@ -2086,7 +2086,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L17",
       "id": "outputchannelservice_outputchannelservice_initialize",
-      "community": 19,
+      "community": 21,
       "norm_label": ".initialize()"
     },
     {
@@ -2104,7 +2104,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L33",
       "id": "outputchannelservice_outputchannelservice_clientchannel",
-      "community": 19,
+      "community": 21,
       "norm_label": ".clientchannel()"
     },
     {
@@ -2113,7 +2113,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L38",
       "id": "outputchannelservice_outputchannelservice_serverchannel",
-      "community": 19,
+      "community": 21,
       "norm_label": ".serverchannel()"
     },
     {
@@ -2122,7 +2122,7 @@
       "source_file": "client\\src\\services\\workspace\\OutputChannelService.ts",
       "source_location": "L42",
       "id": "outputchannelservice_outputchannelservice_dispose",
-      "community": 19,
+      "community": 21,
       "norm_label": ".dispose()"
     },
     {
@@ -2131,7 +2131,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_workspace_projectservice_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectservice.ts"
     },
     {
@@ -2140,23 +2140,23 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
       "source_location": "L25",
       "id": "projectservice_projectservice",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L38",
+      "source_location": "L41",
       "id": "projectservice_projectservice_constructor",
-      "community": 3,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
       "label": ".discoverProjects()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L54",
+      "source_location": "L57",
       "id": "projectservice_projectservice_discoverprojects",
       "community": 0,
       "norm_label": ".discoverprojects()"
@@ -2165,7 +2165,7 @@
       "label": ".quickScan()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L143",
+      "source_location": "L146",
       "id": "projectservice_projectservice_quickscan",
       "community": 0,
       "norm_label": ".quickscan()"
@@ -2174,7 +2174,7 @@
       "label": ".getProjects()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L182",
+      "source_location": "L185",
       "id": "projectservice_projectservice_getprojects",
       "community": 2,
       "norm_label": ".getprojects()"
@@ -2183,25 +2183,25 @@
       "label": ".getProjectById()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L187",
+      "source_location": "L190",
       "id": "projectservice_projectservice_getprojectbyid",
-      "community": 3,
+      "community": 4,
       "norm_label": ".getprojectbyid()"
     },
     {
       "label": ".getActiveProject()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L192",
+      "source_location": "L195",
       "id": "projectservice_projectservice_getactiveproject",
-      "community": 7,
+      "community": 3,
       "norm_label": ".getactiveproject()"
     },
     {
       "label": ".setActiveProject()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L198",
+      "source_location": "L201",
       "id": "projectservice_projectservice_setactiveproject",
       "community": 0,
       "norm_label": ".setactiveproject()"
@@ -2210,126 +2210,153 @@
       "label": ".dispose()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L223",
+      "source_location": "L226",
       "id": "projectservice_projectservice_dispose",
-      "community": 3,
+      "community": 4,
       "norm_label": ".dispose()"
+    },
+    {
+      "label": ".disposeWatcher()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L250",
+      "id": "projectservice_projectservice_disposewatcher",
+      "community": 4,
+      "norm_label": ".disposewatcher()"
+    },
+    {
+      "label": ".disposeAllWatchers()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L277",
+      "id": "projectservice_projectservice_disposeallwatchers",
+      "community": 4,
+      "norm_label": ".disposeallwatchers()"
+    },
+    {
+      "label": ".reinitWatchersOnFolderChange()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L292",
+      "id": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "community": 4,
+      "norm_label": ".reinitwatchersonfolderchange()"
     },
     {
       "label": ".isCacheValid()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L236",
+      "source_location": "L299",
       "id": "projectservice_projectservice_iscachevalid",
-      "community": 3,
+      "community": 4,
       "norm_label": ".iscachevalid()"
     },
     {
       "label": ".loadProjectWithTimeout()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L243",
+      "source_location": "L306",
       "id": "projectservice_projectservice_loadprojectwithtimeout",
-      "community": 3,
+      "community": 4,
       "norm_label": ".loadprojectwithtimeout()"
     },
     {
       "label": ".loadProject()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L254",
+      "source_location": "L317",
       "id": "projectservice_projectservice_loadproject",
-      "community": 3,
+      "community": 4,
       "norm_label": ".loadproject()"
     },
     {
       "label": ".scanFolder()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L291",
+      "source_location": "L354",
       "id": "projectservice_projectservice_scanfolder",
-      "community": 3,
+      "community": 4,
       "norm_label": ".scanfolder()"
     },
     {
       "label": ".detectProjectType()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L322",
+      "source_location": "L385",
       "id": "projectservice_projectservice_detectprojecttype",
-      "community": 3,
+      "community": 4,
       "norm_label": ".detectprojecttype()"
     },
     {
       "label": ".parseDependencies()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L352",
+      "source_location": "L415",
       "id": "projectservice_projectservice_parsedependencies",
-      "community": 3,
+      "community": 4,
       "norm_label": ".parsedependencies()"
     },
     {
       "label": ".countInDirectory()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L370",
+      "source_location": "L433",
       "id": "projectservice_projectservice_countindirectory",
-      "community": 3,
+      "community": 4,
       "norm_label": ".countindirectory()"
     },
     {
       "label": ".extractVersion()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L392",
+      "source_location": "L455",
       "id": "projectservice_projectservice_extractversion",
-      "community": 3,
+      "community": 4,
       "norm_label": ".extractversion()"
     },
     {
       "label": ".quickDetectType()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L404",
+      "source_location": "L467",
       "id": "projectservice_projectservice_quickdetecttype",
-      "community": 3,
+      "community": 4,
       "norm_label": ".quickdetecttype()"
     },
     {
       "label": ".fileContains()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L409",
+      "source_location": "L472",
       "id": "projectservice_projectservice_filecontains",
-      "community": 3,
+      "community": 4,
       "norm_label": ".filecontains()"
     },
     {
       "label": ".initWatchers()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L420",
+      "source_location": "L483",
       "id": "projectservice_projectservice_initwatchers",
-      "community": 3,
+      "community": 0,
       "norm_label": ".initwatchers()"
     },
     {
       "label": ".reloadProject()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L439",
+      "source_location": "L528",
       "id": "projectservice_projectservice_reloadproject",
-      "community": 3,
+      "community": 4,
       "norm_label": ".reloadproject()"
     },
     {
       "label": ".countArtifacts()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L465",
+      "source_location": "L554",
       "id": "projectservice_projectservice_countartifacts",
-      "community": 3,
+      "community": 4,
       "norm_label": ".countartifacts()"
     },
     {
@@ -2446,7 +2473,7 @@
       "source_file": "client\\src\\services\\workspace\\StatusBarService.ts",
       "source_location": "L95",
       "id": "statusbarservice_statusbarservice_success",
-      "community": 7,
+      "community": 3,
       "norm_label": ".success()"
     },
     {
@@ -2545,7 +2572,7 @@
       "source_file": "client\\src\\services\\workspace\\statusBarTypes.ts",
       "source_location": "L1",
       "id": "client_src_services_workspace_statusbartypes_ts",
-      "community": 48,
+      "community": 47,
       "norm_label": "statusbartypes.ts"
     },
     {
@@ -2554,7 +2581,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\shared\\protocol\\project.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_shared_protocol_project_ts",
-      "community": 49,
+      "community": 48,
       "norm_label": "project.ts"
     },
     {
@@ -2563,7 +2590,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_store_projectstore_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectstore.ts"
     },
     {
@@ -2572,7 +2599,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L7",
       "id": "projectstore_projectstore",
-      "community": 3,
+      "community": 4,
       "norm_label": "projectstore"
     },
     {
@@ -2581,7 +2608,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L11",
       "id": "projectstore_projectstore_getall",
-      "community": 3,
+      "community": 4,
       "norm_label": ".getall()"
     },
     {
@@ -2590,7 +2617,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L15",
       "id": "projectstore_projectstore_get",
-      "community": 3,
+      "community": 4,
       "norm_label": ".get()"
     },
     {
@@ -2599,7 +2626,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L19",
       "id": "projectstore_projectstore_set",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set()"
     },
     {
@@ -2608,7 +2635,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L25",
       "id": "projectstore_projectstore_setall",
-      "community": 3,
+      "community": 4,
       "norm_label": ".setall()"
     },
     {
@@ -2617,7 +2644,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L34",
       "id": "projectstore_projectstore_patch",
-      "community": 3,
+      "community": 4,
       "norm_label": ".patch()"
     },
     {
@@ -2635,7 +2662,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\store\\ProjectStore.ts",
       "source_location": "L62",
       "id": "projectstore_projectstore_emit",
-      "community": 3,
+      "community": 4,
       "norm_label": ".emit()"
     },
     {
@@ -2644,7 +2671,7 @@
       "source_file": "client\\src\\test\\extension.test.ts",
       "source_location": "L1",
       "id": "client_src_test_extension_test_ts",
-      "community": 50,
+      "community": 49,
       "norm_label": "extension.test.ts"
     },
     {
@@ -2714,7 +2741,7 @@
       "label": "dispose()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\BaseCommandProvider.ts",
-      "source_location": "L19",
+      "source_location": "L20",
       "id": "basecommandprovider_dispose",
       "community": 2,
       "norm_label": "dispose()"
@@ -2725,7 +2752,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\ExtensionCommands.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_ui_commands_extensioncommands_ts",
-      "community": 6,
+      "community": 7,
       "norm_label": "extensioncommands.ts"
     },
     {
@@ -2734,7 +2761,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\ExtensionCommands.ts",
       "source_location": "L4",
       "id": "extensioncommands_extensioncommands",
-      "community": 6,
+      "community": 7,
       "norm_label": "extensioncommands"
     },
     {
@@ -2743,7 +2770,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\ExtensionCommands.ts",
       "source_location": "L5",
       "id": "extensioncommands_extensioncommands_registercommands",
-      "community": 6,
+      "community": 7,
       "norm_label": ".registercommands()"
     },
     {
@@ -2752,7 +2779,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\ExtensionCommands.ts",
       "source_location": "L28",
       "id": "extensioncommands_extensioncommands_setupgrailsworkspace",
-      "community": 6,
+      "community": 7,
       "norm_label": ".setupgrailsworkspace()"
     },
     {
@@ -2761,7 +2788,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\ExtensionCommands.ts",
       "source_location": "L50",
       "id": "extensioncommands_extensioncommands_diagnoseextensionissues",
-      "community": 6,
+      "community": 7,
       "norm_label": ".diagnoseextensionissues()"
     },
     {
@@ -2770,7 +2797,7 @@
       "source_file": "client\\src\\ui\\commands\\GrailsConventions.ts",
       "source_location": "L1",
       "id": "client_src_ui_commands_grailsconventions_ts",
-      "community": 33,
+      "community": 31,
       "norm_label": "grailsconventions.ts"
     },
     {
@@ -2779,7 +2806,7 @@
       "source_file": "client\\src\\ui\\commands\\GrailsConventions.ts",
       "source_location": "L3",
       "id": "grailsconventions_grailsconventions",
-      "community": 33,
+      "community": 31,
       "norm_label": "grailsconventions"
     },
     {
@@ -2788,7 +2815,7 @@
       "source_file": "client\\src\\ui\\commands\\GrailsConventions.ts",
       "source_location": "L5",
       "id": "grailsconventions_grailsconventions_shownamingconventions",
-      "community": 33,
+      "community": 31,
       "norm_label": ".shownamingconventions()"
     },
     {
@@ -2804,7 +2831,7 @@
       "label": "GrailsTaskCommands",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
-      "source_location": "L5",
+      "source_location": "L7",
       "id": "grailstaskcommands_grailstaskcommands",
       "community": 2,
       "norm_label": "grailstaskcommands"
@@ -2813,10 +2840,19 @@
       "label": ".registerCommands()",
       "file_type": "code",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
-      "source_location": "L6",
+      "source_location": "L11",
       "id": "grailstaskcommands_grailstaskcommands_registercommands",
       "community": 2,
       "norm_label": ".registercommands()"
+    },
+    {
+      "label": ".dispose()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
+      "source_location": "L119",
+      "id": "grailstaskcommands_grailstaskcommands_dispose",
+      "community": 2,
+      "norm_label": ".dispose()"
     },
     {
       "label": "index.ts",
@@ -2824,7 +2860,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\index.ts",
       "source_location": "L1",
       "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_ui_commands_index_ts",
-      "community": 25,
+      "community": 23,
       "norm_label": "index.ts"
     },
     {
@@ -2833,7 +2869,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\index.ts",
       "source_location": "L11",
       "id": "index_commands",
-      "community": 25,
+      "community": 23,
       "norm_label": "commands"
     },
     {
@@ -2842,7 +2878,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\index.ts",
       "source_location": "L14",
       "id": "index_commands_constructor",
-      "community": 25,
+      "community": 23,
       "norm_label": ".constructor()"
     },
     {
@@ -2851,7 +2887,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\index.ts",
       "source_location": "L30",
       "id": "index_commands_registerallcommands",
-      "community": 25,
+      "community": 23,
       "norm_label": ".registerallcommands()"
     },
     {
@@ -2860,7 +2896,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\index.ts",
       "source_location": "L34",
       "id": "index_commands_dispose",
-      "community": 25,
+      "community": 23,
       "norm_label": ".dispose()"
     },
     {
@@ -3013,7 +3049,7 @@
       "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
       "source_location": "L1",
       "id": "client_src_ui_decorations_diagnosticdecorationprovider_ts",
-      "community": 26,
+      "community": 24,
       "norm_label": "diagnosticdecorationprovider.ts"
     },
     {
@@ -3022,7 +3058,7 @@
       "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
       "source_location": "L4",
       "id": "diagnosticdecorationprovider_diagnosticdecorationprovider",
-      "community": 26,
+      "community": 24,
       "norm_label": "diagnosticdecorationprovider"
     },
     {
@@ -3031,7 +3067,7 @@
       "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
       "source_location": "L7",
       "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_constructor",
-      "community": 26,
+      "community": 24,
       "norm_label": ".constructor()"
     },
     {
@@ -3040,7 +3076,7 @@
       "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
       "source_location": "L29",
       "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_providefiledecoration",
-      "community": 26,
+      "community": 24,
       "norm_label": ".providefiledecoration()"
     },
     {
@@ -3049,7 +3085,7 @@
       "source_file": "client\\src\\ui\\decorations\\DiagnosticDecorationProvider.ts",
       "source_location": "L40",
       "id": "diagnosticdecorationprovider_diagnosticdecorationprovider_dispose",
-      "community": 26,
+      "community": 24,
       "norm_label": ".dispose()"
     },
     {
@@ -3058,7 +3094,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L1",
       "id": "client_src_ui_decorations_grailsgutterprovider_ts",
-      "community": 4,
+      "community": 5,
       "norm_label": "grailsgutterprovider.ts"
     },
     {
@@ -3067,7 +3103,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L13",
       "id": "grailsgutterprovider_grailsgutterprovider",
-      "community": 4,
+      "community": 5,
       "norm_label": "grailsgutterprovider"
     },
     {
@@ -3076,7 +3112,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L31",
       "id": "grailsgutterprovider_grailsgutterprovider_constructor",
-      "community": 4,
+      "community": 5,
       "norm_label": ".constructor()"
     },
     {
@@ -3085,7 +3121,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L58",
       "id": "grailsgutterprovider_grailsgutterprovider_initdecorations",
-      "community": 4,
+      "community": 5,
       "norm_label": ".initdecorations()"
     },
     {
@@ -3094,7 +3130,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L70",
       "id": "grailsgutterprovider_grailsgutterprovider_update",
-      "community": 4,
+      "community": 5,
       "norm_label": ".update()"
     },
     {
@@ -3103,7 +3139,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L178",
       "id": "grailsgutterprovider_grailsgutterprovider_isgrailsfile",
-      "community": 4,
+      "community": 5,
       "norm_label": ".isgrailsfile()"
     },
     {
@@ -3112,7 +3148,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L184",
       "id": "grailsgutterprovider_grailsgutterprovider_getcontrollername",
-      "community": 4,
+      "community": 5,
       "norm_label": ".getcontrollername()"
     },
     {
@@ -3121,7 +3157,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L189",
       "id": "grailsgutterprovider_grailsgutterprovider_handlegutternav",
-      "community": 4,
+      "community": 5,
       "norm_label": ".handlegutternav()"
     },
     {
@@ -3130,7 +3166,7 @@
       "source_file": "client\\src\\ui\\decorations\\GrailsGutterProvider.ts",
       "source_location": "L194",
       "id": "grailsgutterprovider_grailsgutterprovider_dispose",
-      "community": 4,
+      "community": 5,
       "norm_label": ".dispose()"
     },
     {
@@ -3139,7 +3175,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L1",
       "id": "client_src_ui_icons_iconprovider_ts",
-      "community": 5,
+      "community": 6,
       "norm_label": "iconprovider.ts"
     },
     {
@@ -3148,7 +3184,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L13",
       "id": "iconprovider_iconprovider",
-      "community": 5,
+      "community": 6,
       "norm_label": "iconprovider"
     },
     {
@@ -3157,7 +3193,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L94",
       "id": "iconprovider_iconprovider_getprojecticon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getprojecticon()"
     },
     {
@@ -3166,7 +3202,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L100",
       "id": "iconprovider_iconprovider_geticon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".geticon()"
     },
     {
@@ -3175,7 +3211,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L143",
       "id": "iconprovider_iconprovider_getrooticons",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getrooticons()"
     },
     {
@@ -3184,7 +3220,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L148",
       "id": "iconprovider_iconprovider_getsubcategoryicons",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getsubcategoryicons()"
     },
     {
@@ -3193,7 +3229,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L153",
       "id": "iconprovider_iconprovider_getspecialtreeitem",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getspecialtreeitem()"
     },
     {
@@ -3202,7 +3238,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L159",
       "id": "iconprovider_iconprovider_getfileicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getfileicon()"
     },
     {
@@ -3211,7 +3247,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L175",
       "id": "iconprovider_iconprovider_getspecialgrailsfileicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getspecialgrailsfileicon()"
     },
     {
@@ -3220,7 +3256,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L187",
       "id": "iconprovider_iconprovider_isleafkind",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isleafkind()"
     },
     {
@@ -3229,7 +3265,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L191",
       "id": "iconprovider_iconprovider_isspecialtreeitem",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isspecialtreeitem()"
     },
     {
@@ -3238,7 +3274,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L200",
       "id": "iconprovider_iconprovider_isrootsection",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isrootsection()"
     },
     {
@@ -3247,7 +3283,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L204",
       "id": "iconprovider_iconprovider_issubcategory",
-      "community": 5,
+      "community": 6,
       "norm_label": ".issubcategory()"
     },
     {
@@ -3256,7 +3292,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L212",
       "id": "iconprovider_iconprovider_isleaf",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isleaf()"
     },
     {
@@ -3265,7 +3301,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L224",
       "id": "iconprovider_iconprovider_createthemedicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".createthemedicon()"
     },
     {
@@ -3274,7 +3310,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L236",
       "id": "iconprovider_iconprovider_isspecialgrailsfile",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isspecialgrailsfile()"
     },
     {
@@ -3283,7 +3319,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L241",
       "id": "iconprovider_iconprovider_isgrailsartifactfile",
-      "community": 5,
+      "community": 6,
       "norm_label": ".isgrailsartifactfile()"
     },
     {
@@ -3292,7 +3328,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L257",
       "id": "iconprovider_iconprovider_getstatusicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getstatusicon()"
     },
     {
@@ -3301,7 +3337,7 @@
       "source_file": "client\\src\\ui\\icons\\IconProvider.ts",
       "source_location": "L267",
       "id": "iconprovider_iconprovider_getbadgetext",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getbadgetext()"
     },
     {
@@ -3841,7 +3877,7 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\treeExplorer\\GrailsTreeExplorer.ts",
       "source_location": "L1377",
       "id": "grailstreeexplorer_grailstreeexplorer_dispose",
-      "community": 24,
+      "community": 1,
       "norm_label": ".dispose()"
     },
     {
@@ -3850,7 +3886,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L1",
       "id": "client_src_ui_treeexplorer_grailstreeitem_ts",
-      "community": 5,
+      "community": 6,
       "norm_label": "grailstreeitem.ts"
     },
     {
@@ -3859,7 +3895,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L8",
       "id": "grailstreeitem_grailstreeitem",
-      "community": 5,
+      "community": 6,
       "norm_label": "grailstreeitem"
     },
     {
@@ -3868,7 +3904,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L9",
       "id": "grailstreeitem_grailstreeitem_constructor",
-      "community": 5,
+      "community": 6,
       "norm_label": ".constructor()"
     },
     {
@@ -3877,7 +3913,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L27",
       "id": "grailstreeitem_grailstreeitem_buildcontextvalue",
-      "community": 5,
+      "community": 6,
       "norm_label": ".buildcontextvalue()"
     },
     {
@@ -3886,7 +3922,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L42",
       "id": "grailstreeitem_grailstreeitem_setupicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".setupicon()"
     },
     {
@@ -3895,7 +3931,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L51",
       "id": "grailstreeitem_grailstreeitem_resolveicon",
-      "community": 5,
+      "community": 6,
       "norm_label": ".resolveicon()"
     },
     {
@@ -3904,7 +3940,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L69",
       "id": "grailstreeitem_grailstreeitem_buildtooltip",
-      "community": 5,
+      "community": 6,
       "norm_label": ".buildtooltip()"
     },
     {
@@ -3913,7 +3949,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L90",
       "id": "grailstreeitem_grailstreeitem_buildprojecttooltip",
-      "community": 5,
+      "community": 6,
       "norm_label": ".buildprojecttooltip()"
     },
     {
@@ -3922,7 +3958,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L110",
       "id": "grailstreeitem_grailstreeitem_buildfiletooltip",
-      "community": 5,
+      "community": 6,
       "norm_label": ".buildfiletooltip()"
     },
     {
@@ -3931,7 +3967,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L126",
       "id": "grailstreeitem_grailstreeitem_buildcategorytooltip",
-      "community": 5,
+      "community": 6,
       "norm_label": ".buildcategorytooltip()"
     },
     {
@@ -3940,7 +3976,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\GrailsTreeItem.ts",
       "source_location": "L143",
       "id": "grailstreeitem_grailstreeitem_getrelativepath",
-      "community": 5,
+      "community": 6,
       "norm_label": ".getrelativepath()"
     },
     {
@@ -3967,7 +4003,7 @@
       "source_file": "client\\src\\ui\\treeExplorer\\TreeItemKind.ts",
       "source_location": "L1",
       "id": "client_src_ui_treeexplorer_treeitemkind_ts",
-      "community": 51,
+      "community": 50,
       "norm_label": "treeitemkind.ts"
     },
     {
@@ -4003,7 +4039,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsDashboard.ts",
       "source_location": "L1",
       "id": "client_src_ui_views_grailsdashboard_ts",
-      "community": 29,
+      "community": 27,
       "norm_label": "grailsdashboard.ts"
     },
     {
@@ -4012,7 +4048,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsDashboard.ts",
       "source_location": "L4",
       "id": "grailsdashboard_grailsdashboard",
-      "community": 29,
+      "community": 27,
       "norm_label": "grailsdashboard"
     },
     {
@@ -4021,7 +4057,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsDashboard.ts",
       "source_location": "L7",
       "id": "grailsdashboard_grailsdashboard_createorshow",
-      "community": 29,
+      "community": 27,
       "norm_label": ".createorshow()"
     },
     {
@@ -4030,7 +4066,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsDashboard.ts",
       "source_location": "L57",
       "id": "grailsdashboard_grailsdashboard_getwebviewcontent",
-      "community": 29,
+      "community": 27,
       "norm_label": ".getwebviewcontent()"
     },
     {
@@ -4039,7 +4075,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsEnvironmentIndicator.ts",
       "source_location": "L1",
       "id": "client_src_ui_views_grailsenvironmentindicator_ts",
-      "community": 34,
+      "community": 32,
       "norm_label": "grailsenvironmentindicator.ts"
     },
     {
@@ -4048,7 +4084,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsEnvironmentIndicator.ts",
       "source_location": "L6",
       "id": "grailsenvironmentindicator_grailsenvironmentindicator",
-      "community": 34,
+      "community": 32,
       "norm_label": "grailsenvironmentindicator"
     },
     {
@@ -4057,7 +4093,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsEnvironmentIndicator.ts",
       "source_location": "L7",
       "id": "grailsenvironmentindicator_grailsenvironmentindicator_createenvironmentbadge",
-      "community": 34,
+      "community": 32,
       "norm_label": ".createenvironmentbadge()"
     },
     {
@@ -4066,7 +4102,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsProjectCard.ts",
       "source_location": "L1",
       "id": "client_src_ui_views_grailsprojectcard_ts",
-      "community": 35,
+      "community": 33,
       "norm_label": "grailsprojectcard.ts"
     },
     {
@@ -4075,7 +4111,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsProjectCard.ts",
       "source_location": "L1",
       "id": "grailsprojectcard_grailsprojectcard",
-      "community": 35,
+      "community": 33,
       "norm_label": "grailsprojectcard"
     },
     {
@@ -4084,7 +4120,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsProjectCard.ts",
       "source_location": "L2",
       "id": "grailsprojectcard_grailsprojectcard_createprojectcard",
-      "community": 35,
+      "community": 33,
       "norm_label": ".createprojectcard()"
     },
     {
@@ -4093,7 +4129,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsQuickActions.ts",
       "source_location": "L1",
       "id": "client_src_ui_views_grailsquickactions_ts",
-      "community": 36,
+      "community": 34,
       "norm_label": "grailsquickactions.ts"
     },
     {
@@ -4102,7 +4138,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsQuickActions.ts",
       "source_location": "L1",
       "id": "grailsquickactions_grailsquickactions",
-      "community": 36,
+      "community": 34,
       "norm_label": "grailsquickactions"
     },
     {
@@ -4111,7 +4147,7 @@
       "source_file": "client\\src\\ui\\views\\GrailsQuickActions.ts",
       "source_location": "L2",
       "id": "grailsquickactions_grailsquickactions_createfloatingactionbutton",
-      "community": 36,
+      "community": 34,
       "norm_label": ".createfloatingactionbutton()"
     },
     {
@@ -4120,7 +4156,7 @@
       "source_file": "client\\src\\ui\\views\\GSPTemplateViewer.ts",
       "source_location": "L1",
       "id": "client_src_ui_views_gsptemplateviewer_ts",
-      "community": 37,
+      "community": 35,
       "norm_label": "gsptemplateviewer.ts"
     },
     {
@@ -4129,7 +4165,7 @@
       "source_file": "client\\src\\ui\\views\\GSPTemplateViewer.ts",
       "source_location": "L3",
       "id": "gsptemplateviewer_gsptemplateviewer",
-      "community": 37,
+      "community": 35,
       "norm_label": "gsptemplateviewer"
     },
     {
@@ -4138,7 +4174,7 @@
       "source_file": "client\\src\\ui\\views\\GSPTemplateViewer.ts",
       "source_location": "L4",
       "id": "gsptemplateviewer_gsptemplateviewer_showgspstructure",
-      "community": 37,
+      "community": 35,
       "norm_label": ".showgspstructure()"
     },
     {
@@ -4147,7 +4183,7 @@
       "source_file": "client\\src\\utils\\constants.ts",
       "source_location": "L1",
       "id": "client_src_utils_constants_ts",
-      "community": 52,
+      "community": 51,
       "norm_label": "constants.ts"
     },
     {
@@ -4194,6 +4230,24 @@
       "id": "csshelper_csshelper_getcommonwebviewhead",
       "community": 16,
       "norm_label": ".getcommonwebviewhead()"
+    },
+    {
+      "label": "DebounceUtils.ts",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\utils\\DebounceUtils.ts",
+      "source_location": "L1",
+      "id": "d_grails_framework_support_extension_vscode_gng_support_client_src_utils_debounceutils_ts",
+      "community": 38,
+      "norm_label": "debounceutils.ts"
+    },
+    {
+      "label": "debounce()",
+      "file_type": "code",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\utils\\DebounceUtils.ts",
+      "source_location": "L11",
+      "id": "debounceutils_debounce",
+      "community": 38,
+      "norm_label": "debounce()"
     },
     {
       "label": "FileScannerUtils.ts",
@@ -4264,7 +4318,7 @@
       "source_file": "client\\src\\utils\\grails-themes.ts",
       "source_location": "L1",
       "id": "client_src_utils_grails_themes_ts",
-      "community": 53,
+      "community": 52,
       "norm_label": "grails-themes.ts"
     },
     {
@@ -4273,7 +4327,7 @@
       "source_file": "client\\src\\utils\\GrailsIcons.ts",
       "source_location": "L1",
       "id": "client_src_utils_grailsicons_ts",
-      "community": 54,
+      "community": 53,
       "norm_label": "grailsicons.ts"
     },
     {
@@ -4354,7 +4408,7 @@
       "source_file": "scripts\\run-gradlew.js",
       "source_location": "L1",
       "id": "scripts_run_gradlew_js",
-      "community": 55,
+      "community": 54,
       "norm_label": "run-gradlew.js"
     },
     {
@@ -4363,7 +4417,7 @@
       "source_file": "server\\bin\\test\\test-projects\\grails-test-project\\grails-app\\assets\\javascripts\\application.js",
       "source_location": "L1",
       "id": "server_bin_test_test_projects_grails_test_project_grails_app_assets_javascripts_application_js",
-      "community": 56,
+      "community": 55,
       "norm_label": "application.js"
     },
     {
@@ -4372,7 +4426,7 @@
       "source_file": "server\\src\\test\\resources\\test-projects\\grails-test-project\\grails-app\\assets\\javascripts\\application.js",
       "source_location": "L1",
       "id": "server_src_test_resources_test_projects_grails_test_project_grails_app_assets_javascripts_application_js",
-      "community": 57,
+      "community": 56,
       "norm_label": "application.js"
     },
     {
@@ -4618,7 +4672,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 58,
+      "community": 57,
       "norm_label": "auto tool selection skill",
       "id": "skill_auto_tool"
     },
@@ -4631,7 +4685,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "comprehensive test cases skill",
       "id": "skill_comprehensive_tests"
     },
@@ -4644,7 +4698,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "read tests before change skill",
       "id": "skill_read_tests_first"
     },
@@ -4670,7 +4724,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 59,
+      "community": 58,
       "norm_label": "user guide",
       "id": "docs_user_guide"
     },
@@ -4696,7 +4750,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 28,
       "norm_label": "performance optimization skill",
       "id": "skill_perf_opt"
     },
@@ -4709,7 +4763,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 28,
       "norm_label": "profile before optimize principle",
       "id": "skill_perf_profile_first"
     },
@@ -4813,7 +4867,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 59,
       "norm_label": "referencesprovider",
       "id": "server_api_references_provider"
     },
@@ -4865,7 +4919,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 61,
+      "community": 60,
       "norm_label": "server build status - passing",
       "id": "server_status_build_passing"
     },
@@ -4878,7 +4932,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 29,
       "norm_label": "jacoco 60% coverage threshold",
       "id": "server_status_jacoco_60pct"
     },
@@ -4891,7 +4945,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 28,
       "norm_label": "compiler incremental 50-200ms",
       "id": "server_compiler_incremental"
     },
@@ -4904,7 +4958,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 28,
       "norm_label": "full compilation 2-5 seconds",
       "id": "server_compiler_full_2_5s"
     },
@@ -4943,7 +4997,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "ast node level execution scope",
       "id": "server_feat_resp_node_scope"
     },
@@ -4956,7 +5010,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "workspace level caching strategy",
       "id": "server_feat_resp_workspace_scope"
     },
@@ -4969,7 +5023,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 29,
       "norm_label": "spock 2.3 test framework",
       "id": "server_testing_spock"
     },
@@ -4982,7 +5036,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 29,
       "norm_label": "baselspspec base test class",
       "id": "server_testing_base_lsp_spec"
     },
@@ -4995,7 +5049,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 29,
       "norm_label": "projecttype dummy groovy grails",
       "id": "server_testing_project_types"
     },
@@ -5034,7 +5088,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 25,
       "norm_label": "grails logo svg icon",
       "id": "icon_grails_logo_svg"
     },
@@ -5047,7 +5101,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 25,
       "norm_label": "grails svg brand icon",
       "id": "icon_grails_svg"
     },
@@ -5060,7 +5114,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 25,
       "norm_label": "vs code extension icon png",
       "id": "icon_extension_png"
     },
@@ -5073,7 +5127,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 41,
       "norm_label": "advanced grails svg asset",
       "id": "test_img_advancedgrails_svg"
     },
@@ -5086,7 +5140,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 41,
       "norm_label": "documentation svg asset",
       "id": "test_img_documentation_svg"
     },
@@ -5099,7 +5153,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 25,
       "norm_label": "grails cupsonly logo white svg",
       "id": "test_img_grails_cupsonly_svg"
     },
@@ -5112,7 +5166,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 25,
       "norm_label": "grails svg test asset",
       "id": "test_img_grails_svg"
     },
@@ -5125,7 +5179,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 61,
       "norm_label": "slack svg community link",
       "id": "test_img_slack_svg"
     },
@@ -5138,7 +5192,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 62,
       "norm_label": "apple touch icon png",
       "id": "test_img_apple_touch_icon"
     }
@@ -5280,7 +5334,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L18",
+      "source_location": "L15",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_core_container_servicecontainer_ts",
       "_tgt": "servicecontainer_servicecontainer",
@@ -5292,7 +5346,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L22",
+      "source_location": "L19",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_constructor",
@@ -5304,7 +5358,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L26",
+      "source_location": "L23",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_intialize",
@@ -5316,7 +5370,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L33",
+      "source_location": "L30",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_getinstance",
@@ -5328,7 +5382,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L43",
+      "source_location": "L40",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_errorservice",
@@ -5340,7 +5394,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L48",
+      "source_location": "L45",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_statusbarservice",
@@ -5352,7 +5406,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L53",
+      "source_location": "L50",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_configurationservice",
@@ -5364,7 +5418,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L58",
+      "source_location": "L55",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_projectservice",
@@ -5376,7 +5430,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L63",
+      "source_location": "L60",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_gradleservice",
@@ -5388,7 +5442,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L68",
+      "source_location": "L65",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_logstreamingservice",
@@ -5400,7 +5454,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L73",
+      "source_location": "L70",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_languageservermanager",
@@ -5412,7 +5466,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L78",
+      "source_location": "L75",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_artifactservice",
@@ -5424,19 +5478,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L83",
-      "weight": 1.0,
-      "_src": "servicecontainer_servicecontainer",
-      "_tgt": "servicecontainer_servicecontainer_dashboardservice",
-      "source": "servicecontainer_servicecontainer",
-      "target": "servicecontainer_servicecontainer_dashboardservice",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L88",
+      "source_location": "L80",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_debugservice",
@@ -5448,31 +5490,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L93",
-      "weight": 1.0,
-      "_src": "servicecontainer_servicecontainer",
-      "_tgt": "servicecontainer_servicecontainer_dependencygraphservice",
-      "source": "servicecontainer_servicecontainer",
-      "target": "servicecontainer_servicecontainer_dependencygraphservice",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L98",
-      "weight": 1.0,
-      "_src": "servicecontainer_servicecontainer",
-      "_tgt": "servicecontainer_servicecontainer_gormsqlpreviewservice",
-      "source": "servicecontainer_servicecontainer",
-      "target": "servicecontainer_servicecontainer_gormsqlpreviewservice",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L103",
+      "source_location": "L85",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_grailstestservice",
@@ -5484,7 +5502,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L110",
+      "source_location": "L92",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_get",
@@ -5496,7 +5514,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L120",
+      "source_location": "L102",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_initializeservices",
@@ -5508,7 +5526,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L178",
+      "source_location": "L150",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_healthcheck",
@@ -5520,7 +5538,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L226",
+      "source_location": "L198",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer",
       "_tgt": "servicecontainer_servicecontainer_dispose",
@@ -5532,7 +5550,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L23",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer_constructor",
       "_tgt": "servicecontainer_servicecontainer_initializeservices",
@@ -5556,7 +5574,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\core\\container\\ServiceContainer.ts",
-      "source_location": "L142",
+      "source_location": "L124",
       "weight": 1.0,
       "_src": "servicecontainer_servicecontainer_initializeservices",
       "_tgt": "servicecontainer_servicecontainer_getinstance",
@@ -6912,7 +6930,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_dependency_graph_dependencygraphservice_ts",
       "_tgt": "dependencygraphservice_dependencygraphservice",
@@ -6924,7 +6942,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L12",
+      "source_location": "L22",
       "weight": 1.0,
       "_src": "dependencygraphservice_dependencygraphservice",
       "_tgt": "dependencygraphservice_dependencygraphservice_constructor",
@@ -6936,7 +6954,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L17",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "dependencygraphservice_dependencygraphservice",
+      "_tgt": "dependencygraphservice_dependencygraphservice_dispose",
+      "source": "dependencygraphservice_dependencygraphservice",
+      "target": "dependencygraphservice_dependencygraphservice_dispose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
+      "source_location": "L38",
       "weight": 1.0,
       "_src": "dependencygraphservice_dependencygraphservice",
       "_tgt": "dependencygraphservice_dependencygraphservice_opengraph",
@@ -6948,19 +6978,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L53",
+      "source_location": "L74",
       "weight": 1.0,
       "_src": "dependencygraphservice_dependencygraphservice",
-      "_tgt": "dependencygraphservice_dependencygraphservice_refreshgraph",
+      "_tgt": "dependencygraphservice_dependencygraphservice_dorefreshgraph",
       "source": "dependencygraphservice_dependencygraphservice",
-      "target": "dependencygraphservice_dependencygraphservice_refreshgraph",
+      "target": "dependencygraphservice_dependencygraphservice_dorefreshgraph",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L85",
+      "source_location": "L106",
       "weight": 1.0,
       "_src": "dependencygraphservice_dependencygraphservice",
       "_tgt": "dependencygraphservice_dependencygraphservice_gethtmlcontent",
@@ -6972,19 +7002,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "_src": "dependencygraphservice_dependencygraphservice_opengraph",
-      "_tgt": "dependencygraphservice_dependencygraphservice_refreshgraph",
-      "source": "dependencygraphservice_dependencygraphservice_opengraph",
-      "target": "dependencygraphservice_dependencygraphservice_refreshgraph",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
-      "source_location": "L39",
+      "source_location": "L60",
       "weight": 1.0,
       "_src": "dependencygraphservice_dependencygraphservice_opengraph",
       "_tgt": "dependencygraphservice_dependencygraphservice_gethtmlcontent",
@@ -6996,19 +7014,19 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "client\\src\\services\\ui\\DependencyGraphService.ts",
-      "source_location": "L76",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\dependency-graph\\DependencyGraphService.ts",
+      "source_location": "L97",
       "weight": 1.0,
-      "_src": "dependencygraphservice_dependencygraphservice_refreshgraph",
+      "_src": "dependencygraphservice_dependencygraphservice_dorefreshgraph",
       "_tgt": "errorservice_errorservice_handleerror",
-      "source": "dependencygraphservice_dependencygraphservice_refreshgraph",
+      "source": "dependencygraphservice_dependencygraphservice_dorefreshgraph",
       "target": "errorservice_errorservice_handleerror"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_features_gorm_sql_preview_gormsqlpreviewservice_ts",
       "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice",
@@ -7020,7 +7038,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L10",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "gormsqlpreviewservice_gormsqlpreviewservice",
       "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_constructor",
@@ -7032,7 +7050,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L15",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "gormsqlpreviewservice_gormsqlpreviewservice",
+      "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_dispose",
+      "source": "gormsqlpreviewservice_gormsqlpreviewservice",
+      "target": "gormsqlpreviewservice_gormsqlpreviewservice_dispose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
+      "source_location": "L36",
       "weight": 1.0,
       "_src": "gormsqlpreviewservice_gormsqlpreviewservice",
       "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_openpreview",
@@ -7044,19 +7074,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L45",
+      "source_location": "L66",
       "weight": 1.0,
       "_src": "gormsqlpreviewservice_gormsqlpreviewservice",
-      "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
+      "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_dorefreshpreview",
       "source": "gormsqlpreviewservice_gormsqlpreviewservice",
-      "target": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
+      "target": "gormsqlpreviewservice_gormsqlpreviewservice_dorefreshpreview",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L76",
+      "source_location": "L97",
       "weight": 1.0,
       "_src": "gormsqlpreviewservice_gormsqlpreviewservice",
       "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_gethtmlcontent",
@@ -7068,19 +7098,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "_src": "gormsqlpreviewservice_gormsqlpreviewservice_openpreview",
-      "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
-      "source": "gormsqlpreviewservice_gormsqlpreviewservice_openpreview",
-      "target": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
-      "source_location": "L32",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "gormsqlpreviewservice_gormsqlpreviewservice_openpreview",
       "_tgt": "gormsqlpreviewservice_gormsqlpreviewservice_gethtmlcontent",
@@ -7092,12 +7110,12 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "client\\src\\services\\ui\\GormSqlPreviewService.ts",
-      "source_location": "L67",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\features\\gorm-sql-preview\\GormSqlPreviewService.ts",
+      "source_location": "L88",
       "weight": 1.0,
-      "_src": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
+      "_src": "gormsqlpreviewservice_gormsqlpreviewservice_dorefreshpreview",
       "_tgt": "errorservice_errorservice_handleerror",
-      "source": "gormsqlpreviewservice_gormsqlpreviewservice_refreshpreview",
+      "source": "gormsqlpreviewservice_gormsqlpreviewservice_dorefreshpreview",
       "target": "errorservice_errorservice_handleerror"
     },
     {
@@ -7980,13 +7998,13 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L67",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
+      "source_location": "L87",
       "weight": 1.0,
-      "_src": "errorservice_errorservice_handleerror",
-      "_tgt": "grailstestservice_grailstestservice_discoveralltests",
+      "_src": "grailstestservice_grailstestservice_dodiscoveralltests",
+      "_tgt": "errorservice_errorservice_handleerror",
       "source": "errorservice_errorservice_handleerror",
-      "target": "grailstestservice_grailstestservice_discoveralltests"
+      "target": "grailstestservice_grailstestservice_dodiscoveralltests"
     },
     {
       "relation": "calls",
@@ -8035,6 +8053,18 @@
       "_tgt": "projectservice_projectservice_setactiveproject",
       "source": "errorservice_errorservice_handleerror",
       "target": "projectservice_projectservice_setactiveproject"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L517",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_initwatchers",
+      "_tgt": "errorservice_errorservice_handleerror",
+      "source": "errorservice_errorservice_handleerror",
+      "target": "projectservice_projectservice_initwatchers"
     },
     {
       "relation": "calls",
@@ -9456,7 +9486,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L6",
+      "source_location": "L8",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_services_testing_grailstestservice_ts",
       "_tgt": "grailstestservice_grailstestservice",
@@ -9468,7 +9498,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L10",
+      "source_location": "L18",
       "weight": 1.0,
       "_src": "grailstestservice_grailstestservice",
       "_tgt": "grailstestservice_grailstestservice_constructor",
@@ -9480,19 +9510,31 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L28",
+      "source_location": "L38",
       "weight": 1.0,
       "_src": "grailstestservice_grailstestservice",
-      "_tgt": "grailstestservice_grailstestservice_discoveralltests",
+      "_tgt": "grailstestservice_grailstestservice_dispose",
       "source": "grailstestservice_grailstestservice",
-      "target": "grailstestservice_grailstestservice_discoveralltests",
+      "target": "grailstestservice_grailstestservice_dispose",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L77",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "grailstestservice_grailstestservice",
+      "_tgt": "grailstestservice_grailstestservice_dodiscoveralltests",
+      "source": "grailstestservice_grailstestservice",
+      "target": "grailstestservice_grailstestservice_dodiscoveralltests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
+      "source_location": "L96",
       "weight": 1.0,
       "_src": "grailstestservice_grailstestservice",
       "_tgt": "grailstestservice_grailstestservice_runtests",
@@ -9504,12 +9546,12 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "client\\src\\services\\testing\\GrailsTestService.ts",
-      "source_location": "L34",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
+      "source_location": "L52",
       "weight": 1.0,
-      "_src": "grailstestservice_grailstestservice_discoveralltests",
+      "_src": "grailstestservice_grailstestservice_dodiscoveralltests",
       "_tgt": "projectservice_projectservice_getprojects",
-      "source": "grailstestservice_grailstestservice_discoveralltests",
+      "source": "grailstestservice_grailstestservice_dodiscoveralltests",
       "target": "projectservice_projectservice_getprojects"
     },
     {
@@ -10224,7 +10266,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L38",
+      "source_location": "L41",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_constructor",
@@ -10236,7 +10278,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L54",
+      "source_location": "L57",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_discoverprojects",
@@ -10248,7 +10290,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L143",
+      "source_location": "L146",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_quickscan",
@@ -10260,7 +10302,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L182",
+      "source_location": "L185",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_getprojects",
@@ -10272,7 +10314,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L187",
+      "source_location": "L190",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_getprojectbyid",
@@ -10284,7 +10326,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L192",
+      "source_location": "L195",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_getactiveproject",
@@ -10296,7 +10338,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L198",
+      "source_location": "L201",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_setactiveproject",
@@ -10308,7 +10350,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L223",
+      "source_location": "L226",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_dispose",
@@ -10320,7 +10362,43 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L236",
+      "source_location": "L250",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice",
+      "_tgt": "projectservice_projectservice_disposewatcher",
+      "source": "projectservice_projectservice",
+      "target": "projectservice_projectservice_disposewatcher",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L277",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice",
+      "_tgt": "projectservice_projectservice_disposeallwatchers",
+      "source": "projectservice_projectservice",
+      "target": "projectservice_projectservice_disposeallwatchers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L292",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice",
+      "_tgt": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "source": "projectservice_projectservice",
+      "target": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L299",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_iscachevalid",
@@ -10332,7 +10410,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L243",
+      "source_location": "L306",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_loadprojectwithtimeout",
@@ -10344,7 +10422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L254",
+      "source_location": "L317",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_loadproject",
@@ -10356,7 +10434,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L291",
+      "source_location": "L354",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_scanfolder",
@@ -10368,7 +10446,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L322",
+      "source_location": "L385",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_detectprojecttype",
@@ -10380,7 +10458,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L352",
+      "source_location": "L415",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_parsedependencies",
@@ -10392,7 +10470,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L370",
+      "source_location": "L433",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_countindirectory",
@@ -10404,7 +10482,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L392",
+      "source_location": "L455",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_extractversion",
@@ -10416,7 +10494,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L404",
+      "source_location": "L467",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_quickdetecttype",
@@ -10428,7 +10506,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L409",
+      "source_location": "L472",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_filecontains",
@@ -10440,7 +10518,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L420",
+      "source_location": "L483",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_initwatchers",
@@ -10452,7 +10530,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L439",
+      "source_location": "L528",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_reloadproject",
@@ -10464,7 +10542,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L465",
+      "source_location": "L554",
       "weight": 1.0,
       "_src": "projectservice_projectservice",
       "_tgt": "projectservice_projectservice_countartifacts",
@@ -10476,7 +10554,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L61",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "projectservice_projectservice_discoverprojects",
       "_tgt": "projectservice_projectservice_iscachevalid",
@@ -10488,7 +10566,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L119",
+      "source_location": "L122",
       "weight": 1.0,
       "_src": "projectservice_projectservice_discoverprojects",
       "_tgt": "projectservice_projectservice_initwatchers",
@@ -10548,7 +10626,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L162",
+      "source_location": "L165",
       "weight": 1.0,
       "_src": "projectservice_projectservice_quickscan",
       "_tgt": "projectservice_projectservice_quickdetecttype",
@@ -10668,7 +10746,91 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L248",
+      "source_location": "L230",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_dispose",
+      "_tgt": "projectservice_projectservice_disposeallwatchers",
+      "source": "projectservice_projectservice_dispose",
+      "target": "projectservice_projectservice_disposeallwatchers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L255",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_disposewatcher",
+      "_tgt": "projectservice_projectservice_dispose",
+      "source": "projectservice_projectservice_dispose",
+      "target": "projectservice_projectservice_disposewatcher",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L281",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_disposeallwatchers",
+      "_tgt": "projectservice_projectservice_disposewatcher",
+      "source": "projectservice_projectservice_disposewatcher",
+      "target": "projectservice_projectservice_disposeallwatchers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L252",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_disposewatcher",
+      "_tgt": "projectstore_projectstore_get",
+      "source": "projectservice_projectservice_disposewatcher",
+      "target": "projectstore_projectstore_get"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L270",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_disposewatcher",
+      "_tgt": "statusbarservice_statusbarservice_error",
+      "source": "projectservice_projectservice_disposewatcher",
+      "target": "statusbarservice_statusbarservice_error"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L293",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "_tgt": "projectservice_projectservice_disposeallwatchers",
+      "source": "projectservice_projectservice_disposeallwatchers",
+      "target": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L294",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "_tgt": "projectservice_projectservice_initwatchers",
+      "source": "projectservice_projectservice_reinitwatchersonfolderchange",
+      "target": "projectservice_projectservice_initwatchers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "projectservice_projectservice_loadprojectwithtimeout",
       "_tgt": "projectservice_projectservice_loadproject",
@@ -10680,7 +10842,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L287",
+      "source_location": "L350",
       "weight": 1.0,
       "_src": "projectservice_projectservice_loadproject",
       "_tgt": "projectservice_projectservice_scanfolder",
@@ -10692,7 +10854,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L295",
+      "source_location": "L358",
       "weight": 1.0,
       "_src": "projectservice_projectservice_scanfolder",
       "_tgt": "projectservice_projectservice_detectprojecttype",
@@ -10704,7 +10866,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L304",
+      "source_location": "L367",
       "weight": 1.0,
       "_src": "projectservice_projectservice_scanfolder",
       "_tgt": "projectservice_projectservice_countartifacts",
@@ -10716,7 +10878,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L308",
+      "source_location": "L371",
       "weight": 1.0,
       "_src": "projectservice_projectservice_scanfolder",
       "_tgt": "projectservice_projectservice_extractversion",
@@ -10728,7 +10890,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L440",
+      "source_location": "L529",
       "weight": 1.0,
       "_src": "projectservice_projectservice_reloadproject",
       "_tgt": "projectservice_projectservice_scanfolder",
@@ -10740,7 +10902,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L332",
+      "source_location": "L395",
       "weight": 1.0,
       "_src": "projectservice_projectservice_detectprojecttype",
       "_tgt": "projectservice_projectservice_filecontains",
@@ -10752,13 +10914,25 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
-      "source_location": "L517",
+      "source_location": "L606",
       "weight": 1.0,
       "_src": "projectservice_projectservice_countartifacts",
       "_tgt": "projectservice_projectservice_countindirectory",
       "source": "projectservice_projectservice_countindirectory",
       "target": "projectservice_projectservice_countartifacts",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
+      "source_location": "L501",
+      "weight": 1.0,
+      "_src": "projectservice_projectservice_initwatchers",
+      "_tgt": "projectstore_projectstore_set",
+      "source": "projectservice_projectservice_initwatchers",
+      "target": "projectstore_projectstore_set"
     },
     {
       "relation": "calls",
@@ -11640,7 +11814,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\BaseCommandProvider.ts",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_ui_commands_basecommandprovider_ts",
       "_tgt": "basecommandprovider_dispose",
@@ -11820,7 +11994,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
-      "source_location": "L5",
+      "source_location": "L7",
       "weight": 1.0,
       "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_ui_commands_grailstaskcommands_ts",
       "_tgt": "grailstaskcommands_grailstaskcommands",
@@ -11832,12 +12006,24 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
-      "source_location": "L6",
+      "source_location": "L11",
       "weight": 1.0,
       "_src": "grailstaskcommands_grailstaskcommands",
       "_tgt": "grailstaskcommands_grailstaskcommands_registercommands",
       "source": "grailstaskcommands_grailstaskcommands",
       "target": "grailstaskcommands_grailstaskcommands_registercommands",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\ui\\commands\\GrailsTaskCommands.ts",
+      "source_location": "L119",
+      "weight": 1.0,
+      "_src": "grailstaskcommands_grailstaskcommands",
+      "_tgt": "grailstaskcommands_grailstaskcommands_dispose",
+      "source": "grailstaskcommands_grailstaskcommands",
+      "target": "grailstaskcommands_grailstaskcommands_dispose",
       "confidence_score": 1.0
     },
     {
@@ -14622,6 +14808,18 @@
       "_tgt": "csshelper_csshelper_getwebviewstylesheet",
       "source": "csshelper_csshelper_getwebviewstylesheet",
       "target": "csshelper_csshelper_getcommonwebviewhead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\utils\\DebounceUtils.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "d_grails_framework_support_extension_vscode_gng_support_client_src_utils_debounceutils_ts",
+      "_tgt": "debounceutils_debounce",
+      "source": "d_grails_framework_support_extension_vscode_gng_support_client_src_utils_debounceutils_ts",
+      "target": "debounceutils_debounce",
       "confidence_score": 1.0
     },
     {
