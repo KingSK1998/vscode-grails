@@ -1,4 +1,4 @@
-import type { ProjectInfo } from "../../features/models/modelTypes";
+import type { ProjectDTO } from "../../shared/protocol/project";
 
 export interface BaseGrailsEvents {
   timestamp: number;
@@ -23,49 +23,49 @@ export enum EventType {
 
 export interface ProjectsDiscoveredEvent extends BaseGrailsEvents {
   type: EventType.PROJECTS_DISCOVERED;
-  projects: ProjectInfo[];
+  projects: ProjectDTO[];
 }
 
 export interface ProjectChangedEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_CHANGED;
-  project: ProjectInfo;
+  project: ProjectDTO;
 }
 
 export interface ProjectDiscoveredEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_DISCOVERED;
-  project: ProjectInfo;
+  project: ProjectDTO;
 }
 
 export interface ProjectLoadedEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_LOADED;
-  project: ProjectInfo;
+  project: ProjectDTO;
 }
 
 export interface ProjectSyncStartedEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_SYNC_STARTED;
-  project: ProjectInfo;
+  project: ProjectDTO;
 }
 
 export interface ProjectSyncCompletedEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_SYNC_COMPLETED;
-  project: ProjectInfo;
+  project: ProjectDTO;
 }
 
 export interface ProjectSyncFailedEvent extends BaseGrailsEvents {
   type: EventType.PROJECT_SYNC_FAILED;
-  project: ProjectInfo;
+  project: ProjectDTO;
   error: string;
 }
 
 export interface ArtifactCreatedEvent extends BaseGrailsEvents {
   type: EventType.ARTIFACT_CREATED;
-  project: ProjectInfo;
+  project: ProjectDTO;
   artifact: string;
 }
 
 export interface ArtifactDeletedEvent extends BaseGrailsEvents {
   type: EventType.ARTIFACT_DELETED;
-  project: ProjectInfo;
+  project: ProjectDTO;
   artifact: string;
 }
 

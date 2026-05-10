@@ -1,4 +1,7 @@
 import type { Disposable, ExtensionContext } from "vscode";
+import { DashboardService } from "../../features/dashboard/DashboardService";
+import { DependencyGraphService } from "../../features/dependency-graph/DependencyGraphService";
+import { GormSqlPreviewService } from "../../features/gorm-sql-preview/GormSqlPreviewService";
 import { ArtifactService } from "../../services/artifacts/ArtifactService";
 import { DebugService } from "../../services/debugging/DebugService";
 import { ErrorService } from "../../services/errors/ErrorService";
@@ -6,12 +9,10 @@ import { GradleService } from "../../services/gradle/GradleService";
 import { LogStreamingService } from "../../services/gradle/LogStreamingService";
 import { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
 import { GrailsTestService } from "../../services/testing/GrailsTestService";
-import { DashboardService } from "../../services/ui/DashboardService";
-import { DependencyGraphService } from "../../services/ui/DependencyGraphService";
-import { GormSqlPreviewService } from "../../services/ui/GormSqlPreviewService";
 import { ConfigurationService } from "../../services/workspace/ConfigurationService";
 import { ProjectService } from "../../services/workspace/ProjectService";
 import { StatusBarService } from "../../services/workspace/StatusBarService";
+import { EventBus } from "../events/EventBus";
 import type { ServiceName, ServiceRegistry } from "./ServiceRegistry";
 
 export class ServiceContainer {
@@ -137,7 +138,8 @@ export class ServiceContainer {
     this._services.ProjectService = new ProjectService(
       this._services.StatusBarService,
       this._services.ErrorService,
-      this._services.ConfigurationService
+      this._services.ConfigurationService,
+      EventBus.getInstance()
     );
 
     this._services.LanguageServerManager = new LanguageServerManager(
@@ -147,12 +149,27 @@ export class ServiceContainer {
       this._services.ConfigurationService
     );
 
-    this._services.ArtifactService = new ArtifactService();
-    this._services.DashboardService = new DashboardService(this.context);
-    this._services.DebugService = new DebugService(this._services.GradleService);
-    this._services.DependencyGraphService = new DependencyGraphService(this.context);
-    this._services.GormSqlPreviewService = new GormSqlPreviewService(this.context);
-    this._services.GrailsTestService = new GrailsTestService(this.context);
+    this._services.ArtifactService = new ArtifactService(this._services.ErrorService);
+    this._services.DashboardService = new DashboardService(
+      this.context,
+      this._services.ErrorService
+    );
+    this._services.DebugService = new DebugService(
+      this._services.GradleService,
+      this._services.ErrorService
+    );
+    this._services.DependencyGraphService = new DependencyGraphService(
+      this.context,
+      this._services.ErrorService
+    );
+    this._services.GormSqlPreviewService = new GormSqlPreviewService(
+      this.context,
+      this._services.ErrorService
+    );
+    this._services.GrailsTestService = new GrailsTestService(
+      this.context,
+      this._services.ErrorService
+    );
   }
 
   /**

@@ -1,3 +1,5 @@
+import type { ProjectDTO } from "../../shared/protocol/project";
+
 /** Supported project types */
 export enum ProjectType {
   Groovy = "groovy",
@@ -110,42 +112,15 @@ export interface ArtifactCounts {
   tasks: number;
 }
 
-/** Core project metadata for UI and workspace management. */
-export interface ProjectInfo {
-  // Multi-root support
-  id: string;
-  rootPath: string;
-  name: string;
+export interface ProjectInfo extends ProjectDTO {
   type: ProjectType;
 
-  // Gradle dependencies
-  dependencies?: string[];
+  artifactCounts?: ArtifactCounts;
 
-  // Version info from LSP cache or build.gradle parsing
-  grailsVersion?: string | undefined;
-  groovyVersion?: string | undefined;
-  javaVersion?: string | undefined;
-  pluginVersion?: string | undefined;
+  lastUpdated?: number; // Timestamp for when the project info was last updated
 
-  // UI display data
-  artifactCounts?: ArtifactCounts | undefined;
-}
-
-/** Grails artifact definition for tree display */
-export interface GrailsArtifact {
-  name: string;
-  type: ArtifactType;
-  path: string;
-  packageName?: string;
-}
-
-export interface GrailsProjectInfo {
-  name: string;
-  version: string;
-  grailsVersion: string;
-  groovyVersion: string;
-  javaVersion: string;
-  artifacts: GrailsArtifact[];
+  isGradleProject?: boolean; // Whether this project is recognized as a Gradle project
+  isPlugin?: boolean; // Whether this project is recognized as a Grails plugin
 }
 
 export interface ConfigFile {
