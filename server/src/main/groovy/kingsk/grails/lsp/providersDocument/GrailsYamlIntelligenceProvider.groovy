@@ -46,7 +46,7 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
 
     CompletableFuture<Either<List<CompletionItem>, CompletionList>> provideCompletions(TextFile file, Position position) {
         CompletableFuture.supplyAsync {
-            if (!isYamlFile(file.uri)) return Either.forLeft([])
+            if (!isYamlFile(file.uri)) return Either.<List<CompletionItem>, CompletionList>forLeft([])
 
             String lineText = file.textAtLine(position.line) ?: ""
             String prefix = ""
@@ -71,7 +71,7 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
                     items << item
                 }
             }
-            Either.forLeft(items)
+            Either.<List<CompletionItem>, CompletionList>forLeft(items)
         }
     }
 
@@ -104,7 +104,7 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
     void analyzeSensitiveInfo(TextFile file) {
         if (!isYamlFile(file.uri)) return
 
-        List<Diagnostic> diagnostics = []
+        List<Diagnostic> yamlDiagnostics = []
         try {
             def lines = file.text.readLines()
             lines.eachWithIndex { String line, int idx ->
@@ -121,15 +121,15 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
                                     it.source = "Grails LSP"
                                     it
                                 }
-                                diagnostics << d
+                                yamlDiagnostics << d
                             }
                         }
                     }
                 }
             }
-            _service.diagnostics.publishDiagnostics(file.uri, diagnostics)
+            diagnostics.publishDiagnostics(file.uri, yamlDiagnostics)
         } catch (Exception e) {
-            _service.errorService.handleError("Failed to analyze YAML for sensitive info", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
+            errorService.handleError("Failed to analyze YAML for sensitive info", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
         }
     }
 

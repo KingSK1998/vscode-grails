@@ -40,8 +40,8 @@ class GrailsRenameProvider extends BaseProvider {
             return CompletableFuture.completedFuture(workspaceEdit)
         }
 
-        def documentURI = URI.create(params.textDocument.uri)
-        def offsetNode = visitor.getNodeAtLineAndColumn(documentURI, params.position.line, params.position.character)
+        def documentURI = params.textDocument.uri
+        def offsetNode = visitor.getNodeAtPosition(documentURI, params.position)
         if (!offsetNode) {
             log.warn("[RENAME] No ASTNode found at the specified position.")
             return CompletableFuture.completedFuture(workspaceEdit)
@@ -49,14 +49,14 @@ class GrailsRenameProvider extends BaseProvider {
 
         def references = GrailsASTHelper.getReferences(offsetNode, visitor, params.position)
         references.each { node ->
-            def uri = visitor.getURI(node) ?: documentURI
+            def uri = visitor.getURI(node) ?: documentURI.toString()
             def contents = getPartialNodeText(uri, node)
             if (!contents) return 
             def range = ASTUtils.astNodeToRange(node)
             if (!range) return 
-
-            def start = range.start
-            def end = range.end
+            
+            Position start = range.start
+            Position end = range.end
             end.line = start.line
             end.character = start.character + contents.length()
 
@@ -69,14 +69,14 @@ class GrailsRenameProvider extends BaseProvider {
                     int dotIndex = newURI.lastIndexOf(".")
                     newURI = newURI.substring(0, slashIndex + 1) + newName + newURI.substring(dotIndex)
 
-                    documentChanges << Either.forRight(new RenameFile(oldUri: uri.toString(), newUri: newURI))
+                    documentChanges << Either.<TextDocumentEdit, ResourceOperation>forRight(new RenameFile(oldUri: uri, newUri: newURI))
                 }
             } else if (node instanceof MethodNode) {
                 textEdit = createTextEditToRenameMethodNode(node as MethodNode, newName, contents, range)
             } else if (node instanceof PropertyNode) {
                 textEdit = createTextEditToRenamePropertyNode(node as PropertyNode, newName, contents, range)
             } else if (node instanceof ConstantExpression || node instanceof VariableExpression) {
-                textEdit = new TextEdit(newName, range)
+                textEdit = new TextEdit(range, newName)
             }
             if (!textEdit) return
 
@@ -93,7 +93,7 @@ class GrailsRenameProvider extends BaseProvider {
         CompletableFuture.completedFuture(workspaceEdit)
     }
 
-    String getPartialNodeText(URI uri, ASTNode node) {
+    String getPartialNodeText(String uri, ASTNode node) {
         Range range = ASTUtils.astNodeToRange(node)
         if (!range) return null
 
@@ -103,7 +103,7 @@ class GrailsRenameProvider extends BaseProvider {
         RangeHelper.getSubstring(contents, range, 1)
     }
 
-    static TextEdit createTextEditToRenameClassNode(ClassNode classNode, String newName, String text, Range range) {
+static TextEdit createTextEditToRenameClassNode(ClassNode classNode, String newName, String text, Range range) {
         String className = classNode.nameWithoutPackage
         int dollarIndex = className.indexOf('$')
         if (dollarIndex >= 0) {
@@ -113,13 +113,12 @@ class GrailsRenameProvider extends BaseProvider {
         def classMatcher = (text =~ /class\s+$className\b/)
         if (!classMatcher.find()) return null
 
-        String prefix = classMatcher.group(1) ?: ""
         Position start = range.start
         Position end = range.end
         end.character = start.character + classMatcher.end()
-        start.character = start.character + prefix.length() + classMatcher.start()
-
-        new TextEdit(range: range, newText: newName)
+        start.character = start.character + classMatcher.start()
+        
+        new TextEdit(range, newName)
     }
 
     static TextEdit createTextEditToRenameMethodNode(MethodNode methodNode, String newName, String text, Range range) {
@@ -130,7 +129,7 @@ class GrailsRenameProvider extends BaseProvider {
         Position end = range.end
         end.character = start.character + methodMatcher.end()
         start.character = start.character + methodMatcher.start()
-        new TextEdit(range: range, newText: newName)
+        new TextEdit(range, newName)
     }
 
     static TextEdit createTextEditToRenamePropertyNode(PropertyNode node, String newName, String text, Range range) {
@@ -142,6 +141,6 @@ class GrailsRenameProvider extends BaseProvider {
         end.character = start.character + propMatcher.end()
         start.character = start.character + propMatcher.start()
 
-        new TextEdit(range: range, newText: newName)
+        new TextEdit(range, newName)
     }
 }

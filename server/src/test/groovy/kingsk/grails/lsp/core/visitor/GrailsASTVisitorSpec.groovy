@@ -1,13 +1,11 @@
 package kingsk.grails.lsp.core.visitor
 
 import spock.lang.Specification
-import groovy.transform.CompileStatic
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.services.FileContentTracker
 import kingsk.grails.lsp.model.TextFile
 import java.util.concurrent.ConcurrentHashMap
 
-@CompileStatic
 class GrailsASTVisitorSpec extends Specification {
 
     def "should cleanup unused files based on LRU policy"() {

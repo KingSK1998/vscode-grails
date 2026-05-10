@@ -60,6 +60,6 @@ class ProjectMapper {
     private static int count(GrailsProject project, String folder) {
         return project.sourceDirectories?.count {
             it.absolutePath.contains(folder)
-        } ?: 0
+        }?.intValue() ?: 0
     }
 }

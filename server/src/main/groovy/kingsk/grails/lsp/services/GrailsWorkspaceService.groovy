@@ -3,7 +3,7 @@ package kingsk.grails.lsp.services
 import com.google.gson.JsonObject
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.dto.ProjectDto
+import kingsk.grails.lsp.protocol.dto.ProjectDTO
 import kingsk.grails.lsp.providersWorkspace.GrailsWorkspaceSymbolProvider
 import kingsk.grails.lsp.utils.GrailsUtils
 import org.eclipse.lsp4j.*
@@ -118,7 +118,7 @@ class GrailsWorkspaceService implements WorkspaceService {
     }
 
     @JsonRequest("grails/projectInfo")
-    CompletableFuture<ProjectDto> getProjectInfo(Map<String, Object> params) {
+    CompletableFuture<ProjectDTO> getProjectInfo(Map<String, Object> params) {
         String projectDir = params.get("projectDir") as String
 
         return CompletableFuture.supplyAsync({
@@ -127,7 +127,7 @@ class GrailsWorkspaceService implements WorkspaceService {
     }
 
     @JsonRequest("grails/projects")
-    CompletableFuture<List<ProjectDto>> getAllProjects() {
+    CompletableFuture<List<ProjectDTO>> getAllProjects() {
         return CompletableFuture.supplyAsync({
             grailsService.projects.values().collect {
                 grailsService.getProjectInfo(it.rootDirectory.absolutePath)

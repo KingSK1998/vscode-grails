@@ -224,7 +224,7 @@ class FileContentTracker extends BaseProvider {
             isFQCNInitialized = true
             log.info("[FILE_TRACKER] FQCN map initialized with ${fQCNToTextFile.size()} entries")
         } catch (Exception e) {
-            _service.errorService.handleError("Failed to initialize FQCN map", e, ErrorSource.FILE_TRACKER)
+            errorService.handleError("Failed to initialize FQCN map", e, ErrorSource.FILE_TRACKER)
             isFQCNInitialized = false
         }
     }

@@ -29,7 +29,7 @@ class GrailsCompletionProvider extends BaseProvider {
     private static final int MAX_CACHE_SIZE = 100
     private static final long CACHE_TTL_MS = 30_000L
 
-    GrailsCompletionProvider(GrailsService service) {
+GrailsCompletionProvider(GrailsService service) {
         super(service)
     }
 
@@ -159,11 +159,11 @@ class GrailsCompletionProvider extends BaseProvider {
     }
 
     private List<CompletionItem> generateCompletions(CompletionContextInfo context, String prefix, Position position) {
-        def request = new CompletionRequest(
-            context.offsetNode, context.parentNode, prefix, position,
-            [], [] as Set<String>, context.textFile,
-            project.isGrailsProject, _service
-        )
+           def request = new CompletionRequest(
+               context.offsetNode, context.parentNode, prefix, position,
+               [], [] as Set<String>, context.textFile,
+               project.isGrailsProject, service
+           )
 
         CompletionBuilder.buildCompletions(request)
         request.items

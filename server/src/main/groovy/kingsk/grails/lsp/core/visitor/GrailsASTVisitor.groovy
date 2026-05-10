@@ -146,7 +146,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
             // Remove oldest entries
             def toRemove = Math.max(0, entries.size() - (MAX_FILES_IN_MEMORY / 2) as int)
             entries.take(toRemove).each {
-                removeFileFromASTVisitor(it.uri)
+                removeFileFromASTVisitor(it.uri.toString())
                 fileAccessTimes.remove(it.uri) // Clean up access time tracking
             }
         }

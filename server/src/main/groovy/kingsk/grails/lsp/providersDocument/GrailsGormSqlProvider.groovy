@@ -16,8 +16,6 @@ import org.codehaus.groovy.ast.expr.MapEntryExpression
 
 @Slf4j
 @CompileStatic
-@Slf4j
-@CompileStatic
 class GrailsGormSqlProvider extends BaseProvider {
 
     GrailsGormSqlProvider(GrailsService service) {
@@ -48,7 +46,7 @@ class GrailsGormSqlProvider extends BaseProvider {
         properties.each { field ->
             def colName = discoverColumnName(classNode, field.name)
             def colType = mapToSqlType(field.type.name)
-            columns << "    ${colName} ${colType}"
+            columns << "    ${colName} ${colType}".toString()
         }
 
         sql.append(columns.join(",\n"))

@@ -24,7 +24,7 @@ class GrailsDiagnosticService extends BaseProvider {
         super(service)
     }
 
-    protected LanguageClient getClient() { _service.client }
+    protected LanguageClient getClient() { return service.client }
 
     /**
      * Provides incremental workspace diagnostics for the entire workspace.
@@ -41,7 +41,7 @@ class GrailsDiagnosticService extends BaseProvider {
         Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(compiler.errorCollectorOrNull)
 
         if (newDiagnostics.isEmpty()) {
-            _service.errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
+            errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
             clearAllDiagnostics()
             return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport([]))
         }

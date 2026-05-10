@@ -28,8 +28,10 @@ abstract class BaseProvider {
     protected FileContentTracker getFileTracker()       { _service.fileTracker }
     protected GrailsLspConfig getConfig()               { _service.config }
     protected GrailsCompiler getCompiler()              { _service.compiler }
+    protected GrailsService getService()                 { _service }
+    protected GrailsProject getProject()                { _service.getProject() }
+    protected kingsk.grails.lsp.services.ErrorService getErrorService()  { _service.errorService }
     protected GrailsDiagnosticService getDiagnostics()  { _service.diagnostics }
-    protected GrailsProject getProject()                { _service.project }
 
     /**
      * Common pattern: get AST node at position with error handling

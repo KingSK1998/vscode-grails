@@ -1,9 +1,7 @@
 package kingsk.grails.lsp.cache
 
 import spock.lang.Specification
-import groovy.transform.CompileStatic
 
-@CompileStatic
 class LRUCacheSpec extends Specification {
 
     def "should evict entries when maxSize exceeded"() {

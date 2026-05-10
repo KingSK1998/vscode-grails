@@ -38,6 +38,6 @@ class GrailsReferenceProvider extends BaseProvider {
         }
 
         log.debug("[REFERENCES] converted to ${locations.size()} locations")
-        CompletableFuture.completedFuture(locations)
+        CompletableFuture.completedFuture(locations as List<Location>)
     }
 }
