@@ -1,7 +1,7 @@
 # ISSUE-001 · Synchronous Service Initialization
 **Severity**: 🔴 Critical
 **Service**: ServiceContainer.ts
-**Status**: TODO
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -263,10 +263,11 @@ healthCheck(): { healthy: boolean; issues: string[] } {
 ```
 
 ## Subtasks
-- [ ] Add lazy initialization flag to ServiceContainer
-- [ ] Convert non-core services to lazy getters
-- [ ] Add initialization tracking for debugging
-- [ ] Test activation time improvement
+- [x] Add lazy initialization tracking to ServiceContainer
+- [x] Convert non-core services to lazy getters
+- [x] Add getLazyService helper method with timing
+- [x] Update healthCheck for lazy services
+- [x] Test activation time improvement
 
 ## Tradeoffs
 - Slightly more complex getter logic with lazy initialization

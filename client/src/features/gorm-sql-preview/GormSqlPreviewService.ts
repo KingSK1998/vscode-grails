@@ -2,11 +2,17 @@ import * as vscode from "vscode";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import { createWebviewStateManager } from "../../services/webview/WebviewStateManager";
 import { debounce } from "../../utils/DebounceUtils";
+
+interface SqlPreviewState {
+  lastUri?: string;
+}
 
 export class GormSqlPreviewService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
+  private stateManager: ReturnType<typeof createWebviewStateManager<SqlPreviewState>>;
 
   private readonly debouncedRefresh = debounce(
     (uri: vscode.Uri) => {
@@ -21,7 +27,9 @@ export class GormSqlPreviewService implements vscode.Disposable {
     private readonly context: vscode.ExtensionContext,
     private readonly errorService: ErrorService,
     private readonly languageServerManager: LanguageServerManager
-  ) {}
+  ) {
+    this.stateManager = createWebviewStateManager<SqlPreviewState>(context, "gormSqlPreview");
+  }
 
   dispose(): void {
     if (this.disposed) return;
@@ -31,6 +39,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
       this.currentPanel.dispose();
       this.currentPanel = null;
     }
+    void this.stateManager.clearState();
   }
 
   public openPreview(uri: vscode.Uri) {
@@ -44,10 +53,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
       "gormSqlPreview",
       "GORM SQL Preview",
       vscode.ViewColumn.Beside,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-      }
+      this.stateManager.getWebviewOptions()
     );
 
     this.currentPanel.webview.html = this.getHtmlContent();
@@ -64,7 +70,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
   }
 
   private async doRefreshPreview(uri: vscode.Uri): Promise<void> {
-    if (!this.currentPanel) {
+    if (!this.currentPanel || this.disposed) {
       return;
     }
 
@@ -84,6 +90,8 @@ export class GormSqlPreviewService implements vscode.Disposable {
         command: "updateSql",
         sql: sql ?? "-- No SQL generated.",
       });
+
+      await this.stateManager.setState({ lastUri: uri.toString() });
     } catch (error) {
       this.errorService.handleError(
         "Failed to generate SQL preview",

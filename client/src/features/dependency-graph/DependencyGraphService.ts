@@ -3,12 +3,18 @@ import * as vscode from "vscode";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
+import { createWebviewStateManager } from "../../services/webview/WebviewStateManager";
 import { debounce } from "../../utils/DebounceUtils";
 import type { ProjectInfo } from "../models/modelTypes";
+
+interface GraphState {
+  currentConfig?: string;
+}
 
 export class DependencyGraphService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
+  private stateManager: ReturnType<typeof createWebviewStateManager<GraphState>>;
 
   private readonly debouncedRefresh = debounce(
     (project: ProjectInfo) => {
@@ -23,7 +29,9 @@ export class DependencyGraphService implements vscode.Disposable {
     private readonly context: vscode.ExtensionContext,
     private readonly errorService: ErrorService,
     private readonly languageServerManager: LanguageServerManager
-  ) {}
+  ) {
+    this.stateManager = createWebviewStateManager<GraphState>(context, "dependencyGraph");
+  }
 
   dispose(): void {
     if (this.disposed) return;
@@ -33,6 +41,7 @@ export class DependencyGraphService implements vscode.Disposable {
       this.currentPanel.dispose();
       this.currentPanel = null;
     }
+    void this.stateManager.clearState();
   }
 
   public openGraph(project: ProjectInfo) {
@@ -46,18 +55,18 @@ export class DependencyGraphService implements vscode.Disposable {
       return;
     }
 
+    const savedState = this.stateManager.getState();
+
     this.currentPanel = vscode.window.createWebviewPanel(
       "grailsDependencyGraph",
       `Dependency Graph: ${project.name}`,
       column ?? vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, "resources"))],
-      }
+      this.stateManager.getWebviewOptions([
+        vscode.Uri.file(path.join(this.context.extensionPath, "resources")),
+      ])
     );
 
-    this.currentPanel.webview.html = this.getHtmlContent();
+    this.currentPanel.webview.html = this.getHtmlContent(savedState);
 
     this.currentPanel.onDidDispose(
       () => {
@@ -67,12 +76,11 @@ export class DependencyGraphService implements vscode.Disposable {
       this.context.subscriptions
     );
 
-    // Initial load
     this.debouncedRefresh(project);
   }
 
   private async doRefreshGraph(project: ProjectInfo) {
-    if (!this.currentPanel) {
+    if (!this.currentPanel || this.disposed) {
       return;
     }
 
@@ -83,7 +91,6 @@ export class DependencyGraphService implements vscode.Disposable {
         return;
       }
 
-      // Command registered on server: grails.getDependencyGraph
       const graphData: unknown = await client.sendRequest("workspace/executeCommand", {
         command: "grails.getDependencyGraph",
         arguments: [vscode.Uri.file(project.rootPath).toString()],
@@ -103,7 +110,9 @@ export class DependencyGraphService implements vscode.Disposable {
     }
   }
 
-  private getHtmlContent(): string {
+  private getHtmlContent(savedState?: GraphState): string {
+    const currentConfig = savedState?.currentConfig ?? "compileClasspath";
+
     return `<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -137,7 +146,7 @@ export class DependencyGraphService implements vscode.Disposable {
             <script>
                 const vscode = acquireVsCodeApi();
                 let fullData = {};
-                let currentConfig = 'compileClasspath';
+                let currentConfig = '${currentConfig}';
 
                 const svg = d3.select("#graph").append("svg")
                     .attr("width", "100%")

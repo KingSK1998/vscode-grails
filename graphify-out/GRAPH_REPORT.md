@@ -1,7 +1,7 @@
 # Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-11)
 
 ## Corpus Check
-- 75 files · ~105,489 words
+- 75 files · ~105,911 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

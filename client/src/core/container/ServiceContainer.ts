@@ -1,4 +1,4 @@
-import type { Disposable, ExtensionContext } from "vscode";
+import type { ExtensionContext } from "vscode";
 import { ArtifactService } from "../../services/artifacts/ArtifactService";
 import { DebugService } from "../../services/debugging/DebugService";
 import { ErrorService } from "../../services/errors/ErrorService";
@@ -12,9 +12,13 @@ import { StatusBarService } from "../../services/workspace/StatusBarService";
 import { EventBus } from "../events/EventBus";
 import type { ServiceName, ServiceRegistry } from "./ServiceRegistry";
 
+type LazyInitializer<T> = () => T;
+
 export class ServiceContainer {
   private static _instance: ServiceContainer;
   private readonly _services: Partial<ServiceRegistry> = {};
+  private readonly _initializedServices = new Set<ServiceName>();
+  private readonly _lazyInitializers = new Map<ServiceName, LazyInitializer<unknown>>();
 
   private constructor(private readonly context: ExtensionContext) {
     this.initializeServices();
@@ -36,121 +40,151 @@ export class ServiceContainer {
 
   /* ================================ SERVICE ACCESS =============================== */
 
-  /** Get ErrorService - always available */
+  /** Get ErrorService - always available immediately */
   get errorService(): ErrorService {
     return this._services.ErrorService!;
   }
 
-  /** Get StatusBarService - always available */
+  /** Get StatusBarService - always available immediately */
   get statusBarService(): StatusBarService {
     return this._services.StatusBarService!;
   }
 
-  /** Get ConfigurationService - always available */
+  /** Get ConfigurationService - always available immediately */
   get configurationService(): ConfigurationService {
     return this._services.ConfigurationService!;
   }
 
-  /** Get ProjectService - always available */
-  get projectService(): ProjectService {
-    return this._services.ProjectService!;
-  }
-
-  /** Get GradleService - always available */
+  /** Get GradleService - lazy initialized */
   get gradleService(): GradleService {
-    return this._services.GradleService!;
+    return this.getLazyService("GradleService");
   }
 
-  /** Get LogStreamingService - always available */
+  /** Get LogStreamingService - lazy initialized */
   get logStreamingService(): LogStreamingService {
-    return this._services.LogStreamingService!;
+    return this.getLazyService("LogStreamingService");
   }
 
-  /** Get LanguageServerManager - always available */
+  /** Get ProjectService - lazy initialized */
+  get projectService(): ProjectService {
+    return this.getLazyService("ProjectService");
+  }
+
+  /** Get LanguageServerManager - lazy initialized */
   get languageServerManager(): LanguageServerManager {
-    return this._services.LanguageServerManager!;
+    return this.getLazyService("LanguageServerManager");
   }
 
-  /** Get ArtifactService - always available */
+  /** Get ArtifactService - lazy initialized */
   get artifactService(): ArtifactService {
-    return this._services.ArtifactService!;
+    return this.getLazyService("ArtifactService");
   }
 
-  /** Get DebugService - always available */
+  /** Get DebugService - lazy initialized */
   get debugService(): DebugService {
-    return this._services.DebugService!;
+    return this.getLazyService("DebugService");
   }
 
-  /** Get GrailsTestService - always available */
+  /** Get GrailsTestService - lazy initialized */
   get grailsTestService(): GrailsTestService {
-    return this._services.GrailsTestService!;
+    return this.getLazyService("GrailsTestService");
   }
 
   /* ================= GENERIC ACCESS (for special cases) ============ */
 
-  /** Generic getter - only use if the specific getter doesn't exist */
   get<K extends ServiceName>(name: K): ServiceRegistry[K] {
-    const service = this._services[name];
-    if (!service) {
-      throw new Error(`Service "${name}" not found or not initialized`);
+    if (this._initializedServices.has(name)) {
+      return this._services[name] as ServiceRegistry[K];
     }
+    const initializer = this._lazyInitializers.get(name);
+    if (!initializer) {
+      throw new Error(`Service "${name}" not found or has no lazy initializer`);
+    }
+    return this.getLazyService(name);
+  }
+
+  /* ================= LAZY INITIALIZATION HELPER =================== */
+
+  private getLazyService<K extends ServiceName>(name: K): ServiceRegistry[K] {
+    if (this._initializedServices.has(name)) {
+      return this._services[name] as ServiceRegistry[K];
+    }
+
+    const initializer = this._lazyInitializers.get(name);
+    if (!initializer) {
+      throw new Error(`Service "${name}" has no lazy initializer`);
+    }
+
+    const startTime = performance.now();
+    const service = initializer() as ServiceRegistry[K];
+    this._services[name] = service;
+    this._initializedServices.add(name);
+
+    const elapsed = performance.now() - startTime;
+    if (elapsed > 10) {
+      console.log(`[ServiceContainer] Lazy initialized ${name} in ${elapsed.toFixed(1)}ms`);
+    }
+
     return service;
   }
 
   /* ================= INITIALIZATION ================================= */
 
   private initializeServices(): void {
-    // Phase 1: Core services (no dependencies)
     this._services.ErrorService = new ErrorService();
     this._services.StatusBarService = new StatusBarService(this.context);
     this._services.ConfigurationService = new ConfigurationService();
+    this._initializedServices.add("ErrorService");
+    this._initializedServices.add("StatusBarService");
+    this._initializedServices.add("ConfigurationService");
 
-    // Phase 2: Services with dependencies
-    this._services.GradleService = new GradleService(
-      this._services.StatusBarService,
-      this._services.ErrorService
-    );
+    this._lazyInitializers.set("GradleService", () => new GradleService(
+      this._services.StatusBarService!,
+      this._services.ErrorService!
+    ));
 
-    this._services.LogStreamingService = new LogStreamingService(
-      this._services.GradleService,
-      this._services.StatusBarService,
-      this._services.ErrorService
-    );
+    this._lazyInitializers.set("LogStreamingService", () => new LogStreamingService(
+      this.gradleService,
+      this._services.StatusBarService!,
+      this._services.ErrorService!
+    ));
 
-    this._services.ProjectService = new ProjectService(
-      this._services.StatusBarService,
-      this._services.ErrorService,
-      this._services.ConfigurationService,
+    this._lazyInitializers.set("ProjectService", () => new ProjectService(
+      this._services.StatusBarService!,
+      this._services.ErrorService!,
+      this._services.ConfigurationService!,
       EventBus.getInstance()
-    );
+    ));
 
-    this._services.LanguageServerManager = new LanguageServerManager(
+    this._lazyInitializers.set("LanguageServerManager", () => new LanguageServerManager(
       this.context,
-      this._services.StatusBarService,
-      this._services.ErrorService,
-      this._services.ConfigurationService
-    );
+      this._services.StatusBarService!,
+      this._services.ErrorService!,
+      this._services.ConfigurationService!
+    ));
 
-    this._services.ArtifactService = new ArtifactService(this._services.ErrorService);
-    this._services.DebugService = new DebugService(
-      this._services.GradleService,
-      this._services.ErrorService
-    );
-    this._services.GrailsTestService = new GrailsTestService(
+    this._lazyInitializers.set("ArtifactService", () => new ArtifactService(
+      this._services.ErrorService!
+    ));
+
+    this._lazyInitializers.set("DebugService", () => new DebugService(
+      this.gradleService,
+      this._services.ErrorService!
+    ));
+
+    this._lazyInitializers.set("GrailsTestService", () => new GrailsTestService(
       this.context,
-      this._services.ErrorService,
-      this._services.LanguageServerManager,
-      this._services.ProjectService
-    );
+      this._services.ErrorService!,
+      this.languageServerManager,
+      this.projectService
+    ));
   }
 
-  /**
-   * Verify all services are properly initialized and ready.
-   */
+  /* ================= HEALTH CHECK ==================================== */
+
   healthCheck(): { healthy: boolean; issues: string[] } {
     const issues: string[] = [];
 
-    // Check core services
     if (!this._services.ErrorService) {
       issues.push("ErrorService not initialized");
     }
@@ -161,27 +195,28 @@ export class ServiceContainer {
       issues.push("ConfigurationService not initialized");
     }
 
-    // Check dependent services
-    if (!this._services.GradleService) {
-      issues.push("GradleService not initialized");
+    if (this._initializedServices.has("GradleService") && !this._services.GradleService) {
+      issues.push("GradleService marked as initialized but not found");
     }
-    if (!this._services.ProjectService) {
-      issues.push("ProjectService not initialized");
+    if (this._initializedServices.has("ProjectService") && !this._services.ProjectService) {
+      issues.push("ProjectService marked as initialized but not found");
     }
-    if (!this._services.LanguageServerManager) {
-      issues.push("LanguageServerManager not initialized");
+    if (this._initializedServices.has("LanguageServerManager") && !this._services.LanguageServerManager) {
+      issues.push("LanguageServerManager marked as initialized but not found");
     }
 
-    // Test service readiness
     try {
-      const gradleReady = this._services.GradleService?.isReady ?? false;
-      const lspReady = this._services.LanguageServerManager?.isRunning ?? false;
-
-      if (!gradleReady) {
-        issues.push("Gradle API not ready");
+      if (this._initializedServices.has("GradleService")) {
+        const gradleReady = this._services.GradleService?.isReady ?? false;
+        if (!gradleReady) {
+          issues.push("Gradle API not ready");
+        }
       }
-      if (!lspReady) {
-        issues.push("Language Server not running");
+      if (this._initializedServices.has("LanguageServerManager")) {
+        const lspReady = this._services.LanguageServerManager?.isRunning ?? false;
+        if (!lspReady) {
+          issues.push("Language Server not running");
+        }
       }
     } catch (error) {
       issues.push(`Health check failed: ${String(error)}`);
@@ -196,15 +231,21 @@ export class ServiceContainer {
   /* ================= CLEANUP ======================================== */
 
   dispose(): void {
-    const services = Object.values(this._services) as (Disposable | undefined)[];
-    services.forEach(service => {
+    for (const name of this._initializedServices) {
+      const service = this._services[name];
       if (service && "dispose" in service && typeof service.dispose === "function") {
-        service.dispose();
+        try {
+          service.dispose();
+        } catch (error) {
+          console.error(`[ServiceContainer] Error disposing ${String(name)}:`, error);
+        }
       }
-    });
+    }
 
     (Object.keys(this._services) as ServiceName[]).forEach(key => {
       delete this._services[key];
     });
+    this._initializedServices.clear();
+    this._lazyInitializers.clear();
   }
 }

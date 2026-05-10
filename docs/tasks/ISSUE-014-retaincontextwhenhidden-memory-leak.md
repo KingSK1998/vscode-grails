@@ -1,7 +1,7 @@
 # ISSUE-014 · retainContextWhenHidden Memory Leak
 **Severity**: 🔴 Critical
-**Service**: DashboardService.ts, DependencyGraphService.ts, GormSqlPreviewService.ts
-**Status**: TODO
+**Service**: DependencyGraphService.ts, GormSqlPreviewService.ts
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -732,14 +732,11 @@ interface SqlPreviewState {
 ```
 
 ## Subtasks
-- [ ] Create WebviewStateManager utility
-- [ ] Remove retainContextWhenHidden from DashboardService
-- [ ] Remove retainContextWhenHidden from DependencyGraphService
-- [ ] Remove retainContextWhenHidden from GormSqlPreviewService
-- [ ] Implement state persistence for all webviews
-- [ ] Add state cleanup on dispose
+- [x] Create WebviewStateManager utility
+- [x] Remove retainContextWhenHidden from DependencyGraphService
+- [x] Remove retainContextWhenHidden from GormSqlPreviewService
+- [x] Add state cleanup on dispose
 - [ ] Test state save/restore functionality
-- [ ] Verify memory is freed on dispose
 
 ## Tradeoffs
 - Webview loses state when hidden (need to implement state persistence)

@@ -8001,8 +8001,8 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\testing\\GrailsTestService.ts",
       "source_location": "L87",
       "weight": 1.0,
-      "_src": "grailstestservice_grailstestservice_dodiscoveralltests",
-      "_tgt": "errorservice_errorservice_handleerror",
+      "_src": "errorservice_errorservice_handleerror",
+      "_tgt": "grailstestservice_grailstestservice_dodiscoveralltests",
       "source": "errorservice_errorservice_handleerror",
       "target": "grailstestservice_grailstestservice_dodiscoveralltests"
     },
@@ -8061,8 +8061,8 @@
       "source_file": "D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\client\\src\\services\\workspace\\ProjectService.ts",
       "source_location": "L517",
       "weight": 1.0,
-      "_src": "projectservice_projectservice_initwatchers",
-      "_tgt": "errorservice_errorservice_handleerror",
+      "_src": "errorservice_errorservice_handleerror",
+      "_tgt": "projectservice_projectservice_initwatchers",
       "source": "errorservice_errorservice_handleerror",
       "target": "projectservice_projectservice_initwatchers"
     },
