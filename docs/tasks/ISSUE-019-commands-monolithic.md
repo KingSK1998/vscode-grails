@@ -1,7 +1,7 @@
 # ISSUE-019 · Commands.ts Monolithic
 **Severity**: 🟠 High
-**Service**: Commands.ts
-**Status**: TODO
+**Service**: Commands (split into multiple files)
+**Status**: ✅ DONE (Already Implemented)
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem

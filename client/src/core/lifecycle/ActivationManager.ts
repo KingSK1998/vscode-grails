@@ -1,10 +1,8 @@
 import type { Disposable, ExtensionContext } from "vscode";
-import { commands, env, extensions, languages, Uri, window, workspace } from "vscode";
+import { commands, env, extensions, Uri, window, workspace } from "vscode";
 import type { ProjectInfo } from "../../features/models/modelTypes";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
-import { GrailsCodeActionProvider } from "../../services/lsp/handlers/GrailsCodeActionProvider";
-import { GrailsCodeLensProvider } from "../../services/lsp/handlers/GrailsCodeLensProvider";
-import { GspCompletionProvider } from "../../services/lsp/handlers/GspCompletionProvider";
+import { registerLspHandlers } from "../../services/lsp/LspHandlerRegistry";
 import { Commands } from "../../ui/commands";
 import { DiagnosticDecorationProvider } from "../../ui/decorations/DiagnosticDecorationProvider";
 import { GrailsGutterProvider } from "../../ui/decorations/GrailsGutterProvider";
@@ -243,40 +241,7 @@ export class ActivationManager implements Disposable {
    * Setup workspace and configuration event listeners.
    */
   private setupEventListeners(): void {
-    // Register GSP Completion Provider early!
-    this.disposables.push(
-      languages.registerCompletionItemProvider(
-        ["gsp"],
-        new GspCompletionProvider(),
-        "<",
-        '"',
-        "'",
-        ".",
-        ":",
-        "/",
-        "$"
-      )
-    );
-
-    // Register Grails CodeLens Provider
-    this.disposables.push(
-      languages.registerCodeLensProvider(
-        [
-          { scheme: "file", language: "groovy" },
-          { scheme: "file", language: "gsp" },
-        ],
-        new GrailsCodeLensProvider()
-      )
-    );
-
-    // Register CodeAction Provider
-    this.disposables.push(
-      languages.registerCodeActionsProvider(
-        { scheme: "file", language: "groovy" },
-        new GrailsCodeActionProvider(),
-        { providedCodeActionKinds: GrailsCodeActionProvider.providedCodeActionKinds }
-      )
-    );
+    this.disposables.push(...registerLspHandlers());
 
     // Configuration changes
     this.disposables.push(

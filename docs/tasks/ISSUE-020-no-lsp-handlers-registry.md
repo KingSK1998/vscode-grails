@@ -1,4 +1,8 @@
 # ISSUE-020 · No LSP Handlers Folder (Registry)
+**Severity**: 🟡 Medium
+**Service**: LSP Handlers
+**Status**: ✅ DONE
+**Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
 While the files have been moved to `services/lsp/handlers/`, there is no centralized registry or management system for these handlers. They are currently registered manually in `ActivationManager.ts`, which will become unmanageable as more LSP features are added.
