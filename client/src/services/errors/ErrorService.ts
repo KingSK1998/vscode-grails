@@ -39,7 +39,7 @@ export class ErrorService implements Disposable {
     source: ErrorSource = ErrorSource.Extension,
     severity: ErrorSeverity = ErrorSeverity.Error
   ): void {
-    if (!this._disposed) {
+    if (this._disposed) {
       // Fallback to console if service is disposed
       console.error(`[${source}]`, error ?? message);
       return;

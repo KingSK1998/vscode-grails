@@ -2,6 +2,9 @@ import type { Disposable, ExtensionContext } from "vscode";
 import { ProgressLocation, window } from "vscode";
 import { Trace } from "vscode-languageclient";
 import { LanguageClient } from "vscode-languageclient/node";
+import { EventBus } from "../../core/events/EventBus";
+import { EventType } from "../../core/events/eventTypes";
+import type { ProjectDTO } from "../../shared/protocol/project";
 import { Messages } from "../../utils/constants";
 import type { ErrorService } from "../errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
@@ -66,6 +69,9 @@ export class LanguageServerManager implements Disposable {
           // Now start the client - progress events will be captured!
           await this.client.start();
 
+          // ✅ Register Grails custom notifications AFTER start
+          this.registerProjectsSyncHandlers();
+
           this.statusBar.success(Messages.SERVER_STARTED);
 
           return this.client;
@@ -73,7 +79,7 @@ export class LanguageServerManager implements Disposable {
       );
     } catch (error) {
       this.errors.handleError(
-        "Failed to start langauge server",
+        Messages.SERVER_START_FAILED,
         error,
         ErrorSource.LanguageServer,
         ErrorSeverity.Critical
@@ -137,12 +143,12 @@ export class LanguageServerManager implements Disposable {
         break;
 
       case "end": {
-        const endMessage = value.message ?? "Server ready";
+        const endMessage = value.message ?? Messages.SERVER_STARTED;
         progress.report({
           message: endMessage,
           increment: 100,
         });
-        this.statusBar.ready("Language server ready");
+        this.statusBar.ready(Messages.SERVER_STARTED);
         console.log(`[LSP Progress] End: ${endMessage}`);
         break;
       }
@@ -162,6 +168,44 @@ export class LanguageServerManager implements Disposable {
     );
 
     this.disposables.push(messageDisposable);
+  }
+
+  private registerProjectsSyncHandlers(): void {
+    if (!this.client) return;
+
+    const eventBus = EventBus.getInstance();
+
+    // 🔥 FULL PROJECT SYNC
+    const fullSyncDisposable = this.client.onNotification(
+      "grails/projectsFullSync",
+      (projects: ProjectDTO[]) => {
+        console.log("📦 LSP FULL SYNC:", projects.length);
+
+        eventBus.publish({
+          type: EventType.PROJECTS_DISCOVERED,
+          projects,
+          source: "LSP",
+          timestamp: Date.now(),
+        });
+      }
+    );
+
+    // 🔥 SINGLE PROJECT UPDATE
+    const updateDisposable = this.client.onNotification(
+      "grails/projectUpdated",
+      (project: ProjectDTO) => {
+        console.log("🔄 LSP PROJECT UPDATED:", project.name);
+
+        eventBus.publish({
+          type: EventType.PROJECT_CHANGED,
+          project,
+          source: "LSP",
+          timestamp: Date.now(),
+        });
+      }
+    );
+
+    this.disposables.push(fullSyncDisposable, updateDisposable);
   }
 
   private handleServerMessage(type: number, message: string): void {
@@ -218,9 +262,9 @@ export class LanguageServerManager implements Disposable {
     }
 
     try {
-      this.statusBar.sync("Stopping Grails Language Server...");
+      this.statusBar.sync(Messages.SERVER_STOPPED);
       await this.client.stop();
-      this.statusBar.info("Language server stopped");
+      this.statusBar.info(Messages.SERVER_STOPPED_SUCCESS);
     } catch (error) {
       this.errors.handleError(
         "Error stopping language server",
@@ -234,7 +278,7 @@ export class LanguageServerManager implements Disposable {
   }
 
   async restart(): Promise<void> {
-    this.statusBar.sync("Restarting Grails Language Server...");
+    this.statusBar.sync(Messages.EXTENSION_RESTARTING);
     await this.stop();
     const client = await this.start();
     if (!client) {

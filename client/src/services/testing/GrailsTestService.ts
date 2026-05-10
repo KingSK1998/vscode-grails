@@ -1,11 +1,16 @@
 import * as vscode from "vscode";
 import { ServiceContainer } from "../../core/container/ServiceContainer";
+import type { ErrorService } from "../errors/ErrorService";
+import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
 
 export class GrailsTestService {
   private controller: vscode.TestController;
   private container: ServiceContainer = ServiceContainer.getInstance();
 
-  constructor(private context: vscode.ExtensionContext) {
+  constructor(
+    private context: vscode.ExtensionContext,
+    private errorService: ErrorService
+  ) {
     this.controller = vscode.tests.createTestController("grailsTests", "Grails Tests");
     this.context.subscriptions.push(this.controller);
 
@@ -60,7 +65,12 @@ export class GrailsTestService {
         }
       }
     } catch (error) {
-      console.error("Test discovery failed", error);
+      this.errorService.handleError(
+        "Test discovery failed",
+        error,
+        ErrorSource.Testing,
+        ErrorSeverity.Error
+      );
     }
   }
 

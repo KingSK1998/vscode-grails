@@ -1,9 +1,14 @@
 import * as vscode from "vscode";
 import type { ProjectInfo } from "../../features/models/modelTypes";
+import type { ErrorService } from "../errors/ErrorService";
+import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
 import type { GradleService } from "../gradle/GradleService";
 
 export class DebugService {
-  constructor(private gradleService: GradleService) {}
+  constructor(
+    private gradleService: GradleService,
+    private errorService: ErrorService
+  ) {}
 
   async debugGrailsApp(projectInfo: ProjectInfo): Promise<boolean> {
     // Run the bootRun task with JVM debugging enabled
@@ -14,7 +19,12 @@ export class DebugService {
 
     // Start the process but don't await because it runs continuously
     this.gradleService.runTask(projectInfo, "bootRun", ["--debug-jvm"]).catch(err => {
-      console.error("bootRun failed:", err);
+      this.errorService.handleError(
+        "bootRun failed",
+        err,
+        ErrorSource.GradleService,
+        ErrorSeverity.Error
+      );
     });
 
     // Wait a few seconds for the JVM process to bind to port 5005 before attaching

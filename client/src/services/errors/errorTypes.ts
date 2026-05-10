@@ -8,12 +8,15 @@ export enum ErrorSeverity {
 
 /** Service types that can report errors */
 export enum ErrorSource {
-  Extension = "extension",
-  GradleService = "gradle-service",
-  ProjectService = "project-service",
-  LanguageServer = "language-server",
-  Configuration = "configuration",
-  Commands = "commands",
+  Extension = "Extension",
+  GradleService = "GradleService",
+  ProjectService = "ProjectService",
+  LanguageServer = "LanguageServer",
+  Configuration = "Configuration",
+  Commands = "Commands",
+  Artifacts = "Artifacts",
+  Testing = "Testing",
+  UI = "UI",
 }
 
 /** Shape of an error entry kept in memory */

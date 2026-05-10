@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { TreeItemCollapsibleState } from "vscode";
+import { ServiceContainer } from "../core/container/ServiceContainer";
 import type { ArtifactType, ProjectInfo } from "../features/models/modelTypes";
+import { ErrorSeverity, ErrorSource } from "../services/errors/errorTypes";
 import type { GrailsTreeItem } from "../ui/treeExplorer/GrailsTreeItem";
 
 /**
@@ -42,7 +44,12 @@ export class FileScannerUtils {
         }
       }
     } catch (error) {
-      console.error(`Error reading directory ${dirPath}:`, error);
+      ServiceContainer.getInstance().errorService.handleError(
+        `Error reading directory ${dirPath}`,
+        error,
+        ErrorSource.ProjectService,
+        ErrorSeverity.Warning
+      );
     }
 
     return this.sortItems(items);

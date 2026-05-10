@@ -2,8 +2,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import type { ProjectInfo } from "../../features/models/modelTypes";
+import type { ErrorService } from "../errors/ErrorService";
+import { ErrorSeverity, ErrorSource } from "../errors/errorTypes";
 
 export class ArtifactService {
+  constructor(private errorService: ErrorService) {}
   async createController(project: ProjectInfo, name: string): Promise<void> {
     const className = this.ensureSuffix(name, "Controller");
     const packageName = await this.pickPackage(project, "controllers");
@@ -61,7 +64,12 @@ export class ArtifactService {
     const targetFile = path.join(targetDir, `${className}.groovy`);
 
     if (fs.existsSync(targetFile)) {
-      vscode.window.showErrorMessage(`File already exists: ${targetFile}`);
+      this.errorService.handleError(
+        `File already exists: ${targetFile}`,
+        null,
+        ErrorSource.Artifacts,
+        ErrorSeverity.Warning
+      );
       return;
     }
 
