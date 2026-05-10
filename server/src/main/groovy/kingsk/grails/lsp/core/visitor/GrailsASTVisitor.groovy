@@ -43,6 +43,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
 
     // Memory management
     private static final int MAX_FILES_IN_MEMORY = 50
+    private final Map<String, Long> fileAccessTimes = new ConcurrentHashMap<>()
 
     private static class ASTLookupKey {
         ASTNode node
@@ -117,11 +118,16 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
     private final Map<String, Integer> visitCounts = new ConcurrentHashMap<>()
 
     /**
-     * Smart cleanup - only remove files that are safe to remove
+     * Smart cleanup - remove files based on LRU policy
      * Safe = not tracked in fileTracker (not open/active)
      */
     private void cleanupUnusedFiles() {
         if (nodesByURI.size() <= MAX_FILES_IN_MEMORY || !service?.fileTracker) return
+
+        // Update access times for all files
+        nodesByURI.keySet().each { uri ->
+            fileAccessTimes.put(uri, System.currentTimeMillis())
+        }
 
         // Get currently tracked files (open/active files)
         Set<String> trackedUris = service.fileTracker.activeTextFiles*.uri.toSet()
@@ -131,17 +137,21 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
             !trackedUris.contains(uri)
         }
 
-        if (safeToRemove.empty) {
-            log.debug "[AST] No safe files to cleanup - all files are tracked"
-            return
+        // Sort by last access time for LRU eviction
+        if (safeToRemove.size() > MAX_FILES_IN_MEMORY * 0.1) { // 10% threshold
+            def entries = safeToRemove.collect { uri ->
+                [uri: uri, lastAccess: fileAccessTimes.getOrDefault(uri, 0L)]
+            }.sort { it.lastAccess }
+
+            // Remove oldest entries
+            def toRemove = Math.max(0, entries.size() - (MAX_FILES_IN_MEMORY / 2) as int)
+            entries.take(toRemove).each {
+                removeFileFromASTVisitor(it.uri)
+                fileAccessTimes.remove(it.uri) // Clean up access time tracking
+            }
         }
 
-        // Remove safe files
-        safeToRemove.each { uri ->
-            removeFileFromASTVisitor(uri)
-        }
-
-        log.debug "[AST] Cleaned up ${safeToRemove.size()} unused files from memory"
+        log.debug "[AST] Cleaned up ${Math.min(safeToRemove.size(), MAX_FILES_IN_MEMORY * 0.1)} unused files from memory based on LRU policy"
     }
 
     /**
@@ -408,6 +418,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
     }
 
     void visitClass(ClassNode node) {
+        service.astService.detectGrailsArtifacts(node, sourceUnit.name)
         def uri = TextFile.normalizePath(sourceUnit.name)
         classNodesByURI[uri].add(node)
         pushASTNode(node)

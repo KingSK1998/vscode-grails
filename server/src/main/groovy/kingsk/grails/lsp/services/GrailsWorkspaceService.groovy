@@ -3,10 +3,12 @@ package kingsk.grails.lsp.services
 import com.google.gson.JsonObject
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
+import kingsk.grails.lsp.dto.ProjectDto
 import kingsk.grails.lsp.providersWorkspace.GrailsWorkspaceSymbolProvider
 import kingsk.grails.lsp.utils.GrailsUtils
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import org.eclipse.lsp4j.services.WorkspaceService
 
 import java.util.concurrent.CompletableFuture
@@ -34,7 +36,7 @@ class GrailsWorkspaceService implements WorkspaceService {
             if (settings instanceof JsonObject && settings.has(GrailsUtils.GRAILS_LSP)) {
                 def config = settings.getAsJsonObject(GrailsUtils.GRAILS_LSP)
                 grailsService.config.updateFromClient(config)
-                reportingService.info("[WORKSPACE] Grails LSP configuration updated successfully")
+                grailsService.errorService.handleError("Grails LSP configuration updated successfully", null, ErrorSource.CONFIGURATION, ErrorSeverity.INFO)
 
                 if (grailsService.config.shouldRecompileOnConfigChange && grailsService.project) {
                     log.info "[WORKSPACE] Recompiling project due to configuration change"
@@ -43,13 +45,12 @@ class GrailsWorkspaceService implements WorkspaceService {
                         grailsService.project.rootDirectory.toURI().toString(),
                         "Configuration Change Refresh"
                     )
-                } else {
-                    log.warn "[WORKSPACE] No '${GrailsUtils.GRAILS_LSP}' configuration found"
                 }
+            } else {
+                log.warn "[WORKSPACE] No '${GrailsUtils.GRAILS_LSP}' configuration found"
             }
         } catch (Exception e) {
-            log.error "[WORKSPACE] Failed to apply configuration changes", e
-            reportingService.error("[WORKSPACE] Failed to apply Grails LSP configuration", e)
+            grailsService.errorService.handleError("Failed to apply configuration changes", e, ErrorSource.CONFIGURATION)
         }
     }
 
@@ -114,5 +115,23 @@ class GrailsWorkspaceService implements WorkspaceService {
                 })
         }
         return CompletableFuture.completedFuture(null)
+    }
+
+    @JsonRequest("grails/projectInfo")
+    CompletableFuture<ProjectDto> getProjectInfo(Map<String, Object> params) {
+        String projectDir = params.get("projectDir") as String
+
+        return CompletableFuture.supplyAsync({
+            grailsService.getProjectInfo(projectDir)
+        })
+    }
+
+    @JsonRequest("grails/projects")
+    CompletableFuture<List<ProjectDto>> getAllProjects() {
+        return CompletableFuture.supplyAsync({
+            grailsService.projects.values().collect {
+                grailsService.getProjectInfo(it.rootDirectory.absolutePath)
+            }
+        })
     }
 }

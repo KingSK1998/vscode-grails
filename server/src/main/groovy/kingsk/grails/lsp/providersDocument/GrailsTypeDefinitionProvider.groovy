@@ -27,7 +27,7 @@ class GrailsTypeDefinitionProvider extends BaseProvider {
 		def offsetNode = getNodeAtPosition(textDocument, position)
 		if (!offsetNode) {
 			log.debug("[TYPE DEFINITION] No offset node found")
-			return nullResult()
+			return CompletableFuture.completedFuture(Either.forLeft([]))
 		}
 		log.debug("[TYPE DEFINITION] offsetNode: $offsetNode")
 		
@@ -35,22 +35,22 @@ class GrailsTypeDefinitionProvider extends BaseProvider {
 		def grailsDefinitionNode = GrailsArtefactUtils.tryToResolveGrailsTypeDefinition(offsetNode, visitor)
 		
 		// Fall back to standard Groovy type resolution if Grails-specific resolution fails
-		ASTNode definitionNode = grailsDefinitionNode ?: GrailsASTHelper.getTypeDefinition(offsetNode, visitor)
+		def definitionNode = grailsDefinitionNode ?: GrailsASTHelper.getTypeDefinition(offsetNode, visitor)
 		if (!definitionNode || definitionNode.lineNumber == -1 || definitionNode.columnNumber == -1) {
 			log.debug("[TYPE DEFINITION] No valid definition node found")
-			return emptyResult(Either.forLeft([]))
+			return CompletableFuture.completedFuture(Either.forLeft([]))
 		}
 		log.debug("[TYPE DEFINITION] definitionNode: $definitionNode")
 		
-		def definitionURI = visitor.getURI(definitionNode) ?: textDocument.uri
+		String definitionURI = visitor.getURI(definitionNode) ?: textDocument.uri
 		
-		Location location = ASTUtils.astNodeToLocation(definitionNode, definitionURI)
+		def location = ASTUtils.astNodeToLocation(definitionNode, definitionURI)
 		if (!location) {
 			log.debug("[TYPE DEFINITION] Could not create location")
-			return emptyResult(Either.forLeft([]))
+			return CompletableFuture.completedFuture(Either.forLeft([]))
 		}
 		
 		log.debug("[TYPE DEFINITION] location: $location")
-		return CompletableFuture.completedFuture(Either.forLeft([location]))
+		CompletableFuture.completedFuture(Either.forLeft([location]))
 	}
 }

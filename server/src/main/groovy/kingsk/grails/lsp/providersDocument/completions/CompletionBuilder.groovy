@@ -16,7 +16,7 @@ class CompletionBuilder {
 
     // Strategy classes - instantiated with request injection per completion
     private static final List<Class<? extends BaseCompletionStrategy>> STRATEGY_CLASSES = [
-        ImportStrategy, // {OFFSET} {95 - Very High - import statements are specific}
+        kingsk.grails.lsp.providersDocument.ImportStrategy, // {OFFSET} {95 - Very High - import statements are specific}
         PropertyExpressionStrategy, // {BOTH} {90 - High - Very specific context}
         // GrailsArtifactStrategy, // {OFFSET - 92 - High - Grails-specific} - Grails-specific completions
         NamedParameterStrategy,

@@ -141,8 +141,8 @@ class GrailsCompiler {
      */
     void updateClassLoader() {
         def urls = grailsService.projects.values()
-            .collectMany { project -> 
-                project.dependencies.collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) } 
+            .collectMany { project ->
+                project.dependencies.collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) }
             }
             .findAll()
             .unique()
@@ -163,7 +163,7 @@ class GrailsCompiler {
         try {
             def uri = grailsService.project?.rootDirectory?.toURI()?.toString()
             if (uri) {
-                kingsk.grails.lsp.utils.DynamicDiscoveryUtil.updateClassGraph(uri, classLoader)
+                grailsService.discoveryService.updateClassGraph(uri, classLoader, grailsService.errorService)
             }
         } catch (Exception e) {
             log.warn("[COMPILER] Failed to initialize ClassGraph: ${e.message}")
@@ -188,7 +188,7 @@ class GrailsCompiler {
             // Ensure compiler is properly initialized
             if (!compilerConfig) updateCompilerOptions()
             if (!classLoader) updateClassLoader()
-            
+
             // If we don't have a compilation unit, we should probably do a full compile or at least initialize one
             if (!compilationUnit) {
                 log.info("[COMPILER] No compilation unit found, initializing fresh for incremental build")
@@ -199,7 +199,7 @@ class GrailsCompiler {
 
             // True incremental: instead of refreshing the whole unit, we update only the specific source and its dependents
             // The GrailsCU.removeSourceUnit method handles AST-level module preservation
-            
+
             Set<TextFile> filesToUpdate = []
             if (textFile.uri.endsWith('.gsp')) {
                 // For GSP, we usually only care about the modified file context
@@ -210,23 +210,23 @@ class GrailsCompiler {
             }
 
             log.info("[COMPILER] Incremental update for ${filesToUpdate.size()} files")
-            
+
             filesToUpdate.each { file ->
                 // 1. Remove old version if it exists in current CU
                 if (compilationUnit.sources.containsKey(file.uri)) {
                     SourceUnit old = compilationUnit.sources[file.uri]
                     compilationUnit.removeSourceUnit(old)
                 }
-                
+
                 // 2. Add new version (handling GSP transpilation if needed)
-                String compilationText = file.uri.endsWith('.gsp') ? 
-                    kingsk.grails.lsp.utils.GspToGroovyConverter.convertToVirtualGroovy(file.text) : 
+                String compilationText = file.uri.endsWith('.gsp') ?
+                    kingsk.grails.lsp.utils.GspToGroovyConverter.convertToVirtualGroovy(file.text) :
                     file.text
-                
+
                 compilationUnit.addSource(file.uri, compilationText)
                 log.debug("[COMPILER] Source unit updated in CU: ${file.name}")
             }
-            
+
             previousContext = textFile.uri
 
             // Determine optimal phase for incremental developer feedback
@@ -423,12 +423,12 @@ class GrailsCompiler {
         int phase = grailsService.config.compilerPhase
         // if some phase is set by user then use that phase
         if (phase != GrailsUtils.DEFAULT_COMPILATION_PHASE) return phase
-        
+
         // For project-wide indexing, stick to CONVERSION to avoid loading the user's dev environment heavily
         if (isFullCompilation) {
             return Phases.CONVERSION
         }
-        
+
         // if no phase and is big project then use semantic analysis
         if (grailsService.project.sourceFileCount > 100) return Phases.SEMANTIC_ANALYSIS
         // if small project then can use more detailed analysis

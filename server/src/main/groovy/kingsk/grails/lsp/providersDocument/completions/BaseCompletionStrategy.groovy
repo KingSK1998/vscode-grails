@@ -81,7 +81,7 @@ abstract class BaseCompletionStrategy {
 		// Add Groovy dynamic extension methods (e.g. DefaultGroovyMethods)
 		ClassNode expressionType = GrailsASTHelper.getTypeOfNode(expression, request.visitor)
 		if (expressionType) {
-			kingsk.grails.lsp.utils.DynamicDiscoveryUtil.getMethodsForType(expressionType).each { String dgmMethod ->
+			request.service.discoveryService.getMethodsForType(expressionType).each { String dgmMethod ->
 				// don't add if already collected from MemberExtractor
 				if (!items.methods.any { it.name == dgmMethod }) {
 					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(dgmMethod)

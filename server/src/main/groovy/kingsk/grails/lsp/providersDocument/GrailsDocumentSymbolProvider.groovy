@@ -24,35 +24,34 @@ class GrailsDocumentSymbolProvider extends BaseProvider {
 		super(service)
 	}
 	
-	CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> provideDocumentSymbols(TextDocumentIdentifier textDocument) {
-		if (!textDocument?.uri) {
-			log.warn("[DOCUMENT_SYMBOLS] TextDocument or URI is null")
-			return emptyResult([])
-		}
-		
-		String uri = TextFile.normalizePath(textDocument.uri)
-		log.info("[DOCUMENT_SYMBOLS] Providing document symbols for: ${uri}")
-		
-		if (!visitor || visitor.empty) {
-			log.warn("[DOCUMENT_SYMBOLS] AST visitor unavailable for: $uri")
-			return emptyResult([])
-		}
-		
-		try {
-			List<Either<SymbolInformation, DocumentSymbol>> symbols = []
-			// Get only class nodes - much cleaner than 351+ random nodes
-			visitor.getClassNodes(uri).each { classNode ->
-				DocumentSymbol symbol = ASTUtils.astNodeToDocumentSymbol(classNode, uri)
-				if (symbol) {
-					symbols.add(Either.forRight(symbol))
-				}
-			}
-			
-			log.debug("[DOCUMENT_SYMBOLS] Found ${symbols.size()} symbols for: $uri")
-			return CompletableFuture.completedFuture(symbols)
-		} catch (Exception e) {
-			log.error("[DOCUMENT_SYMBOLS] Error providing symbols for $uri: ${e.message}", e)
-			return emptyResult([])
-		}
-	}
+    CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> provideDocumentSymbols(TextDocumentIdentifier textDocument) {
+        if (!textDocument?.uri) {
+            log.warn("[DOCUMENT_SYMBOLS] TextDocument or URI is null")
+            return emptyResult([] as List<Either<SymbolInformation, DocumentSymbol>>)
+        }
+
+        String uri = TextFile.normalizePath(textDocument.uri)
+        log.info("[DOCUMENT_SYMBOLS] Providing document symbols for: ${uri}")
+
+        if (!visitor || visitor.empty) {
+            log.warn("[DOCUMENT_SYMBOLS] AST visitor unavailable for: $uri")
+            return emptyResult([] as List<Either<SymbolInformation, DocumentSymbol>>)
+        }
+
+        try {
+            List<Either<SymbolInformation, DocumentSymbol>> symbols = []
+            visitor.getClassNodes(uri).each { classNode ->
+                def symbol = ASTUtils.astNodeToDocumentSymbol(classNode, uri)
+                if (symbol) {
+                    symbols << Either.forRight(symbol)
+                }
+            }
+
+            log.debug("[DOCUMENT_SYMBOLS] Found ${symbols.size()} symbols for: $uri")
+            CompletableFuture.completedFuture(symbols)
+        } catch (Exception e) {
+            log.error("[DOCUMENT_SYMBOLS] Error providing symbols for $uri: ${e.message}", e)
+            emptyResult([] as List<Either<SymbolInformation, DocumentSymbol>>)
+        }
+    }
 }

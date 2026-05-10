@@ -18,10 +18,6 @@ class GrailsFormattingProvider extends BaseProvider {
     }
 
     CompletableFuture<List<? extends TextEdit>> provideFormatting(TextDocumentIdentifier textDocument, FormattingOptions options) {
-        // In a real implementation, we would use a Groovy formatter (like Npm 'groovy-formatter' or a Java-based one).
-        // For now, we implement a basic indentation-based formatter logic placeholder or return empty.
-        // Actually, let's provide a simple "stub" that would be replaced by a real engine.
-        
-        return CompletableFuture.completedFuture([])
+        CompletableFuture.completedFuture([] as List<TextEdit>)
     }
 }

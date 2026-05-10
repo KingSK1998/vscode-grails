@@ -21,22 +21,23 @@ class GrailsReferenceProvider extends BaseProvider {
 		super(service)
 	}
 	
-	CompletableFuture<List<? extends Location>> provideReferences(TextDocumentIdentifier textDocument, Position position, ReferenceContext context) {
-		ASTNode offsetNode = getNodeAtPosition(textDocument, position)
-		if (!offsetNode) {
-			log.debug("[REFERENCES] No offset node found")
-			return emptyResult([])
-		}
-		log.debug("[REFERENCES] offsetNode: $offsetNode")
-		
-		List<ASTNode> references = GrailsASTHelper.getReferences(offsetNode, visitor, position)
-		log.debug("[REFERENCES] found ${references.size()} references")
-		
-		List<Location> locations = references.collect { node ->
-			visitor.getURI(node) ? ASTUtils.astNodeToLocation(node, visitor.getURI(node)) : null
-		}?.findAll { location -> location != null }
-		
-		log.debug("[REFERENCES] converted to ${locations.size()} locations")
-		return CompletableFuture.completedFuture(locations)
-	}
+    CompletableFuture<List<? extends Location>> provideReferences(TextDocumentIdentifier textDocument, Position position, ReferenceContext context) {
+        def offsetNode = getNodeAtPosition(textDocument, position)
+        if (!offsetNode) {
+            log.debug("[REFERENCES] No offset node found")
+            return emptyResult([] as List<Location>)
+        }
+        log.debug("[REFERENCES] offsetNode: $offsetNode")
+
+        def references = GrailsASTHelper.getReferences(offsetNode, visitor, position)
+        log.debug("[REFERENCES] found ${references.size()} references")
+
+        def locations = references.findResults { node ->
+            def uri = visitor.getURI(node)
+            uri ? ASTUtils.astNodeToLocation(node, uri) : null
+        }
+
+        log.debug("[REFERENCES] converted to ${locations.size()} locations")
+        CompletableFuture.completedFuture(locations)
+    }
 }

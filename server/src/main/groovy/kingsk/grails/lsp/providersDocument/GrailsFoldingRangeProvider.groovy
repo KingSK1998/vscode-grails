@@ -21,37 +21,34 @@ class GrailsFoldingRangeProvider extends BaseProvider {
 
     CompletableFuture<List<FoldingRange>> provideFoldingRanges(TextDocumentIdentifier textDocument) {
         List<FoldingRange> ranges = []
-        
-        // Use visitor.getClassNodes() to handle multi-root
+
         visitor.getClassNodes().each { ClassNode clazz ->
             if (visitor.getURI(clazz) != textDocument.uri) return
 
-            // Fold class body
             if (clazz.lineNumber > 0 && clazz.lastLineNumber > clazz.lineNumber) {
                 ranges << new FoldingRange(clazz.lineNumber - 1, clazz.lastLineNumber - 1)
             }
-            
+
             clazz.methods.each { MethodNode method ->
                 if (method.lineNumber > 0 && method.lastLineNumber > method.lineNumber) {
                     ranges << new FoldingRange(method.lineNumber - 1, method.lastLineNumber - 1)
                 }
             }
         }
-        
-        // Fold Import statements as a block
-        // We can get them from the compilation unit's module
-        org.codehaus.groovy.ast.ModuleNode module = visitor.getModuleNode(textDocument.uri)
-        if (module != null && module.imports != null && module.imports.size() > 1) {
-            List<org.codehaus.groovy.ast.ImportNode> imports = module.imports
-            int start = imports.get(0).lineNumber
-            int end = imports.get(imports.size() - 1).lineNumber
+
+        def module = visitor.getModuleNode(textDocument.uri)
+        if (module?.imports && module.imports.size() > 1) {
+            def imports = module.imports
+            int start = imports[0].lineNumber
+            int end = imports[-1].lineNumber
             if (end > start) {
-                FoldingRange range = new FoldingRange(start - 1, end - 1)
-                range.kind = FoldingRangeKind.Imports
-                ranges.add(range)
+                ranges << new FoldingRange(start - 1, end - 1).with {
+                    it.kind = FoldingRangeKind.Imports
+                    it
+                }
             }
         }
-        
-        return CompletableFuture.completedFuture(ranges)
+
+        CompletableFuture.completedFuture(ranges)
     }
 }

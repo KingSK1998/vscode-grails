@@ -3,27 +3,28 @@ package kingsk.grails.lsp.services
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.core.compiler.GrailsCompiler
+import kingsk.grails.lsp.model.ErrorSource
+import kingsk.grails.lsp.model.ErrorSeverity
 import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.providersDocument.BaseProvider
 import kingsk.grails.lsp.utils.DiagnosticUtils
 import org.codehaus.groovy.control.ErrorCollector
 import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.services.LanguageClient
 
 import java.util.concurrent.CompletableFuture
 
 /** Provides diagnostics for workspace and documents using the Grails compiler. */
 @Slf4j
 @CompileStatic
-class GrailsDiagnosticService {
-    private final GrailsCompiler compiler
-    private final GrailsService grailsService
-
+class GrailsDiagnosticService extends BaseProvider {
     private Map<String, Set<Diagnostic>> currentDiagnostics = [:]
 
     GrailsDiagnosticService(GrailsService service) {
-        this.compiler = service.compiler
-        this.grailsService = service
+        super(service)
     }
+
+    protected LanguageClient getClient() { _service.client }
 
     /**
      * Provides incremental workspace diagnostics for the entire workspace.
@@ -40,7 +41,7 @@ class GrailsDiagnosticService {
         Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(compiler.errorCollectorOrNull)
 
         if (newDiagnostics.isEmpty()) {
-            log.info "[DIAGNOSTICS] No diagnostics found for $identifier"
+            _service.errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
             clearAllDiagnostics()
             return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport([]))
         }
@@ -65,11 +66,11 @@ class GrailsDiagnosticService {
             currentDiagnostics[uri] = diagnosticSet
             def fullReport = new WorkspaceFullDocumentDiagnosticReport(diagnosticSet.toList(), uri, 1)
             fullReport.resultId = newResultId
-            return new WorkspaceDocumentDiagnosticReport(fullReport)
+            new WorkspaceDocumentDiagnosticReport(fullReport)
         }.findAll()
 
         log.debug "[DIAGNOSTICS] Workspace diagnostics completed with ${reports.size()} reports"
-        return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport(items: reports))
+        CompletableFuture.completedFuture(new WorkspaceDiagnosticReport(items: reports))
     }
 
     /**
@@ -111,7 +112,7 @@ class GrailsDiagnosticService {
         currentDiagnostics[uri] = newDiagnostics
         log.debug "[DIAGNOSTICS] Diagnostics updated for $uri"
         def fullReport = new RelatedFullDocumentDiagnosticReport(resultId: newResultId, items: newDiagnostics.toList())
-        return CompletableFuture.completedFuture(new DocumentDiagnosticReport(fullReport))
+        CompletableFuture.completedFuture(new DocumentDiagnosticReport(fullReport))
     }
 
     /**
@@ -119,7 +120,7 @@ class GrailsDiagnosticService {
      * @param uri The URI of the file to publish diagnostics for
      */
     void publishDiagnosticsForFile(String uri) {
-        if (!grailsService.client) {
+        if (!client) {
             log.debug "[DIAGNOSTICS] No client connected, skipping diagnostic publishing for ${uri}"
             return
         }
@@ -130,11 +131,11 @@ class GrailsDiagnosticService {
             ).get()
 
             if (diagnosticReport.getLeft()?.items) {
-                grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnosticReport.getLeft().items))
+                client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnosticReport.getLeft().items))
                 log.debug "[DIAGNOSTICS] Published ${diagnosticReport.getLeft().items.size()} diagnostics for ${uri}"
             } else {
                 // Clear diagnostics if no issues found
-                grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, []))
+                client.publishDiagnostics(new PublishDiagnosticsParams(uri, []))
                 log.debug "[DIAGNOSTICS] Cleared diagnostics for ${uri}"
             }
         } catch (Exception e) {
@@ -143,21 +144,20 @@ class GrailsDiagnosticService {
     }
 
     void publishWorkspaceDiagnostics(String identifier = "grails-workspace-diagnostics") {
-        if (!grailsService.client) {
+        if (!client) {
             log.debug "[DIAGNOSTICS] No client connected, skipping workspace diagnostic publishing"
             return
         }
 
         try {
-            WorkspaceDiagnosticReport report = provideWorkspaceDiagnostics(identifier, null)
-                .get()
+            WorkspaceDiagnosticReport report = provideWorkspaceDiagnostics(identifier, null).get()
 
             report.items.each { documentReport ->
                 if (documentReport instanceof WorkspaceFullDocumentDiagnosticReport) {
                     WorkspaceFullDocumentDiagnosticReport fullReport = (WorkspaceFullDocumentDiagnosticReport) documentReport
                     String uri = fullReport.getUri()
                     List<Diagnostic> diagnostics = fullReport.getItems()
-                    grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics))
+                    client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics))
                     log.debug "[DIAGNOSTICS] Published workspace diagnostics for ${uri}: ${diagnostics.size()} items"
                 }
             }
@@ -173,8 +173,8 @@ class GrailsDiagnosticService {
      */
     void clearDiagnosticsForFile(String uri) {
         currentDiagnostics.remove(uri)
-        if (grailsService.client) {
-            grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, []))
+        if (client) {
+            client.publishDiagnostics(new PublishDiagnosticsParams(uri, []))
             log.debug "[DIAGNOSTICS] Cleared diagnostics for ${uri}"
         }
     }
@@ -183,8 +183,8 @@ class GrailsDiagnosticService {
      * Publishes a list of diagnostics for a file.
      */
     void publishDiagnostics(String uri, List<Diagnostic> diagnostics) {
-        if (grailsService.client) {
-            grailsService.client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics))
+        if (client) {
+            client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnostics))
         }
     }
 
@@ -214,6 +214,6 @@ class GrailsDiagnosticService {
         }
 
         log.debug("[DIAGNOSTICS] Extracted diagnostics across ${diagnostics.size()} files")
-        return diagnostics
+        diagnostics
     }
 }

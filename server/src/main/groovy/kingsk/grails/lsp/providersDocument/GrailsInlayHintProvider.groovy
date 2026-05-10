@@ -42,82 +42,58 @@ class GrailsInlayHintProvider extends BaseProvider {
 	 * @param visitor the GrailsASTVisitor for the document
 	 * @return a list of InlayHint objects
 	 */
-	CompletableFuture<List<InlayHint>> provideInlayHints(TextDocumentIdentifier textDocument, Range range) {
-		if (!textDocument?.uri) {
-			log.warn("[INLAY_HINTS] TextDocument or URI is null")
-			return CompletableFuture.completedFuture([])
-		}
-		
-		log.info "[INLAY_HINTS] uri=${textDocument.uri}, range=${range}"
-		
-		if (!visitor) {
-			log.warn("[INLAY_HINTS] AST visitor is null")
-			return CompletableFuture.completedFuture([])
-		}
-		
-		if (visitor.empty) {
-			log.warn("[INLAY_HINTS] AST visitor is empty")
-			return CompletableFuture.completedFuture([])
-		}
-		
-		def uri = TextFile.normalizePath(textDocument.uri)
-		def classNodes = visitor.getClassNodes(uri)
-		if (!classNodes) return CompletableFuture.completedFuture([])
-		
-		List<InlayHint> hints = []
-		
-		classNodes.each { ClassNode classNode ->
-			// Process class-level hints
-			processClassNode(classNode, hints)
-			
-			// Methods
-			classNode.methods.each { processMethodNode(it, hints) }
-			
-			// Constructors
-			classNode.declaredConstructors.each { processMethodNode(it, hints) }
-			
-			// Object Initializers statements (only process once)
-			classNode.objectInitializerStatements.each { collectHintsFromStatement(it, visitor, hints) }
-		}
-		
-		log.info("[INLAY_HINTS] provided for document: ${uri}, found ${hints.size()} hints")
-		return CompletableFuture.completedFuture(hints)
-	}
-	
-	/**
-	 * Resolves additional information for an inlay hint when requested.
-	 *
-	 * @param unresolved The unresolved inlay hint
-	 * @return The resolved inlay hint with additional information
-	 */
-	@CompileDynamic
-	static CompletableFuture<InlayHint> resolveInlayHint(InlayHint unresolved) {
-		// Extract data from the unresolved hint
-		if (!unresolved?.data) {
-			return CompletableFuture.completedFuture(unresolved)
-		}
-		
-		try {
-			// Add more detailed information to the tooltip
-			String variableName = unresolved.data?.variableName as String
-			String typeName = unresolved.data?.inferredType as String
-			
-			if (variableName && typeName) {
-				String detailedTooltip = """
-					|Variable: ${variableName}
-					|Type: ${typeName}
-					|
-					|This type was inferred by the Grails LSP.
-					|""".stripMargin()
-				
-				unresolved.tooltip = Either.forLeft(detailedTooltip)
-			}
-			return CompletableFuture.completedFuture(unresolved)
-		} catch (Exception e) {
-			log.error("[INLAY_HINTS] Error resolving inlay hint: ${e.message}", e)
-			return CompletableFuture.completedFuture(unresolved)
-		}
-	}
+    CompletableFuture<List<InlayHint>> provideInlayHints(TextDocumentIdentifier textDocument, Range range) {
+        if (!textDocument?.uri) {
+            log.warn("[INLAY_HINTS] TextDocument or URI is null")
+            return emptyResult([] as List<InlayHint>)
+        }
+
+        log.info "[INLAY_HINTS] uri=${textDocument.uri}, range=${range}"
+
+        if (!visitor?.empty == false) {
+            log.warn("[INLAY_HINTS] AST visitor is null or empty")
+            return emptyResult([] as List<InlayHint>)
+        }
+
+        def uri = TextFile.normalizePath(textDocument.uri)
+        def classNodes = visitor.getClassNodes(uri)
+        if (!classNodes) return emptyResult([] as List<InlayHint>)
+
+        List<InlayHint> hints = []
+
+        classNodes.each { ClassNode classNode ->
+            processClassNode(classNode, hints)
+            classNode.methods.each { processMethodNode(it, hints) }
+            classNode.declaredConstructors.each { processMethodNode(it, hints) }
+            classNode.objectInitializerStatements.each { collectHintsFromStatement(it, visitor, hints) }
+        }
+
+        log.info("[INLAY_HINTS] provided for document: ${uri}, found ${hints.size()} hints")
+        CompletableFuture.completedFuture(hints)
+    }
+
+    @CompileDynamic
+    static CompletableFuture<InlayHint> resolveInlayHint(InlayHint unresolved) {
+        if (!unresolved?.data) return CompletableFuture.completedFuture(unresolved)
+
+        try {
+            def variableName = unresolved.data?.variableName as String
+            def typeName = unresolved.data?.inferredType as String
+
+            if (variableName && typeName) {
+                unresolved.tooltip = Either.forLeft("""
+                    |Variable: ${variableName}
+                    |Type: ${typeName}
+                    |
+                    |This type was inferred by the Grails LSP.
+                    |""".stripMargin())
+            }
+            CompletableFuture.completedFuture(unresolved)
+        } catch (Exception e) {
+            log.error("[INLAY_HINTS] Error resolving inlay hint: ${e.message}", e)
+            CompletableFuture.completedFuture(unresolved)
+        }
+    }
 	
 	/**
 	 * Process a class node for Grails-specific hints

@@ -6,14 +6,15 @@ import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.TextFile
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import groovy.yaml.YamlSlurper
 
 import java.util.concurrent.CompletableFuture
 
+import kingsk.grails.lsp.model.ErrorSource
+import kingsk.grails.lsp.model.ErrorSeverity
+
 @Slf4j
 @CompileStatic
-class GrailsYamlIntelligenceProvider {
-    private final GrailsService service
+class GrailsYamlIntelligenceProvider extends BaseProvider {
 
     // Common Grails properties
     private static final Map<String, String> COMMON_PROPERTIES = [
@@ -40,22 +41,21 @@ class GrailsYamlIntelligenceProvider {
     ]
 
     GrailsYamlIntelligenceProvider(GrailsService service) {
-        this.service = service
+        super(service)
     }
 
     CompletableFuture<Either<List<CompletionItem>, CompletionList>> provideCompletions(TextFile file, Position position) {
-        return CompletableFuture.supplyAsync({ ->
-            if (!isYamlFile(file.uri)) return Either.<List<CompletionItem>, CompletionList>forLeft([])
+        CompletableFuture.supplyAsync {
+            if (!isYamlFile(file.uri)) return Either.forLeft([])
 
             String lineText = file.textAtLine(position.line) ?: ""
-            // Simple prefix extraction for YAML
             String prefix = ""
             int character = position.character
             if (character > 0 && character <= lineText.length()) {
-                StringBuilder sb = new StringBuilder()
+                def sb = new StringBuilder()
                 for (int i = character - 1; i >= 0; i--) {
                     char c = lineText.charAt(i)
-                    if (Character.isWhitespace(c) || c == ':' || c == '-') break
+                    if (Character.isWhitespace(c) || c == (char) ':' || c == (char) '-') break
                     sb.append(c)
                 }
                 prefix = sb.reverse().toString()
@@ -64,42 +64,38 @@ class GrailsYamlIntelligenceProvider {
             List<CompletionItem> items = []
             COMMON_PROPERTIES.each { String key, String desc ->
                 if (key.startsWith(prefix) || prefix == "") {
-                    CompletionItem item = new CompletionItem(key)
+                    def item = new CompletionItem(key)
                     item.kind = CompletionItemKind.Property
                     item.detail = "Grails Property"
                     item.documentation = Either.forLeft(desc)
-                    items.add(item)
+                    items << item
                 }
             }
-            return Either.<List<CompletionItem>, CompletionList>forLeft(items)
-        } as java.util.function.Supplier<Either<List<CompletionItem>, CompletionList>>)
+            Either.forLeft(items)
+        }
     }
 
     CompletableFuture<Hover> provideHover(TextFile file, Position position) {
-        return CompletableFuture.supplyAsync({ ->
+        CompletableFuture.supplyAsync {
             if (!isYamlFile(file.uri)) return null
 
             String lineText = file.textAtLine(position.line) ?: ""
-            // Find the property key under cursor
             String key = findKeyAtPosition(lineText, position.character)
             if (key && COMMON_PROPERTIES.containsKey(key)) {
-                Hover hover = new Hover()
-                MarkupContent content = new MarkupContent()
-                content.kind = MarkupKind.MARKDOWN
-                content.value = "**Grails Property**: `${key}`\n\n${COMMON_PROPERTIES[key]}"
-                hover.contents = content
-                return hover
+                new Hover().with {
+                    it.contents = new MarkupContent(MarkupKind.MARKDOWN, "**Grails Property**: `${key}`\n\n${COMMON_PROPERTIES[key]}")
+                    it
+                }
+            } else {
+                null
             }
-            return null
-        })
+        }
     }
 
     CompletableFuture<List<? extends Location>> provideDefinition(TextFile file, Position position) {
-        return CompletableFuture.supplyAsync({ ->
-            // For now, definition in YAML might just point back or to related envs
-            // In a more complex impl, could point to where it's used in Groovy code
-            return []
-        })
+        CompletableFuture.supplyAsync {
+            [] as List<Location>
+        }
     }
 
     /**
@@ -110,43 +106,43 @@ class GrailsYamlIntelligenceProvider {
 
         List<Diagnostic> diagnostics = []
         try {
-            // Very basic line-by-line analysis for sensitive keys
-            List<String> lines = file.text.readLines()
+            def lines = file.text.readLines()
             lines.eachWithIndex { String line, int idx ->
                 SENSITIVE_KEYS.each { String sensitiveKey ->
                     if (line.toLowerCase().contains(sensitiveKey) && line.contains(":")) {
-                        // Check if it has a hardcoded value (not a variable reference)
-                        String[] parts = line.split(":", 2)
+                        def parts = line.split(":", 2)
                         if (parts.length > 1) {
                             String value = parts[1].trim()
                             if (value && !value.startsWith('${') && !value.startsWith('$')) {
-                                Diagnostic d = new Diagnostic()
-                                d.range = new Range(new Position(idx, 0), new Position(idx, line.length()))
-                                d.severity = DiagnosticSeverity.Warning
-                                d.message = "Sensitive information '${sensitiveKey}' detected. Consider moving this to a .env file and using \${VARIABLE_NAME}."
-                                d.source = "Grails LSP"
-                                diagnostics.add(d)
+                                def d = new Diagnostic().with {
+                                    it.range = new Range(new Position(idx, 0), new Position(idx, line.length()))
+                                    it.severity = DiagnosticSeverity.Warning
+                                    it.message = "Sensitive information '${sensitiveKey}' detected. Consider moving this to a .env file and using \${VARIABLE_NAME}."
+                                    it.source = "Grails LSP"
+                                    it
+                                }
+                                diagnostics << d
                             }
                         }
                     }
                 }
             }
-            service.diagnostics.publishDiagnostics(file.uri, diagnostics)
+            _service.diagnostics.publishDiagnostics(file.uri, diagnostics)
         } catch (Exception e) {
-            log.warn("Failed to analyze YAML for sensitive info: ${e.message}")
+            _service.errorService.handleError("Failed to analyze YAML for sensitive info", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
         }
     }
 
     private boolean isYamlFile(String uri) {
-        return uri.endsWith(".yml") || uri.endsWith(".yaml")
+        uri.endsWith(".yml") || uri.endsWith(".yaml")
     }
 
     private String findKeyAtPosition(String line, int character) {
-        // Simple search for key before ':'
         int colonIdx = line.indexOf(":")
         if (colonIdx != -1 && character <= colonIdx) {
-            return line.substring(0, colonIdx).trim()
+            line.substring(0, colonIdx).trim()
+        } else {
+            null
         }
-        return null
     }
 }

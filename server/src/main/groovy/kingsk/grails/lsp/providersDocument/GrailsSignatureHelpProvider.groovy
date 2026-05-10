@@ -25,47 +25,46 @@ class GrailsSignatureHelpProvider extends BaseProvider {
     }
 
     CompletableFuture<SignatureHelp> provideSignatureHelp(TextDocumentIdentifier textDocument, Position position, SignatureHelpContext context) {
-        ASTNode offset = getNodeAtPosition(textDocument, position)
+        def offset = getNodeAtPosition(textDocument, position)
         if (!offset) {
             log.debug("[SIGNATURE] Offset Node is null, returning empty Signature.")
             return emptyResult(new SignatureHelp([], -1, -1))
         }
 
-        ASTNode parentNode = visitor.getParent(offset)
+        def parentNode = visitor.getParent(offset)
         int activeParamIndex = -1
-        MethodCall methodCall = null
+        def methodCall = offset instanceof ArgumentListExpression ? parentNode as MethodCall : null
+        
         if (offset instanceof ArgumentListExpression) {
-            methodCall = parentNode as MethodCall
             if (!methodCall) {
                 log.debug("[SIGNATURE] method call is null, returning empty Signature.")
                 return emptyResult(new SignatureHelp([], -1, -1))
             }
 
-            List<Expression> expressions = offset.getExpressions()
-            activeParamIndex = getActiveParameter(position, expressions)
+            activeParamIndex = getActiveParameter(position, offset.expressions)
         }
 
-        List<MethodNode> methods = GrailsASTHelper.getMethodOverloadsFromCallExpression(methodCall, visitor)
+        def methods = GrailsASTHelper.getMethodOverloadsFromCallExpression(methodCall, visitor)
         if (!methods) {
             log.debug("[SIGNATURE] methods is empty, returning empty Signature.")
             return emptyResult(new SignatureHelp([], -1, -1))
         }
 
-        List<SignatureInformation> information = methods.collect { method ->
-            String label = ASTUtils.astNodeToName(method)
-            MarkupContent documentation = DocumentationHelper.getDocumentation(method, service, DocumentationType.SIGNATURE_HELP)
-            List<ParameterInformation> parameters = method.parameters.collect { param ->
-                String paramName = ASTUtils.astNodeToName(param)
-                MarkupContent paramDocs = DocumentationHelper.getDocumentation(method, service, DocumentationType.SIGNATURE_HELP)
-                return new ParameterInformation(paramName, paramDocs)
+        def information = methods.collect { method ->
+            def label = ASTUtils.astNodeToName(method)
+            def documentation = DocumentationHelper.getDocumentation(method, project.isGrailsProject, visitor, DocumentationType.SIGNATURE_HELP)
+            def parameters = method.parameters.collect { param ->
+                def paramName = ASTUtils.astNodeToName(param)
+                def paramDocs = DocumentationHelper.getDocumentation(method, project.isGrailsProject, visitor, DocumentationType.SIGNATURE_HELP)
+                new ParameterInformation(paramName, paramDocs)
             }
 
-            return new SignatureInformation(label, documentation, parameters)
+            new SignatureInformation(label, documentation, parameters)
         }
 
-        MethodNode bestMethod = GrailsASTHelper.getMethodFromCallExpression(methodCall, visitor, activeParamIndex)
+        def bestMethod = GrailsASTHelper.getMethodFromCallExpression(methodCall, visitor, activeParamIndex)
         log.info("[SIGNATURE] Provided workspace symbols for document")
-        return CompletableFuture.completedFuture(new SignatureHelp(information, methods.indexOf(bestMethod), activeParamIndex))
+        CompletableFuture.completedFuture(new SignatureHelp(information, methods.indexOf(bestMethod), activeParamIndex))
     }
 
     private static int getActiveParameter(Position position, List<Expression> expressions) {

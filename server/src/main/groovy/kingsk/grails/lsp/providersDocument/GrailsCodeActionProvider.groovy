@@ -19,47 +19,41 @@ class GrailsCodeActionProvider extends BaseProvider {
 
     CompletableFuture<List<Either<Command, CodeAction>>> provideCodeActions(CodeActionParams params) {
         List<Either<Command, CodeAction>> actions = []
-        
+
         // 1. Check for missing service injections (Auto-Dependency Injection)
-        // We look at diagnostics in the range to see if there's an "unresolved" error
         params.context.diagnostics.each { diagnostic ->
             if (diagnostic.message.contains("variable") && diagnostic.message.contains("unresolved")) {
-                // Extract variable name from message or range
-                // For simplicity, let's say we found 'userService' is missing
                 String varName = extractVarName(params.textDocument.uri, diagnostic.range)
-                if (varName && varName.endsWith("Service")) {
-                    CodeAction injectionAction = createInjectionAction(params.textDocument.uri, varName)
-                    Either<Command, CodeAction> either = Either.forRight(injectionAction)
-                    actions.add(either)
+                if (varName?.endsWith("Service")) {
+                    actions << Either.forRight(createInjectionAction(params.textDocument.uri, varName))
                 }
             }
         }
 
         // 2. Add "Generate Controller Action" if in a controller
         String uri = TextFile.normalizePath(params.textDocument.uri)
-        Set<ClassNode> classNodes = visitor.allClassNodes.get(uri)
-        ClassNode currentClass = classNodes ? classNodes.find { true } : null
-        
-        if (currentClass && currentClass.name.endsWith("Controller")) {
-            CodeAction action = new CodeAction("Generate index action")
+        def classNodes = visitor.allClassNodes[uri]
+        def currentClass = classNodes?.find { true }
+
+        if (currentClass?.name?.endsWith("Controller")) {
+            def action = new CodeAction("Generate index action")
             action.kind = CodeActionKind.QuickFix
             action.command = new Command("Generate index", "grails.generateAction", [params.textDocument.uri, "index"])
-            Either<Command, CodeAction> either = Either.forRight(action)
-            actions.add(either)
+            actions << Either.forRight(action)
         }
 
-        return CompletableFuture.completedFuture(actions)
+        CompletableFuture.completedFuture(actions)
     }
 
     private String extractVarName(String uri, Range range) {
-        TextFile textFile = service.fileTracker.getTextFile(uri)
+        def textFile = fileTracker.getTextFile(uri)
         if (!textFile) return null
-        
+
         try {
-            String line = textFile.text.split("\n")[range.start.line]
-            return line.substring(range.start.character, range.end.character)
+            def lines = textFile.text.readLines()
+            lines[range.start.line].substring(range.start.character, range.end.character)
         } catch (Exception e) {
-            return null
+            null
         }
     }
 

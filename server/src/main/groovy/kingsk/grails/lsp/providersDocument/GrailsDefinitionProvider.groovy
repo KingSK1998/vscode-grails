@@ -17,35 +17,32 @@ import java.util.concurrent.CompletableFuture
 @Slf4j
 @CompileStatic
 class GrailsDefinitionProvider extends BaseProvider {
-	
-	GrailsDefinitionProvider(GrailsService service) {
-		super(service)
-	}
-	
-	CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> provideDefinition(TextDocumentIdentifier textDocument, Position position) {
-		ASTNode offsetNode = getNodeAtPosition(textDocument, position)
-		if (!offsetNode) {
-			log.debug("[DEFINITION] No offset node found")
-			return emptyResult(Either.forLeft([]))
-		}
-		log.debug("[DEFINITION] offsetNode: ${offsetNode.class.simpleName}")
-		
-		ASTNode definitionNode = getDefinitionNode(offsetNode, false)
-		if (!definitionNode || definitionNode.lineNumber == -1 || definitionNode.columnNumber == -1) {
-			log.debug("[DEFINITION] No valid definition node found")
-			return emptyResult(Either.forLeft([]))
-		}
-		log.debug("[DEFINITION] definitionNode: ${definitionNode.class.simpleName}")
-		
-		def definitionURI = visitor.getURI(definitionNode) ?: TextFile.normalizePath(textDocument.uri)
-		Location location = ASTUtils.astNodeToLocation(definitionNode, definitionURI)
-		
-		if (!location) {
-			log.debug("[DEFINITION] Could not create location")
-			return emptyResult(Either.forLeft([]))
-		}
-		
-		log.debug("[DEFINITION] location: $location")
-		return CompletableFuture.completedFuture(Either.forLeft(Collections.singletonList(location)))
-	}
+
+    GrailsDefinitionProvider(GrailsService service) {
+        super(service)
+    }
+
+    CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> provideDefinition(TextDocumentIdentifier textDocument, Position position) {
+        def offsetNode = getNodeAtPosition(textDocument, position)
+        if (!offsetNode) {
+            log.debug("[DEFINITION] No offset node found")
+            return emptyResult(Either.forLeft([]))
+        }
+
+        def definitionNode = getDefinitionNode(offsetNode, false)
+        if (!definitionNode || definitionNode.lineNumber == -1 || definitionNode.columnNumber == -1) {
+            log.debug("[DEFINITION] No valid definition node found")
+            return emptyResult(Either.forLeft([]))
+        }
+
+        String definitionURI = visitor.getURI(definitionNode) ?: TextFile.normalizePath(textDocument.uri)
+        def location = ASTUtils.astNodeToLocation(definitionNode, definitionURI)
+
+        if (!location) {
+            log.debug("[DEFINITION] Could not create location")
+            return emptyResult(Either.forLeft([]))
+        }
+
+        CompletableFuture.completedFuture(Either.forLeft([location]))
+    }
 }

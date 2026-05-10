@@ -1,7 +1,9 @@
 package kingsk.grails.lsp.model
 
+import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 
+@CompileStatic
 @EqualsAndHashCode(excludes = ['version', 'fileState'])
 class TextFile {
 	String uri
@@ -23,13 +25,13 @@ class TextFile {
 	private TextFile() {}
 	
 	static TextFile createForTest(String uri, String text) {
-		return new TextFile().tap {
-			it.name = extractFileName(uri)
-			it.uri = uri
-			it.updateText(text)
-			it.nameWithoutExtension = extractNameWithoutExtension(uri)
-			it.fileState = FileState.OPENED
-		}
+		TextFile tf = new TextFile()
+		tf.uri = uri
+		tf.name = extractFileName(uri)
+		tf.updateText(text)
+		tf.nameWithoutExtension = extractNameWithoutExtension(uri)
+		tf.fileState = FileState.OPENED
+		return tf
 	}
 	
 	static TextFile create(String uri, String text) {

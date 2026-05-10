@@ -16,33 +16,33 @@ import java.util.concurrent.CompletableFuture
 @Slf4j
 @CompileStatic
 class GrailsHoverProvider extends BaseProvider {
-	
-	GrailsHoverProvider(GrailsService grailsService) {
-		super(grailsService)
-	}
-	
-	CompletableFuture<Hover> provideHover(TextDocumentIdentifier textDocument, Position position) {
-		ASTNode offsetNode = getNodeAtPosition(textDocument, position)
-		if (!offsetNode) {
-			log.debug("[HOVER] No ASTNode found at the specified position.")
-			return nullResult()
-		}
-		
-		ASTNode definitionNode = getDefinitionNode(offsetNode, false)
-		if (!definitionNode) {
-			// If we can't find a definition node, try to use the offset node directly
-			definitionNode = offsetNode
-			log.debug("[HOVER] Using offset node as definition node: ${definitionNode.class.simpleName}")
-		}
-		
-		// Use DocumentationHelper for consistent documentation generation
-		MarkupContent documentation = DocumentationHelper.getDocumentation(definitionNode, service, DocumentationType.HOVER)
-		if (!documentation?.value) {
-			log.debug("[HOVER] No hover content found for node type: ${definitionNode.class.simpleName}")
-			return nullResult()
-		}
-		
-		Hover hover = new Hover(documentation)
-		return CompletableFuture.completedFuture(hover)
-	}
+
+    GrailsHoverProvider(GrailsService service) {
+        super(service)
+    }
+
+    CompletableFuture<Hover> provideHover(TextDocumentIdentifier textDocument, Position position) {
+        def offsetNode = getNodeAtPosition(textDocument, position)
+        if (!offsetNode) {
+            log.debug("[HOVER] No ASTNode found at the specified position.")
+            return nullResult()
+        }
+
+        def definitionNode = getDefinitionNode(offsetNode, false) ?: offsetNode
+
+        // Use DocumentationHelper for consistent documentation generation
+        def documentation = DocumentationHelper.getDocumentation(
+            definitionNode,
+            project?.isGrailsProject ?: false,
+            visitor,
+            DocumentationType.HOVER
+        )
+
+        if (!documentation?.value) {
+            log.debug("[HOVER] No hover content found for node type: ${definitionNode.class.simpleName}")
+            return nullResult()
+        }
+
+        CompletableFuture.completedFuture(new Hover(documentation))
+    }
 }

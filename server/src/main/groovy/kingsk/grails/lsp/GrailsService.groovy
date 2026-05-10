@@ -4,13 +4,15 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.GrailsLspConfig
-import kingsk.grails.lsp.model.GrailsProject
-import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.model.*
+import kingsk.grails.lsp.protocol.GrailsLanguageClient
+import kingsk.grails.lsp.protocol.dto.ProjectDTO
+import kingsk.grails.lsp.protocol.mapper.ProjectMapper
+import kingsk.grails.lsp.providersDocument.GrailsGormSqlProvider
+import kingsk.grails.lsp.providersWorkspace.GrailsDependencyProvider
+import kingsk.grails.lsp.providersWorkspace.GrailsTestDiscoveryProvider
 import kingsk.grails.lsp.services.*
-import kingsk.grails.lsp.providersDocument.*
-import kingsk.grails.lsp.providersWorkspace.*
+import kingsk.grails.lsp.utils.ProjectDiffUtil
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 
@@ -22,18 +24,19 @@ import java.util.concurrent.TimeUnit
 @Slf4j
 @CompileStatic
 class GrailsService implements LanguageClientAware {
-    LanguageClient client
+
+    GrailsLanguageClient client
     Map<String, GrailsProject> projects = [:]
     String activeProjectUri
 
-    GrailsProject getProject() {
-        return projects[activeProjectUri]
+    private final Map<String, ProjectDTO> lastSent = [:]
+
+    @Override
+    void connect(LanguageClient client) {
+        this.client = client as GrailsLanguageClient
+//        progressService.connect(client)
     }
 
-    GrailsProject getProjectForUri(String uri) {
-        GrailsProject project = projects.values().find { GrailsProject p -> uri.startsWith(p.rootDirectory.toURI().toString()) }
-        return project ?: getProject()
-    }
     final GrailsWorkspaceService workspace
     final GrailsTextDocumentService document
 
@@ -41,9 +44,12 @@ class GrailsService implements LanguageClientAware {
     final GrailsCompiler compiler
 
     final FileContentTracker fileTracker
+    final ASTService astService
     final GrailsASTVisitor visitor
     final GrailsDiagnosticService diagnostics
     final ProgressService progressService
+    final ErrorService errorService
+    final DiscoveryService discoveryService
     final GrailsDependencyProvider dependencyProvider
     final GrailsGormSqlProvider gormSqlProvider
     final GrailsTestDiscoveryProvider testDiscoveryProvider
@@ -53,10 +59,13 @@ class GrailsService implements LanguageClientAware {
     private final Executor backgroundExecutor = Executors.newCachedThreadPool()
 
     GrailsService() {
-        this.gradle = new GradleService()
+        this.errorService = new ErrorService(this)
+        this.discoveryService = new DiscoveryService()
+        this.gradle = new GradleService(this)
         this.fileTracker = new FileContentTracker(this)
         this.compiler = new GrailsCompiler(this)
-        this.progressService = new ProgressService()
+        this.astService = new ASTService(this)
+        this.progressService = new ProgressService(this)
         this.diagnostics = new GrailsDiagnosticService(this)
         this.document = new GrailsTextDocumentService(this)
         this.workspace = new GrailsWorkspaceService(this)
@@ -65,12 +74,6 @@ class GrailsService implements LanguageClientAware {
         this.gormSqlProvider = new GrailsGormSqlProvider(this)
         this.testDiscoveryProvider = new GrailsTestDiscoveryProvider(this)
         this.config = new GrailsLspConfig()
-    }
-
-    @Override
-    void connect(LanguageClient client) {
-        this.client = client
-        progressService.connect(client)
     }
 
     /**
@@ -89,15 +92,23 @@ class GrailsService implements LanguageClientAware {
     void refreshAndReindexWorkspace(String projectDir, String title = "Workspace Refresh", boolean async = true) {
         Runnable task = {
             progressService.begin(title, "Loading project...")
-            GrailsProject newProject = gradle.getGrailsProject(projectDir)
-            if (!newProject) {
-                progressService.error("Invalid Grails project at $projectDir")
-                log.warn("[GrailsService] Invalid project: $projectDir")
+
+            GrailsProject project = gradle.getGrailsProject(projectDir)
+            if (!project) {
+                errorService.handleError(
+                    "Invalid Grails project at $projectDir",
+                    null,
+                    ErrorSource.GRADLE_SERVICE,
+                    ErrorSeverity.CRITICAL
+                )
                 return
             }
-            
-            projects[projectDir] = newProject
+
+            projects[projectDir] = project
             if (!activeProjectUri) activeProjectUri = projectDir
+
+            // notify client about the new project
+            publishProject(project)
 
             progressService.update("Project loaded", 20)
 
@@ -152,6 +163,51 @@ class GrailsService implements LanguageClientAware {
             return
         }
         visitor.visitSourceUnit(sourceUnit)
+    }
+
+    ProjectDTO getProjectInfo(String projectDir) {
+        GrailsProject project = projects[projectDir]
+
+        if (project == null) {
+            project = gradle.getGrailsProject(projectDir)
+            if (project == null) return null
+            projects[projectDir] = project
+        }
+
+        return ProjectMapper.toDTO(project)
+    }
+
+    void notifyAllProjects() {
+        List<ProjectDTO> dtos = projects.values()
+            .collect { ProjectMapper.toDTO(it) }
+
+        client.notifyAllProjects(dtos)
+    }
+
+    private void publishProject(GrailsProject project) {
+
+        ProjectDTO newDto = ProjectMapper.toDTO(project)
+        ProjectDTO oldDto = lastSent.get(newDto.id)
+
+        if (!oldDto) {
+            client.projectUpdated(newDto)   // first time → full
+        } else {
+            def patch = ProjectDiffUtil.diff(oldDto, newDto)
+            if (patch) {
+                client.projectPatched(patch)
+            }
+        }
+
+        lastSent.put(newDto.id, newDto)
+    }
+
+    GrailsProject getProject() {
+        return projects[activeProjectUri]
+    }
+
+    GrailsProject getProjectForUri(String uri) {
+        GrailsProject project = projects.values().find { GrailsProject p -> uri.startsWith(p.rootDirectory.toURI().toString()) }
+        return project ?: getProject()
     }
 
     /**

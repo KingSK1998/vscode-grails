@@ -68,7 +68,7 @@ class GrailsTextDocumentService implements TextDocumentService {
         this.documentSymbolProvider = new GrailsDocumentSymbolProvider(service)
         this.codeLensProvider = new GrailsCodeLensProvider(service)
         this.inlayHintProvider = new GrailsInlayHintProvider(service)
-        this.renameProvider = new GrailsRenameProvider(service.visitor, service.fileTracker)
+        this.renameProvider = new GrailsRenameProvider(service)
         this.semanticTokensProvider = new GrailsSemanticTokensProvider(service)
         this.yamlProvider = new GrailsYamlIntelligenceProvider(service)
 
@@ -82,52 +82,62 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     @Override
     void didOpen(DidOpenTextDocumentParams params) {
-        log.info("[DOCUMENT] - Opened: ${params.textDocument.uri}")
-        service.activeProjectUri = service.projects.keySet().find { params.textDocument.uri.startsWith(it) } ?: service.activeProjectUri
-        TextFile textFile = service.fileTracker.didOpenFile(params)
-        if (!textFile) return
-        service.compileAndVisitAST(textFile)
+        try {
+            log.info("[DOCUMENT] - Opened: ${params.textDocument.uri}")
+            service.activeProjectUri = service.projects.keySet().find { params.textDocument.uri.startsWith(it) } ?: service.activeProjectUri
+            def textFile = service.fileTracker.didOpenFile(params)
+            if (textFile) {
+                service.compileAndVisitAST(textFile)
+            }
+        } catch (Exception e) {
+            service.errorService.handleError("Failed to handle didOpen", e)
+        }
     }
 
     @Override
     void didChange(DidChangeTextDocumentParams params) {
-        log.info("[DOCUMENT] - Changed: ${params.textDocument.uri}")
-        TextFile textFile = service.fileTracker.didChangeFile(params)
-        if (!textFile) return
+        try {
+            log.info("[DOCUMENT] - Changed: ${params.textDocument.uri}")
+            def textFile = service.fileTracker.didChangeFile(params)
+            if (!textFile) return
 
-        // Clear cache for this file before reprocessing
-        completionProvider.clearCaches(textFile.uri)
+            completionProvider.clearCaches(textFile.uri)
 
-        // Debounce actual compilation by 500ms
-        compileTasks.remove(textFile.uri)?.cancel(false)
-        def uriString = textFile.uri
-        compileTasks[uriString] = debounceExecutor.schedule({ ->
-            try {
-                // Fetch the latest state before compiling
-                TextFile latestTextFile = service.fileTracker.getTextFile(uriString)
-                if (latestTextFile) {
-                    service.compileAndVisitAST(latestTextFile)
+            compileTasks.remove(textFile.uri)?.cancel(false)
+            def uriString = textFile.uri
+            compileTasks[uriString] = debounceExecutor.schedule({ ->
+                try {
+                    def latestTextFile = service.fileTracker.getTextFile(uriString)
+                    if (latestTextFile) {
+                        service.compileAndVisitAST(latestTextFile)
+                    }
+                } catch (Exception e) {
+                    service.errorService.handleError("Error in debounced compile", e)
                 }
-            } catch (Exception e) {
-                log.error("[DOCUMENT] Error in debounced compile: ${e.message}", e)
-            }
-        } as Runnable, 500L, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } as Runnable, 500L, java.util.concurrent.TimeUnit.MILLISECONDS)
+        } catch (Exception e) {
+            service.errorService.handleError("Failed to handle didChange", e)
+        }
     }
 
     @Override
     void didClose(DidCloseTextDocumentParams params) {
-        log.info("[DOCUMENT] - Closed: ${params.textDocument.uri}")
-        TextFile textFile = service.fileTracker.didCloseFile(params)
-        if (!textFile) return
-        service.visitor.removeFileWithDependencies(textFile.uri)
-        service.diagnostics.clearDiagnosticsForFile(textFile.uri)
-        completionProvider.clearCaches(textFile.uri)
+        try {
+            log.info("[DOCUMENT] - Closed: ${params.textDocument.uri}")
+            def textFile = service.fileTracker.didCloseFile(params)
+            if (textFile) {
+                service.visitor.removeFileWithDependencies(textFile.uri)
+                service.diagnostics.clearDiagnosticsForFile(textFile.uri)
+                completionProvider.clearCaches(textFile.uri)
+            }
+        } catch (Exception e) {
+            service.errorService.handleError("Failed to handle didClose", e)
+        }
     }
 
     @Override
     void didSave(DidSaveTextDocumentParams params) {
         log.info("[DOCUMENT] - Saved: ${params.textDocument.uri}")
-        //		fileTracker.didSaveFile(params)
     }
 
     //==========================================================//

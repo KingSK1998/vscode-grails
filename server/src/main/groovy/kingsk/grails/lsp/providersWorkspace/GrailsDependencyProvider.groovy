@@ -8,6 +8,9 @@ import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import java.nio.file.Files
 
+import kingsk.grails.lsp.model.ErrorSource
+import kingsk.grails.lsp.model.ErrorSeverity
+
 @Slf4j
 @CompileStatic
 class GrailsDependencyProvider {
@@ -82,7 +85,7 @@ allprojects {
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to extract dependency graph", e)
+            service.errorService.handleError("Failed to extract dependency graph", e, ErrorSource.GRADLE_SERVICE)
         } finally {
             Files.deleteIfExists(initScript.toPath())
         }

@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providersDocument.completions
 
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.providersDocument.CompletionRequest
-import kingsk.grails.lsp.utils.DynamicDiscoveryUtil
 import org.codehaus.groovy.ast.ASTNode
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
@@ -40,7 +39,7 @@ class KeywordStrategy extends BaseCompletionStrategy {
 	
 	private void addLanguageKeywords(CompletionRequest request) {
 		// Use dynamic discovery instead of hardcoded list
-		List<String> keywords = DynamicDiscoveryUtil.getLanguageKeywords()
+		List<String> keywords = request.service.discoveryService.getLanguageKeywords()
 		
 		keywords.each { keyword ->
 			CompletionItem item = new CompletionItem(keyword)

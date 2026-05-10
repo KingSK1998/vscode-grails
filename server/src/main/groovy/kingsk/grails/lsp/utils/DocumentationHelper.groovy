@@ -24,40 +24,29 @@ import java.util.jar.JarFile
 @Slf4j
 class DocumentationHelper {
 	
-	// Main abstraction - single function to remember
-	static MarkupContent getDocumentation(ASTNode node, GrailsService grailsService, DocumentationType type = DocumentationType.HOVER) {
-		if (!grailsService?.project) return new MarkupContent(MarkupKind.MARKDOWN, "No project context available")
-		return resolveDocumentation(node, grailsService.project.isGrailsProject, grailsService.visitor, type)
-	}
-	
-	// Alternative with explicit parameters if you prefer
-	static MarkupContent getDocumentation(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor, DocumentationType type = DocumentationType.HOVER) {
-		return resolveDocumentation(node, isGrailsProject, visitor, type)
-	}
-	
-	// Simplified text-only version for cases that don't need markup
-	static String getDocumentationText(ASTNode node, GrailsService grailsService, DocumentationType type = DocumentationType.HOVER) {
-		if (!grailsService?.project) return new MarkupContent(MarkupKind.MARKDOWN, "No project context available")
-		return getDocumentation(node, grailsService, type).value
-	}
-	
-	static String getDocumentationText(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor, DocumentationType type = DocumentationType.HOVER) {
-		return getDocumentation(node, isGrailsProject, visitor, type).value
-	}
-	
-	static boolean hasDocumentation(ASTNode node, GrailsService service) {
-		if (!node) return false
-		
-		if (node instanceof AnnotatedNode && node.groovydoc.present) {
-			return true
-		}
-		
-		if (service.project.isGrailsProject) {
-			return grailsArtifactToString(node, service.visitor.getURI(node))?.trim()
-		}
-		
-		return false
-	}
+    // Main abstraction - single function to remember
+    static MarkupContent getDocumentation(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor, DocumentationType type = DocumentationType.HOVER) {
+        resolveDocumentation(node, isGrailsProject, visitor, type)
+    }
+
+    // Simplified text-only version for cases that don't need markup
+    static String getDocumentationText(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor, DocumentationType type = DocumentationType.HOVER) {
+        getDocumentation(node, isGrailsProject, visitor, type).value
+    }
+
+    static boolean hasDocumentation(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor) {
+        if (!node) return false
+
+        if (node instanceof AnnotatedNode && node.groovydoc?.present) {
+            return true
+        }
+
+        if (isGrailsProject) {
+            return grailsArtifactToString(node, visitor.getURI(node))?.trim() ? true : false
+        }
+
+        false
+    }
 	
 	// Core resolution logic
 	private static MarkupContent resolveDocumentation(ASTNode node, boolean isGrailsProject, GrailsASTVisitor visitor, DocumentationType type) {

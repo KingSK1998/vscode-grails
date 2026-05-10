@@ -20,19 +20,17 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Slf4j
 @CompileStatic
-class GrailsCompletionProvider {
-    private final GrailsService service
-
+class GrailsCompletionProvider extends BaseProvider {
     // Context-aware cache - key based on AST context, not position
-    private final Map<String, CompletionCache> completionCache = new ConcurrentHashMap<>()
+    private final Map<String, CompletionCache> completionCache = [:] as ConcurrentHashMap
 
-    private static final Set<Character> HARD_TRIGGERS = ['.', ':', '(', '['] as Set<Character>
-    private static final Set<Character> SOFT_TRIGGERS = ['\t', '\n', ' '] as Set<Character>
+    private static final Set<Character> HARD_TRIGGERS = ['.' as char, ':' as char, '(' as char, '[' as char] as Set<Character>
+    private static final Set<Character> SOFT_TRIGGERS = ['\t' as char, '\n' as char, ' ' as char] as Set<Character>
     private static final int MAX_CACHE_SIZE = 100
     private static final long CACHE_TTL_MS = 30_000L
 
-    GrailsCompletionProvider(GrailsService grailsService) {
-        this.service = grailsService
+    GrailsCompletionProvider(GrailsService service) {
+        super(service)
     }
 
     /** Entry point for textDocument/completion */
@@ -41,16 +39,16 @@ class GrailsCompletionProvider {
         Position position,
         CompletionContext context
     ) {
-        return CompletableFuture.supplyAsync {
+        CompletableFuture.supplyAsync {
             try {
                 log.info("[COMPLETION] Providing Completions for: ${textDocument.uri}:${position.line}:${position.character}")
-                TextFile textFile = service.fileTracker.getTextFile(textDocument.uri)
-                return doProvideCompletions(textFile, position, context)
+                def textFile = fileTracker.getTextFile(textDocument.uri)
+                doProvideCompletions(textFile, position, context)
             } catch (CancellationException e) {
                 throw e
             } catch (Exception e) {
                 log.error("[COMPLETION] Completion error for ${textDocument.uri}:${position.line}:${position.character}", e)
-                return Either.forLeft(Collections.emptyList())
+                Either.forLeft([])
             }
         } as CompletableFuture<Either<List<CompletionItem>, CompletionList>>
     }
@@ -62,10 +60,10 @@ class GrailsCompletionProvider {
             throw new CancellationException('completion interrupted')
         }
         if (!file?.text) {
-            return Either.forLeft(Collections.emptyList())
+            return Either.forLeft([])
         }
 
-        TextFile patchedFile = service.compiler.getPatchedSourceUnitTextFile(file)
+        def patchedFile = compiler.getPatchedSourceUnitTextFile(file)
         if (file.text.length() != patchedFile.text.length()) {
             file = patchedFile
         }
@@ -76,53 +74,52 @@ class GrailsCompletionProvider {
         Character lastChar = getLastCharacter(lineText, position.character)
 
         // Get AST nodes for context
-        ASTNode offsetNode = service.visitor.getNodeAtPosition(file.uri, position)
-        ASTNode parentNode = service.visitor.getParent(offsetNode)
+        ASTNode offsetNode = visitor.getNodeAtPosition(file.uri, position)
+        ASTNode parentNode = visitor.getParent(offsetNode)
 
         if (!offsetNode) {
-            return Either.forLeft(Collections.emptyList())
+            return Either.forLeft([])
         }
 
-        CompletionTriggerInfo triggerInfo = analyzeTrigger(context, lastChar, prefix)
+        def triggerInfo = analyzeTrigger(context, lastChar, prefix)
 
         // Generate context-aware cache key
         String cacheKey = generateContextCacheKey(file.uri, offsetNode, parentNode, prefix, triggerInfo)
 
         // Check cache - can use for both dummy and real prefixes since parent is stable
         if (triggerInfo.canUseCache) {
-            CompletionCache cached = completionCache.get(cacheKey)
+            def cached = completionCache[cacheKey]
             if (cached?.isValidForContext(parentNode, prefix, offset)) {
                 log.info("[COMPLETION] Using cached completions for parent '{}' with prefix '{}'",
                     parentNode.getClass().simpleName, prefix)
-                ClassNode currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, service.visitor)
+                def currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, visitor)
                 return cached.toResult(prefix, currentClass)
             }
         }
 
         // Generate completions
-        CompletionContextInfo contextInfo = new CompletionContextInfo(offsetNode, parentNode, file)
+        def contextInfo = new CompletionContextInfo(offsetNode, parentNode, file)
         List<CompletionItem> items = generateCompletions(contextInfo, prefix, position)
 
         // Cache the complete result set
-        CompletionCache newCache = new CompletionCache(
+        def newCache = new CompletionCache(
             offset, prefix, items, triggerInfo.isHardTrigger,
             offsetNode, parentNode, System.currentTimeMillis()
         )
-        completionCache.put(cacheKey, newCache)
+        completionCache[cacheKey] = newCache
         cleanupCache()
 
         // Return filtered results
-        ClassNode currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, service.visitor)
-        return newCache.toResult(prefix, currentClass)
+        def currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, visitor)
+        newCache.toResult(prefix, currentClass)
     }
 
     /**
      * Generate context-aware cache key for smart prefix system
-     * Key is based on the parent node (completion source) rather than text parsing
      */
     private static String generateContextCacheKey(String uri, ASTNode offsetNode, ASTNode parentNode,
-                                                  String prefix, CompletionTriggerInfo triggerInfo) {
-        StringBuilder key = new StringBuilder(uri)
+                                                   String prefix, CompletionTriggerInfo triggerInfo) {
+        def key = new StringBuilder(uri)
 
         // Base context from parent node (the actual completion source)
         String baseContext = extractBaseContext(parentNode, prefix, triggerInfo)
@@ -133,32 +130,18 @@ class GrailsCompletionProvider {
             key.append(":offset:").append(offsetNode.getClass().simpleName)
         }
 
-        return key.toString()
+        key.toString()
     }
 
     /**
-     * Extract the base context for completion caching with smart prefix system
-     *
-     * Smart prefix examples:
-     * - "localVar.g" → offsetNode="g" : parentNode="localVar" -> prefix="g"
-     * - "localVar.getValue" → offsetNode="getValue" : parentNode="localVar" -> prefix="getValue"
-     * - "obj.method().prop" → offsetNode="prop" : parentNode="method" -> prefix="prop"
-     * - "localVar." → offsetNode="__DUMMY_PREFIX__" : parentNode="localVar" -> prefix="__DUMMY_PREFIX__"
-     * - "obj.method().prop." → offsetNode="__DUMMY_PREFIX__" : parentNode="prop" -> prefix="__DUMMY_PREFIX__"
-     *
-     * Cache key should be based on parentNode (completion source) + context type
+     * Extract the base context for completion caching
      */
     private static String extractBaseContext(ASTNode parentNode, String prefix, CompletionTriggerInfo triggerInfo) {
         if (!parentNode) return ""
 
-        // The base context is defined by the parent node (completion source)
-        // We don't need prefix parsing since parentNode already represents the "base"
-        StringBuilder context = new StringBuilder()
-
-        // Use parent node identity as the base context
+        def context = new StringBuilder()
         context.append(parentNode.getClass().simpleName)
 
-        // Add position info for uniqueness
         if (parentNode.lineNumber != -1) {
             context.append(":L").append(parentNode.lineNumber)
         }
@@ -166,32 +149,30 @@ class GrailsCompletionProvider {
             context.append(":C").append(parentNode.columnNumber)
         }
 
-        // Add trigger type for context differentiation
         if (triggerInfo.isHardTrigger || GrailsUtils.isDummyPrefix(prefix)) {
             context.append(":trigger")
         } else {
             context.append(":typing")
         }
 
-        return context.toString()
+        context.toString()
     }
 
     private List<CompletionItem> generateCompletions(CompletionContextInfo context, String prefix, Position position) {
-        CompletionRequest request = new CompletionRequest(
+        def request = new CompletionRequest(
             context.offsetNode, context.parentNode, prefix, position,
-            [], new LinkedHashSet<String>(), context.textFile,
-            service.project.isGrailsProject, service
+            [], [] as Set<String>, context.textFile,
+            project.isGrailsProject, _service
         )
 
         CompletionBuilder.buildCompletions(request)
-        return request.items
+        request.items
     }
 
     // --- Cache Management ---
 
     void clearCaches(String uri = null) {
         if (uri) {
-            // Remove all cache entries for this URI
             completionCache.entrySet().removeIf { it.key.startsWith(uri) }
         } else {
             completionCache.clear()
@@ -203,12 +184,13 @@ class GrailsCompletionProvider {
             long cutoff = System.currentTimeMillis() - CACHE_TTL_MS
             completionCache.entrySet().removeIf { it.value.timestamp < cutoff }
 
-            // If still too large, remove oldest entries
             if (completionCache.size() > MAX_CACHE_SIZE) {
-                List<Map.Entry<String, CompletionCache>> entries = completionCache.entrySet()
-                    .sort { a, b -> a.value.timestamp <=> b.value.timestamp }
+                def entries = completionCache.entrySet().toList()
+                    .sort { Map.Entry<String, CompletionCache> a, Map.Entry<String, CompletionCache> b ->
+                        a.value.timestamp <=> b.value.timestamp
+                    }
 
-                int toRemove = completionCache.size() - (MAX_CACHE_SIZE * 0.8) as int
+                int toRemove = (int) (completionCache.size() - (MAX_CACHE_SIZE * 0.8))
                 entries.take(toRemove).each { completionCache.remove(it.key) }
             }
         }
@@ -218,7 +200,7 @@ class GrailsCompletionProvider {
 
     private static Character getLastCharacter(String lineText, int character) {
         if (!lineText || character <= 0 || character > lineText.length()) {
-            return '\0' as Character
+            return (char) '\0'
         }
         if (lineText.contains(GrailsUtils.DUMMY_COMPLETION_IDENTIFIER)) {
             int dummyStart = lineText.lastIndexOf(GrailsUtils.DUMMY_COMPLETION_IDENTIFIER)
@@ -226,39 +208,38 @@ class GrailsCompletionProvider {
                 return lineText.charAt(dummyStart - 1)
             }
         }
-        return lineText.charAt(character - 1)
+        lineText.charAt(character - 1)
     }
 
     private static CompletionTriggerInfo analyzeTrigger(CompletionContext context, Character lastChar, String prefix) {
-        boolean isHardTrigger = HARD_TRIGGERS.contains(lastChar as String)
-        boolean isSoftTrigger = SOFT_TRIGGERS.contains(lastChar as String)
+        boolean isHardTrigger = HARD_TRIGGERS.contains(lastChar)
+        boolean isSoftTrigger = SOFT_TRIGGERS.contains(lastChar)
         boolean isManualTrigger = context?.triggerKind == CompletionTriggerKind.Invoked
 
-        // Cache can be used unless it's a hard trigger that changes context
         boolean canUseCache = !isHardTrigger && !isManualTrigger
 
-        return new CompletionTriggerInfo(isHardTrigger, isSoftTrigger, isManualTrigger, canUseCache)
+        new CompletionTriggerInfo(isHardTrigger, isSoftTrigger, isManualTrigger, canUseCache)
     }
 
     // --- Completion Item Resolution ---
 
     CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
-        return CompletableFuture.supplyAsync {
+        CompletableFuture.supplyAsync {
             try {
-                Map<String, Object> data = unresolved.data as Map<String, Object>
+                def data = unresolved.data as Map<String, Object>
                 if (!data || data.isResolved) {
                     return unresolved
                 }
 
-                ASTNode node = extractASTNode(data)
+                def node = extractASTNode(data)
                 if (!node) {
                     return unresolved
                 }
 
                 CompletionUtil.enhanceCompletionItemDetails(unresolved, node)
-
-                // Attach Documentation
-                unresolved.documentation = DocumentationHelper.getDocumentation(node, service, DocumentationType.COMPLETION)
+                unresolved.documentation = DocumentationHelper.getDocumentation(
+                    node, project.isGrailsProject, visitor, DocumentationType.COMPLETION
+                )
 
                 String complexInsertText = CompletionUtil.astNodeToInsertText(node)
                 if (complexInsertText) {
@@ -271,34 +252,34 @@ class GrailsCompletionProvider {
                     unresolved.additionalTextEdits = additionalEdits
                 }
 
-                // Auto-import support 💡
+                // Auto-import support
                 if (data?.autoImport) {
-                    String fqcn = data.fqcn
-                    String uri = data.uri
-                    TextFile file = service.fileTracker.getTextFile(uri)
+                    String fqcn = (String) data.fqcn
+                    String uri = (String) data.uri
+                    def file = fileTracker.getTextFile(uri)
                     if (file) {
-                        ModuleNode moduleNode = service.visitor.getNodes(file.uri).find { it instanceof ModuleNode } as ModuleNode
+                        def moduleNode = visitor.getNodes(file.uri).find { it instanceof ModuleNode } as ModuleNode
                         if (moduleNode && !CompletionUtil.hasImport(moduleNode, fqcn)) {
-                            Range range = CompletionUtil.findAddImportRange(moduleNode)
-                            TextEdit importEdit = new TextEdit(range, "import ${fqcn}\n")
+                            def range = CompletionUtil.findAddImportRange(moduleNode)
+                            def importEdit = new TextEdit(range, "import ${fqcn}\n")
                             unresolved.additionalTextEdits = (unresolved.additionalTextEdits ?: []) + importEdit
                         }
                     }
                 }
 
                 data.isResolved = true
-                return unresolved
+                unresolved
             } catch (Exception e) {
                 log.warn("[COMPLETION] Failed to resolve completion item for ${unresolved.label}", e)
-                return unresolved
+                unresolved
             }
         }
     }
 
     private static ASTNode extractASTNode(Object data) {
-        if (data instanceof ASTNode) return data
-        if (data instanceof Map) return data.astNode as ASTNode
-        return null
+        if (data instanceof ASTNode) return (ASTNode) data
+        if (data instanceof Map) return (ASTNode) ((Map) data).astNode
+        null
     }
 
     // --- Inner Classes ---
@@ -342,17 +323,13 @@ class GrailsCompletionProvider {
                         boolean lastWasTrigger, ASTNode offsetNode, ASTNode parentNode, long timestamp) {
             this.baseOffset = baseOffset
             this.basePrefix = basePrefix ?: ""
-            this.items = new ArrayList<>(items) // Defensive copy
+            this.items = new ArrayList<>(items)
             this.lastWasTrigger = lastWasTrigger
             this.offsetNode = offsetNode
             this.parentNode = parentNode
             this.timestamp = timestamp
         }
 
-        /**
-         * Check if cache is valid for the given parent context and prefix
-         * Since parent node is the completion source, focus validation on that
-         */
         boolean isValidForContext(ASTNode currentParent, String prefix, int offset) {
             if (!prefix) prefix = ""
 
@@ -361,48 +338,35 @@ class GrailsCompletionProvider {
                 return false
             }
 
-            // Parent node must match (same completion source)
             if (this.parentNode != currentParent) {
                 return false
             }
 
-            // Allow reasonable offset drift for same context
             boolean offsetInRange = Math.abs(this.baseOffset - offset) <= 50
 
-            // For dummy prefixes, we can reuse if parent context is same
             if (GrailsUtils.isDummyPrefix(prefix) && GrailsUtils.isDummyPrefix(this.basePrefix)) {
                 return offsetInRange
             }
 
-            // For real prefixes, allow any extension of cached prefix
             if (!GrailsUtils.isDummyPrefix(prefix) && !GrailsUtils.isDummyPrefix(this.basePrefix)) {
                 return offsetInRange && prefix.startsWith(this.basePrefix)
             }
 
-            // Mixed cases (dummy -> real or real -> dummy) need fresh computation
-            return false
+            false
         }
 
-        /**
-         * Return filtered and ranked results for a specific prefix
-         */
         Either<List<CompletionItem>, CompletionList> toResult(String prefix, ClassNode currentClass = null) {
             if (!prefix) prefix = ""
 
-            // Filter from complete cached set
             List<CompletionItem> processedItems = CompletionProcessor.processCompletions(items, prefix, currentClass)
 
             log.debug("[COMPLETION] Filtered {} items to {} for prefix '{}'",
                 items.size(), processedItems.size(), prefix)
 
-            // Always return CompletionList with isIncomplete=true when filtering from cache
             boolean isIncomplete = processedItems.size() < items.size() ||
                 processedItems.size() >= CompletionProcessor.getMaxResults(prefix)
 
-            if (isIncomplete) {
-                Either.forRight(new CompletionList(isIncomplete, processedItems))
-            }
-            return Either.forLeft(items)
+            isIncomplete ? Either.forRight(new CompletionList(isIncomplete, processedItems)) : Either.forLeft(processedItems)
         }
     }
 }

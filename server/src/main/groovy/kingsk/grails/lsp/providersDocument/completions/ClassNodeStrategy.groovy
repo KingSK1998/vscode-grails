@@ -86,7 +86,7 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	
 	private void addClassNamesFromDependencies() {
 		def uri = request.service?.project?.rootDirectory?.toURI()?.toString()
-		def scanResult = kingsk.grails.lsp.utils.DynamicDiscoveryUtil.getClassGraphScanResult(uri)
+		def scanResult = request.service.discoveryService.getClassGraphScanResult(uri)
 		if (scanResult) {
 			int count = 0
 			// Search classes using ClassGraph which already scanned JDK and project dependencies

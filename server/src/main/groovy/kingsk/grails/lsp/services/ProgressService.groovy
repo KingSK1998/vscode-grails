@@ -1,20 +1,20 @@
 package kingsk.grails.lsp.services
 
+import kingsk.grails.lsp.GrailsService
+import kingsk.grails.lsp.model.ErrorSeverity
+import kingsk.grails.lsp.model.ErrorSource
 import groovy.util.logging.Slf4j
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import org.eclipse.lsp4j.services.LanguageClient
-import org.eclipse.lsp4j.services.LanguageClientAware
 
 @Slf4j
-class ProgressService implements LanguageClientAware {
+class ProgressService {
 
     private static final String TOKEN = "GLS-SERVER-SETUP"
-	private LanguageClient client
+	private final GrailsService service
 
-	@Override
-	void connect(LanguageClient client) {
-		this.client = client
+	ProgressService(GrailsService service) {
+		this.service = service
 	}
 
     /**
@@ -51,30 +51,21 @@ class ProgressService implements LanguageClientAware {
      * Show an error popup to the user.
      */
     void error(String message, Exception e = null) {
-        client.showMessage(new MessageParams(
-            MessageType.Error,
-            e ? "$message: ${e.message}" : message
-        ))
+        service.errorService.handleError(message, e, ErrorSource.GENERAL, ErrorSeverity.ERROR)
     }
 
     /**
      * Show an informational popup to the user.
      */
 	void info(String message) {
-		client.showMessage(new MessageParams(
-				MessageType.Info,
-				message
-		))
+        service.errorService.handleError(message, null, ErrorSource.GENERAL, ErrorSeverity.INFO)
 	}
 
     /**
      * Show a warning popup to the user.
      */
     void warn(String message) {
-        client.showMessage(new MessageParams(
-            MessageType.Warning,
-            message
-        ))
+        service.errorService.handleError(message, null, ErrorSource.GENERAL, ErrorSeverity.WARNING)
     }
 
     /**
@@ -84,7 +75,9 @@ class ProgressService implements LanguageClientAware {
         def params = new ProgressParams()
         params.setToken(TOKEN)
         params.setValue(Either.forLeft(workDoneProgressValue))
-        log.debug "Progress [$TOKEN] → ${workDoneProgressValue.getClass().simpleName} $workDoneProgressValue"
-        client.notifyProgress(params)
+        if (service.client != null) {
+            log.debug "Progress [$TOKEN] → ${workDoneProgressValue.getClass().simpleName} $workDoneProgressValue"
+            service.client.notifyProgress(params)
+        }
     }
 }

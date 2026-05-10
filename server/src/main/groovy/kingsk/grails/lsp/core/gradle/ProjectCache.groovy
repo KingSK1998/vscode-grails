@@ -1,9 +1,10 @@
 package kingsk.grails.lsp.core.gradle
 
-
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.protocol.mapper.ProjectMapper
 
 /**
  * Simple binary cache using Java serialization - faster and smaller than JSON
@@ -41,7 +42,7 @@ class ProjectCache {
                 return project
             }
         } catch (Exception e) {
-            log.warn("[GRADLE] Failed to load binary cache for ${projectDir.name}, will rebuild", e)
+            log.warn("[GRADLE] Failed to load cache for ${projectDir.name}, will rebuild", e)
             return null
         }
     }
@@ -49,21 +50,41 @@ class ProjectCache {
     void save(File projectDir, GrailsProject grailsProject) {
         try {
             File cacheFile = getCacheFile(projectDir)
+
+            // Binary Cache
             cacheFile.withObjectOutputStream { oos ->
                 oos.writeInt(currentVersion)
                 oos.writeObject(grailsProject)
             }
 
-            // 2. JSON side-car for VS Code
-//            Map dto = toDto(grailsProject, projectDir)
-//            File cacheDir = new File(projectDir, CACHE_DIR_NAME)
-//            new File(cacheDir, PROJECT_JSON_FILE).text = JsonOutput.prettyPrint(JsonOutput.toJson(dto))
+            // JSON cache (for client / debug)
+            File jsonFile = getJsonFile(projectDir)
+            def dto = ProjectMapper.toDTO(grailsProject)
+            jsonFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(dto))
 
             BigDecimal sizeKB = cacheFile.length() / 1024
-            log.info("[GRADLE] Saved project to binary cache: ${grailsProject.name} (${sizeKB}KB, ${grailsProject.dependencies.size()} deps)")
+            log.info("[GRADLE] Saved project to cache: ${grailsProject.name} (${sizeKB}KB, ${grailsProject.dependencies.size()} deps)")
         } catch (Exception e) {
-            log.error("[GRADLE] Failed to save binary cache for ${grailsProject.name}", e)
+            log.error("[GRADLE] Failed to save cache for ${grailsProject.name}", e)
         }
+    }
+
+    /**
+     * Get binary cache file path in project root under .grails-lsp directory
+     */
+    static File getCacheFile(File projectDir) {
+        File cacheDir = new File(projectDir, CACHE_DIR_NAME)
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        return new File(cacheDir, PROJECT_CACHE_FILE)
+    }
+
+    /**
+     * Get json cache file path in project root under .grails-lsp directory
+     */
+    static File getJsonFile(File projectDir) {
+        File cacheDir = new File(projectDir, CACHE_DIR_NAME)
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        return new File(cacheDir, PROJECT_JSON_FILE)
     }
 
     static boolean isStale(File projectDir) {
@@ -75,11 +96,13 @@ class ProjectCache {
 
         // Timestamp check: only a small set of Gradle root files (avoid broad directory walks)
         long cacheTime = cacheFile.lastModified()
+
         List<String> watchNames = [
-            'build.gradle', 'build.gradle.kts',
-            'settings.gradle', 'settings.gradle.kts',
+            'build.gradle',
+            'settings.gradle',
             'gradle.properties'
         ]
+
         for (String name : watchNames) {
             File f = new File(projectDir, name)
             if (f.exists() && f.lastModified() > cacheTime) {
@@ -109,9 +132,12 @@ class ProjectCache {
         }
     }
 
-    static boolean cacheExists(File projectDir) {
-        return getCacheFile(projectDir).exists()
+    static long getCacheSize(File projectDir) {
+        File cacheFile = getCacheFile(projectDir)
+        return cacheFile.exists() ? cacheFile.length() : 0
     }
+
+    /* ------------------- Testing Utilities --------------------------- */
 
     static long getCacheAge(File projectDir) {
         File cacheFile = getCacheFile(projectDir)
@@ -119,51 +145,7 @@ class ProjectCache {
         return System.currentTimeMillis() - cacheFile.lastModified()
     }
 
-    static long getCacheSize(File projectDir) {
-        File cacheFile = getCacheFile(projectDir)
-        return cacheFile.exists() ? cacheFile.length() : 0
+    static boolean cacheExists(File projectDir) {
+        return getCacheFile(projectDir).exists()
     }
-
-    /**
-     * Get cache file path in project root under .grails-lsp directory
-     */
-    static File getCacheFile(File projectDir) {
-        File cacheDir = new File(projectDir, CACHE_DIR_NAME)
-        if (!cacheDir.exists()) {
-            cacheDir.mkdirs()
-        }
-        return new File(cacheDir, PROJECT_CACHE_FILE)
-    }
-
-    /* ---------------- helper to produce a tiny DTO ------------------ */
-
-//    private static Map toDto(GrailsProject gp, File root) {
-//        [
-//            id            : root.absolutePath,
-//            rootPath      : root.absolutePath,
-//            name          : gp.name,
-//            type          : gp.isGrailsPlugin ? "grails-plugin" :
-//                (gp.isGrailsProject ? "grails" : "groovy"),
-//            grailsVersion : gp.grailsVersion,
-//            pluginVersion : gp.pluginVersion,
-//            groovyVersion : gp.groovyVersion,
-//            dependencies  : gp.dependencies.collect { d ->
-//                [group: d.group, name: d.name, version: d.version]
-//            },
-//            artifactCounts: [
-//                controllers: countSources(root, "controllers"),
-//                services   : countSources(root, "services"),
-//                domain     : countSources(root, "domain"),
-//                taglib     : countSources(root, "taglib"),
-//                conf       : countSources(root, "conf"),
-//                jobs       : countSources(root, "jobs")
-//            ]
-//        ]
-//    }
-//
-//    private static int countSources(File root, String dir) {
-//        return (int) (new File(root, "grails-app/$dir")
-//            .listFiles()
-//            ?.count { it.isFile() && it.name.endsWith(".groovy") } ?: 0)
-//    }
 }
