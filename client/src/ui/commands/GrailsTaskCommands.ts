@@ -1,8 +1,13 @@
 import * as vscode from "vscode";
+import { DependencyGraphService } from "../../features/dependency-graph/DependencyGraphService";
+import { GormSqlPreviewService } from "../../features/gorm-sql-preview/GormSqlPreviewService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import { BaseCommandProvider } from "./BaseCommandProvider";
 
 export class GrailsTaskCommands extends BaseCommandProvider {
+  private dependencyGraphService: DependencyGraphService | null = null;
+  private gormSqlPreviewService: GormSqlPreviewService | null = null;
+
   registerCommands(): void {
     this.register("grails.runApp", async () => {
       const projects = this.container.projectService.getProjects();
@@ -28,13 +33,23 @@ export class GrailsTaskCommands extends BaseCommandProvider {
         vscode.window.showWarningMessage("No Grails projects found");
         return;
       }
-      this.container.dependencyGraphService.openGraph(projects[0]);
+      this.dependencyGraphService ??= new DependencyGraphService(
+        this.context,
+        this.container.errorService,
+        this.container.languageServerManager
+      );
+      this.dependencyGraphService.openGraph(projects[0]);
     });
 
     this.register("grails.showGormSqlPreview", (uri?: vscode.Uri) => {
       const targetUri = uri ?? vscode.window.activeTextEditor?.document.uri;
       if (!targetUri) return;
-      this.container.gormSqlPreviewService.openPreview(targetUri);
+      this.gormSqlPreviewService ??= new GormSqlPreviewService(
+        this.context,
+        this.container.errorService,
+        this.container.languageServerManager
+      );
+      this.gormSqlPreviewService.openPreview(targetUri);
     });
 
     this.register("grails.testApp", async () => {
@@ -99,5 +114,17 @@ export class GrailsTaskCommands extends BaseCommandProvider {
         );
       }
     });
+  }
+
+  override dispose(): void {
+    if (this.dependencyGraphService) {
+      this.dependencyGraphService.dispose();
+      this.dependencyGraphService = null;
+    }
+    if (this.gormSqlPreviewService) {
+      this.gormSqlPreviewService.dispose();
+      this.gormSqlPreviewService = null;
+    }
+    super.dispose();
   }
 }

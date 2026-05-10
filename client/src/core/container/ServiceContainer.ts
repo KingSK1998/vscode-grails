@@ -1,7 +1,4 @@
 import type { Disposable, ExtensionContext } from "vscode";
-import { DashboardService } from "../../features/dashboard/DashboardService";
-import { DependencyGraphService } from "../../features/dependency-graph/DependencyGraphService";
-import { GormSqlPreviewService } from "../../features/gorm-sql-preview/GormSqlPreviewService";
 import { ArtifactService } from "../../services/artifacts/ArtifactService";
 import { DebugService } from "../../services/debugging/DebugService";
 import { ErrorService } from "../../services/errors/ErrorService";
@@ -79,24 +76,9 @@ export class ServiceContainer {
     return this._services.ArtifactService!;
   }
 
-  /** Get DashboardService - always available */
-  get dashboardService(): DashboardService {
-    return this._services.DashboardService!;
-  }
-
   /** Get DebugService - always available */
   get debugService(): DebugService {
     return this._services.DebugService!;
-  }
-
-  /** Get DependencyGraphService - always available */
-  get dependencyGraphService(): DependencyGraphService {
-    return this._services.DependencyGraphService!;
-  }
-
-  /** Get GormSqlPreviewService - always available */
-  get gormSqlPreviewService(): GormSqlPreviewService {
-    return this._services.GormSqlPreviewService!;
   }
 
   /** Get GrailsTestService - always available */
@@ -150,20 +132,8 @@ export class ServiceContainer {
     );
 
     this._services.ArtifactService = new ArtifactService(this._services.ErrorService);
-    this._services.DashboardService = new DashboardService(
-      this.context,
-      this._services.ErrorService
-    );
     this._services.DebugService = new DebugService(
       this._services.GradleService,
-      this._services.ErrorService
-    );
-    this._services.DependencyGraphService = new DependencyGraphService(
-      this.context,
-      this._services.ErrorService
-    );
-    this._services.GormSqlPreviewService = new GormSqlPreviewService(
-      this.context,
       this._services.ErrorService
     );
     this._services.GrailsTestService = new GrailsTestService(

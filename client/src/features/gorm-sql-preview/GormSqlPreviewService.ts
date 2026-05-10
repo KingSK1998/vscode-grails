@@ -1,16 +1,26 @@
 import * as vscode from "vscode";
-import { ServiceContainer } from "../../core/container/ServiceContainer";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
+import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
 
-export class GormSqlPreviewService {
+export class GormSqlPreviewService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
-  private container: ServiceContainer = ServiceContainer.getInstance();
+  private disposed = false;
 
   constructor(
-    private context: vscode.ExtensionContext,
-    private errorService: ErrorService
+    private readonly context: vscode.ExtensionContext,
+    private readonly errorService: ErrorService,
+    private readonly languageServerManager: LanguageServerManager
   ) {}
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    if (this.currentPanel) {
+      this.currentPanel.dispose();
+      this.currentPanel = null;
+    }
+  }
 
   public openPreview(uri: vscode.Uri) {
     if (this.currentPanel) {
@@ -48,7 +58,7 @@ export class GormSqlPreviewService {
     }
 
     try {
-      const client = this.container.languageServerManager.languageClient;
+      const client = this.languageServerManager.languageClient;
       if (!client) {
         vscode.window.showErrorMessage("Language server not running");
         return;

@@ -1,18 +1,28 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { ServiceContainer } from "../../core/container/ServiceContainer";
 import type { ErrorService } from "../../services/errors/ErrorService";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
+import type { LanguageServerManager } from "../../services/languageServer/LanguageServerManager";
 import type { ProjectInfo } from "../models/modelTypes";
 
-export class DependencyGraphService {
+export class DependencyGraphService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
-  private container: ServiceContainer = ServiceContainer.getInstance();
+  private disposed = false;
 
   constructor(
-    private context: vscode.ExtensionContext,
-    private errorService: ErrorService
+    private readonly context: vscode.ExtensionContext,
+    private readonly errorService: ErrorService,
+    private readonly languageServerManager: LanguageServerManager
   ) {}
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    if (this.currentPanel) {
+      this.currentPanel.dispose();
+      this.currentPanel = null;
+    }
+  }
 
   public openGraph(project: ProjectInfo) {
     const column = vscode.window.activeTextEditor
@@ -56,7 +66,7 @@ export class DependencyGraphService {
     }
 
     try {
-      const client = this.container.languageServerManager.languageClient;
+      const client = this.languageServerManager.languageClient;
       if (!client) {
         vscode.window.showErrorMessage("Language server not running");
         return;

@@ -1,7 +1,7 @@
 # ISSUE-002 · Webview Services Created Early
 **Severity**: 🟠 High
-**Service**: ServiceContainer.ts, Commands.ts
-**Status**: TODO
+**Service**: ServiceContainer.ts, GrailsTaskCommands.ts
+**Status**: ✅ DONE
 **Parent Plan**: [client-improvement-plan.md](../client-improvement-plan.md)
 
 ## Problem
@@ -376,14 +376,18 @@ get grailsTestService(): GrailsTestService {
 ```
 
 ## Subtasks
-- [ ] Remove webview services from ServiceContainer.initializeServices()
-- [ ] Remove webview service getters from ServiceContainer
-- [ ] Add webview service tracking to Commands
-- [ ] Create DashboardService on-demand in Commands
-- [ ] Create DependencyGraphService on-demand in Commands
-- [ ] Create GormSqlPreviewService on-demand in Commands
-- [ ] Add webview service disposal in Commands.dispose()
+- [x] Remove webview services from ServiceContainer.initializeServices()
+- [x] Remove webview service getters from ServiceContainer
+- [x] Add webview service tracking to GrailsTaskCommands
+- [x] Create DependencyGraphService on-demand in GrailsTaskCommands
+- [x] Create GormSqlPreviewService on-demand in GrailsTaskCommands
+- [x] Add webview service disposal in GrailsTaskCommands.dispose()
 - [ ] Test that commands still work after change
+
+## Implementation Notes
+- DashboardService was removed from ServiceContainer but was not actually used via container (grails.showDashboard uses GrailsDashboard directly)
+- DependencyGraphService and GormSqlPreviewService now receive LanguageServerManager via constructor injection instead of calling ServiceContainer.getInstance()
+- Both services now implement Disposable with proper cleanup
 
 ## Tradeoffs
 - Slightly more code in Commands to manage webview services

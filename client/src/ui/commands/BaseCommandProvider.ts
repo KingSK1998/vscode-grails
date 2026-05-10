@@ -10,7 +10,8 @@ export abstract class BaseCommandProvider implements Disposable {
     protected readonly container: ServiceContainer
   ) {}
 
-  protected register(command: string, callback: (...args: unknown[]) => unknown): void {
+  protected register(command: string, callback: (...args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any[]) => unknown): void {
     const disposable = vscode.commands.registerCommand(command, callback);
     this.disposables.push(disposable);
     this.context.subscriptions.push(disposable);
