@@ -6,27 +6,20 @@
   },
   "files.autoSave": "afterDelay",
 
-  // Typescript-focused settings
-  "typescript.preferences.includePackageJsonAutoImports": "on",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-
   "eslint.useFlatConfig": true,
   "eslint.format.enable": true,
   "eslint.validate": ["typescript"],
   "eslint.codeActionsOnSave.rules": ["@typescript-eslint/consistent-type-imports"],
-  "typescript.preferences.importModuleSpecifier": "relative",
 
+  // Typescript-focused settings
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "js/ts.suggest.autoImports": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  "js/ts.preferences.includePackageJsonAutoImports": "on",
 
   "editor.rulers": [100],
-
-  "chat.mcp.serverSampling": {
-    "vscode-grails/.vscode/mcp.json: perplexity": {
-      "allowedModels": ["copilot/gpt-5-mini"]
-    }
-  },
   "java.compile.nullAnalysis.mode": "automatic"
 }
