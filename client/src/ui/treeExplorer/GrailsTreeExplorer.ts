@@ -7,6 +7,7 @@ import { EventBus } from "../../core/events/EventBus";
 import { EventType } from "../../core/events/eventTypes";
 import type { ProjectInfo } from "../../features/models/modelTypes";
 import { ArtifactType, ProjectType } from "../../features/models/modelTypes";
+import { ProjectMapper } from "../../features/projects/mappers/projectMapper";
 import { GrailsTreeItem } from "./GrailsTreeItem";
 import { TreeItemKind } from "./TreeItemKind";
 
@@ -31,7 +32,7 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
 
   /** Refresh the entire tree */
   refresh(): void {
-    this.projects = this.container.projectService.getProjects();
+    this.projects = [...this.container.projectService.getProjects()];
     this._onDidChangeTreeData.fire();
   }
 
@@ -1259,18 +1260,19 @@ export class GrailsTreeExplorer implements TreeDataProvider<GrailsTreeItem> {
         "🌳 Projects:",
         event.projects.map(p => ({ name: p.name, type: p.type, path: p.rootPath }))
       );
-      this.projects = event.projects;
+      this.projects = event.projects.map(p => ProjectMapper.toProjectInfo(p));
       this.refresh();
     });
 
     const projectChangedSub = eventBus.subscribe(EventType.PROJECT_CHANGED, event => {
       console.log(`🌳 TreeExplorer: PROJECT_CHANGED received for ${event.project.name}`);
 
-      const index = this.projects.findIndex(p => p.id === event.project.id);
+      const updatedProject = ProjectMapper.toProjectInfo(event.project);
+      const index = this.projects.findIndex(p => p.id === updatedProject.id);
       if (index >= 0) {
-        this.projects[index] = event.project;
+        this.projects[index] = updatedProject;
       } else {
-        this.projects.push(event.project);
+        this.projects.push(updatedProject);
       }
 
       this.refresh();

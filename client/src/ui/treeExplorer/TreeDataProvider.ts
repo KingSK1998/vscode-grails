@@ -1,6 +1,7 @@
 import type { ExtensionContext } from "vscode";
 import { ServiceContainer } from "../../core/container/ServiceContainer";
 import { ProjectType } from "../../features/models/modelTypes";
+import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
 import { GrailsTreeExplorer } from "./GrailsTreeExplorer";
 import { TreeItemKind } from "./TreeItemKind";
 
@@ -44,7 +45,12 @@ export function createProjectTreeProvider(context: ExtensionContext): GrailsTree
       console.log(`📋 Detected project types: ${projectTypes}`);
     }
   } catch (error) {
-    console.error("🚨 Error in createProjectTreeProvider:", error);
+    ServiceContainer.getInstance().errorService.handleError(
+      "Tree provider creation failed",
+      error,
+      ErrorSource.UI,
+      ErrorSeverity.Error
+    );
   }
   return null; // ✅ Gracefully handle unsupported workspaces
 }
