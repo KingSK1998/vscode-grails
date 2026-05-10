@@ -15,6 +15,19 @@ import { EventType } from "../events/eventTypes";
 // Performance timing constants
 const IMMEDIATE_PHASE_TIMER = "⚡ Immediate Phase";
 const BACKGROUND_PHASE_TIMER = "🔄 Background Phase";
+const ACTIVATION_TIMEOUT_MS = 30000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operationName: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => {
+        console.error(`[ActivationManager] ${operationName} timed out after ${timeoutMs}ms`);
+        reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
+      }, timeoutMs)
+    ),
+  ]);
+}
 
 /**
  * Manages the complete extension activation lifecycle.
@@ -76,7 +89,22 @@ export class ActivationManager implements Disposable {
       // PHASE 2: BACKGROUND (Non-blocking)
       // ================================
 
-      void this.startBackgroundInitialization();
+      const backgroundInitPromise = withTimeout(
+        this.startBackgroundInitialization(),
+        ACTIVATION_TIMEOUT_MS,
+        "Background initialization"
+      );
+
+      backgroundInitPromise.catch(error => {
+        console.error(`[ActivationManager] Background initialization failed: ${error}`);
+        const message = error instanceof Error && error.message.includes("timed out")
+          ? "Grails extension: Background initialization timed out. Some features may be limited."
+          : "Grails extension: Startup delayed. Some features may be limited.";
+        this.container.statusBarService.error(message);
+        void window.showErrorMessage(message);
+      });
+
+      void backgroundInitPromise;
 
       console.log("✅ Extension UI ready - background services starting...");
     } catch (error) {

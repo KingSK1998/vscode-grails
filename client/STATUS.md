@@ -44,6 +44,7 @@
 | Configuration settings | `grails.path`, `grails.javaHome`, `grailsLsp.*` |
 | Dev mode LSP connection | Connects to remote server on port 5007 |
 | Production mode LSP connection | Uses local JAR `server/grails-language-server-1.0-all.jar` |
+| **ISSUE-004** | Activation timeout wrapper (30s) with user notification |
 
 ### 🟡 In Progress
 

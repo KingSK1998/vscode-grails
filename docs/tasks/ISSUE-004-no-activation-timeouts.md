@@ -14,3 +14,12 @@ Implement a global activation timeout wrapper in `ActivationManager.ts`.
 
 ## Tradeoffs
 - **Degraded State**: The extension might start in a partially functional state.
+
+## Implementation Status
+✅ DONE (2026-05-11)
+- `withTimeout<T>()` wrapper function added to ActivationManager.ts
+- `ACTIVATION_TIMEOUT_MS = 30000` constant
+- Background phase wrapped with 30s timeout
+- Individual task timeouts: Gradle (15s), LSP (10s), Discovery (8s)
+- User notification via `window.showErrorMessage` on timeout
+- Console error logging on timeout
