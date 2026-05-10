@@ -2,12 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## AI / Agent Instructions
+
+- For any server/Groovy code changes, read `server/RULES.md` first.
+- For any client/TypeScript code changes, read `client/RULES.md` first.
+- Prefer these repository rules over generic style or architecture advice.
+- Use `@file:server/RULES.md` and `@file:client/RULES.md` when possible.
+- When proposing changes, explicitly state which rules were followed.
+- **Project structure**: See `AGENTS.md` for full directory layout.
+
 ## Project Overview
 
 This is a **VS Code extension for Grails Framework support** with a client-server architecture:
 
 - **Client** (`client/`): TypeScript VS Code extension using `vscode-languageclient`
 - **Server** (`server/`): Groovy Language Server using LSP4J and Gradle Tooling API
+- **Shared** (`shared/`): Shared schemas, configs, templates between client/server
+- **Resources** (`resources/`): VS Code syntaxes, snippets, icons - bundled directly into extension
 
 ## Build Commands
 

@@ -23,7 +23,9 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": false,
+
+    "types": ["node", "mocha"]
   },
   "include": ["client/src/**/*"],
   "exclude": ["node_modules", ".vscode-test", "client/out", "server/**/*", "dist/**/*"]

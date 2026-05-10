@@ -1,11 +1,11 @@
 import type { Disposable, ExtensionContext } from "vscode";
 import { commands, env, extensions, languages, Uri, window, workspace } from "vscode";
-import { GspCompletionProvider } from "../../features/gsp/GspCompletionProvider";
 import type { ProjectInfo } from "../../features/models/modelTypes";
-import { GrailsCodeActionProvider } from "../../features/ui/GrailsCodeActionProvider";
-import { GrailsCodeLensProvider } from "../../features/ui/GrailsCodeLensProvider";
 import { ErrorSeverity, ErrorSource } from "../../services/errors/errorTypes";
-import { Commands } from "../../ui/commands/Commands";
+import { GrailsCodeActionProvider } from "../../services/lsp/handlers/GrailsCodeActionProvider";
+import { GrailsCodeLensProvider } from "../../services/lsp/handlers/GrailsCodeLensProvider";
+import { GspCompletionProvider } from "../../services/lsp/handlers/GspCompletionProvider";
+import { Commands } from "../../ui/commands";
 import { DiagnosticDecorationProvider } from "../../ui/decorations/DiagnosticDecorationProvider";
 import { GrailsGutterProvider } from "../../ui/decorations/GrailsGutterProvider";
 import { IconThemeDetector } from "../../ui/icons/IconThemeDetector";
@@ -97,9 +97,9 @@ export class ActivationManager implements Disposable {
   private startBackgroundInitialization(): Promise<void> {
     // Don't await this - let it run in background
     void this.runBackgroundTasks().catch(error => {
-      console.error("❌ Background initialization failed:", error);
-      this.container.errorService.handle(
-        `Background initialization failed: ${error}`,
+      this.container.errorService.handleError(
+        "Background initialization failed",
+        error,
         ErrorSource.Extension,
         ErrorSeverity.Error
       );
@@ -152,7 +152,12 @@ export class ActivationManager implements Disposable {
       // this.container.statusBarService.ready("🚀 Grails extension ready");
     } catch (error) {
       this.container.statusBarService.error("Extension ready with limited features");
-      console.error("❌ Background task error:", error);
+      this.container.errorService.handleError(
+        "Background task error",
+        error,
+        ErrorSource.Extension,
+        ErrorSeverity.Warning
+      );
       // Don't throw - extension should still work with basic features
     }
   }
@@ -409,7 +414,12 @@ export class ActivationManager implements Disposable {
         error => console.warn("⚠️ Tree refresh command failed, using EventBus fallback:", error)
       );
     } catch (error) {
-      console.error("❌ Failed to refresh tree view:", error);
+      this.container.errorService.handleError(
+        "Failed to refresh tree view",
+        error,
+        ErrorSource.Extension,
+        ErrorSeverity.Warning
+      );
     }
   }
 
@@ -462,7 +472,6 @@ export class ActivationManager implements Disposable {
       // Update status bar to show tree view is ready
       this.container.statusBarService.ready("Project Explorer ready");
     } catch (error) {
-      console.error("❌ Failed to setup UI components:", error);
       this.container.errorService.handleError(
         "UI setup failed",
         error,
