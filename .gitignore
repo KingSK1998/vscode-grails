@@ -32,3 +32,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# LSP cache
+.grails-lsp/
+
+# Graphify cache
+graphify-out/cache/
