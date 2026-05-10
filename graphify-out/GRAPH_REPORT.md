@@ -1,4 +1,4 @@
-# Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-10)
+# Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-11)
 
 ## Corpus Check
 - 74 files · ~105,021 words
