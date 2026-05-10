@@ -45,6 +45,7 @@
 | Dev mode LSP connection | Connects to remote server on port 5007 |
 | Production mode LSP connection | Uses local JAR `server/grails-language-server-1.0-all.jar` |
 | **ISSUE-004** | Activation timeout wrapper (30s) with user notification |
+| **ISSUE-006** | EventBus async handler execution with error isolation |
 
 ### 🟡 In Progress
 

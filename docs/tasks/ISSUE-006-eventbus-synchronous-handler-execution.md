@@ -288,14 +288,23 @@ export class EventBus implements Disposable {
 ```
 
 ## Subtasks
-- [ ] Wrap handler execution in setImmediate()
-- [ ] Execute each handler in queueMicrotask()
-- [ ] Add per-handler error isolation
-- [ ] Add handler execution timing
-- [ ] Add handler statistics for debugging
-- [ ] Log slow handlers (>100ms)
+- [x] Wrap handler execution in setImmediate()
+- [x] Execute each handler in queueMicrotask()
+- [x] Add per-handler error isolation
+- [x] Add handler execution timing
+- [x] Add handler statistics for debugging (STATS_ENABLED flag)
+- [x] Log slow handlers (>100ms)
 - [ ] Test async handler execution
 - [ ] Test error isolation
+- [ ] Test slow handler logging
+
+## Implementation Status
+✅ DONE (2026-05-11)
+- publish() uses setImmediate + queueMicrotask for async handler execution
+- Per-handler error isolation via handleHandlerError()
+- ServiceContainer.isInitialized check before accessing errorService
+- Optional handler statistics (STATS_ENABLED = false by default)
+- Slow handler detection (>100ms) with console.warn
 
 ## Tradeoffs
 - Events no longer processed in order

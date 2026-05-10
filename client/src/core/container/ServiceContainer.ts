@@ -38,6 +38,10 @@ export class ServiceContainer {
     return ServiceContainer._instance;
   }
 
+  public static get isInitialized(): boolean {
+    return !!ServiceContainer._instance;
+  }
+
   /* ================================ SERVICE ACCESS =============================== */
 
   /** Get ErrorService - always available immediately */
