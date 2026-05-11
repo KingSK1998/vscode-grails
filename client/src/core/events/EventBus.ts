@@ -16,6 +16,7 @@ export class EventBus implements Disposable {
 
   private readonly handlerStats = new Map<string, { count: number; errors: number; totalTime: number }>();
   private readonly STATS_ENABLED = false;
+  private readonly MAX_LISTENERS_PER_EVENT = 100;
 
   private constructor() {
     // Private constructor to enforce singleton pattern
@@ -41,12 +42,46 @@ export class EventBus implements Disposable {
     }
 
     const handlers = this.listeners[eventType]!;
+
+    if (handlers.length >= this.MAX_LISTENERS_PER_EVENT) {
+      console.warn(`[EventBus] Listener limit reached for ${String(eventType)} (${handlers.length}). Auto-removing oldest listener.`);
+      handlers.shift();
+    }
+
     handlers.push(handler);
+
+    if (this.listeners[eventType]!.length > this.MAX_LISTENERS_PER_EVENT * 0.8) {
+      console.warn(`[EventBus] Listener accumulation warning for ${String(eventType)}: ${handlers.length}/${this.MAX_LISTENERS_PER_EVENT}`);
+    }
 
     // Return disposable for cleanup
     return {
       dispose: () => {
         this.unsubscribe(eventType, handler);
+      },
+    };
+  }
+
+  /**
+   * Subscribe to an event exactly once, then auto-unsubscribe.
+   */
+  subscribeOnce<K extends keyof GrailsEventMap>(
+    eventType: K,
+    handler: (event: GrailsEventMap[K]) => void
+  ): Disposable {
+    const wrappedHandler = (event: GrailsEventMap[K]) => {
+      this.unsubscribe(eventType, wrappedHandler);
+      handler(event);
+    };
+
+    if (!this.listeners[eventType]) {
+      this.listeners[eventType] = [];
+    }
+    this.listeners[eventType]!.push(wrappedHandler);
+
+    return {
+      dispose: () => {
+        this.unsubscribe(eventType, wrappedHandler);
       },
     };
   }

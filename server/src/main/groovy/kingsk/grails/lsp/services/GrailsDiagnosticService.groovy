@@ -3,11 +3,11 @@ package kingsk.grails.lsp.services
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.ErrorSource
-import kingsk.grails.lsp.model.ErrorSeverity
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.providersDocument.BaseProvider
-import kingsk.grails.lsp.utils.DiagnosticUtils
+import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.model.enums.ErrorSeverity
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.providers.document.BaseProvider
+import kingsk.grails.lsp.utils.diagnostics.DiagnosticUtils
 import org.codehaus.groovy.control.ErrorCollector
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient

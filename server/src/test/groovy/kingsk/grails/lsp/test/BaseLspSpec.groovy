@@ -2,9 +2,9 @@ package kingsk.grails.lsp.test
 
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.GrailsProject
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.utils.ServiceUtils
+import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.utils.services.ServiceUtils
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import spock.lang.Shared

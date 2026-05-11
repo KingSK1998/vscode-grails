@@ -5,9 +5,9 @@ import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.core.gradle.GrailsProjectBuilder
 import kingsk.grails.lsp.core.gradle.ProjectCache
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.ErrorSource
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.protocol.mapper.ProjectMapper
 
 @Slf4j

@@ -34,6 +34,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operationName: s
  */
 export class ActivationManager implements Disposable {
   private disposables: Disposable[] = [];
+  private readonly listenerCounts = new Map<string, number>();
   private container: ServiceContainer;
   private commands: Commands;
 
@@ -269,7 +270,9 @@ export class ActivationManager implements Disposable {
    * Setup workspace and configuration event listeners.
    */
   private setupEventListeners(): void {
-    this.disposables.push(...registerLspHandlers());
+    const lspHandlers = registerLspHandlers();
+    this.disposables.push(...lspHandlers);
+    this.listenerCounts.set("lsp", lspHandlers.length);
 
     // Configuration changes
     this.disposables.push(
@@ -287,7 +290,7 @@ export class ActivationManager implements Disposable {
 
           // Re-sync Gradle if JVM args changed
           if (e.affectsConfiguration("grails.server.jvmArgs")) {
-            await this.container.gradleService.sync();
+            await this.container.gradleService.waitForSync();
           }
         }
 
@@ -521,9 +524,30 @@ export class ActivationManager implements Disposable {
    * Cleanup on extension deactivation.
    */
   dispose(): void {
+    console.log(`[ActivationManager] Disposing ${this.disposables.length} listeners...`);
+
     this.commands.dispose();
-    this.disposables.forEach(d => void d.dispose());
+
+    let disposedCount = 0;
+    let errorCount = 0;
+
+    for (const disposable of this.disposables) {
+      try {
+        disposable.dispose();
+        disposedCount++;
+      } catch (error) {
+        errorCount++;
+        console.warn("[ActivationManager] Error disposing listener:", error);
+      }
+    }
+
     this.disposables = [];
+    this.listenerCounts.clear();
+
+    console.log(
+      `[ActivationManager] Disposed ${disposedCount} listeners${errorCount > 0 ? `, ${errorCount} errors` : ""}`
+    );
+
     this.container.dispose();
   }
 }

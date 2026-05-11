@@ -8,7 +8,7 @@ export class ExtensionCommands extends BaseCommandProvider {
     });
 
     this.register("grails.syncGradle", async () => {
-      const success = await this.container.gradleService.sync();
+      const success = await this.container.gradleService.waitForSync();
       if (success) {
         vscode.window.showInformationMessage("Gradle sync completed successfully");
       } else {

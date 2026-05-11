@@ -1,8 +1,8 @@
 package kingsk.grails.lsp.services
 
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.ErrorSeverity
-import kingsk.grails.lsp.model.ErrorSource
+import kingsk.grails.lsp.model.enums.ErrorSeverity
+import kingsk.grails.lsp.model.enums.ErrorSource
 import groovy.util.logging.Slf4j
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either

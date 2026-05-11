@@ -4,10 +4,10 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ScanResult
-import kingsk.grails.lsp.model.ErrorSeverity
-import kingsk.grails.lsp.model.ErrorSource
-import kingsk.grails.lsp.utils.GroovyHelperIntegration
-import kingsk.grails.lsp.utils.GroovyRuntimeIntegration
+import kingsk.grails.lsp.model.enums.ErrorSeverity
+import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.utils.grails.GroovyHelperIntegration
+import kingsk.grails.lsp.utils.grails.GroovyRuntimeIntegration
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.eclipse.lsp4j.CompletionItem

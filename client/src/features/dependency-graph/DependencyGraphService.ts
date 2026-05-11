@@ -15,6 +15,7 @@ export class DependencyGraphService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
   private stateManager: ReturnType<typeof createWebviewStateManager<GraphState>>;
+  private cancellationTokenSource: vscode.CancellationTokenSource | null = null;
 
   private readonly debouncedRefresh = debounce(
     (project: ProjectInfo) => {
@@ -37,11 +38,20 @@ export class DependencyGraphService implements vscode.Disposable {
     if (this.disposed) return;
     this.disposed = true;
     this.debouncedRefresh.cancel();
+    this.cancelPendingRequest();
     if (this.currentPanel) {
       this.currentPanel.dispose();
       this.currentPanel = null;
     }
     void this.stateManager.clearState();
+  }
+
+  private cancelPendingRequest(): void {
+    if (this.cancellationTokenSource) {
+      this.cancellationTokenSource.cancel();
+      this.cancellationTokenSource.dispose();
+      this.cancellationTokenSource = null;
+    }
   }
 
   public openGraph(project: ProjectInfo) {
@@ -84,6 +94,9 @@ export class DependencyGraphService implements vscode.Disposable {
       return;
     }
 
+    this.cancelPendingRequest();
+    this.cancellationTokenSource = new vscode.CancellationTokenSource();
+
     try {
       const client = this.languageServerManager.languageClient;
       if (!client) {
@@ -91,22 +104,40 @@ export class DependencyGraphService implements vscode.Disposable {
         return;
       }
 
-      const graphData: unknown = await client.sendRequest("workspace/executeCommand", {
-        command: "grails.getDependencyGraph",
-        arguments: [vscode.Uri.file(project.rootPath).toString()],
-      });
+      const token = this.cancellationTokenSource.token;
+
+      const graphData: unknown = await client.sendRequest(
+        "workspace/executeCommand",
+        {
+          command: "grails.getDependencyGraph",
+          arguments: [vscode.Uri.file(project.rootPath).toString()],
+        },
+        token
+      );
+
+      if (token.isCancellationRequested) {
+        return;
+      }
 
       void this.currentPanel.webview.postMessage({
         command: "updateGraph",
         data: typeof graphData === "string" ? (JSON.parse(graphData) as unknown) : graphData,
       });
     } catch (error) {
+      if (this.cancellationTokenSource?.token.isCancellationRequested) {
+        return;
+      }
       this.errorService.handleError(
         "Failed to get dependency graph",
         error,
         ErrorSource.LanguageServer,
         ErrorSeverity.Error
       );
+    } finally {
+      if (this.cancellationTokenSource) {
+        this.cancellationTokenSource.dispose();
+        this.cancellationTokenSource = null;
+      }
     }
   }
 

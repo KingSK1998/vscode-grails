@@ -1,8 +1,8 @@
 package kingsk.grails.lsp.services
 
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.GrailsProject
-import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.types.TextFile
 import org.eclipse.lsp4j.*
 import spock.lang.Specification
 

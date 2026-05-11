@@ -4,11 +4,11 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.ErrorSource
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.providersDocument.BaseProvider
-import kingsk.grails.lsp.utils.PositionHelper
-import kingsk.grails.lsp.utils.ServiceUtils
+import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.providers.document.BaseProvider
+import kingsk.grails.lsp.utils.position.PositionHelper
+import kingsk.grails.lsp.utils.services.ServiceUtils
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams

@@ -1,5 +1,5 @@
 import type { ProjectInfo } from "../features/models/modelTypes";
-import { ProjectMapper } from "../features/projects/mappers/projectMapper";
+import { ProjectMapper } from "../shared/ProjectMapper";
 import type { ProjectDTO, ProjectPatchDTO } from "../shared/protocol/project";
 
 export type ProjectStoreListener = (projects: readonly ProjectInfo[]) => void;

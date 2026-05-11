@@ -1,8 +1,8 @@
 package kingsk.grails.lsp.services
 
 import kingsk.grails.lsp.core.gradle.ProjectCache
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.test.BaseLspSpec
 import kingsk.grails.lsp.test.ProjectType
 

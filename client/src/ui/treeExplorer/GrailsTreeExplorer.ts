@@ -7,7 +7,7 @@ import { EventBus } from "../../core/events/EventBus";
 import { EventType } from "../../core/events/eventTypes";
 import type { ProjectInfo } from "../../features/models/modelTypes";
 import { ArtifactType, ProjectType } from "../../features/models/modelTypes";
-import { ProjectMapper } from "../../features/projects/mappers/projectMapper";
+import { ProjectMapper } from "../../shared/ProjectMapper";
 import { GrailsTreeItem } from "./GrailsTreeItem";
 import { TreeItemKind } from "./TreeItemKind";
 

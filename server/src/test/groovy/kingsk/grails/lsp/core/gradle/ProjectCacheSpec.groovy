@@ -1,7 +1,7 @@
 package kingsk.grails.lsp.core.gradle
 
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.dto.GrailsProject
 import spock.lang.Specification
 import spock.lang.TempDir
 

@@ -14,32 +14,87 @@ import type { ServiceName, ServiceRegistry } from "./ServiceRegistry";
 
 type LazyInitializer<T> = () => T;
 
+export class CircularDependencyError extends Error {
+  constructor(
+    public readonly cycle: ServiceName[],
+    message: string
+  ) {
+    super(message);
+    this.name = "CircularDependencyError";
+  }
+}
+
 export class ServiceContainer {
   private static _instance: ServiceContainer;
+  private static _initializationPromise: Promise<ServiceContainer> | undefined;
+  private static _isInitialized = false;
   private readonly _services: Partial<ServiceRegistry> = {};
   private readonly _initializedServices = new Set<ServiceName>();
   private readonly _lazyInitializers = new Map<ServiceName, LazyInitializer<unknown>>();
+  private readonly _initializingServices = new Set<ServiceName>();
 
   private constructor(private readonly context: ExtensionContext) {
     this.initializeServices();
   }
 
+  public static async initialize(context: ExtensionContext): Promise<ServiceContainer> {
+    if (ServiceContainer._initializationPromise) {
+      return ServiceContainer._initializationPromise;
+    }
+
+    ServiceContainer._initializationPromise = (() => {
+      if (!ServiceContainer._instance) {
+        ServiceContainer._instance = new ServiceContainer(context);
+      }
+      ServiceContainer._isInitialized = true;
+      return Promise.resolve(ServiceContainer._instance);
+    })();
+
+    return ServiceContainer._initializationPromise;
+  }
+
   public static intialize(context: ExtensionContext): ServiceContainer {
     if (!ServiceContainer._instance) {
       ServiceContainer._instance = new ServiceContainer(context);
+      ServiceContainer._isInitialized = true;
     }
     return ServiceContainer._instance;
   }
 
   public static getInstance(): ServiceContainer {
     if (!ServiceContainer._instance) {
-      throw new Error("ServiceContainer must be initialized first");
+      throw new Error("ServiceContainer must be initialized first. Call ServiceContainer.initialize() first.");
     }
     return ServiceContainer._instance;
   }
 
+  public static async getInstanceAsync(): Promise<ServiceContainer> {
+    if (ServiceContainer._isInitialized && ServiceContainer._instance) {
+      return ServiceContainer._instance;
+    }
+
+    if (!ServiceContainer._initializationPromise) {
+      throw new Error("ServiceContainer.initialize() must be called first");
+    }
+
+    return ServiceContainer._initializationPromise;
+  }
+
   public static get isInitialized(): boolean {
-    return !!ServiceContainer._instance;
+    return ServiceContainer._isInitialized;
+  }
+
+  public static get isInitializing(): boolean {
+    return !!ServiceContainer._initializationPromise && !ServiceContainer._isInitialized;
+  }
+
+  public static reset(): void {
+    if (ServiceContainer._instance) {
+      ServiceContainer._instance.dispose();
+    }
+    ServiceContainer._instance = undefined as unknown as ServiceContainer;
+    ServiceContainer._initializationPromise = undefined;
+    ServiceContainer._isInitialized = false;
   }
 
   /* ================================ SERVICE ACCESS =============================== */
@@ -119,8 +174,25 @@ export class ServiceContainer {
       throw new Error(`Service "${name}" has no lazy initializer`);
     }
 
+    if (this._initializingServices.has(name)) {
+      const cycle = Array.from(this._initializingServices);
+      cycle.push(name);
+      throw new CircularDependencyError(
+        cycle,
+        `Circular dependency detected: ${cycle.join(" -> ")}`
+      );
+    }
+
+    this._initializingServices.add(name);
+
     const startTime = performance.now();
-    const service = initializer() as ServiceRegistry[K];
+    let service: ServiceRegistry[K];
+    try {
+      service = initializer() as ServiceRegistry[K];
+    } finally {
+      this._initializingServices.delete(name);
+    }
+
     this._services[name] = service;
     this._initializedServices.add(name);
 

@@ -13,6 +13,7 @@ export class GormSqlPreviewService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
   private disposed = false;
   private stateManager: ReturnType<typeof createWebviewStateManager<SqlPreviewState>>;
+  private cancellationTokenSource: vscode.CancellationTokenSource | null = null;
 
   private readonly debouncedRefresh = debounce(
     (uri: vscode.Uri) => {
@@ -35,11 +36,20 @@ export class GormSqlPreviewService implements vscode.Disposable {
     if (this.disposed) return;
     this.disposed = true;
     this.debouncedRefresh.cancel();
+    this.cancelPendingRequest();
     if (this.currentPanel) {
       this.currentPanel.dispose();
       this.currentPanel = null;
     }
     void this.stateManager.clearState();
+  }
+
+  private cancelPendingRequest(): void {
+    if (this.cancellationTokenSource) {
+      this.cancellationTokenSource.cancel();
+      this.cancellationTokenSource.dispose();
+      this.cancellationTokenSource = null;
+    }
   }
 
   public openPreview(uri: vscode.Uri) {
@@ -74,6 +84,9 @@ export class GormSqlPreviewService implements vscode.Disposable {
       return;
     }
 
+    this.cancelPendingRequest();
+    this.cancellationTokenSource = new vscode.CancellationTokenSource();
+
     try {
       const client = this.languageServerManager.languageClient;
       if (!client) {
@@ -81,10 +94,20 @@ export class GormSqlPreviewService implements vscode.Disposable {
         return;
       }
 
-      const sql = await client.sendRequest("workspace/executeCommand", {
-        command: "grails.getGormSql",
-        arguments: [uri.toString()],
-      });
+      const token = this.cancellationTokenSource.token;
+
+      const sql = await client.sendRequest(
+        "workspace/executeCommand",
+        {
+          command: "grails.getGormSql",
+          arguments: [uri.toString()],
+        },
+        token
+      );
+
+      if (token.isCancellationRequested) {
+        return;
+      }
 
       this.currentPanel.webview.postMessage({
         command: "updateSql",
@@ -93,12 +116,20 @@ export class GormSqlPreviewService implements vscode.Disposable {
 
       await this.stateManager.setState({ lastUri: uri.toString() });
     } catch (error) {
+      if (this.cancellationTokenSource?.token.isCancellationRequested) {
+        return;
+      }
       this.errorService.handleError(
         "Failed to generate SQL preview",
         error,
         ErrorSource.LanguageServer,
         ErrorSeverity.Error
       );
+    } finally {
+      if (this.cancellationTokenSource) {
+        this.cancellationTokenSource.dispose();
+        this.cancellationTokenSource = null;
+      }
     }
   }
 

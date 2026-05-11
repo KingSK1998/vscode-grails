@@ -1,8 +1,8 @@
 package kingsk.grails.lsp.protocol.mapper
 
 import groovy.transform.CompileStatic
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.protocol.dto.ArtifactDTO
 import kingsk.grails.lsp.protocol.dto.DependencyDTO
 import kingsk.grails.lsp.protocol.dto.ProjectDTO

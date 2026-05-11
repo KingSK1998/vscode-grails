@@ -4,8 +4,8 @@ import com.google.gson.JsonObject
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.protocol.dto.ProjectDTO
-import kingsk.grails.lsp.providersWorkspace.GrailsWorkspaceSymbolProvider
-import kingsk.grails.lsp.utils.GrailsUtils
+import kingsk.grails.lsp.providers.workspace.GrailsWorkspaceSymbolProvider
+import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
@@ -112,6 +112,11 @@ class GrailsWorkspaceService implements WorkspaceService {
                 String projectUri = params.arguments[0]?.toString() ?: grailsService.activeProjectUri
                 return CompletableFuture.supplyAsync({ ->
                     return grailsService.testDiscoveryProvider.discoverTests(projectUri)
+                })
+            case "grails.discoverTestsBatch":
+                List<String> projectUris = params.arguments[0] as List<String>
+                return CompletableFuture.supplyAsync({ ->
+                    return grailsService.testDiscoveryProvider.discoverTestsBatch(projectUris)
                 })
         }
         return CompletableFuture.completedFuture(null)

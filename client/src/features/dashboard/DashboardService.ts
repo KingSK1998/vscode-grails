@@ -1,14 +1,33 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import type { ErrorService } from "../../services/errors/ErrorService";
+import { createWebviewStateManager } from "../../services/webview/WebviewStateManager";
 
-export class DashboardService {
+interface DashboardState {
+  dashboardType?: "user" | "developer";
+}
+
+export class DashboardService implements vscode.Disposable {
   private currentPanel: vscode.WebviewPanel | null = null;
+  private disposed = false;
+  private stateManager: ReturnType<typeof createWebviewStateManager<DashboardState>>;
 
   constructor(
     private context: vscode.ExtensionContext,
     private errorService: ErrorService
-  ) {}
+  ) {
+    this.stateManager = createWebviewStateManager<DashboardState>(context, "dashboard");
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    if (this.currentPanel) {
+      this.currentPanel.dispose();
+      this.currentPanel = null;
+    }
+    void this.stateManager.clearState();
+  }
 
   public openDashboard(type: "user" | "developer") {
     const column = vscode.window.activeTextEditor
@@ -20,18 +39,19 @@ export class DashboardService {
       return;
     }
 
+    const savedState = this.stateManager.getState();
+    const effectiveType = savedState?.dashboardType ?? type;
+
     this.currentPanel = vscode.window.createWebviewPanel(
       "grailsDashboard",
-      type === "user" ? "Grails Project Dashboard" : "Extension Developer Center",
+      effectiveType === "user" ? "Grails Project Dashboard" : "Extension Developer Center",
       column ?? vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, "resources"))],
-      }
+      this.stateManager.getWebviewOptions([
+        vscode.Uri.file(path.join(this.context.extensionPath, "resources")),
+      ])
     );
 
-    this.currentPanel.webview.html = this.getHtmlContent(type);
+    this.currentPanel.webview.html = this.getHtmlContent(effectiveType);
 
     this.currentPanel.onDidDispose(
       () => {

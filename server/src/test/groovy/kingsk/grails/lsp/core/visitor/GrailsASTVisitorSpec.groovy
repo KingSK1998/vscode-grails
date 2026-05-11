@@ -3,7 +3,7 @@ package kingsk.grails.lsp.core.visitor
 import spock.lang.Specification
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.services.FileContentTracker
-import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.model.types.TextFile
 import java.util.concurrent.ConcurrentHashMap
 
 class GrailsASTVisitorSpec extends Specification {

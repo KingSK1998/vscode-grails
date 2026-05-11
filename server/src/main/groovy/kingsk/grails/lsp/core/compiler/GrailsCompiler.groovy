@@ -3,10 +3,10 @@ package kingsk.grails.lsp.core.compiler
 
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.core.compiler.unit.GrailsCU
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.utils.GrailsUtils
-import kingsk.grails.lsp.utils.ServiceUtils
+import kingsk.grails.lsp.core.compiler.GrailsCU
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.utils.grails.GrailsUtils
+import kingsk.grails.lsp.utils.services.ServiceUtils
 import org.codehaus.groovy.GroovyBugError
 import org.codehaus.groovy.control.*
 import org.codehaus.groovy.control.io.ReaderSource
@@ -220,7 +220,7 @@ class GrailsCompiler {
 
                 // 2. Add new version (handling GSP transpilation if needed)
                 String compilationText = file.uri.endsWith('.gsp') ?
-                    kingsk.grails.lsp.utils.GspToGroovyConverter.convertToVirtualGroovy(file.text) :
+                    kingsk.grails.lsp.utils.gsp.GspToGroovyConverter.convertToVirtualGroovy(file.text) :
                     file.text
 
                 compilationUnit.addSource(file.uri, compilationText)

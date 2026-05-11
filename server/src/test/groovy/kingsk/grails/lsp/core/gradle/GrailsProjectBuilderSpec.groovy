@@ -1,6 +1,6 @@
 package kingsk.grails.lsp.core.gradle
 
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.test.BaseLspSpec
 import kingsk.grails.lsp.test.ProjectType
 import spock.lang.Narrative

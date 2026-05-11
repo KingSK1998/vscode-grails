@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "D:\\Grails_Framework_Support_Extensions\\vscode-gng-support\\**"
-    ]
-  }
-}

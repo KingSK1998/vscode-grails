@@ -1,6 +1,6 @@
 package kingsk.grails.lsp.test
 
-import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.model.types.TextFile
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink

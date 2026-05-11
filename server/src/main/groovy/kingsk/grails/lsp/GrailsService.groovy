@@ -4,15 +4,20 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
-import kingsk.grails.lsp.model.*
+import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.config.GrailsLspConfig
+import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.model.enums.ErrorSeverity
+import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.protocol.GrailsLanguageClient
 import kingsk.grails.lsp.protocol.dto.ProjectDTO
 import kingsk.grails.lsp.protocol.mapper.ProjectMapper
-import kingsk.grails.lsp.providersDocument.GrailsGormSqlProvider
-import kingsk.grails.lsp.providersWorkspace.GrailsDependencyProvider
-import kingsk.grails.lsp.providersWorkspace.GrailsTestDiscoveryProvider
+import kingsk.grails.lsp.providers.document.GrailsGormSqlProvider
+import kingsk.grails.lsp.providers.workspace.GrailsDependencyProvider
+import kingsk.grails.lsp.providers.workspace.GrailsTestDiscoveryProvider
 import kingsk.grails.lsp.services.*
-import kingsk.grails.lsp.utils.ProjectDiffUtil
+import kingsk.grails.lsp.utils.project.ProjectDiffUtil
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 

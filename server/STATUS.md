@@ -1,7 +1,23 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-05-01
+> Last updated: 2026-05-12
+
+---
+
+## Current Priority: ✅ ALL TASKS COMPLETE
+
+**See:** [server-folder-reorganization.md](../../docs/server-folder-reorganization.md)
+
+### Completed Work (2026-05-12)
+- **Folder Reorganization**: All tasks (TASK-A through TASK-G) completed successfully
+  - 22 utils files reorganized into 10 domain subfolders
+  - 15 model files reorganized into 4 type subfolders
+  - 20+ provider files reorganized into document/, workspace/, completions/strategies/
+  - 100+ import references updated across all files
+- **`grails.discoverTestsBatch`**: Implemented server-side for client ISSUE-013
+  - `GrailsTestDiscoveryProvider.discoverTestsBatch(List<String> projectUris)`
+  - Command registered in `GrailsLanguageServer.executeCommandProvider`
 
 ---
 
@@ -57,7 +73,7 @@
 | Formatting | Not started |
 | Folding ranges | Not started |
 | Code actions (real) | Needs strategy design |
-| Execute commands | Not registered |
+| Execute commands | ✅ Partially implemented: `grails.getDependencyGraph`, `grails.getGormSql`, `grails.discoverTests`, `grails.discoverTestsBatch` |
 | Multi-root workspace | Planned for 1.1.0 |
 | ML-based suggestions | Planned for 1.2.0 |
 

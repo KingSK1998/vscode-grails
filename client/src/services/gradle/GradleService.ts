@@ -99,18 +99,54 @@ export class GradleService implements Disposable {
   }
 
   /**
-   * Initialize Gradle API and wait for task provider to be ready.
-   * Shows progress and ensures full synchronization with vscode-gradle.
+   * Non-blocking sync - starts initialization in background and returns immediately.
+   * Use `isReady` to check status or `await sync()` to wait for completion.
    */
-  async sync(): Promise<boolean> {
+  sync(): void {
     if (this.isInitialized && this.gradleApi) {
-      return true; // Already synced
+      return; // Already synced
     }
 
-    try {
-      this.statusBarService.sync("Initializing Gradle API...");
+    if (this.intializationPromise) {
+      return; // Already initializing
+    }
 
-      // 1. Get the Gradle extension
+this.intializationPromise ??= this.doSync().catch(error => {
+      this.errorService.handleError(
+        "Gradle sync failed",
+        error,
+        ErrorSource.GradleService,
+        ErrorSeverity.Warning
+      );
+      return false;
+    });
+  }
+
+  /**
+   * Wait for Gradle sync to complete.
+   */
+  async waitForSync(): Promise<boolean> {
+    if (this.isInitialized && this.gradleApi) {
+      return true;
+    }
+
+    this.intializationPromise ??= this.doSync().catch(error => {
+      this.errorService.handleError(
+        "Gradle sync failed",
+        error,
+        ErrorSource.GradleService,
+        ErrorSeverity.Warning
+      );
+      return false;
+    });
+
+    return this.intializationPromise;
+  }
+
+  private async doSync(): Promise<boolean> {
+    try {
+      this.statusBarService.sync("🔄 Initializing Gradle...");
+
       const extension = extensions.getExtension(GradleService.GRADLE_EXTENSION_ID);
       if (!extension) {
         this.errorService.handleError(
@@ -122,13 +158,11 @@ export class GradleService implements Disposable {
         return false;
       }
 
-      // 2. Activate if needed
       if (!extension.isActive) {
         this.statusBarService.sync("Activating Gradle extension...");
         await extension.activate();
       }
 
-      // 3. Get the API
       this.gradleApi = extension.exports as Api;
       if (!this.gradleApi) {
         this.errorService.handleError(
@@ -140,7 +174,6 @@ export class GradleService implements Disposable {
         return false;
       }
 
-      // 4. Wait for task provider to be fully loaded
       this.statusBarService.sync("Syncing with Gradle projects...");
 
       const syncSuccess = await window.withProgress(
@@ -154,7 +187,7 @@ export class GradleService implements Disposable {
 
       if (syncSuccess) {
         this.isInitialized = true;
-        this.statusBarService.success("Gradle synchronization complete");
+        this.statusBarService.success("✅ Gradle ready");
         return true;
       } else {
         this.errorService.handleError(
@@ -212,7 +245,7 @@ export class GradleService implements Disposable {
     _args: string[] = [],
     onOutputProxy?: (message: string) => void
   ): Promise<boolean> {
-    const synced = await this.sync();
+    const synced = await this.waitForSync();
     if (!synced) {
       this.errorService.handle(
         "Cannot run task: Gradle synchronization failed",

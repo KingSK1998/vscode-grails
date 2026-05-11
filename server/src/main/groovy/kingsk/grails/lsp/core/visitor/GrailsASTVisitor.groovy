@@ -4,9 +4,9 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.utils.PositionHelper
-import kingsk.grails.lsp.utils.RangeHelper
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.utils.position.PositionHelper
+import kingsk.grails.lsp.utils.position.RangeHelper
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*

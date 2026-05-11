@@ -1,5 +1,6 @@
 package kingsk.grails.lsp.model
 
+import kingsk.grails.lsp.model.types.TextFile
 import spock.lang.Narrative
 import spock.lang.Specification
 import spock.lang.Title

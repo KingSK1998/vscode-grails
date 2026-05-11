@@ -1,6 +1,6 @@
 package kingsk.grails.lsp.core.compiler
 
-import kingsk.grails.lsp.model.TextFile
+import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.test.BaseLspSpec
 import kingsk.grails.lsp.test.ProjectType
 import spock.lang.Narrative

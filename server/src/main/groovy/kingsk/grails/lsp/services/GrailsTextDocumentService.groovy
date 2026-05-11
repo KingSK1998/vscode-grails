@@ -3,8 +3,8 @@ package kingsk.grails.lsp.services
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
-import kingsk.grails.lsp.model.TextFile
-import kingsk.grails.lsp.providersDocument.*
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.providers.document.*
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.TextDocumentService

@@ -1,12 +1,12 @@
 # Graph Report - D:\Grails_Framework_Support_Extension\vscode-gng-support  (2026-05-11)
 
 ## Corpus Check
-- 76 files · ~106,141 words
+- 78 files · ~114,133 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 549 nodes · 884 edges · 60 communities detected
-- Extraction: 77% EXTRACTED · 23% INFERRED · 0% AMBIGUOUS · INFERRED: 207 edges (avg confidence: 0.8)
+- 1108 nodes · 2275 edges · 60 communities detected
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 264 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -72,16 +72,16 @@
 - [[_COMMUNITY_Community 59|Community 59]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `GrailsTreeExplorer` - 40 edges
-2. `log()` - 34 edges
-3. `ProjectService` - 27 edges
-4. `StatusBarService` - 22 edges
-5. `ConfigurationService` - 20 edges
-6. `ServiceContainer` - 19 edges
-7. `ActivationManager` - 19 edges
-8. `IconProvider` - 18 edges
-9. `IconThemeDetector` - 18 edges
-10. `GradleService` - 16 edges
+1. `T` - 48 edges
+2. `n()` - 43 edges
+3. `log()` - 41 edges
+4. `GrailsTreeExplorer` - 40 edges
+5. `A()` - 37 edges
+6. `e()` - 36 edges
+7. `i()` - 32 edges
+8. `r()` - 29 edges
+9. `ProjectService` - 27 edges
+10. `cf()` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `connectToRemoteServer()` --calls--> `log()`  [INFERRED]
@@ -90,10 +90,10 @@
   comprehensive-test-cases/SKILL.md → read-tests-before-change/SKILL.md
 - `Grails SVG Brand Icon` --semantically_similar_to--> `Grails SVG Test Asset`  [INFERRED] [semantically similar]
   resources/icons/grails.svg → server/src/test/resources/test-projects/grails-test-project/grails-app/assets/images/grails.svg
-- `activate()` --calls--> `log()`  [INFERRED]
-  D:\Grails_Framework_Support_Extension\vscode-gng-support\client\src\extension.ts → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
-- `deactivate()` --calls--> `log()`  [INFERRED]
-  D:\Grails_Framework_Support_Extension\vscode-gng-support\client\src\extension.ts → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
+- `getServerJarPath()` --calls--> `log()`  [INFERRED]
+  client\src\services\languageServer\serverConfig.ts → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
+- `k()` --calls--> `log()`  [INFERRED]
+  D:\Grails_Framework_Support_Extension\vscode-gng-support\resources\lib\d3.min.js → D:\Grails_Framework_Support_Extension\vscode-gng-support\graphify-out\graphify_update.py
 
 ## Hyperedges (group relationships)
 - **LSP Client-Server Communication Bridge** — claude_client_ts, claude_vscode_lsp_client, claude_lsp4j, claude_server_groovy [EXTRACTED 0.95]
@@ -104,88 +104,88 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (7): ActivationManager, GrailsDashboard, log(), run_update(), Commands, LanguageServerManager, StatusBarService
+Cohesion: 0.01
+Nodes (123): Ai(), an(), ao(), ar(), ba(), ca(), Ce(), ch() (+115 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (4): EventBus, ProjectMapper, ProjectService, ProjectStore
+Cohesion: 0.03
+Nodes (20): ActivationManager, withTimeout(), getClientOptions(), copyServer(), Cg(), zg(), DebugService, ErrorService (+12 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.07
-Nodes (9): getClientOptions(), copyServer(), ErrorService, main(), activate(), deactivate(), FileScannerUtils, ProjectFolderUtils (+1 more)
+Cohesion: 0.06
+Nodes (95): _(), A(), ae(), Ag(), ap(), at(), aw(), ax() (+87 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.12
-Nodes (1): GrailsTreeExplorer
+Cohesion: 0.05
+Nodes (73): ad(), al(), bd(), Bf(), bl(), bs(), cd(), cf() (+65 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.11
-Nodes (2): ConfigurationService, GrailsGutterProvider
+Cohesion: 0.05
+Nodes (7): ConfigurationService, Yc(), GrailsGutterProvider, run_update(), ProjectMapper, ProjectService, ProjectStore
 
 ### Community 5 - "Community 5"
-Cohesion: 0.12
-Nodes (2): GrailsTreeItem, IconProvider
+Cohesion: 0.07
+Nodes (8): Bm(), draw(), fu(), jm(), lu(), qu, Ru, Yu()
 
 ### Community 6 - "Community 6"
 Cohesion: 0.07
-Nodes (8): ArtifactCommands, register(), ExtensionCommands, GrailsTaskCommands, LogCommands, NavigationCommands, ProjectCommands, UICommands
+Nodes (3): GrailsTreeItem, IconProvider, IconThemeDetector
 
 ### Community 7 - "Community 7"
-Cohesion: 0.1
-Nodes (3): DebugService, GradleService, RunGrailsAppUseCase
+Cohesion: 0.06
+Nodes (8): gg(), InternMap, InternSet, rn(), yg(), DiagnosticDecorationProvider, ExtensionCommands, ServiceContainer
 
 ### Community 8 - "Community 8"
+Cohesion: 0.07
+Nodes (9): ArtifactCommands, ArtifactService, register(), GrailsTaskCommands, LegacyCommands, LogCommands, NavigationCommands, ProjectCommands (+1 more)
+
+### Community 9 - "Community 9"
+Cohesion: 0.11
+Nodes (2): main(), GrailsTreeExplorer
+
+### Community 10 - "Community 10"
 Cohesion: 0.11
 Nodes (20): GrailsASTVisitor, Client TypeScript Extension, esbuild Bundler, Gradle Tooling API 8.12, GradleService, GrailsCompiler, Incremental Compilation, LanguageServerManager (+12 more)
 
-### Community 9 - "Community 9"
-Cohesion: 0.16
-Nodes (1): ServiceContainer
-
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.14
 Nodes (3): DependencyGraphService, GormSqlPreviewService, createWebviewStateManager()
 
-### Community 11 - "Community 11"
-Cohesion: 0.23
-Nodes (1): IconThemeDetector
-
 ### Community 12 - "Community 12"
-Cohesion: 0.3
-Nodes (1): ArtifactService
-
-### Community 13 - "Community 13"
 Cohesion: 0.15
 Nodes (14): BaseProvider, CodeLensProvider, CompletionProvider, DefinitionProvider, DiagnosticsProvider, GrailsLanguageServer, GrailsService, HoverProvider (+6 more)
 
+### Community 13 - "Community 13"
+Cohesion: 0.23
+Nodes (7): cu(), eu(), ku(), Mu(), nu(), pu(), su()
+
 ### Community 14 - "Community 14"
-Cohesion: 0.15
-Nodes (2): GrailsTestService, LegacyCommands
+Cohesion: 0.21
+Nodes (1): EventBus
 
 ### Community 15 - "Community 15"
 Cohesion: 0.39
 Nodes (1): GspCompletionProvider
 
 ### Community 16 - "Community 16"
+Cohesion: 0.25
+Nodes (2): FileScannerUtils, ProjectFolderUtils
+
+### Community 17 - "Community 17"
 Cohesion: 0.32
 Nodes (2): CSSHelper, GrailsArtifactWizard
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 0.43
 Nodes (1): DashboardService
 
-### Community 18 - "Community 18"
-Cohesion: 0.38
-Nodes (1): LogStreamingService
-
 ### Community 19 - "Community 19"
-Cohesion: 0.29
-Nodes (1): OutputChannelService
-
-### Community 20 - "Community 20"
 Cohesion: 0.48
 Nodes (6): connectToRemoteServer(), getDebugConfiguration(), getJavaDebugArgs(), getLocalServerOptions(), getServerJarPath(), getServerOptions()
+
+### Community 20 - "Community 20"
+Cohesion: 0.29
+Nodes (1): OutputChannelService
 
 ### Community 21 - "Community 21"
 Cohesion: 0.53
@@ -193,7 +193,7 @@ Nodes (1): GrailsCodeActionProvider
 
 ### Community 22 - "Community 22"
 Cohesion: 0.4
-Nodes (1): DiagnosticDecorationProvider
+Nodes (1): Commands
 
 ### Community 23 - "Community 23"
 Cohesion: 0.4
@@ -205,11 +205,11 @@ Nodes (1): GrailsCodeLensProvider
 
 ### Community 25 - "Community 25"
 Cohesion: 0.5
-Nodes (4): JaCoCo 60% Coverage Threshold, BaseLspSpec Base Test Class, ProjectType DUMMY GROOVY GRAILS, Spock 2.3 Test Framework
+Nodes (4): Full Compilation 2-5 Seconds, Compiler Incremental 50-200ms, Performance Optimization Skill, Profile Before Optimize Principle
 
 ### Community 26 - "Community 26"
 Cohesion: 0.5
-Nodes (4): Full Compilation 2-5 Seconds, Compiler Incremental 50-200ms, Performance Optimization Skill, Profile Before Optimize Principle
+Nodes (4): JaCoCo 60% Coverage Threshold, BaseLspSpec Base Test Class, ProjectType DUMMY GROOVY GRAILS, Spock 2.3 Test Framework
 
 ### Community 27 - "Community 27"
 Cohesion: 0.67
@@ -404,17 +404,17 @@ Nodes (1): Apple Touch Icon PNG
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `log()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 9`, `Community 11`, `Community 14`, `Community 20`?**
-  _High betweenness centrality (0.163) - this node is a cross-community bridge._
-- **Why does `GrailsTreeExplorer` connect `Community 3` to `Community 0`, `Community 2`, `Community 14`?**
-  _High betweenness centrality (0.082) - this node is a cross-community bridge._
-- **Why does `IconThemeDetector` connect `Community 11` to `Community 0`?**
+- **Why does `log()` connect `Community 1` to `Community 2`, `Community 4`, `Community 6`, `Community 7`, `Community 9`, `Community 19`?**
+  _High betweenness centrality (0.138) - this node is a cross-community bridge._
+- **Why does `GrailsTreeExplorer` connect `Community 9` to `Community 1`?**
   _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Are the 32 inferred relationships involving `log()` (e.g. with `activate()` and `deactivate()`) actually correct?**
-  _`log()` has 32 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 39 inferred relationships involving `log()` (e.g. with `activate()` and `deactivate()`) actually correct?**
+  _`log()` has 39 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Api`, `GradleTaskProvider`, `LanguageServerManager` to the rest of the system?**
   _46 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.01 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._

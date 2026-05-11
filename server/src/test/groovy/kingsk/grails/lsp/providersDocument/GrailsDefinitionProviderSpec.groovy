@@ -1,4 +1,4 @@
-package kingsk.grails.lsp.providersDocument
+package kingsk.grails.lsp.providers.document
 
 import kingsk.grails.lsp.test.DefinitionTestSpec
 import kingsk.grails.lsp.test.ProjectType

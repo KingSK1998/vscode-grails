@@ -2,8 +2,8 @@ package kingsk.grails.lsp.core.gradle
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.model.DependencyNode
-import kingsk.grails.lsp.model.GrailsProject
+import kingsk.grails.lsp.model.dto.DependencyNode
+import kingsk.grails.lsp.model.dto.GrailsProject
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.idea.IdeaContentRoot

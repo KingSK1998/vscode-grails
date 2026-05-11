@@ -1,5 +1,6 @@
 package kingsk.grails.lsp.model
 
+import kingsk.grails.lsp.model.dto.DependencyNode
 import spock.lang.Specification
 
 /**
