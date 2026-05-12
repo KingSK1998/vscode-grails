@@ -1,26 +1,26 @@
-package kingsk.grails.lsp.providers.completions.strategies
+package kingsk.grails.lsp.providers.completions.strategies.context
 
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 
-class ScopeStrategy extends BaseCompletionStrategy {
+class DeclarationExpressionStrategy extends BaseCompletionStrategy {
 	
-	ScopeStrategy(CompletionRequest request) { super(request) }
+	DeclarationExpressionStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
-	int getPriority() { return 30 }
+	int getPriority() { return 75 }
 	
 	@Override
 	CompletionTarget target() { return CompletionTarget.BOTH }
 	
 	@Override
-	boolean canHandle(ASTNode node) { return node instanceof Statement }
+	boolean canHandle(ASTNode node) { return node instanceof ArgumentListExpression }
 	
 	@Override
 	void provideCompletions(ASTNode node) {
-		addScopeCompletions(node)
+	
 	}
 }

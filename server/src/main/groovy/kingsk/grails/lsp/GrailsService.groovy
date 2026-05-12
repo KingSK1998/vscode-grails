@@ -13,10 +13,12 @@ import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.protocol.GrailsLanguageClient
 import kingsk.grails.lsp.protocol.dto.ProjectDTO
 import kingsk.grails.lsp.protocol.mapper.ProjectMapper
+import kingsk.grails.lsp.providers.ProviderRegistry
 import kingsk.grails.lsp.providers.document.GrailsGormSqlProvider
 import kingsk.grails.lsp.providers.workspace.GrailsDependencyProvider
 import kingsk.grails.lsp.providers.workspace.GrailsTestDiscoveryProvider
 import kingsk.grails.lsp.services.*
+import kingsk.grails.lsp.utils.cache.ThreadSafeLruCache
 import kingsk.grails.lsp.utils.project.ProjectDiffUtil
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
@@ -25,6 +27,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 @Slf4j
 @CompileStatic
@@ -58,6 +61,9 @@ class GrailsService implements LanguageClientAware {
     final GrailsDependencyProvider dependencyProvider
     final GrailsGormSqlProvider gormSqlProvider
     final GrailsTestDiscoveryProvider testDiscoveryProvider
+    final CancellationService cancellationService
+    final ProviderHealthService healthService
+    final ProviderRegistry providerRegistry
 
     final GrailsLspConfig config
 
@@ -65,6 +71,9 @@ class GrailsService implements LanguageClientAware {
 
     GrailsService() {
         this.errorService = new ErrorService(this)
+        this.cancellationService = new CancellationService()
+        this.healthService = new ProviderHealthService()
+        this.providerRegistry = new ProviderRegistry(this)
         this.discoveryService = new DiscoveryService()
         this.gradle = new GradleService(this)
         this.fileTracker = new FileContentTracker(this)
@@ -98,7 +107,7 @@ class GrailsService implements LanguageClientAware {
         Runnable task = {
             progressService.begin(title, "Loading project...")
 
-            GrailsProject project = gradle.getGrailsProject(projectDir)
+            GrailsProject project = gradle.getGrailsProjectAsync(projectDir).join()
             if (!project) {
                 errorService.handleError(
                     "Invalid Grails project at $projectDir",
@@ -112,7 +121,6 @@ class GrailsService implements LanguageClientAware {
             projects[projectDir] = project
             if (!activeProjectUri) activeProjectUri = projectDir
 
-            // notify client about the new project
             publishProject(project)
 
             progressService.update("Project loaded", 20)
@@ -122,7 +130,6 @@ class GrailsService implements LanguageClientAware {
             fileTracker.resetFQCNDependencies()
             diagnostics.clearAllDiagnostics()
 
-            // compileProject publish progress from 30 to 60
             compiler.compileProject()
 
             progressService.update("Visiting AST...", 80)
@@ -151,6 +158,12 @@ class GrailsService implements LanguageClientAware {
             return
         }
 
+        if (!compiler.isDirty(textFile.uri) && compiler.compilationExistsFor(textFile.uri)) {
+            log.debug("[COMPILE] Skipping - no changes detected for: ${textFile.uri}")
+            return
+        }
+
+        compiler.markDirty(textFile.uri)
         compiler.compileSourceFile(textFile)
         visitAST(textFile)
         diagnostics.publishDiagnosticsForFile(textFile.uri)
@@ -260,5 +273,36 @@ class GrailsService implements LanguageClientAware {
         }
 
         return null
+    }
+
+    /**
+     * Shuts down all executors and resources.
+     * Called during server shutdown to ensure clean termination.
+     */
+    void shutdown() {
+        log.info("[GrailsService] Shutting down executors...")
+
+        if (backgroundExecutor instanceof java.util.concurrent.ExecutorService) {
+            ((java.util.concurrent.ExecutorService) backgroundExecutor).shutdown()
+            try {
+                if (!((java.util.concurrent.ExecutorService) backgroundExecutor).awaitTermination(5, TimeUnit.SECONDS)) {
+                    ((java.util.concurrent.ExecutorService) backgroundExecutor).shutdownNow()
+                    log.warn("[GrailsService] Background executor did not terminate gracefully")
+                } else {
+                    log.info("[GrailsService] Background executor terminated")
+                }
+            } catch (InterruptedException e) {
+                ((java.util.concurrent.ExecutorService) backgroundExecutor).shutdownNow()
+                Thread.currentThread().interrupt()
+                log.warn("[GrailsService] Background executor shutdown interrupted")
+            }
+        }
+
+        fileTracker?.shutdown()
+        document?.shutdown()
+        cancellationService?.cancelAll()
+        ThreadSafeLruCache.shutdown()
+
+        log.info("[GrailsService] Shutdown complete")
     }
 }

@@ -57,14 +57,21 @@ class TypeInferenceService {
 	}
 	
 	static List<MethodNode> findMethodsByName(Type type, String methodName) {
-	
+		if (!(type instanceof ClassNode)) return []
+		ClassNode classNode = (ClassNode) type
+		classNode.methods.findAll { it.name == methodName }
 	}
-	
+
 	static List<PropertyNode> findProperties(Type type) {
-	
+		if (!(type instanceof ClassNode)) return []
+		ClassNode classNode = (ClassNode) type
+		classNode.properties.toList()
 	}
-	
+
 	static boolean isSubType(Type subType, Type superType) {
-	
+		if (!(subType instanceof ClassNode) || !(superType instanceof ClassNode)) return false
+		ClassNode sub = (ClassNode) subType
+		ClassNode sup = (ClassNode) superType
+		sub.isDerivedFrom(sup)
 	}
 }

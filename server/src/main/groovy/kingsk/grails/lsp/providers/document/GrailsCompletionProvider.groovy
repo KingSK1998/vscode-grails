@@ -22,17 +22,32 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 @Slf4j
 @CompileStatic
 class GrailsCompletionProvider extends BaseProvider {
-    // Context-aware cache - key based on AST context, not position
-    private final Map<String, CompletionCache> completionCache = [:] as ConcurrentHashMap
+    private static final Map<String, CompletionCache> completionCache = [:] as ConcurrentHashMap
 
     private static final Set<Character> HARD_TRIGGERS = ['.' as char, ':' as char, '(' as char, '[' as char] as Set<Character>
     private static final Set<Character> SOFT_TRIGGERS = ['\t' as char, '\n' as char, ' ' as char] as Set<Character>
     private static final int MAX_CACHE_SIZE = 100
     private static final long CACHE_TTL_MS = 30_000L
+    private static final long CLEANUP_INTERVAL_MS = 10_000L
+
+    private static final ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1)
+
+    static {
+        cleanupExecutor.scheduleAtFixedRate({
+            try {
+                cleanupExpiredEntries()
+            } catch (Exception e) {
+                log.warn("[COMPLETION] Scheduled cleanup failed", e)
+            }
+        }, CLEANUP_INTERVAL_MS, CLEANUP_INTERVAL_MS, TimeUnit.MILLISECONDS)
+    }
 
 GrailsCompletionProvider(GrailsService service) {
         super(service)
@@ -184,20 +199,31 @@ GrailsCompletionProvider(GrailsService service) {
         }
     }
 
+    private static void cleanupExpiredEntries() {
+        long cutoff = System.currentTimeMillis() - CACHE_TTL_MS
+        int removed = 0
+        completionCache.entrySet().removeIf { it.value.timestamp < cutoff ? ++removed >= 0 : false }
+        if (removed > 0) {
+            log.debug("[COMPLETION] Cleaned up {} expired cache entries", removed)
+        }
+        if (completionCache.size() > MAX_CACHE_SIZE) {
+            sizeBasedCleanup()
+        }
+    }
+
+    private static void sizeBasedCleanup() {
+        def entries = completionCache.entrySet().toList()
+            .sort { Map.Entry<String, CompletionCache> a, Map.Entry<String, CompletionCache> b ->
+                a.value.timestamp <=> b.value.timestamp
+            }
+        int toRemove = (int) (completionCache.size() - (MAX_CACHE_SIZE * 0.8))
+        entries.take(toRemove).each { completionCache.remove(it.key) }
+        log.debug("[COMPLETION] Size-based cleanup removed {} entries, current size: {}", toRemove, completionCache.size())
+    }
+
     private void cleanupCache() {
         if (completionCache.size() > MAX_CACHE_SIZE) {
-            long cutoff = System.currentTimeMillis() - CACHE_TTL_MS
-            completionCache.entrySet().removeIf { it.value.timestamp < cutoff }
-
-            if (completionCache.size() > MAX_CACHE_SIZE) {
-                def entries = completionCache.entrySet().toList()
-                    .sort { Map.Entry<String, CompletionCache> a, Map.Entry<String, CompletionCache> b ->
-                        a.value.timestamp <=> b.value.timestamp
-                    }
-
-                int toRemove = (int) (completionCache.size() - (MAX_CACHE_SIZE * 0.8))
-                entries.take(toRemove).each { completionCache.remove(it.key) }
-            }
+            sizeBasedCleanup()
         }
     }
 

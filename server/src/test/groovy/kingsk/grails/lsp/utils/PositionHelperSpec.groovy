@@ -1,5 +1,6 @@
 package kingsk.grails.lsp.utils
 
+import kingsk.grails.lsp.utils.position.PositionHelper
 import org.eclipse.lsp4j.Position
 import spock.lang.Specification
 

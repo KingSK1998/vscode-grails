@@ -10,6 +10,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.TextDocumentService
 
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ScheduledFuture
 
 /**
  * Clean LSP TextDocumentService implementation
@@ -50,6 +51,7 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     private final java.util.concurrent.ScheduledExecutorService debounceExecutor = java.util.concurrent.Executors.newScheduledThreadPool(1)
     private final Map<String, java.util.concurrent.ScheduledFuture<?>> compileTasks = new java.util.concurrent.ConcurrentHashMap<>()
+    private final Set<String> pendingChanges = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
     GrailsTextDocumentService(GrailsService service) {
         this.service = service
@@ -103,18 +105,28 @@ class GrailsTextDocumentService implements TextDocumentService {
 
             completionProvider.clearCaches(textFile.uri)
 
-            compileTasks.remove(textFile.uri)?.cancel(false)
-            def uriString = textFile.uri
-            compileTasks[uriString] = debounceExecutor.schedule({ ->
+            String uriString = textFile.uri
+
+            if (pendingChanges.contains(uriString)) {
+                compileTasks.remove(uriString)?.cancel(false)
+                log.debug("[DOCUMENT] Coalescing change for: ${uriString}")
+            }
+
+            pendingChanges.add(uriString)
+
+            long delay = service.config.debounceDelayMs
+            compileTasks[uriString] = debounceExecutor.schedule({
                 try {
+                    pendingChanges.remove(uriString)
                     def latestTextFile = service.fileTracker.getTextFile(uriString)
                     if (latestTextFile) {
                         service.compileAndVisitAST(latestTextFile)
                     }
                 } catch (Exception e) {
+                    pendingChanges.remove(uriString)
                     service.errorService.handleError("Error in debounced compile", e)
                 }
-            } as Runnable, 500L, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } as Runnable, delay, java.util.concurrent.TimeUnit.MILLISECONDS)
         } catch (Exception e) {
             service.errorService.handleError("Failed to handle didChange", e)
         }
@@ -124,6 +136,7 @@ class GrailsTextDocumentService implements TextDocumentService {
     void didClose(DidCloseTextDocumentParams params) {
         try {
             log.info("[DOCUMENT] - Closed: ${params.textDocument.uri}")
+            service.cancellationService.cancelForUri(params.textDocument.uri)
             def textFile = service.fileTracker.didCloseFile(params)
             if (textFile) {
                 service.visitor.removeFileWithDependencies(textFile.uri)
@@ -274,5 +287,24 @@ class GrailsTextDocumentService implements TextDocumentService {
     @Override
     CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
         return semanticTokensProvider.provideSemanticTokens(params)
+    }
+
+    void shutdown() {
+        log.info("[DOCUMENT] Shutting down debounce executor...")
+        debounceExecutor.shutdown()
+        try {
+            if (!debounceExecutor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                debounceExecutor.shutdownNow()
+                log.warn("[DOCUMENT] Debounce executor did not terminate gracefully")
+            }
+            for (ScheduledFuture<?> task : compileTasks.values()) {
+                task.cancel(false)
+            }
+            compileTasks.clear()
+            pendingChanges.clear()
+        } catch (InterruptedException e) {
+            debounceExecutor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
     }
 }

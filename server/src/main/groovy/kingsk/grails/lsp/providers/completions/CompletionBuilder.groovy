@@ -3,21 +3,20 @@ package kingsk.grails.lsp.providers.completions
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.enums.CompletionTarget
-import kingsk.grails.lsp.providers.completions.CompletionRequest
-import kingsk.grails.lsp.providers.completions.strategies.ArgumentListStrategy
-import kingsk.grails.lsp.providers.completions.strategies.AnnotationStrategy
-import kingsk.grails.lsp.providers.completions.strategies.ClassNodeStrategy
-import kingsk.grails.lsp.providers.completions.strategies.ClosureDelegateStrategy
-import kingsk.grails.lsp.providers.completions.strategies.DeclarationExpressionStrategy
-import kingsk.grails.lsp.providers.completions.strategies.GrailsSnippetStrategy
-import kingsk.grails.lsp.providers.completions.strategies.GspTagStrategy
-import kingsk.grails.lsp.providers.completions.strategies.ImportStrategy
-import kingsk.grails.lsp.providers.completions.strategies.MethodCallExpressionStrategy
-import kingsk.grails.lsp.providers.completions.strategies.MethodNodeStrategy
-import kingsk.grails.lsp.providers.completions.strategies.NamedParameterStrategy
-import kingsk.grails.lsp.providers.completions.strategies.PropertyExpressionStrategy
-import kingsk.grails.lsp.providers.completions.strategies.ScopeStrategy
-import kingsk.grails.lsp.providers.completions.strategies.VariableExpressionStrategy
+import kingsk.grails.lsp.providers.completions.strategies.special.ImportStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.PropertyExpressionStrategy
+import kingsk.grails.lsp.providers.completions.strategies.snippet.NamedParameterStrategy
+import kingsk.grails.lsp.providers.completions.strategies.special.AnnotationStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.MethodCallExpressionStrategy
+import kingsk.grails.lsp.providers.completions.strategies.snippet.ArgumentListStrategy
+import kingsk.grails.lsp.providers.completions.strategies.type.ClassNodeStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.DeclarationExpressionStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.ClosureDelegateStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.VariableExpressionStrategy
+import kingsk.grails.lsp.providers.completions.strategies.type.MethodNodeStrategy
+import kingsk.grails.lsp.providers.completions.strategies.snippet.GrailsSnippetStrategy
+import kingsk.grails.lsp.providers.completions.strategies.special.GspTagStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.ScopeStrategy
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.codehaus.groovy.ast.ASTNode
 
@@ -29,11 +28,11 @@ import org.codehaus.groovy.ast.ASTNode
 class CompletionBuilder {
 
     // Strategy classes - instantiated with request injection per completion
+    // Organized by category: special, context, snippet, type
     private static final List<Class<? extends BaseCompletionStrategy>> STRATEGY_CLASSES = [
         ImportStrategy, // {OFFSET} {95 - Very High - import statements are specific}
         PropertyExpressionStrategy, // {BOTH} {90 - High - Very specific context}
-        // GrailsArtifactStrategy, // {OFFSET - 92 - High - Grails-specific} - Grails-specific completions
-        NamedParameterStrategy,
+        NamedParameterStrategy, // {BOTH - 85}
         AnnotationStrategy, // {OFFSET - 88 - High - annotation specific} - @Controller, @Service, etc.
         MethodCallExpressionStrategy, // {BOTH} {85 - High - Method calls and constructors}
         ArgumentListStrategy, // {BOTH - 82 - High - method argument} - method argument completion

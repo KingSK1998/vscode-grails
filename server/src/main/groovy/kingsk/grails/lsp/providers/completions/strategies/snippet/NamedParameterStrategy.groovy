@@ -1,4 +1,4 @@
-package kingsk.grails.lsp.providers.completions.strategies
+package kingsk.grails.lsp.providers.completions.strategies.snippet
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j

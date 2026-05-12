@@ -43,6 +43,7 @@ class GrailsCompiler {
 
     // Source unit caches
     private final Map<String, SourceUnit> sourceUnitsCache = new ConcurrentHashMap<>()
+    private final Set<String> dirtySources = ConcurrentHashMap.newKeySet()
     private boolean isFullCompilation = true
     private String previousContext
 
@@ -252,6 +253,7 @@ class GrailsCompiler {
             cachedErrorCollector = null
             lastErrorCollectorUpdate = 0
             previousContext = null
+            dirtySources.clear()
 
             // Clear compilation unit errors before refresh
             compilationUnit?.clearErrors()
@@ -266,6 +268,59 @@ class GrailsCompiler {
         } finally {
             compileLock.unlock()
         }
+    }
+
+    /**
+     * Marks a source file as dirty (needs recompilation).
+     * @param uri The URI of the source file
+     */
+    void markDirty(String uri) {
+        if (uri) {
+            dirtySources.add(uri)
+            log.debug("[COMPILER] Marked dirty: ${uri}")
+        }
+    }
+
+    /**
+     * Checks if a source file is dirty (needs recompilation).
+     * @param uri The URI of the source file
+     * @return true if the source is marked dirty
+     */
+    boolean isDirty(String uri) {
+        uri ? dirtySources.contains(uri) : false
+    }
+
+    /**
+     * Clears dirty flag for a source after successful compilation.
+     * @param uri The URI of the source file
+     */
+    void clearDirty(String uri) {
+        if (uri && dirtySources.remove(uri)) {
+            log.debug("[COMPILER] Cleared dirty: ${uri}")
+        }
+    }
+
+    /**
+     * Clears all dirty flags.
+     */
+    void clearAllDirty() {
+        dirtySources.clear()
+    }
+
+    /**
+     * Gets count of dirty sources pending compilation.
+     */
+    int getDirtyCount() {
+        dirtySources.size()
+    }
+
+    /**
+     * Checks if a compilation unit already exists for the given URI.
+     * @param uri The URI to check
+     * @return true if a SourceUnit exists in the cache
+     */
+    boolean compilationExistsFor(String uri) {
+        uri ? sourceUnitsCache.containsKey(uri) : false
     }
 
     /**

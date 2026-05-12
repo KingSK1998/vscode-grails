@@ -91,6 +91,7 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     CompletableFuture<Object> shutdown() {
         log.info "[GrailsLanguageServer] Shutting down Grails Language Server..."
+        grailsService.shutdown()
         shutdownFuture.complete(null)
         return CompletableFuture.completedFuture(null)
     }

@@ -14,19 +14,75 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 @Slf4j
 @CompileStatic
 class FileContentTracker extends BaseProvider {
-    private final Map<String, TextFile> trackedFiles = [:] as ConcurrentHashMap
-    private final Map<String, TextFile> fQCNToTextFile = [:] as ConcurrentHashMap
-    private final Map<String, Set<TextFile>> fileDependencies = [:] as ConcurrentHashMap
+    private static final int MAX_TRACKED_FILES = 500
+    private static final int MAX_FQCN_ENTRIES = 10000
+    private static final long STALE_CHECK_INTERVAL_MS = 30000
+
+    private final Map<String, TextFile> trackedFiles = new ConcurrentHashMap<>()
+    private final Map<String, TextFile> fQCNToTextFile = new ConcurrentHashMap<>()
+    private final Map<String, Long> fileLastModified = new ConcurrentHashMap<>()
+    private final Map<String, Set<TextFile>> fileDependencies = new ConcurrentHashMap<>()
     private final Set<String> tempFiles = ConcurrentHashMap.newKeySet()
-    // FQCN initialization state
+    private final Set<String> dirtyUris = ConcurrentHashMap.newKeySet()
     private volatile boolean isFQCNInitialized = false
+    private final Object fqcnInitLock = new Object()
+
+    private final ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1)
 
     FileContentTracker(GrailsService service) {
         super(service)
+        startCleanupTask()
+    }
+
+    private void startCleanupTask() {
+        cleanupExecutor.scheduleAtFixedRate({
+            try {
+                cleanupStaleEntries()
+            } catch (Exception e) {
+                log.debug("[FILE_TRACKER] Cleanup task failed", e)
+            }
+        }, STALE_CHECK_INTERVAL_MS, STALE_CHECK_INTERVAL_MS, TimeUnit.MILLISECONDS)
+    }
+
+    private void cleanupStaleEntries() {
+        int removed = 0
+        long now = System.currentTimeMillis()
+        for (String uri : dirtyUris) {
+            Long stored = fileLastModified.get(uri)
+            if (stored != null) {
+                File file = new File(uri)
+                if (file.exists() && file.lastModified() > stored) {
+                    forceInvalidate(uri)
+                    removed++
+                }
+            }
+        }
+        if (removed > 0) {
+            log.info("[FILE_TRACKER] Cleaned up {} stale entries", removed)
+        }
+        evictIfNecessary()
+    }
+
+    private void evictIfNecessary() {
+        if (fQCNToTextFile.size() > MAX_FQCN_ENTRIES) {
+            int toRemove = fQCNToTextFile.size() - (MAX_FQCN_ENTRIES * 0.8) as int
+            def entries = fQCNToTextFile.entrySet().toList()
+                .sort { it.key }
+            toRemove.times { i ->
+                def entry = entries[i]
+                if (!tempFiles.contains(entry.value.uri)) {
+                    fQCNToTextFile.remove(entry.key)
+                }
+            }
+            log.debug("[FILE_TRACKER] Evicted {} entries from fQCN cache", toRemove)
+        }
     }
 
     //==========================================================//
@@ -96,6 +152,7 @@ class FileContentTracker extends BaseProvider {
         tracked.markChanged()
         tracked.version = params.textDocument.version
         updateFileDependenciesForSourceFile(tracked)
+        trackFileModification(tracked.uri)
 
         tracked
     }
@@ -122,7 +179,7 @@ class FileContentTracker extends BaseProvider {
 
         // Remove temporary file entries
         if (tempFiles.remove(uri)) {
-            fQCNToTextFile.removeAll { it.value.uri == uri }
+            removeFQCNEntriesForUri(uri)
         }
 
         tracked
@@ -147,7 +204,7 @@ class FileContentTracker extends BaseProvider {
 		trackedFiles.remove(normalizedUri)
 		fileDependencies.remove(normalizedUri)
 		tempFiles.remove(normalizedUri)
-		fQCNToTextFile.removeAll { it.value.uri == normalizedUri }
+		removeFQCNEntriesForUri(normalizedUri)
 		
 		false
 	}
@@ -203,7 +260,92 @@ class FileContentTracker extends BaseProvider {
         log.info("[FILE_TRACKER] Resetting FQCN dependencies")
         fileDependencies.clear()
         fQCNToTextFile.clear()
+        fileLastModified.clear()
+        dirtyUris.clear()
         isFQCNInitialized = false
+    }
+
+    /**
+     * Force invalidate a specific file from all caches.
+     * @param uri The URI of the file to invalidate
+     */
+    void forceInvalidate(String uri) {
+        if (!uri) return
+        String normalizedUri = TextFile.normalizePath(uri)
+        trackedFiles.remove(normalizedUri)
+        fileDependencies.remove(normalizedUri)
+        removeFQCNEntriesForUri(normalizedUri)
+        fileLastModified.remove(normalizedUri)
+        dirtyUris.remove(normalizedUri)
+        tempFiles.remove(normalizedUri)
+        log.debug("[FILE_TRACKER] Force invalidated cache for: {}", normalizedUri)
+    }
+
+    /**
+     * Check if a file is stale (modified on disk since last tracking).
+     * @param uri The URI of the file to check
+     * @return true if the file exists on disk and is newer than tracked
+     */
+    boolean isStale(String uri) {
+        if (!uri) return false
+        String normalizedUri = TextFile.normalizePath(uri)
+        Long trackedTime = fileLastModified.get(normalizedUri)
+        if (trackedTime == null) return false
+        File file = new File(normalizedUri)
+        return file.exists() && file.lastModified() > trackedTime
+    }
+
+    /**
+     * Check if cache has any stale entries.
+     */
+    boolean hasStaleEntries() {
+        for (String uri : dirtyUris) {
+            if (isStale(uri)) return true
+        }
+        return false
+    }
+
+    /**
+     * Gets cache statistics for debugging.
+     */
+    Map<String, Object> getCacheStats() {
+        [
+            trackedFiles: trackedFiles.size(),
+            fQCNEntries: fQCNToTextFile.size(),
+            fileDependencies: fileDependencies.size(),
+            tempFiles: tempFiles.size(),
+            dirtyUris: dirtyUris.size()
+        ]
+    }
+
+    /**
+     * Shuts down the cleanup executor gracefully.
+     */
+    void shutdown() {
+        log.info("[FILE_TRACKER] Shutting down cleanup executor...")
+        cleanupExecutor.shutdown()
+        try {
+            if (!cleanupExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                cleanupExecutor.shutdownNow()
+                log.warn("[FILE_TRACKER] Cleanup executor did not terminate gracefully")
+            } else {
+                log.info("[FILE_TRACKER] Cleanup executor terminated")
+            }
+        } catch (InterruptedException e) {
+            cleanupExecutor.shutdownNow()
+            Thread.currentThread().interrupt()
+            log.warn("[FILE_TRACKER] Cleanup executor shutdown interrupted")
+        }
+    }
+
+    private void trackFileModification(String uri) {
+        if (!uri) return
+        String normalizedUri = TextFile.normalizePath(uri)
+        File file = new File(normalizedUri)
+        if (file.exists()) {
+            fileLastModified.put(normalizedUri, file.lastModified())
+            dirtyUris.add(normalizedUri)
+        }
     }
 
     //==========================================================//
@@ -216,16 +358,20 @@ class FileContentTracker extends BaseProvider {
     private void initializeFQCNIfRequired() {
         if (isFQCNInitialized) return
 
-        try {
-            log.info("[FILE_TRACKER] Initializing FQCN map...")
-            def sourceFiles = ServiceUtils.getAllGroovySourceFilesFromProject(project)
-            def fqcnMap = ServiceUtils.generateFQCNFromSourceFiles(sourceFiles)
-            fQCNToTextFile.putAll(fqcnMap)
-            isFQCNInitialized = true
-            log.info("[FILE_TRACKER] FQCN map initialized with ${fQCNToTextFile.size()} entries")
-        } catch (Exception e) {
-            errorService.handleError("Failed to initialize FQCN map", e, ErrorSource.FILE_TRACKER)
-            isFQCNInitialized = false
+        synchronized (fqcnInitLock) {
+            if (isFQCNInitialized) return
+
+            try {
+                log.info("[FILE_TRACKER] Initializing FQCN map...")
+                def sourceFiles = ServiceUtils.getAllGroovySourceFilesFromProject(project)
+                def fqcnMap = ServiceUtils.generateFQCNFromSourceFiles(sourceFiles)
+                fQCNToTextFile.putAll(fqcnMap)
+                isFQCNInitialized = true
+                log.info("[FILE_TRACKER] FQCN map initialized with ${fQCNToTextFile.size()} entries")
+            } catch (Exception e) {
+                errorService.handleError("Failed to initialize FQCN map", e, ErrorSource.FILE_TRACKER)
+                isFQCNInitialized = false
+            }
         }
     }
 
@@ -233,6 +379,12 @@ class FileContentTracker extends BaseProvider {
      * Updates file dependencies for a source file
      * @param sourceFile The source file to update dependencies for
      */
+    private void removeFQCNEntriesForUri(String targetUri) {
+        if (!targetUri) return
+        def keysToRemove = fQCNToTextFile.findAll { it.value.uri == targetUri }*.key
+        keysToRemove.each { fQCNToTextFile.remove(it) }
+    }
+
     void updateFileDependenciesForSourceFile(TextFile sourceFile) {
         if (!sourceFile) return
 

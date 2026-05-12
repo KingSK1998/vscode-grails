@@ -58,20 +58,35 @@ class GrailsWorkspaceService implements WorkspaceService {
     void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
         log.info "[WORKSPACE] Watched files changed: ${params.changes}"
 
-        // If key Gradle files changed, clear caches and rebuild project
         boolean rebuild = params.changes.any { event ->
-            event.uri.endsWith("build.gradle") || event.uri.endsWith("settings.gradle")
+            isBuildConfigurationFile(event.uri)
         }
 
         if (!rebuild) return
 
-        log.info "[WORKSPACE] Gradle build files changed - invalidating cache and rebuilding workspace"
+        log.info "[WORKSPACE] Build configuration files changed - invalidating cache and rebuilding workspace"
         grailsService.gradle.invalidateCache()
-        // Re-setup workspace asynchronously to recompile and refresh caches
         grailsService.refreshAndReindexWorkspace(
             grailsService.project.rootDirectory.toURI().toString(),
             "Build Files Change Refresh"
         )
+    }
+
+    private static boolean isBuildConfigurationFile(String uri) {
+        if (!uri) return false
+        uri = uri.toLowerCase()
+        return uri.endsWith("build.gradle") ||
+               uri.endsWith("build.gradle.kts") ||
+               uri.endsWith("settings.gradle") ||
+               uri.endsWith("settings.gradle.kts") ||
+               uri.endsWith("gradle.properties") ||
+               uri.endsWith("plugins.groovy") ||
+               uri.endsWith("application.yml") ||
+               uri.endsWith("application.yaml") ||
+               uri.endsWith("application.groovy") ||
+               uri.endsWith("grails-app/conf/application.yml") ||
+               uri.endsWith("grails-app/conf/application.yaml") ||
+               uri.endsWith("grails-app/conf/application.groovy")
     }
 
     @Override

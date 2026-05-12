@@ -10,6 +10,8 @@ import kingsk.grails.lsp.model.enums.ErrorSource
 import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.protocol.mapper.ProjectMapper
 
+import java.util.concurrent.CompletableFuture
+
 @Slf4j
 @CompileStatic
 class GradleService {
@@ -21,7 +23,22 @@ class GradleService {
         this.service = service
     }
 
+    CompletableFuture<GrailsProject> getGrailsProjectAsync(String projectDir) {
+        return CompletableFuture.supplyAsync({
+            try {
+                return getGrailsProjectSync(projectDir)
+            } catch (Exception e) {
+                log.error("[GRADLE] Failed to get project: ${projectDir}", e)
+                throw e
+            }
+        })
+    }
+
     GrailsProject getGrailsProject(String projectDir) {
+        return getGrailsProjectSync(projectDir)
+    }
+
+    private GrailsProject getGrailsProjectSync(String projectDir) {
         File rootDir = new File(projectDir.toURI())
         if (!rootDir.exists()) {
             throw new FileNotFoundException("[GRADLE] Project directory does not exist: ${projectDir}")

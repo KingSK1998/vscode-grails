@@ -1,4 +1,4 @@
-package kingsk.grails.lsp.providers.completions.strategies
+package kingsk.grails.lsp.providers.completions.strategies.special
 
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy

@@ -32,6 +32,39 @@ abstract class BaseProvider {
     protected GrailsProject getProject()                { _service.getProject() }
     protected kingsk.grails.lsp.services.ErrorService getErrorService()  { _service.errorService }
     protected GrailsDiagnosticService getDiagnostics()  { _service.diagnostics }
+    protected kingsk.grails.lsp.services.CancellationService getCancellationService() { _service.cancellationService }
+    protected kingsk.grails.lsp.services.ProviderHealthService getHealthService() { _service.healthService }
+
+    /**
+     * Creates a new cancellation token for the given URI.
+     * Providers should call this at the start of a request and check it periodically.
+     */
+    protected kingsk.grails.lsp.services.CancellationService.CancellationToken createCancellationToken(String uri) {
+        cancellationService.createToken(uri)
+    }
+
+    /**
+     * Checks if the current request has been cancelled.
+     * Throws CancellationException if cancelled.
+     */
+    protected void checkCancellation(kingsk.grails.lsp.services.CancellationService.CancellationToken token) {
+        if (token) token.checkCancellation()
+    }
+
+    /**
+     * Records health metrics for a provider operation.
+     * Call at the end of provideXxx methods.
+     */
+    protected void recordHealth(String providerName, long durationMs, boolean success = true) {
+        healthService.recordRequest(providerName, durationMs, success)
+    }
+
+    /**
+     * Gets the simple class name for use as provider name.
+     */
+    protected String getProviderName() {
+        this.class.simpleName
+    }
 
     /**
      * Common pattern: get AST node at position with error handling
