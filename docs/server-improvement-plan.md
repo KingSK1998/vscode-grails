@@ -71,12 +71,12 @@ GrailsService is a "god object" with too many responsibilities. Providers initia
 - **Problem**: Some providers created in GrailsService constructor, others in GrailsTextDocumentService
 - **Current**: `completionProvider = new GrailsCompletionProvider(service)` in both places
 - **Fix**: Single provider registry with consistent lifecycle management
-- **Status**: 🟡 IN PROGRESS - Created ProviderRegistry, not yet used throughout
+- **Status**: ✅ DONE - GrailsTextDocumentService migrated to use ProviderRegistry
 - **Subtasks**:
   - [x] Create ProviderRegistry class
-  - [ ] Move all provider creation to registry
-  - [ ] Add provider dispose() support
-  - [ ] Update GrailsTextDocumentService to use registry
+  - [x] Move all provider creation to registry
+  - [ ] Add provider dispose() support (not needed)
+  - [x] Update GrailsTextDocumentService to use registry
 
 #### SERVER-003 · Direct Service Access via GrailsService · 🟡 Medium
 - **Problem**: All providers receive GrailsService and access everything via it
