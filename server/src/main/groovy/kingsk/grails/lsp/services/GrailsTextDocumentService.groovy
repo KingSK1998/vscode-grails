@@ -31,52 +31,78 @@ class GrailsTextDocumentService implements TextDocumentService {
 
     private final GrailsService service
 
-    // Provider instances - initialized once for performance
-    private final GrailsCompletionProvider completionProvider
-    private final GrailsHoverProvider hoverProvider
-    private final GrailsDefinitionProvider definitionProvider
-    private final GrailsTypeDefinitionProvider typeDefinitionProvider
-    private final GrailsImplementationProvider implementationProvider
-    private final GrailsFormattingProvider formattingProvider
-    private final GrailsFoldingRangeProvider foldingRangeProvider
-    private final GrailsCodeActionProvider codeActionProvider
-    private final GrailsReferenceProvider referenceProvider
-    private final GrailsSignatureHelpProvider signatureHelpProvider
-    private final GrailsDocumentSymbolProvider documentSymbolProvider
-    private final GrailsCodeLensProvider codeLensProvider
-    private final GrailsInlayHintProvider inlayHintProvider
-    private final GrailsRenameProvider renameProvider
-    private final GrailsSemanticTokensProvider semanticTokensProvider
-    final GrailsYamlIntelligenceProvider yamlProvider
-
     private final java.util.concurrent.ScheduledExecutorService debounceExecutor = java.util.concurrent.Executors.newScheduledThreadPool(1)
     private final Map<String, java.util.concurrent.ScheduledFuture<?>> compileTasks = new java.util.concurrent.ConcurrentHashMap<>()
     private final Set<String> pendingChanges = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
     GrailsTextDocumentService(GrailsService service) {
         this.service = service
-
-        // Initialize all providers
-        this.completionProvider = new GrailsCompletionProvider(service)
-        this.hoverProvider = new GrailsHoverProvider(service)
-        this.definitionProvider = new GrailsDefinitionProvider(service)
-        this.typeDefinitionProvider = new GrailsTypeDefinitionProvider(service)
-        this.implementationProvider = new GrailsImplementationProvider(service)
-        this.formattingProvider = new GrailsFormattingProvider(service)
-        this.foldingRangeProvider = new GrailsFoldingRangeProvider(service)
-        this.codeActionProvider = new GrailsCodeActionProvider(service)
-        this.referenceProvider = new GrailsReferenceProvider(service)
-        this.signatureHelpProvider = new GrailsSignatureHelpProvider(service)
-        this.documentSymbolProvider = new GrailsDocumentSymbolProvider(service)
-        this.codeLensProvider = new GrailsCodeLensProvider(service)
-        this.inlayHintProvider = new GrailsInlayHintProvider(service)
-        this.renameProvider = new GrailsRenameProvider(service)
-        this.semanticTokensProvider = new GrailsSemanticTokensProvider(service)
-        this.yamlProvider = new GrailsYamlIntelligenceProvider(service)
-
-        log.debug("[DOCUMENT] GrailsTextDocumentService service initialized with all providers")
+log.debug("[DOCUMENT] GrailsTextDocumentService initialized with lazy provider registry")
     }
 
+    private GrailsCompletionProvider getCompletionProvider() {
+        service.providerRegistry.getProvider(GrailsCompletionProvider)
+    }
+
+    private GrailsHoverProvider getHoverProvider() {
+        service.providerRegistry.getProvider(GrailsHoverProvider)
+    }
+
+    private GrailsDefinitionProvider getDefinitionProvider() {
+        service.providerRegistry.getProvider(GrailsDefinitionProvider)
+    }
+
+    private GrailsTypeDefinitionProvider getTypeDefinitionProvider() {
+        service.providerRegistry.getProvider(GrailsTypeDefinitionProvider)
+    }
+
+    private GrailsImplementationProvider getImplementationProvider() {
+        service.providerRegistry.getProvider(GrailsImplementationProvider)
+    }
+
+    private GrailsFormattingProvider getFormattingProvider() {
+        service.providerRegistry.getProvider(GrailsFormattingProvider)
+    }
+
+    private GrailsFoldingRangeProvider getFoldingRangeProvider() {
+        service.providerRegistry.getProvider(GrailsFoldingRangeProvider)
+    }
+
+    private GrailsCodeActionProvider getCodeActionProvider() {
+        service.providerRegistry.getProvider(GrailsCodeActionProvider)
+    }
+
+    private GrailsReferenceProvider getReferenceProvider() {
+        service.providerRegistry.getProvider(GrailsReferenceProvider)
+    }
+
+    private GrailsSignatureHelpProvider getSignatureHelpProvider() {
+        service.providerRegistry.getProvider(GrailsSignatureHelpProvider)
+    }
+
+    private GrailsDocumentSymbolProvider getDocumentSymbolProvider() {
+        service.providerRegistry.getProvider(GrailsDocumentSymbolProvider)
+    }
+
+    private GrailsCodeLensProvider getCodeLensProvider() {
+        service.providerRegistry.getProvider(GrailsCodeLensProvider)
+    }
+
+    private GrailsInlayHintProvider getInlayHintProvider() {
+        service.providerRegistry.getProvider(GrailsInlayHintProvider)
+    }
+
+    private GrailsRenameProvider getRenameProvider() {
+        service.providerRegistry.getProvider(GrailsRenameProvider)
+    }
+
+    private GrailsSemanticTokensProvider getSemanticTokensProvider() {
+        service.providerRegistry.getProvider(GrailsSemanticTokensProvider)
+    }
+
+    GrailsYamlIntelligenceProvider getYamlProvider() {
+        service.providerRegistry.getProvider(GrailsYamlIntelligenceProvider)
+    }
 
     //==========================================================//
     //                     File Events                          //
