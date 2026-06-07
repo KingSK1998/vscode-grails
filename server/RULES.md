@@ -8,7 +8,10 @@
 
 > **LSP server = single process, single instance, tight pipeline.**  
 > Shared mutable state through `GrailsService` is INTENTIONAL — not a smell.  
-> Do NOT refactor it away. Understand WHY before touching anything.
+> Do NOT refactor it away. Understand WHY before touching anything.  
+> This rule governs Phase 1–2 implementation. The State & Lifecycle Specification
+> defines the VersionedSnapshot model that replaces it in Phase 3+.
+> Until that migration, this file is authoritative for all server code.
 
 ---
 
@@ -30,22 +33,26 @@
 `GrailsService` is the **single wiring point**. It is NOT a service locator passed around carelessly.
 
 ```
-GrailsService  ← connect client
-  ├── errorService        ErrorService
-  ├── discoveryService    DiscoveryService
-  ├── gradle              GradleService
-  ├── fileTracker         FileContentTracker
-  ├── astService          ASTService
-  ├── compiler            GrailsCompiler
-  ├── progressService     ProgressService
-  ├── diagnostics         GrailsDiagnosticService
-  ├── document            GrailsTextDocumentService  ← LSP entry point
-  ├── workspace           GrailsWorkspaceService     ← LSP entry point
-  ├── visitor             GrailsASTVisitor
-  ├── dependencyProvider  GrailsDependencyProvider
-  ├── gormSqlProvider     GrailsGormSqlProvider
+GrailsService  ← composition root
+  implements ProjectContext, ProviderContext, CompilationContext
+  ├── errorService          ErrorService
+  ├── discoveryService      DiscoveryService
+  ├── gradle                GradleService
+  ├── fileTracker           FileContentTracker
+  ├── astService            ASTService
+  ├── compiler              GrailsCompiler
+  ├── progressService       ProgressService
+  ├── diagnostics           GrailsDiagnosticService
+  ├── document              GrailsTextDocumentService    ← LSP entry point
+  ├── workspace             GrailsWorkspaceService       ← LSP entry point
+  ├── visitor               GrailsASTVisitor
+  ├── dependencyProvider    GrailsDependencyProvider
+  ├── gormSqlProvider       GrailsGormSqlProvider
   ├── testDiscoveryProvider GrailsTestDiscoveryProvider
-  └── config              GrailsLspConfig
+  ├── cancellationService   CancellationService          ← added SERVER-017
+  ├── healthService         ProviderHealthService        ← added SERVER-016
+  ├── providerRegistry      ProviderRegistry             ← added SERVER-014
+  └── config                GrailsLspConfig
 ```
 
 ### WRITE PATH — sacred, untouchable by providers
@@ -123,7 +130,14 @@ Every TIER 1 class MUST extend `BaseProvider` exactly like this:
 abstract class BaseProvider {
     private final GrailsService _service  // underscore = backing field, hands off
 
+    // Primary constructor — used by all TIER 1 providers
     BaseProvider(GrailsService service) {
+        this._service = service
+    }
+
+    // Context-aware constructor — extracts contexts from service (backward-compatible)
+    BaseProvider(ProviderContext providerCtx, CompilationContext compilationCtx,
+                 GrailsProjectGetter projectGetter, GrailsService service) {
         this._service = service
     }
 
@@ -134,6 +148,20 @@ abstract class BaseProvider {
     protected GrailsCompiler getCompiler()              { _service.compiler }
     protected GrailsDiagnosticService getDiagnostics()  { _service.diagnostics }
     protected GrailsProject getProject()                { _service.project }
+
+    // Cancellation support — SERVER-017
+    protected CancellationToken createCancellationToken(String uri) {
+        _service.cancellationService.createCancellationToken(uri)
+    }
+    protected void checkCancellation(CancellationToken token) {
+        _service.cancellationService.checkCancellation(token)
+    }
+
+    // Health monitoring — SERVER-016
+    protected void recordHealth(long latencyMs, boolean success) {
+        _service.healthService.recordHealth(getProviderName(), latencyMs, success)
+    }
+    protected abstract String getProviderName()
 }
 ```
 
@@ -142,6 +170,12 @@ Rules:
 - `@CompileStatic` enforces `private` — subclasses cannot access `_service` directly
 - To add access to a new `GrailsService` field — add a `protected` getter to `BaseProvider` first
 - NEVER expose `_service` itself as a public or protected getter
+- `createCancellationToken(uri)` / `checkCancellation(token)` — use at the start of every
+  long-running handler. Call `checkCancellation` at yield points inside loops.
+- `recordHealth(latencyMs, success)` — call at the end of every public LSP handler method.
+- `getProviderName()` — implement as a one-liner returning a string literal (e.g. `"completion"`).
+- The context-aware constructor exists for future decoupling; do NOT use it unless directed.
+  All current providers use `BaseProvider(GrailsService service)`.
 
 ---
 
@@ -325,15 +359,74 @@ protected GrailsASTVisitor getVisitor() { _service.visitor }   // ✅
 
 ```
 kingsk.grails.lsp/
-  GrailsService.groovy              ← composition root
+  GrailsService.groovy              ← composition root (implements ProjectContext, ProviderContext, CompilationContext)
   GrailsLanguageServer.groovy       ← LSP entry point
+  context/                          ← ProjectContext, ProviderContext, CompilationContext interfaces
   core/
     compiler/                       ← GrailsCompiler, CompilerOptions
     gradle/                         ← GrailsProjectBuilder, ProjectCache
     visitor/                        ← GrailsASTVisitor
-  services/                         ← GrailsTextDocumentService, GrailsWorkspaceService + all services
-  providersDocument/                ← TIER 1 document providers
-  providersWorkspace/               ← TIER 1 workspace providers
-  model/                            ← GrailsProject, TextFile, GrailsLspConfig, etc.
-  utils/                            ← TIER 2 static utilities
+  services/                         ← GrailsTextDocumentService, GrailsWorkspaceService,
+                                       CancellationService, ProviderHealthService, ProviderRegistry,
+                                       FileContentTracker, and all domain services
+  providers/
+    document/                       ← TIER 1 document providers (completion, hover, diagnostics, etc.)
+    workspace/                      ← TIER 1 workspace providers (references, symbols, etc.)
+    completions/
+      strategies/
+        context/                    ← context-aware completion strategies
+        snippet/                    ← snippet strategies
+        type/                       ← type-resolution strategies
+        special/                    ← Grails-specific strategies
+  model/                            ← GrailsProject, TextFile, GrailsLspConfig, etc. (4 type subfolders)
+  utils/                            ← TIER 2 static utilities (10 domain subfolders):
+    ast/        cache/    completion/   diagnostics/  docs/
+    grails/     gsp/      position/     project/      resolution/
+  protocol/                         ← LSP protocol extension types
+  dummy/                            ← test dummy implementations (test scope only)
 ```
+
+---
+
+## 15. PROVIDERREGISTRY — LAZY PROVIDER ACCESS
+
+`ProviderRegistry` manages lazy initialization of TIER 1 providers. It lives in `GrailsService`
+as `providerRegistry`.
+
+```groovy
+// Retrieve a provider (created on first access, reused thereafter)
+def provider = providerRegistry.getProvider(GrailsCompletionProvider)
+```
+
+### Rules
+- Providers retrieved via `ProviderRegistry` MUST still extend `BaseProvider`.
+- Do NOT construct TIER 1 providers manually outside of `ProviderRegistry`.
+- `ProviderRegistry` is initialized by `GrailsService` — NEVER instantiate it elsewhere.
+- The registry reduces startup coupling; providers that are never requested are never created.
+
+---
+
+## 16. CANCELLATIONSERVICE — REQUEST LIFECYCLE
+
+`CancellationService` provides URI-scoped request cancellation. All long-running LSP handlers
+MUST participate.
+
+### Usage pattern
+```groovy
+@Override
+CompletableFuture<List<CompletionItem>> completion(CompletionParams params) {
+    def token = createCancellationToken(params.textDocument.uri)
+    return CompletableFuture.supplyAsync({
+        checkCancellation(token)
+        // ... work ...
+        checkCancellation(token)  // at every major yield point
+        result
+    }, backgroundExecutor)
+}
+```
+
+### Rules
+- `didClose()` automatically cancels all pending requests for that URI — already wired.
+- `shutdown()` cancels all pending requests before JVM exit — already wired.
+- Do NOT create `CancellationToken` instances manually. Always use `createCancellationToken(uri)`.
+- `checkCancellation()` throws `CancellationException` — let it propagate; the executor handles it.

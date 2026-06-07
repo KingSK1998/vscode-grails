@@ -11,6 +11,12 @@
 *   **Degrade gracefully:** When correctness cannot be guaranteed, the server should explicitly degrade rather than speculate.
 *   **Priorities:** Trustworthiness is more important than feature count, latency, or convenience.
 
+> **Phase applicability:** This specification describes the Phase 3+ target architecture.
+> In Phase 1–2, `server/RULES.md` governs implementation and `GrailsService` mutable
+> state is authoritative. The Architecture Improvement Plan defines the transition sequence.
+> Sections 2–3 (VersionedSnapshot) are Phase 3 targets. Section 4 (state machines) informs
+> Phase 1 stabilisation. Section 11 (semantic model) is Phase 5.
+
 ## 2. State & Lifecycle Architecture
 
 ### Explicit State Ownership Hierarchy

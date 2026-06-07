@@ -44,6 +44,7 @@ ServiceContainer
   ├── gradleService          GradleService
   ├── logStreamingService    LogStreamingService
   ├── languageServerManager  LanguageServerManager
+  ├── lspHandlerRegistry     LspHandlerRegistry        ← added ISSUE-020
   ├── grailsTestService      GrailsTestService
   ├── debugService           DebugService
   ├── artifactService        ArtifactService
@@ -326,22 +327,36 @@ Avoid booleans like `isRunning`.
 ```
 client/src/
   core/
-    container/
+    container/                      ← ServiceContainer, activation
   services/
-    useCases/
     artifacts/
     debugging/
     errors/
     gradle/
     languageServer/
+    lsp/
+      handlers/                     ← LspHandlerRegistry + per-feature handlers (ISSUE-020)
     testing/
-    ui/
+    webview/                        ← webview service infrastructure
     workspace/
+  features/                         ← self-contained feature modules
+    dashboard/
+    dependency-graph/
+    gorm-sql-preview/
+    models/
+  shared/
+    protocol/                       ← shared types between client and server (ISSUE-021)
+  store/                            ← state store
   ui/
-    commands/
+    commands/                       ← UICommands, ProjectCommands, GrailsTaskCommands (ISSUE-019)
   utils/
+  test/
   extension.ts
 ```
+
+> **Note:** `services/useCases/` was removed (ISSUE-021). UseCases live alongside their
+> primary service or are inlined into commands for simple workflows. Multi-service
+> UseCases follow Rule 3 and are instantiated inline at the command call site.
 
 ---
 
