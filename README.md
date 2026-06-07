@@ -101,9 +101,13 @@ This extension uses a **client-server architecture** for optimal performance:
 
 ## 📖 Documentation
 
-- [Documentation hub](./docs/README.md) — two main guides
-- [**User guide**](./docs/user-guide.md) — install, settings, features, troubleshooting, status
-- [**Developer guide**](./docs/developer-guide.md) — build, architecture, LSP reference, CI
+| Guide | For |
+|-------|-----|
+| [**User guide**](./docs/user-guide.md) | Install, settings, features, troubleshooting |
+| [**Developer guide**](./docs/developer-guide.md) | Build, debug, testing, compiler, logging, CI |
+| [**Architecture**](./docs/architecture.md) | Client ↔ server design, provider tiers, feature ownership |
+| [Server rules](./server/RULES.md) | Server architecture rules (for AI agents) |
+| [Client rules](./client/RULES.md) | Client architecture rules (for AI agents) |
 
 ## 🛠️ Development Workflow
 

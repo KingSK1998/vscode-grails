@@ -175,11 +175,11 @@ export class LanguageServerManager implements Disposable {
 
     const eventBus = EventBus.getInstance();
 
-    // 🔥 FULL PROJECT SYNC
-    const fullSyncDisposable = this.client.onNotification(
-      "grails/projectsFullSync",
+    // 🔥 ALL PROJECTS NOTIFICATION (sent on initial sync)
+    const allProjectsDisposable = this.client.onNotification(
+      "grails/allProjects",
       (projects: ProjectDTO[]) => {
-        console.log("📦 LSP FULL SYNC:", projects.length);
+        console.log("📦 LSP ALL PROJECTS:", projects.length);
 
         eventBus.publish({
           type: EventType.PROJECTS_DISCOVERED,
@@ -205,7 +205,7 @@ export class LanguageServerManager implements Disposable {
       }
     );
 
-    this.disposables.push(fullSyncDisposable, updateDisposable);
+    this.disposables.push(allProjectsDisposable, updateDisposable);
   }
 
   private handleServerMessage(type: number, message: string): void {

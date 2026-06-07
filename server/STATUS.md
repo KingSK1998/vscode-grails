@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-05-13
+> Last updated: 2026-05-14
 
 ---
 
@@ -64,6 +64,29 @@
   - Added `fqcnInitLock` for thread-safe double-checked locking in `initializeFQCNIfRequired()`
   - Replaced non-atomic `removeAll` calls with `removeFQCNEntriesForUri()` helper
   - Added `removeFQCNEntriesForUri()` helper for atomic removal by URI
+
+### Context Interfaces (SERVER-001/SERVER-003) - 2026-05-13:
+- **GrailsService now implements context interfaces**: `ProjectContext`, `ProviderContext`, `CompilationContext`
+- **CompilationContext fixed**: Removed misaligned `compileProject()` and `invalidateCompiler()` methods
+- **ProjectContext methods added**: `addProject()`, `removeProject()`, `updateProject()` implemented
+- **BaseProvider refactored**: Uses contexts internally while maintaining backward-compatible `GrailsService` constructor
+  - New constructor: `BaseProvider(ProviderContext, CompilationContext, GrailsProjectGetter, GrailsService)`
+  - Old constructor: `BaseProvider(GrailsService)` still works - extracts contexts from service
+  - `getService()` preserved for backward compatibility
+
+### Completed Work (2026-05-14)
+- **FileContentTracker Thread Safety (SERVER-008)**:
+  - Fixed `evictIfNecessary()` - iterator-based removal instead of list index
+  - Fixed `removeFQCNEntriesForUri()` - atomic iterator removal
+  - Fixed `hasStaleEntries()` - snapshot-based iteration
+- **GrailsCompiler Thread Safety (SERVER-009)**:
+  - All subtasks complete - locking is appropriate for this use case
+- **Provider Architecture (SERVER-014)**:
+  - All subtasks complete - BaseProvider contexts + ProviderRegistry
+- **Communication Protocol Fixes**:
+  - `GrailsWorkspaceService.executeCommand()` now returns error for unknown commands
+  - Previously returned null silently; now returns `IllegalArgumentException` via `failedFuture()`
+- **Server Improvement Plan**: ✅ 20/21 items complete
 
 ## Current Priority: ✅ ALL TASKS COMPLETE (mostly)
 

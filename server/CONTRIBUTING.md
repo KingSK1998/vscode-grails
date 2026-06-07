@@ -278,10 +278,9 @@ Add any other context or screenshots about the feature request.
 
 ### Documentation
 
-- [Testing Guide](docs/TESTING.md)
-- [Compiler Architecture](docs/COMPILER.md)
-- [Feature Responsibilities](docs/FEATURE_RESPONSIBILITIES.md)
-- [Logging Guide](docs/LOGGING_GUIDE.md)
+- [Developer guide](../docs/developer-guide.md)
+- [Architecture](../docs/architecture.md)
+- [Server rules](RULES.md)
 
 ### External Resources
 

@@ -2,6 +2,9 @@ package kingsk.grails.lsp
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.dto.GrailsProject
@@ -31,7 +34,7 @@ import java.util.concurrent.TimeoutException
 
 @Slf4j
 @CompileStatic
-class GrailsService implements LanguageClientAware {
+class GrailsService implements LanguageClientAware, ProjectContext, ProviderContext, CompilationContext {
 
     GrailsLanguageClient client
     Map<String, GrailsProject> projects = [:]
@@ -200,6 +203,25 @@ class GrailsService implements LanguageClientAware {
             .collect { ProjectMapper.toDTO(it) }
 
         client.notifyAllProjects(dtos)
+    }
+
+    void addProject(GrailsProject project) {
+        if (project?.rootDirectory) {
+            projects[project.rootDirectory.toURI().toString()] = project
+        }
+    }
+
+    void removeProject(String projectDir) {
+        projects.remove(projectDir)
+        if (activeProjectUri == projectDir) {
+            activeProjectUri = projects.keySet().first()
+        }
+    }
+
+    void updateProject(GrailsProject project, String projectDir) {
+        if (project && projectDir) {
+            projects[projectDir] = project
+        }
     }
 
     private void publishProject(GrailsProject project) {

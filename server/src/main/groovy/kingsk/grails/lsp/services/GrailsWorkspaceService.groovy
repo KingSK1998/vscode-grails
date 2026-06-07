@@ -133,8 +133,12 @@ class GrailsWorkspaceService implements WorkspaceService {
                 return CompletableFuture.supplyAsync({ ->
                     return grailsService.testDiscoveryProvider.discoverTestsBatch(projectUris)
                 })
+            default:
+                log.warn "[WORKSPACE] Unknown command: ${params.command}"
+                return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Unknown command: ${params.command}")
+                )
         }
-        return CompletableFuture.completedFuture(null)
     }
 
     @JsonRequest("grails/projectInfo")

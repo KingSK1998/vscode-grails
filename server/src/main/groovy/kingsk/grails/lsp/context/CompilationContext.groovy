@@ -12,7 +12,5 @@ interface CompilationContext {
     FileContentTracker getFileTracker()
     ASTService getAstService()
     void compileAndVisitAST(TextFile textFile)
-    void compileProject()
-    void invalidateCompiler()
     void visitAST(TextFile textFile)
 }

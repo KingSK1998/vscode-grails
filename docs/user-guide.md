@@ -86,4 +86,4 @@ Update this section when behavior changes (not only README marketing).
 
 ---
 
-[← Documentation home](./README.md) · [Developer guide →](./developer-guide.md)
+[← README](../README.md) · [Developer guide →](./developer-guide.md)

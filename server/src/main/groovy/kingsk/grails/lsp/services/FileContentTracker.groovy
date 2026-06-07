@@ -72,16 +72,19 @@ class FileContentTracker extends BaseProvider {
 
     private void evictIfNecessary() {
         if (fQCNToTextFile.size() > MAX_FQCN_ENTRIES) {
-            int toRemove = fQCNToTextFile.size() - (MAX_FQCN_ENTRIES * 0.8) as int
-            def entries = fQCNToTextFile.entrySet().toList()
-                .sort { it.key }
-            toRemove.times { i ->
-                def entry = entries[i]
-                if (!tempFiles.contains(entry.value.uri)) {
-                    fQCNToTextFile.remove(entry.key)
+            int targetSize = (MAX_FQCN_ENTRIES * 0.8) as int
+            List<String> keysToRemove = []
+            for (String key : fQCNToTextFile.keySet()) {
+                if (fQCNToTextFile.size() <= targetSize) break
+                def textFile = fQCNToTextFile.get(key)
+                if (textFile != null && !tempFiles.contains(textFile.uri)) {
+                    keysToRemove.add(key)
                 }
             }
-            log.debug("[FILE_TRACKER] Evicted {} entries from fQCN cache", toRemove)
+            keysToRemove.each { fQCNToTextFile.remove(it) }
+            if (keysToRemove) {
+                log.debug("[FILE_TRACKER] Evicted {} entries from fQCN cache", keysToRemove.size())
+            }
         }
     }
 
@@ -299,7 +302,8 @@ class FileContentTracker extends BaseProvider {
      * Check if cache has any stale entries.
      */
     boolean hasStaleEntries() {
-        for (String uri : dirtyUris) {
+        Set<String> snapshot = new HashSet<>(dirtyUris)
+        for (String uri : snapshot) {
             if (isStale(uri)) return true
         }
         return false
@@ -381,8 +385,13 @@ class FileContentTracker extends BaseProvider {
      */
     private void removeFQCNEntriesForUri(String targetUri) {
         if (!targetUri) return
-        def keysToRemove = fQCNToTextFile.findAll { it.value.uri == targetUri }*.key
-        keysToRemove.each { fQCNToTextFile.remove(it) }
+        def iterator = fQCNToTextFile.entrySet().iterator()
+        while (iterator.hasNext()) {
+            def entry = iterator.next()
+            if (entry.value?.uri == targetUri) {
+                iterator.remove()
+            }
+        }
     }
 
     void updateFileDependenciesForSourceFile(TextFile sourceFile) {

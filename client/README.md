@@ -14,9 +14,10 @@ This folder holds the **VS Code extension client** (TypeScript). The shipping ma
 
 ## Documentation
 
-- [Documentation hub](../docs/README.md)
 - [User guide](../docs/user-guide.md)
 - [Developer guide](../docs/developer-guide.md)
+- [Architecture](../docs/architecture.md)
+- [Client rules](RULES.md)
 
 ## Build (from repo root)
 
