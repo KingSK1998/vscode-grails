@@ -20,10 +20,15 @@ Detailed rules for each component are found in their respective directories. You
 - **Reference:** `server/RULES.md`
 - **Core Engine:** Written in Groovy 4.0.23, utilizing LSP4J and Gradle Tooling API. Requires Java 17+.
 - **Strict Typing:** Apply `@CompileStatic` on ALL classes unless absolutely necessary.
-- **Composition Root:** `GrailsService` is the single wiring point for shared mutable state (this is intentional, do not refactor).
+- **Composition Root:** `GrailsService` is the single wiring point for shared mutable state (this is intentional, do not refactor).  
+  **Key components added in recent work:** CancellationService (request cancellation),
+  ProviderHealthService (latency/error metrics), ProviderRegistry (lazy provider init).
+  All live in GrailsService. See `server/RULES.md` Rules 15–16 for usage patterns.
 - **Read/Write Paths:** Only specific `GrailsService` methods can mutate state (e.g., `setupWorkspace`, `compileAndVisitAST`). Providers **NEVER** write to `visitor`, `compiler`, or `fileTracker`. They read freely via getters.
 - **Provider Tiers:**
-  - **TIER 1:** Extends `BaseProvider`, takes `GrailsService`. (e.g., Completion, Hover, Diagnostics)
+  - **TIER 1:** Extends `BaseProvider`, takes `GrailsService`. (e.g., Completion, Hover, Diagnostics)  
+    TIER 1 providers must also call `createCancellationToken(uri)` at handler entry,
+    `checkCancellation(token)` at yield points, and `recordHealth(latencyMs, success)` on exit.
   - **TIER 2:** Static utility, no dependencies. (e.g., `GrailsUtils`)
   - **TIER 3:** Plug-n-play module, injects only what it needs.
 - **Style:** Use Groovy property getters (e.g., `visitor.getClassNodes` instead of `getVisitor().getClassNodes`), single-expression methods, safe navigation `?.`, and elvis operators `?:`.
@@ -37,6 +42,9 @@ Detailed rules for each component are found in their respective directories. You
 - **Error Handling:** All errors MUST route through `ErrorService`.
 - **Memory Management:** Every service MUST implement `Disposable` and properly release resources.
 - **Style:** Strict mode TypeScript, avoid `any`, explicit return types for public methods, async/await with try/catch for everything.
+- **Client structure:** `core/`, `services/` (including `lsp/handlers/` for LspHandlerRegistry),
+  `features/` (dashboard, dependency-graph, gorm-sql-preview), `shared/protocol/`, `ui/commands/`.
+  See `client/RULES.md` Rule 20 for full structure.
 
 ---
 

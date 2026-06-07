@@ -138,15 +138,22 @@ class DiscoveryService {
      */
     static List<String> getMapMethods() {
         return KEYWORD_CACHE.computeIfAbsent('map') {
-            List<String> methods = getPublicMethodNames(Map.class)
-
-            // Add Groovy map methods
-            methods.addAll([
-                'each', 'eachWithIndex', 'find', 'findAll', 'collect', 'collectEntries',
-                'groupBy', 'subMap', 'withDefault'
-            ])
-
-            return (List<String>) methods.unique()
+            try {
+                // MetaClass on Map (interface) only returns Object methods — Groovy extensions
+                // are registered on concrete implementations. LinkedHashMap is Groovy's default
+                // map literal type and has all DGM extensions in its MetaClass.
+                return GroovyHelperIntegration.getMethodsUsingMetaClass(LinkedHashMap.class)
+            } catch (Exception e) {
+                log.warn("Could not get map methods via GroovyHelperIntegration: ${e.message}")
+                // Fallback to basic Map methods + known Groovy extensions
+                List<String> methods = getPublicMethodNames(Map.class)
+                methods.addAll([
+                    'each', 'eachWithIndex', 'find', 'findAll', 'collect', 'collectEntries',
+                    'groupBy', 'subMap', 'withDefault', 'every', 'any', 'inject', 'sort',
+                    'min', 'max', 'sum', 'flatten', 'unique', 'count'
+                ])
+                return (List<String>) methods.unique()
+            }
         }
     }
 

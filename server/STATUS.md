@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-05-14
+> Last updated: 2026-06-07
 
 ---
 
@@ -100,6 +100,23 @@
 - Implemented `findMethodsByName()`, `findProperties()`, `isSubType()` stub methods
 - Utility methods for type analysis - not yet used by main inference logic
 
+### Completed Work (2026-06-07)
+- **OOM Fix — ClassGraph heap exhaustion (`./gradlew test`)**:
+  - Added `jvmArgs '-Xmx2g', '-Xms256m', '-XX:+UseG1GC'` to `test {}` block in `build.gradle`
+  - Added `systemProperty 'grails.lsp.test.classgraph.disabled', 'true'` to suppress full
+    `enableSystemJarsAndModules()` scan in test JVM — scan only fires in production via `GrailsCompiler`
+  - Created `DiscoveryServiceSpec` (21 tests, all passing) covering: guard flag, fallback paths,
+    static caches (keywords/map/object/primitives), ClassNode type helpers, `createCompletionItems`,
+    `getAllTypeCompletions`, `clearCaches`
+  - Documented `getMapMethods()` hardcoding smell in commented-out assertion with TODO
+- **`getMapMethods()` CODING_STANDARDS fix (DiscoveryService)**:
+  - Replaced hardcoded `addAll(['each', 'find', 'collect', ...])` with
+    `GroovyHelperIntegration.getMethodsUsingMetaClass(LinkedHashMap.class)` — dynamic, version-agnostic
+  - Key insight: MetaClass on `Map` interface returns only Object methods; `LinkedHashMap` (Groovy's
+    default map literal type) has DGM extensions in its MetaClass
+  - Fallback now includes `'every'`, `'any'`, `'inject'` which were previously absent
+  - `DiscoveryServiceSpec` expanded to 22 tests (all passing): added two new `getMapMethods` tests
+
 ---
 
 ## Server Info
@@ -184,6 +201,6 @@
 |---|---|---|
 | `./gradlew build` | ✅ Passing | |
 | `./gradlew shadowJar` | ✅ Passing | |
-| `./gradlew test` | ⚠️ OOM | ClassGraph scans cause heap exhaustion under load |
+| `./gradlew test` | ✅ Passing | `-Xmx2g -XX:+UseG1GC`; ClassGraph scan disabled in test JVM |
 | JaCoCo coverage | ✅ ≥60% threshold met |
 | `./gradlew checkAll` | ✅ Clean | |

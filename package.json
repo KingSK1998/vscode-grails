@@ -633,7 +633,11 @@
     "test": "npm run compile && node ./client/out/test/runTest.js",
     "package": "vsce package --out dist/vscode-gng-support.vsix",
     "vscode:prepublish": "npm run clean && npm run build",
-    "pretest": "npm run build"
+    "pretest": "npm run build",
+    "graphify": "graphify .",
+    "graphify:update": "graphify . --update",
+    "graphify:watch": "graphify . --watch",
+    "graphify:open": "start graphify-out/graph.html"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.2.3",

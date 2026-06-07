@@ -36,5 +36,5 @@ Thumbs.db
 # LSP cache
 .grails-lsp/
 
-# Graphify cache
-graphify-out/cache/
+# Graphify output
+graphify-out/

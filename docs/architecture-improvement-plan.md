@@ -121,3 +121,39 @@ Based on architectural review, the following items are intentionally deprioritiz
 *   Restructuring the `UseCase` folder hierarchy (state ownership matters more).
 *   Modifying bootstrap initialization order (current state is acceptable).
 *   "Open-source readiness" metadata (does not impact technical stability).
+
+---
+
+## Task Backlog — Prioritized
+
+> **Last updated:** 2026-06-07  
+> Order reflects both urgency and dependency chain. Do not start a task until its upstream is ✅.
+
+### 🔴 Critical
+
+| # | Task | Dependency | Notes |
+|---|---|---|---|
+| 1 | **Fix test infrastructure + CI** | None | Server tests must pass in CI before trusting any change. `DiscoveryServiceSpec` now stable; extend coverage. |
+| 2 | **Define/enforce state ownership** | #1 | Formal read/write boundaries per component. Prerequisite for all decomposition work. Without this, #5 is unsafe. |
+
+### 🟠 High
+
+| # | Task | Dependency | Notes |
+|---|---|---|---|
+| 3 | **Incremental compilation correctness** | #2 | Stale completions are the most visible user-facing bug. Requires state ownership to be clean first. |
+| 4 | **Stable symbol identities** | #2 | Consistent node IDs across Definition / References / Hover / Rename. Prerequisite for #9. Could move to Medium if rename/refactoring work is further out. |
+| 5 | **GrailsService decomposition** | #2 | Break GrailsService into bounded contexts. Do NOT start until state ownership (#2) is fully enforced — premature decomposition will scatter bugs. |
+
+### 🟡 Medium
+
+| # | Task | Dependency | Notes |
+|---|---|---|---|
+| 6 | **Gradle lifecycle correctness** | #3 | Correct build-tool integration (sync, invalidation, daemon). Less user-visible than compilation bugs but important for reliability. |
+| 7 | **Multi-root workspace support** | #5 | Requires decomposed GrailsService — currently hard-wired to `workspaceFolders[0]`. Cannot be done before #5. |
+
+### ⚪ Future
+
+| # | Task | Dependency | Notes |
+|---|---|---|---|
+| 8 | **Semantic model** | #5 | Grails-domain entities (Controller, Service, GORM) as first-class LSP nodes. Build carefully — must not become a new God Object. |
+| 9 | **Refactoring transactions** | #4, #8 | Transactional Rename / Move / Safe Delete with rollback. Needs stable symbol IDs (#4) and semantic model (#8). |

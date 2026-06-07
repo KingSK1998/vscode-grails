@@ -134,6 +134,17 @@ test {
         showStandardStreams = !System.getenv('CI')
     }
     ignoreFailures = false  // Fail the build on test failures
+
+    // Increase heap: ClassGraph scans all system jars and exhausts default heap.
+    // G1GC handles the large allocation spikes from ScanResult objects better than default.
+    jvmArgs '-Xmx2g', '-Xms256m', '-XX:+UseG1GC'
+
+    // Disable the full ClassGraph system-jar scan in test scope.
+    // Production scan is triggered via GrailsCompiler.compileAndVisitAST() which is
+    // not exercised in unit/service tests. Set this flag so DiscoveryService can skip
+    // enableSystemJarsAndModules() when running under test.
+    systemProperty 'grails.lsp.test.classgraph.disabled', 'true'
+
     // Set system properties for tests
     systemProperty 'grails.lsp.test.resources', layout.buildDirectory.dir("test-workspaces").get().asFile.absolutePath
     reports {
