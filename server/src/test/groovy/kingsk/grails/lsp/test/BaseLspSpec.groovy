@@ -39,6 +39,9 @@ abstract class BaseLspSpec extends Specification {
      * Override in subclasses but call super.setup() first
      */
     def setupProject() {
+        // Integration tests require full ClassGraph scanning for proper AST resolution
+        System.clearProperty('grails.lsp.test.classgraph.disabled')
+        
         mockClient = new MockLanguageClient()
         grailsService = new GrailsService()
         grailsService.connect(mockClient)
@@ -470,10 +473,38 @@ enum ProjectType {
 /**
  * Mock language client for testing
  */
-class MockLanguageClient implements LanguageClient {
+import kingsk.grails.lsp.protocol.GrailsLanguageClient
+import kingsk.grails.lsp.protocol.dto.ProjectDTO
+import kingsk.grails.lsp.protocol.dto.ProjectPatchDTO
+
+class MockLanguageClient implements GrailsLanguageClient {
     List<PublishDiagnosticsParams> diagnostics = []
     List<MessageParams> messages = []
     List<ProgressParams> progressUpdates = []
+    List<ProjectDTO> projectUpdates = []
+    List<List<ProjectDTO>> allProjectsNotifications = []
+    List<ProjectPatchDTO> projectPatches = []
+    List<List<ProjectDTO>> projectsDiscoveredNotifications = []
+
+    @Override
+    void projectUpdated(ProjectDTO dto) {
+        this.projectUpdates.add(dto)
+    }
+
+    @Override
+    void notifyAllProjects(List<ProjectDTO> dtos) {
+        this.allProjectsNotifications.add(dtos)
+    }
+
+    @Override
+    void projectPatched(ProjectPatchDTO patch) {
+        this.projectPatches.add(patch)
+    }
+
+    @Override
+    void notifyProjectsDiscovered(List<ProjectDTO> projects) {
+        this.projectsDiscoveredNotifications.add(projects)
+    }
 
     @Override
     void telemetryEvent(Object object) {}

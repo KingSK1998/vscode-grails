@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.model
 
 import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.model.types.FileState
 import spock.lang.Narrative
 import spock.lang.Specification
 import spock.lang.Title
@@ -24,7 +25,7 @@ class TextFileSpec extends Specification {
 		TextFile textFile = TextFile.create(uri, text)
 		
 		then: "The TextFile should have the correct properties"
-		textFile.uri == "D:\\path\\to\\file.txt"
+		textFile.uri == TextFile.normalizePath("file:///path/to/file.txt")
 		textFile.name == "file.txt"
 		textFile.nameWithoutExtension == "file"
 		textFile.text == text

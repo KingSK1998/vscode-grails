@@ -47,12 +47,12 @@ jobs:
         working-directory: server
         run: chmod +x gradlew
 
-      # Server build with better error handling
-      - name: 🔨 Build server (skip tests)
+      # Server build + test
+      - name: 🔨 Build server and run tests
         working-directory: server
         run: |
-          ./gradlew --no-daemon clean build -x test --stacktrace
-          echo "Server build completed"
+          ./gradlew --no-daemon clean build --stacktrace
+          echo "Server build and tests completed"
 
       # Install dependencies at root level (since you consolidated)
       - name: 📦 Install dependencies

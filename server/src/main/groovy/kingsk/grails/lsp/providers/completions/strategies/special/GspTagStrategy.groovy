@@ -15,7 +15,7 @@ class GspTagStrategy extends BaseCompletionStrategy {
 
     @Override
     boolean canHandle(ASTNode node) {
-        return request.textFile.uri.endsWith(".gsp")
+        return request.file.uri.endsWith(".gsp")
     }
 
     @Override

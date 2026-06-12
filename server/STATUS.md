@@ -116,7 +116,11 @@
     default map literal type) has DGM extensions in its MetaClass
   - Fallback now includes `'every'`, `'any'`, `'inject'` which were previously absent
   - `DiscoveryServiceSpec` expanded to 22 tests (all passing): added two new `getMapMethods` tests
-
+- **CI Test Reliability**:
+  - Re-enabled tests in `.github/workflows/ci.yml` (removed `-x test`)
+  - Updated `DiscoveryService.groovy` to correctly skip `enableSystemJarsAndModules` under test
+  - Updated `BaseLspSpec.groovy` to re-enable ClassGraph system scanning for full integration tests
+  - Added skeleton integration test specs: `GrailsReferenceProviderSpec`, `GrailsRenameProviderSpec`, `GrailsIncrementalCompilerSpec`
 ---
 
 ## Server Info

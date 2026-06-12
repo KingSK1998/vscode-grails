@@ -39,6 +39,7 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	}
 	
 	private boolean isLikelyTypeReference(ASTNode node) {
+		if (!request.prefix) return false
 		if (!Character.isLetter(request.prefix.charAt(0))) return false
 		if (!Character.isUpperCase(request.prefix.charAt(0))) return false
 		if (node instanceof ExpressionStatement) {

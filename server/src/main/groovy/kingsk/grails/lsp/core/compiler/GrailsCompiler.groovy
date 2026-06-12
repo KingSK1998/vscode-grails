@@ -410,20 +410,26 @@ class GrailsCompiler {
                 if (sourceUnit.AST != null) return
 
                 String original = sourceUnit.source.reader.text
-                int lineNumber = 0
+                int lineNumber = -1
 
-                def cause = e.getCause()
-                if (cause instanceof MultipleCompilationErrorsException) {
+                if (e instanceof MultipleCompilationErrorsException || e.getCause() instanceof MultipleCompilationErrorsException) {
                     def errorCollector = sourceUnit.errorCollector
-                    def syntaxErrors = errorCollector.errors.findAll { it instanceof SyntaxException }
+                    def syntaxErrors = errorCollector?.errors?.findAll { it instanceof SyntaxException }
 
-                    if (!syntaxErrors.isEmpty()) {
+                    if (syntaxErrors && !syntaxErrors.isEmpty()) {
                         def syntaxException = syntaxErrors[0] as SyntaxException
                         lineNumber = Math.max(syntaxException.line - 1, 0)
                     }
-                } else if (e instanceof groovyjarjarantlr4.v4.runtime.InputMismatchException) {
+                } else if (e instanceof groovyjarjarantlr4.v4.runtime.RecognitionException) {
                     def token = e.offendingToken
-                    lineNumber = Math.max(token.line - 1, 0)
+                    if (token) {
+                        lineNumber = Math.max(token.line - 1, 0)
+                    }
+                } else if (e.getCause() instanceof groovyjarjarantlr4.v4.runtime.RecognitionException) {
+                    def token = (e.getCause() as groovyjarjarantlr4.v4.runtime.RecognitionException).offendingToken
+                    if (token) {
+                        lineNumber = Math.max(token.line - 1, 0)
+                    }
                 } else {
                     return
                 }

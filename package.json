@@ -616,6 +616,9 @@
     }
   },
   "scripts": {
+    "setup": "npm install && node scripts/install-hooks.js",
+    "guard": "node scripts/pre-commit-guard.js",
+    "copy-server": "npm run build:server && node scripts/copy-server.js",
     "build": "npm run build:client && npm run build:server",
     "build:client": "npm run compile && npm run bundle",
     "build:server": "node scripts/run-gradlew.js shadowJar",

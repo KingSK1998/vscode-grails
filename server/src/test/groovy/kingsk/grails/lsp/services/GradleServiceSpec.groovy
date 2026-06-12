@@ -15,7 +15,8 @@ class GradleServiceSpec extends BaseLspSpec {
     private final GRAILS_VERSION = "7.0.0-RC1"
 
     def setup() {
-        gradleService = new GradleService()
+        setupProject()
+        gradleService = new GradleService(grailsService)
     }
 
     def "should load Grails project from valid directory"() {
@@ -27,7 +28,7 @@ class GradleServiceSpec extends BaseLspSpec {
 
         then: "Project should be loaded successfully"
         project != null
-        project.name == "grails-test-project"
+        project.name == "Grails Test Project"
         project.rootDirectory != null
         project.rootDirectory.exists()
         project.grailsVersion == GRAILS_VERSION

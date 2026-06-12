@@ -17,6 +17,8 @@ import kingsk.grails.lsp.providers.completions.strategies.type.MethodNodeStrateg
 import kingsk.grails.lsp.providers.completions.strategies.snippet.GrailsSnippetStrategy
 import kingsk.grails.lsp.providers.completions.strategies.special.GspTagStrategy
 import kingsk.grails.lsp.providers.completions.strategies.context.ScopeStrategy
+import kingsk.grails.lsp.providers.completions.strategies.special.GrailsArtifactStrategy
+import kingsk.grails.lsp.providers.completions.strategies.context.GrailsInjectedStrategy
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.codehaus.groovy.ast.ASTNode
 
@@ -32,6 +34,8 @@ class CompletionBuilder {
     private static final List<Class<? extends BaseCompletionStrategy>> STRATEGY_CLASSES = [
         ImportStrategy, // {OFFSET} {95 - Very High - import statements are specific}
         PropertyExpressionStrategy, // {BOTH} {90 - High - Very specific context}
+        GrailsArtifactStrategy, // {OFFSET} {92}
+        GrailsInjectedStrategy, // {OFFSET} {70}
         NamedParameterStrategy, // {BOTH - 85}
         AnnotationStrategy, // {OFFSET - 88 - High - annotation specific} - @Controller, @Service, etc.
         MethodCallExpressionStrategy, // {BOTH} {85 - High - Method calls and constructors}
@@ -75,19 +79,26 @@ class CompletionBuilder {
     private static boolean applyPhase(List<BaseCompletionStrategy> strategies, CompletionTarget phase, ASTNode node, boolean skipDummyPrefix) {
         if (node == null) return false
 
-        boolean produced = strategies.findAll { it.target().matches(phase) }
-            .any { strategy ->
+        boolean produced = false
+        strategies.findAll { it.target().matches(phase) }
+            .each { strategy ->
                 try {
                     boolean isDummy = skipDummyPrefix && GrailsUtils.isDummyPrefix(strategy.request.prefix)
+                    log.info("[COMPLETION] Checking strategy ${strategy.class.simpleName}: canHandle=${strategy.canHandle(node)}")
                     if (strategy.canHandle(node) && !isDummy) {
+                        int sizeBefore = strategy.request.items.size()
+                        log.info("[COMPLETION] Executing strategy ${strategy.class.simpleName}")
                         strategy.provideCompletions(node)
-                        return true
+                        log.info("[COMPLETION] Strategy ${strategy.class.simpleName} added ${strategy.request.items.size() - sizeBefore} items")
+                        if (strategy.request.items.size() > sizeBefore) {
+                            produced = true
+                        }
                     }
                 } catch (Exception e) {
                     log.error("[COMPLETION] {} failed on {}: {}",
                         strategy.class.simpleName, phase, e.message, e)
                 }
-            } ?: false
+            }
         return produced
     }
 }

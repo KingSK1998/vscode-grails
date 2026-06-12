@@ -15,6 +15,8 @@ class DiscoveryServiceSpec extends BaseLspSpec {
     def setupSpec() {
         // Belt-and-suspenders: ensure the guard is set even when spec runs in isolation
         System.setProperty('grails.lsp.test.classgraph.disabled', 'true')
+        // Ensure the static cache is empty for unit tests
+        DiscoveryService.clearCaches()
     }
 
     def cleanupSpec() {

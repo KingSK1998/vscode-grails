@@ -925,15 +925,17 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
         }
     }
 
-    // this calls visitBinaryExpression()
-    // public void visitDeclarationExpression(DeclarationExpression node) {
-    // pushASTNode(node);
-    // try {
-    // super.visitDeclarationExpression(node);
-    // } finally {
-    // popASTNode();
-    // }
-    // }
+    @Override
+    void visitDeclarationExpression(DeclarationExpression node) {
+        pushASTNode(node)
+        try {
+            super.visitDeclarationExpression(node)
+        } finally {
+            popASTNode()
+        }
+    }
+
+
 
     void visitPropertyExpression(PropertyExpression node) {
         pushASTNode(node)

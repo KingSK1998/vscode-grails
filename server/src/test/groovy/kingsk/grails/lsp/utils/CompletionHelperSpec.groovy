@@ -2,6 +2,7 @@ package kingsk.grails.lsp.utils
 
 import spock.lang.Specification
 import spock.lang.Title
+import kingsk.grails.lsp.utils.completion.CompletionUtil
 
 /**
  * Tests for the CompletionUtil helper class

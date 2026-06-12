@@ -85,6 +85,32 @@ Before changing code:
 4. Build the affected component after changes.
 5. Do not edit generated files or lock files.
 
+### Investigating Test Failures
+
+When investigating test failures, do not repeatedly run `gradlew test`. First gather evidence by running:
+
+```powershell
+.\gradlew test --info 2>&1 | Select-String -Pattern "PASS|FAIL|ERROR|BUILD|tests completed" | Select-Object -Last 30
+```
+
+Then run:
+
+```powershell
+.\gradlew test --stacktrace
+```
+
+Inspect relevant implementation files referenced by the failure (e.g. `grep -n "ClassGraph" server/src/main/groovy/kingsk/grails/lsp/services/DiscoveryService.groovy`).
+
+Inspect XML test reports:
+
+```powershell
+Get-ChildItem -Path "server\build\test-results\test" -Filter "*.xml" | Get-Content | Select-String -Pattern "<failure" -Context 3,0
+```
+
+Before modifying code, identify the exact failing test, exception, assertion, and root cause. Do not propose speculative fixes.
+
+Prefer targeted commands (`--tests`) over full test suite execution. Do not run `clean build` or `clean test` unless explicitly requested. Do not rerun the same Gradle command without code changes or new diagnostic information. After fixing an issue, validate with the affected test(s) first before running broader validation.
+
 ---
 
 ## Conflicts

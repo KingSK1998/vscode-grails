@@ -50,16 +50,16 @@ class ASTService {
 	
 	private static boolean isGrailsService(ClassNode classNode) {
 		classNode.annotations*.classNode.name.any { String it -> it.endsWith("Service") } ||
-				(classNode.name.endsWith("Service") && classNode.packageName?.contains("service"))
+				(classNode.name.endsWith("Service") && (!classNode.packageName || classNode.packageName.contains("service")))
 	}
 	
 	private static boolean isGrailsController(ClassNode classNode) {
 		classNode.annotations*.classNode.name.any { String it -> it.endsWith("Controller") } ||
-				(classNode.name.endsWith("Controller") && classNode.packageName?.contains("controller"))
+				(classNode.name.endsWith("Controller") && (!classNode.packageName || classNode.packageName.contains("controller")))
 	}
 	
 	private static boolean isGrailsTagLib(ClassNode classNode) {
-		classNode.name.endsWith("TagLib") && classNode.packageName?.contains("taglib")
+		classNode.name.endsWith("TagLib") && (!classNode.packageName || classNode.packageName.contains("taglib"))
 	}
 	
 	/**

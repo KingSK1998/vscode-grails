@@ -18,7 +18,7 @@ class GrailsUtils {
 	static final String GRAILS_APP_DIR = "\\grails-app"
 	static final String CONTROLLERS_PATH = "$GRAILS_APP_DIR\\controllers"
 	static final String SERVICES_PATH = "$GRAILS_APP_DIR\\services"
-	static final String DOMAINS_PATH = "$GRAILS_APP_DIR\\domains"
+	static final String DOMAINS_PATH = "$GRAILS_APP_DIR\\domain"
 	static final String VIEWS_PATH = "$GRAILS_APP_DIR\\views"
 	static final String TAGLIBS_PATH = "$GRAILS_APP_DIR\\taglib"
 	static final String INIT_PATH = "$GRAILS_APP_DIR\\init"

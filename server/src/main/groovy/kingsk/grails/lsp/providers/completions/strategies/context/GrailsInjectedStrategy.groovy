@@ -83,7 +83,7 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 		if (!currentClass) return false
 		
 		// Use existing GrailsUtils method
-		return GrailsUtils.isGrailsArtefact(currentClass)
+		return GrailsUtils.isGrailsArtefact(currentClass, request.file?.uri)
 	}
 	
 	/**
@@ -93,10 +93,16 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 		String lineText = request.file?.textAtLine(request.position?.line ?: 0) ?: ""
 		String beforeCursor = lineText.substring(0, Math.min(request.position?.character ?: 0, lineText.length()))
 		
+		String prefix = request.prefix ?: ""
+		String beforePrefix = beforeCursor
+		if (prefix && beforeCursor.endsWith(prefix)) {
+			beforePrefix = beforeCursor.substring(0, beforeCursor.length() - prefix.length())
+		}
+		
 		// At start of line or after common statement patterns
-		return beforeCursor.trim().isEmpty() ||
-				beforeCursor.matches(".*[;{}]\\s*\$") ||
-				beforeCursor.matches(".*\\b(if|while|for|return|def|var)\\s*\\(?\\s*\$")
+		return beforePrefix.trim().isEmpty() ||
+				beforePrefix.matches(".*[;{}]\\s*\$") ||
+				beforePrefix.matches(".*\\b(if|while|for|return|def|var)\\s*\\(?\\s*\$")
 	}
 	
 	/**
@@ -127,16 +133,17 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 	 * Add artifact-specific injected properties
 	 */
 	private void addArtifactSpecificInjectedProperties(ClassNode currentClass) {
+		String uri = request.file?.uri
 		// Use existing GrailsUtils methods for artifact detection
-		if (GrailsUtils.isControllerClass(currentClass)) {
+		if (GrailsUtils.isControllerClass(currentClass, uri)) {
 			addControllerInjectedProperties()
-		} else if (GrailsUtils.isServiceClass(currentClass)) {
+		} else if (GrailsUtils.isServiceClass(currentClass, uri)) {
 			addServiceInjectedProperties()
-		} else if (GrailsUtils.isDomainClass(currentClass)) {
+		} else if (GrailsUtils.isDomainClass(currentClass, uri)) {
 			addDomainInjectedProperties()
-		} else if (GrailsUtils.isTagLibClass(currentClass)) {
+		} else if (GrailsUtils.isTagLibClass(currentClass, uri)) {
 			addTagLibInjectedProperties()
-		} else if (GrailsUtils.isJobClass(currentClass)) {
+		} else if (GrailsUtils.isJobClass(currentClass, uri)) {
 			addJobInjectedProperties()
 		}
 	}

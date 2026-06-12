@@ -38,11 +38,15 @@ class DiscoveryService {
             CompletableFuture.runAsync {
                 try {
                     log.info("[DISCOVERY] Starting ClassGraph scan on background thread for project: ${projectUri}...")
-                    ScanResult newResult = new ClassGraph()
+                    def cg = new ClassGraph()
                         .overrideClassLoaders(newClassLoader)
                         .enableClassInfo()
-                        .enableSystemJarsAndModules()
-                        .scan()
+                        
+                    if (!Boolean.getBoolean('grails.lsp.test.classgraph.disabled')) {
+                        cg.enableSystemJarsAndModules()
+                    }
+                    
+                    ScanResult newResult = cg.scan()
                     ScanResult oldResult = classGraphScanResults.put(projectUri, newResult)
                     if (oldResult != null) {
                         oldResult.close()

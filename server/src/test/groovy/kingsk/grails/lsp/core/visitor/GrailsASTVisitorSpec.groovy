@@ -28,7 +28,7 @@ class GrailsASTVisitorSpec extends Specification {
         }
 
         when: "cleanup is triggered"
-        visitor.getProperty("cleanupUnusedFiles")()
+        visitor.cleanupUnusedFiles()
 
         then: "only untracked files should be cleaned up"
         nodesByURI.size() >= 2  // Should keep tracked files

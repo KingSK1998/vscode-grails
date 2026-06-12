@@ -22,7 +22,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
         String uri = openTextDocument("TestController.groovy", content)
 
         when: "Requesting completions after render"
-        def items = getCompletionItems(uri, 2, 15)
+        def items = getCompletionItems(uri, 2, 14)
 
         then: "Should provide controller-specific completions"
         items.size() > 0
@@ -51,7 +51,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
         String uri = openTextDocument("TestDomain.groovy", content)
 
         when: "Requesting completions after find"
-        def items = getCompletionItems(uri, 6, 21)
+        def items = getCompletionItems(uri, 8, 24)
 
         then: "Should provide GORM-specific completions"
         items.size() > 0
@@ -85,7 +85,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
         String controllerUri = openTextDocument("DIController.groovy", controllerContent)
 
         when: "Requesting completions after service reference"
-        def items = getCompletionItems(controllerUri, 4, 21)
+        def items = getCompletionItems(controllerUri, 5, 25)
 
         then: "Should provide service-specific completions"
         items.size() > 0
@@ -108,7 +108,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
         String uri = openTextDocument("IncompleteCode.groovy", content)
 
         when: "Requesting completions after incomplete code"
-        def items = getCompletionItems(uri, 2, 25)
+        def items = getCompletionItems(uri, 3, 31)
 
         then: "Should provide reasonable completions"
         items.size() > 5
@@ -144,7 +144,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
 
         when: "Requesting completions"
         long start = System.currentTimeMillis()
-        getCompletionItems(uri, 3, 25)
+        getCompletionItems(uri, 3, 28)
         long duration = System.currentTimeMillis() - start
 
         then: "Should complete within acceptable time"
