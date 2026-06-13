@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.CancellationException
 
 @Slf4j
 @CompileStatic
@@ -146,7 +147,7 @@ class CancellationService {
 
         void checkCancellation() {
             if (cancelled) {
-                throw new java.util.concurrent.CancellationException("Request ${requestId} was cancelled")
+                throw new CancellationException("Request ${requestId} was cancelled")
             }
         }
 

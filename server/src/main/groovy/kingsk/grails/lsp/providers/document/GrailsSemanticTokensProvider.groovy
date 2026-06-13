@@ -9,6 +9,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
 import java.util.concurrent.CompletableFuture
+import java.util.regex.Pattern
 
 /**
  * Provides semantic highlighting for Grails variables, GSP tags, and i18n keys.
@@ -77,7 +78,7 @@ class GrailsSemanticTokensProvider extends BaseProvider {
         if (uri.endsWith(".gsp")) {
              def lines = textFile.text.split("\\r?\\n", -1)
              lines.eachWithIndex { String line, int i ->
-                 def matcher = java.util.regex.Pattern.compile("<(g|asset):([a-zA-Z0-9_]+)").matcher(line)
+                 def matcher = Pattern.compile("<(g|asset):([a-zA-Z0-9_]+)").matcher(line)
                  while (matcher.find()) {
                      int start = matcher.start() + 1
                      int len = matcher.group(0).length() - 1

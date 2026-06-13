@@ -22,9 +22,20 @@
    - Removed `auto-tool-selection` skill (absorbed into `AGENTS.md` §6).
    - Moved `architecture-for-performance` skill to `docs/skills/architecture-perf.md` to keep it agent-agnostic.
 
+5. **Concurrency & Thread Safety Model**:
+   - Introduced `astLock` (ReentrantReadWriteLock) in `GrailsService`.
+   - Pattern: Every write (workspace refresh, compilation, AST visitation) must be enclosed in `withWriteLock`. Every read (LSP feature providers) must be enclosed in `withReadLock`.
+   - Providers leverage `withReadLock` transparently through `BaseProvider` helpers or explicitly for custom AST/visitor queries.
+   - Centralized try-catch error boundaries via `safeProviderCall` in `GrailsTextDocumentService` to shield LSP handlers from unhandled exceptions.
+   - Standardized all files to import Java concurrent classes and function interfaces rather than using inline fully qualified references.
+   - Fixed ASTService memory leak by evicting cached ClassNodes per URI during visitors' visitSourceUnit pass.
+   - ThreadSafeLruCache Executor Lifecycle: Refactored static `cleanupExecutor` to be non-final and nullable, initialized dynamically on demand via synchronized `getExecutor()`. Avoids executor rejection/exhaustion on server restarts or test cleanups. Added ThreadSafeLruCacheSpec Spock verification.
+   - Inter-File AST Invalidation: Introduced `clearCrossFileCaches()` in `GrailsService` to explicitly evict globally tracked resolution caches (like `GrailsCompletionProvider` completion lists and static Groovy method caches in `DiscoveryService`, `GroovyRuntimeIntegration`) strictly *after* successful incremental AST cycles, ensuring cross-file completion dependencies never go stale.
+
 ## Next Session Priorities
 
-1. **Global Skills Cleanup**:
+1. **Phase 2 Implementation (Decoupling & Modularity)**:
+   - Reduce `GrailsService` responsibility by introducing `CompilationContext` and `ProjectContext` interfaces.
+   - Clarify Groovy vs. Grails layering in completion and AST provider strategies.
+2. **Global Skills Cleanup**:
    - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders (`arch-vscode`, `find-skills`, `read-project-context`) to save another 37 KB of context.
-2. **Commit Staged Changes**:
-   - The files modified are ready for validation and commit. Ensure `client/STATUS.md` and `server/STATUS.md` are updated to reflect the new scripts / hooks if needed before committing, or use `--no-verify` if skipped.

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
 echo "🔨 Building vscode-gng-support..."
 
 # Color codes for output
@@ -26,6 +29,7 @@ echo -e "${BLUE}Building VS Code extension...${NC}"
 cd client
 npm install
 npm run compile
+npm run bundle
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Client build completed${NC}"
 else

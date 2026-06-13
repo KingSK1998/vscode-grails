@@ -22,7 +22,14 @@ class ThreadSafeLruCache<K, V> {
     private final Closure<V> loader
     private final boolean allowLoad
 
-    private static final ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1)
+    private static ScheduledExecutorService cleanupExecutor = null
+
+    private static synchronized ScheduledExecutorService getExecutor() {
+        if (cleanupExecutor == null || cleanupExecutor.isShutdown()) {
+            cleanupExecutor = Executors.newScheduledThreadPool(1)
+        }
+        return cleanupExecutor
+    }
 
     ThreadSafeLruCache(int maxSize, long ttlMs = 30000L, long cleanupIntervalMs = 10000L) {
         this.maxSize = maxSize
@@ -42,7 +49,7 @@ class ThreadSafeLruCache<K, V> {
     }
 
     private void startCleanupTask() {
-        cleanupExecutor.scheduleAtFixedRate({
+        getExecutor().scheduleAtFixedRate({
             try {
                 cleanupExpired()
             } catch (Exception e) {
@@ -187,8 +194,19 @@ class ThreadSafeLruCache<K, V> {
         evictions.set(0)
     }
 
-    static void shutdown() {
-        cleanupExecutor.shutdown()
+    static synchronized void shutdown() {
+        if (cleanupExecutor != null && !cleanupExecutor.isShutdown()) {
+            cleanupExecutor.shutdown()
+            try {
+                if (!cleanupExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    cleanupExecutor.shutdownNow()
+                }
+            } catch (InterruptedException e) {
+                cleanupExecutor.shutdownNow()
+                Thread.currentThread().interrupt()
+            }
+        }
+        cleanupExecutor = null
     }
 
     private static class CacheEntry<V> {

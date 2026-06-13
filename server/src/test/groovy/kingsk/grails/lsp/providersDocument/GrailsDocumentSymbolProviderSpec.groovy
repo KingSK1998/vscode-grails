@@ -54,6 +54,7 @@ class GrailsDocumentSymbolProviderSpec extends DocumentSymbolTestSpec {
             }
         """
 		replaceTextDocument(uri, newContent, 2)
+		Thread.sleep(1500)
 		
 		and: "Requesting updated document symbols"
 		def symbol = getDocumentSymbol(uri)
@@ -99,7 +100,7 @@ class GrailsDocumentSymbolProviderSpec extends DocumentSymbolTestSpec {
 		given: "A Grails controller with no explicit fields"
 		initializeProject(ProjectType.GRAILS, true)
 		String content = """package demo
-
+ 
 class HomeController {
     def index() {
         render view: "index"
@@ -110,6 +111,7 @@ class HomeController {
 		
 		when: "Requesting document symbols"
 		def symbol = getDocumentSymbol(uri)
+		println "DEBUG: HomeController symbols: ${symbol.children.collect { "${it.name} (${it.kind})" }}"
 		
 		then: "Should include the synthetic fields like 'params', 'request', 'response'"
 		assertClassSymbol(symbol, "HomeController")

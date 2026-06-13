@@ -27,7 +27,7 @@ class GrailsASTHelper {
      */
     static ClassNode getTypeOfNode(ASTNode node, GrailsASTVisitor visitor) {
         switch (node) {
-            case BinaryExpression: return resolveBinaryExpressionType(node)
+            case BinaryExpression: return resolveBinaryExpressionType(node, visitor)
             case ClassExpression: return node.type // expression: SomeClass.someProp
             case ConstructorCallExpression: return node.type
             case MethodCallExpression: return getMethodFromCallExpression(node, visitor)?.returnType ?: node.type
@@ -270,9 +270,11 @@ class GrailsASTHelper {
         return null
     }
 
-    private static ClassNode resolveBinaryExpressionType(BinaryExpression node) {
+    private static ClassNode resolveBinaryExpressionType(BinaryExpression node, GrailsASTVisitor visitor) {
         def left = node.leftExpression
-        return (node.operation.text == '[' && left.type?.array) ? left.type.componentType : null
+        ClassNode leftType = getTypeOfNode(left, visitor)
+        log.debug("[DEBUG_ARRAY] resolveBinaryExpressionType: left=${left.text}, leftType=${leftType?.name}, isArray=${leftType?.isArray()}, operation=${node.operation.text}")
+        return (node.operation.text == '[' && leftType?.isArray()) ? leftType.componentType : null
     }
 
     private static ClassNode resolvePropertyExpressionType(PropertyExpression node, GrailsASTVisitor visitor) {

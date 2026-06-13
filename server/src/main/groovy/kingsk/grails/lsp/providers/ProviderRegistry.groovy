@@ -4,8 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.providers.document.*
-import kingsk.grails.lsp.providers.workspace.GrailsDependencyProvider
-import kingsk.grails.lsp.providers.workspace.GrailsTestDiscoveryProvider
+import kingsk.grails.lsp.providers.workspace.*
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -53,6 +52,7 @@ class ProviderRegistry {
         if (type == GrailsGormSqlProvider) return service.gormSqlProvider
         if (type == GrailsDependencyProvider) return service.dependencyProvider
         if (type == GrailsTestDiscoveryProvider) return service.testDiscoveryProvider
+        if (type == GrailsWorkspaceSymbolProvider) return new GrailsWorkspaceSymbolProvider(service)
 
         log.warn("[REGISTRY] Unknown provider type: ${type.name}")
         null

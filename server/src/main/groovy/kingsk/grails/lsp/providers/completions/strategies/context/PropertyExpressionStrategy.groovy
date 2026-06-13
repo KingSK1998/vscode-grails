@@ -27,14 +27,22 @@ class PropertyExpressionStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.BOTH }
 	
 	@Override
-	boolean canHandle(ASTNode node) { node instanceof PropertyExpression }
+	boolean canHandle(ASTNode node) {
+		node instanceof PropertyExpression || request.parentNode instanceof PropertyExpression
+	}
 	
 	/**
 	 * Handles chained property access, e.g. <code>foo.bar</code>
 	 * @param node The PropertyExpression node to handle
 	 */
 	@Override
-	void provideCompletions(ASTNode node) { provideCompletions(node as PropertyExpression) }
+	void provideCompletions(ASTNode node) {
+		if (node instanceof PropertyExpression) {
+			provideCompletions(node as PropertyExpression)
+		} else if (request.parentNode instanceof PropertyExpression) {
+			provideCompletions(request.parentNode as PropertyExpression)
+		}
+	}
 	
 	protected void provideCompletions(PropertyExpression propExpr) {
 		// Cursor might land on a PropertyExpression, or the parent could be one if cursor is in .foo.

@@ -1,7 +1,7 @@
 # Client Status
 
 > **AI AGENTS: Update this file on EVERY task that touches client code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-05-12
+> Last updated: 2026-06-13
 
 ---
 
@@ -44,27 +44,7 @@
 | Configuration settings | `grails.path`, `grails.javaHome`, `grailsLsp.*` |
 | Dev mode LSP connection | Connects to remote server on port 5007 |
 | Production mode LSP connection | Uses local JAR `server/grails-language-server-1.0-all.jar` |
-| **ISSUE-001** | Lazy service initialization - core services immediately, others on first access |
-| **ISSUE-002** | Webview services created on-demand in Commands, not at activation |
-| **ISSUE-004** | Activation timeout wrapper (30s) with user notification |
-| **ISSUE-006** | EventBus async handler execution with error isolation |
-| **ISSUE-008** | File watcher memory leak fixed with proper Set/Map tracking |
-| **ISSUE-011** | LSP requests debounced (300ms) to prevent server flooding |
-| **ISSUE-007** | Make GradleService.sync() non-blocking, add waitForSync() |
-| **ISSUE-009** | EventBus listener limits (100 max) and accumulation warning |
-| **ISSUE-010** | ActivationManager listener cleanup verification logging |
-| **ISSUE-012** | Add CancellationToken support to LSP requests |
-| **ISSUE-017** | Add initialization promise to ServiceContainer (async initialize, getInstanceAsync) |
-| **ISSUE-018** | Circular dependency detection via _initializingServices tracking |
-| **ISSUE-014** | Remove retainContextWhenHidden, use WebviewStateManager for proper state |
-| **ISSUE-016** | Comprehensive webview cleanup on dispose (cancel requests, clear state) |
-| **ISSUE-015** | Bundle D3.js locally for offline support |
-| **ISSUE-019** | Commands.ts split into UICommands, ProjectCommands, GrailsTaskCommands, etc. |
-| **ISSUE-003** | ProjectService async file operations (fs/promises, Promise.all for parallel ops) |
-| **ISSUE-005** | Synchronous file reading converted to async in ProjectService |
-| **ISSUE-013** | Add batch test discovery with fallback to individual requests |
-| **ISSUE-020** | LSP handlers organized in services/lsp/handlers/ with LspHandlerRegistry |
-| **ISSUE-021** | Moved ProjectMapper to shared/, removed features/projects/ and services/useCase/ |
+| Core Architecture & Performance | Optimizations (ISSUE-001 through ISSUE-021). See history section below. |
 
 ### 🟡 In Progress
 
@@ -96,3 +76,38 @@
 | ESLint | ✅ Clean |
 | Tests | ✅ Passing |
 | esbuild bundle | ✅ OK |
+
+---
+
+## Historical Consolidations (ISSUE-001 to ISSUE-021)
+
+### Service Container & Lifecycle
+- **ISSUE-001**: Lazy service initialization (core services immediately, others on first access).
+- **ISSUE-017**: Added initialization promise to `ServiceContainer` (async initialize, `getInstanceAsync`).
+- **ISSUE-018**: Circular dependency detection via `_initializingServices` tracking.
+- **ISSUE-004**: Activation timeout wrapper (30s) with user notification.
+
+### Webview & UI Services
+- **ISSUE-002**: Webview services created on-demand in Commands, not at activation.
+- **ISSUE-014**: Removed `retainContextWhenHidden`, use `WebviewStateManager` for proper state preservation.
+- **ISSUE-015**: Bundled D3.js locally for offline support.
+- **ISSUE-016**: Comprehensive webview cleanup on dispose (cancel requests, clear state).
+
+### Event Bus & Messaging
+- **ISSUE-006**: EventBus async handler execution with error isolation.
+- **ISSUE-009**: EventBus listener limits (100 max) and accumulation warning.
+- **ISSUE-010**: ActivationManager listener cleanup verification logging.
+
+### Performance & Async File Operations
+- **ISSUE-003**: `ProjectService` async file operations (`fs/promises`, `Promise.all` for parallel operations).
+- **ISSUE-005**: Synchronous file reading converted to async in `ProjectService`.
+- **ISSUE-007**: Made `GradleService.sync()` non-blocking, added `waitForSync()`.
+- **ISSUE-008**: File watcher memory leak fixed with proper `Set`/`Map` tracking.
+- **ISSUE-011**: LSP requests debounced (300ms) to prevent server flooding.
+- **ISSUE-012**: Added `CancellationToken` support to LSP requests.
+- **ISSUE-013**: Added batch test discovery with fallback to individual requests.
+
+### Code Organization & Refactoring
+- **ISSUE-019**: `Commands.ts` split into `UICommands`, `ProjectCommands`, `GrailsTaskCommands`, etc.
+- **ISSUE-020**: LSP handlers organized in `services/lsp/handlers/` with `LspHandlerRegistry`.
+- **ISSUE-021**: Moved `ProjectMapper` to `shared/`, removed `features/projects/` and `services/useCase/`.

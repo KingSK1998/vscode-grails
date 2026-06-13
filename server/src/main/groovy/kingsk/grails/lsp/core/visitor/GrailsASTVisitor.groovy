@@ -387,6 +387,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport {
         lookup.keySet().removeIf { lookup[it].uri == uri }
         stack.clear()
         visitCounts.clear()
+        service.astService.clearUri(uri)
 
         // Smart memory management - only cleanup if safe
         if (nodesByURI.size() >= MAX_FILES_IN_MEMORY) {

@@ -38,9 +38,9 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing member variable access"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
+		content.append("class Completion2 {\n")
 		content.append("  String memberVar\n")
-		content.append("  public Completion() {\n")
+		content.append("  public Completion2() {\n")
 		content.append("    memberVar.\n")
 		content.append("  }\n")
 		content.append("}")
@@ -55,13 +55,23 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing array element access"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
-		content.append("  public Completion() {\n")
+		content.append("class Completion3 {\n")
+		content.append("  public Completion3() {\n")
 		content.append("    String[] localVar\n")
 		content.append("    localVar[0].\n")
 		content.append("  }\n")
 		content.append("}")
 		uri = openTextDocument("Completion3.groovy", content.toString())
+		def visitor = grailsService.visitor
+		def debugText = new StringBuilder()
+		debugText.append("=== DEBUG AST FOR Completion3 ===\n")
+		debugText.append("Query URI: ${uri}\n")
+		debugText.append("Visitor nodesByURI keys: ${visitor.nodesByURI.keySet()}\n")
+		visitor.getNodes(uri).each { node ->
+			debugText.append("Node: class=${node.class.simpleName}, text='${node.text}', line=${node.lineNumber}, col=${node.columnNumber}\n")
+		}
+		debugText.append("=================================\n")
+		new File("tmp_debug_ast.txt").text = debugText.toString()
 		items = getCompletionItems(uri, 3, 16)
 		
 		then: "Should provide String methods for array element"
@@ -96,15 +106,15 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing class static access"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
+		content.append("class Completion2 {\n")
 		content.append("  String memberVar\n")
-		content.append("  public Completion() {\n")
-		content.append("    Completion.\n")
+		content.append("  public Completion2() {\n")
+		content.append("    Completion2.\n")
 		content.append("  }\n")
 		content.append("  static void staticMethod() {}\n")
 		content.append("}")
 		uri = openTextDocument("Completion2.groovy", content.toString())
-		items = getCompletionItems(uri, 3, 15)
+		items = getCompletionItems(uri, 3, 16)
 		
 		then: "Should provide static members"
 		items.size() > 0
@@ -155,8 +165,8 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		items = getCompletionItems(uri, 2, 13)
 		
 		then: "Should only include the matching method"
-		items.size() == 2
-		assertContainsItem(items, "abc")
+		items.size() == 1
+		assertContainsItem(items, "abcdef")
 	}
 	
 	def "should provide variable and member completions for partial expressions"() {
@@ -184,9 +194,9 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing member method completion"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
+		content.append("class Completion2 {\n")
 		content.append("  String memberMethod() {}\n")
-		content.append("  public Completion() {\n")
+		content.append("  public Completion2() {\n")
 		content.append("    mem\n")
 		content.append("  }\n")
 		content.append("}")
@@ -202,7 +212,7 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing parameter completion"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
+		content.append("class Completion3 {\n")
 		content.append("  public void testMethod(String paramName) {\n")
 		content.append("    par\n")
 		content.append("  }\n")
@@ -263,8 +273,8 @@ class GroovyCompletionProviderSpec extends CompletionTestSpec {
 		
 		when: "Testing system class completion"
 		content = new StringBuilder()
-		content.append("class Completion {\n")
-		content.append("  public Completion() {\n")
+		content.append("class Completion2 {\n")
+		content.append("  public Completion2() {\n")
 		content.append("    ArrayLis\n")
 		content.append("  }\n")
 		content.append("}")

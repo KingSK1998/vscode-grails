@@ -584,23 +584,23 @@ class GrailsUtils {
 	// return uri?.replace('\\', '/')?.contains('/grails-app/domain/')
 	
 	static boolean isInGrailsAppDir(String uri) {
-		return uri?.contains(GRAILS_APP_DIR)
+		return uri?.replace('\\', '/')?.contains('/grails-app/')
 	}
 	
 	static boolean isInDomainDir(String uri) {
-		return uri?.contains(DOMAINS_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/domain/')
 	}
 	
 	static boolean isInServiceDir(String uri) {
-		return uri?.contains(SERVICES_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/services/')
 	}
 	
 	static boolean isInControllerDir(String uri) {
-		return uri?.contains(CONTROLLERS_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/controllers/')
 	}
 	
 	static boolean isInTagLibDir(String uri) {
-		return uri?.contains(TAGLIBS_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/taglib/')
 	}
 	
 	static boolean isInInterceptorDir(String uri) {
@@ -608,27 +608,27 @@ class GrailsUtils {
 	}
 	
 	static boolean isInInitDir(String uri) {
-		return uri?.contains(INIT_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/init/')
 	}
 	
 	static boolean isInJobsDir(String uri) {
-		return uri?.contains(JOBS_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/jobs/')
 	}
 	
 	static boolean isInTestDir(String uri) {
-		return uri?.contains(TEST_PATH)
+		return uri?.replace('\\', '/')?.contains('/src/test/')
 	}
 	
 	static boolean isInViewsDir(String uri) {
-		return uri?.contains(VIEWS_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/views/')
 	}
 	
 	static boolean isInConfDir(String uri) {
-		return uri?.contains(CONF_PATH)
+		return uri?.replace('\\', '/')?.contains('/grails-app/conf/')
 	}
 	
 	static boolean isInSrcDir(String uri) {
-		return uri?.contains(SRC_PATH)
+		return uri?.replace('\\', '/')?.contains('/src/main/groovy/')
 	}
 	
 	static boolean isTestSpec(String uri) {

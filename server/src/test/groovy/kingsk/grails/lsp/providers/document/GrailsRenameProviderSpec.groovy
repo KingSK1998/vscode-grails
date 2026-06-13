@@ -21,7 +21,7 @@ class GrailsRenameProviderSpec extends BaseLspSpec {
         def uri = openExistingFile("TestController.groovy")
         
         when: "Requesting rename"
-        def result = provider.handle(new RenameParams(
+        def result = provider.provideRename(new RenameParams(
             new TextDocumentIdentifier(uri),
             pos(5, 8),
             "newActionName"

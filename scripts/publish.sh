@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
 echo "🚀 Publishing vscode-gng-support..."
 
 # Check if we're on main branch
@@ -20,16 +23,12 @@ fi
 ./scripts/package.sh
 
 # Publish to VS Code Marketplace
+# Publish to VS Code Marketplace
 echo "🚀 Publishing to VS Code Marketplace..."
-cd client
-
 if [ -z "$VSCE_PAT" ]; then
     echo "❌ VSCE_PAT environment variable required"
     exit 1
 fi
 
 vsce publish --pat "$VSCE_PAT"
-
-cd ..
-
 echo "✅ Published successfully!"

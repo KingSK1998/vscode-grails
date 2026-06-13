@@ -233,6 +233,7 @@ class GrailsCompiler {
             // Determine optimal phase for incremental developer feedback
             int targetPhase = determineProjectAnalysisPhase()
             compileDefaultOrTillPhase(targetPhase)
+            clearDirty(textFile.uri)
         } catch (Exception e) {
             log.error("[COMPILER] Incremental compilation failed for ${textFile.name}", e)
         } finally {
@@ -405,6 +406,7 @@ class GrailsCompiler {
             def preserveError = compilationUnit.errorCollector
 
             boolean patchedAny = false
+            List<String> debugPatches = []
             // for (sourceUnit in compilationUnit.sourceUnits.toList()) {
             compilationUnit?.sourceUnits?.toList()?.each { sourceUnit ->
                 if (sourceUnit.AST != null) return
@@ -445,14 +447,14 @@ class GrailsCompiler {
 
                 lines[lineNumber] += patchText
                 String patchedSource = lines.join("\n")
+                debugPatches.add("File: ${sourceUnit.name}\nPatched Content:\n${patchedSource}")
 
-                ReaderSource newSource = new StringReaderSource(patchedSource, sourceUnit.configuration)
-                sourceUnit.setSource(newSource)
                 compilationUnit.removeSourceUnit(sourceUnit)
-                compilationUnit.addSource(sourceUnit)
+                compilationUnit.addSource(sourceUnit.name, patchedSource)
                 patchedAny = true
             }
             if (patchedAny) {
+                log.debug("[COMPILER] Patches applied:\n" + debugPatches.join("\n---\n"))
                 log.warn("[COMPILER] Patch applied for EOL error, recompiling")
                 compilationUnit.compile(phase)
             } else {
@@ -499,5 +501,9 @@ class GrailsCompiler {
     void removeSourceFile(String uri) {
         sourceUnitsCache.remove(uri)
         log.info("[COMPILER] Removed ${uri} from cache")
+    }
+
+    GroovyClassLoader getClassLoader() {
+        return classLoader
     }
 }

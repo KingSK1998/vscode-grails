@@ -97,6 +97,18 @@ class CompletionRequest {
 	}
 	
 	/**
+	 * Adds a completion item that is related to the current context.
+	 * This bypasses strict prefix matching if the prefix is exactly equal 
+	 * to a parent or peer node's name.
+	 */
+	void addRelatedCompletion(CompletionItem item) {
+		if (!item || !item.label) return
+		// If prefix matches exactly what we have, we might be starting something related
+		if (!CompletionUtil.isSeenItem(item, "", seen)) return
+		items.add(item)
+	}
+	
+	/**
 	 * Adds a predefined Grails completion item.
 	 * @param name The name to complete.
 	 * @param description A brief description (e.g. 'Grails Logger').
@@ -113,7 +125,7 @@ class CompletionRequest {
 	 * @param items The MemberExtractor.CompletionItems to add
 	 */
 	void addAllCompletions(CompletionItems items) {
-		// addListCompletions(items.properties)
+		addListCompletions(items.properties)
 		addListCompletions(items.fields)
 		addListCompletions(items.methods)
 	}

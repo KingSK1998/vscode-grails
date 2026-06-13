@@ -29,7 +29,7 @@ class GrailsReferenceProvider extends BaseProvider {
         }
         log.debug("[REFERENCES] offsetNode: $offsetNode")
 
-        def references = GrailsASTHelper.getReferences(offsetNode, visitor, position)
+        def references = GrailsASTHelper.getReferences(offsetNode, visitor, position) ?: []
         log.debug("[REFERENCES] found ${references.size()} references")
 
         def locations = references.findResults { node ->

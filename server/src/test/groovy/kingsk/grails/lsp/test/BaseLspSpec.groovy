@@ -218,8 +218,13 @@ abstract class BaseLspSpec extends Specification {
      * @return The result of the future
      */
     protected <T> T waitForFuture(CompletableFuture<T> future, long timeout = DEFAULT_TIMEOUT) {
-        //		return future.get(timeout, TimeUnit.MILLISECONDS)
-        return future.get()
+        try {
+            return future.get(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+        } catch (java.util.concurrent.TimeoutException e) {
+            log.error("Future timed out after ${timeout}ms", e)
+            future.cancel(true)
+            throw e
+        }
     }
 
     /**

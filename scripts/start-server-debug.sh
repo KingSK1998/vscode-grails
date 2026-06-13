@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
 echo "🐛 Starting Language Server in Debug Mode..."
 
 cd server
@@ -15,4 +18,4 @@ echo "💡 Connect IntelliJ debugger to localhost:5005"
 echo "💡 Client will connect automatically when available"
 
 java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
-     -jar build/libs/Grails\ Language\ Server-0.3.1-SNAPSHOT.jar
+     -jar build/libs/Grails\ Language\ Server-0.5.0-SNAPSHOT-all.jar

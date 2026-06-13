@@ -539,11 +539,24 @@ class DiscoveryService {
     }
 
     /**
+     * Clear symbol and keyword caches without dropping expensive ClassGraph scans
+     */
+    static void clearSymbolCaches() {
+        KEYWORD_CACHE.clear()
+        METHOD_CACHE.clear()
+        CLASSNODE_CACHE.clear()
+        log.debug("Cleared dynamic discovery symbol caches")
+    }
+
+    /**
      * Clear all caches (for testing or memory management)
      */
     static void clearCaches() {
         KEYWORD_CACHE.clear()
         METHOD_CACHE.clear()
+        classGraphScanResults.values().each { it?.close() }
+        classGraphScanResults.clear()
+        projectClassLoaders.clear()
         log.debug("Cleared all dynamic discovery caches")
     }
 }

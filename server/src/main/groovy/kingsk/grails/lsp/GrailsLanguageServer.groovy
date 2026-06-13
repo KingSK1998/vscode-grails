@@ -1,5 +1,6 @@
 package kingsk.grails.lsp
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.Launcher
@@ -9,9 +10,12 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.*
 
+import java.net.ServerSocket
+import java.net.Socket
 import java.util.concurrent.CompletableFuture
 
 @Slf4j
+@CompileStatic
 class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
     private final CompletableFuture<ClientCapabilities> clientCapabilities
     private GrailsService grailsService

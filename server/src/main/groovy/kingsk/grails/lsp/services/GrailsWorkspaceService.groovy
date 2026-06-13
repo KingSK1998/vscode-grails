@@ -1,10 +1,12 @@
 package kingsk.grails.lsp.services
 
+import groovy.transform.CompileStatic
 import com.google.gson.JsonObject
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.protocol.dto.ProjectDTO
 import kingsk.grails.lsp.providers.workspace.GrailsWorkspaceSymbolProvider
+import kingsk.grails.lsp.model.enums.*
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
@@ -18,6 +20,7 @@ import java.util.concurrent.CompletableFuture
  * Implements the LSP WorkspaceService interface.
  */
 @Slf4j
+@CompileStatic
 class GrailsWorkspaceService implements WorkspaceService {
     private final GrailsService grailsService
     private final ProgressService reportingService
@@ -91,12 +94,12 @@ class GrailsWorkspaceService implements WorkspaceService {
 
     @Override
     CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params) {
-        return new GrailsWorkspaceSymbolProvider(grailsService).provideWorkspaceSymbols(params.query)
+        return grailsService.providerRegistry.getProvider(GrailsWorkspaceSymbolProvider).provideWorkspaceSymbols(params.query)
     }
 
     @Override
     CompletableFuture<WorkspaceSymbol> resolveWorkspaceSymbol(WorkspaceSymbol workspaceSymbol) {
-        return new GrailsWorkspaceSymbolProvider(grailsService).resolveWorkspaceSymbol(workspaceSymbol)
+        return grailsService.providerRegistry.getProvider(GrailsWorkspaceSymbolProvider).resolveWorkspaceSymbol(workspaceSymbol)
     }
 
     @Override
@@ -114,24 +117,24 @@ class GrailsWorkspaceService implements WorkspaceService {
         log.info "[WORKSPACE] Executing command: ${params.command}"
         switch (params.command) {
             case "grails.getDependencyGraph":
-                String projectUri = params.arguments[0]?.toString() ?: grailsService.activeProjectUri
+                String projectUri = (params.arguments && !params.arguments.isEmpty()) ? params.arguments.get(0)?.toString() : grailsService.activeProjectUri
                 return CompletableFuture.supplyAsync({ ->
-                    return grailsService.dependencyProvider.getDependencyGraphJson(new URI(projectUri).path)
+                    return grailsService.dependencyProvider.getDependencyGraphJson(new URI(projectUri).path) as Object
                 })
             case "grails.getGormSql":
-                String uri = params.arguments[0]?.toString()
+                String uri = (params.arguments && !params.arguments.isEmpty()) ? params.arguments.get(0)?.toString() : null
                 return CompletableFuture.supplyAsync({ ->
-                    return grailsService.gormSqlProvider.generateSql(uri)
+                    return grailsService.gormSqlProvider.generateSql(uri) as Object
                 })
             case "grails.discoverTests":
-                String projectUri = params.arguments[0]?.toString() ?: grailsService.activeProjectUri
+                String projectUri = (params.arguments && !params.arguments.isEmpty()) ? params.arguments.get(0)?.toString() : grailsService.activeProjectUri
                 return CompletableFuture.supplyAsync({ ->
-                    return grailsService.testDiscoveryProvider.discoverTests(projectUri)
+                    return grailsService.testDiscoveryProvider.discoverTests(projectUri) as Object
                 })
             case "grails.discoverTestsBatch":
-                List<String> projectUris = params.arguments[0] as List<String>
+                List<String> projectUris = (params.arguments && !params.arguments.isEmpty()) ? params.arguments.get(0) as List<String> : [] as List<String>
                 return CompletableFuture.supplyAsync({ ->
-                    return grailsService.testDiscoveryProvider.discoverTestsBatch(projectUris)
+                    return grailsService.testDiscoveryProvider.discoverTestsBatch(projectUris) as Object
                 })
             default:
                 log.warn "[WORKSPACE] Unknown command: ${params.command}"

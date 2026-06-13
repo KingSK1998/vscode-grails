@@ -7,6 +7,7 @@ import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.dto.DependencyNode
 import kingsk.grails.lsp.model.enums.DocumentationType
 import kingsk.grails.lsp.model.enums.GrailsArtifactType
+import kingsk.grails.lsp.utils.docs.GroovydocConverter
 import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.apache.groovy.ast.tools.MethodNodeUtils

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
 echo "🚀 Setting up vscode-gng-support development environment..."
 
 # Check prerequisites

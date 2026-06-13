@@ -81,6 +81,16 @@ class ASTService {
     }
 
     /**
+     * Evicts AST caches for a specific URI
+     */
+    void clearUri(String uri) {
+        String normalizedUri = TextFile.normalizePath(uri)
+        grailsServices.remove(normalizedUri)
+        grailsControllers.remove(normalizedUri)
+        grailsTagLibs.remove(normalizedUri)
+    }
+
+    /**
      * Utility to get node at position with error handling
      */
     ASTNode getNodeAtPosition(String uri, Position position) {

@@ -27,20 +27,22 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 @Slf4j
 @CompileStatic
 class GrailsService implements LanguageClientAware, ProjectContext, ProviderContext, CompilationContext {
 
     GrailsLanguageClient client
-    Map<String, GrailsProject> projects = [:]
+    Map<String, GrailsProject> projects = new ConcurrentHashMap<>()
     String activeProjectUri
 
-    private final Map<String, ProjectDTO> lastSent = [:]
+    private final Map<String, ProjectDTO> lastSent = new ConcurrentHashMap<>()
 
     @Override
     void connect(LanguageClient client) {
@@ -70,7 +72,28 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
 
     final GrailsLspConfig config
 
-    private final Executor backgroundExecutor = Executors.newCachedThreadPool()
+    private final Executor backgroundExecutor = Executors.newFixedThreadPool(4)
+    private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
+
+    public <T> T withReadLock(groovy.lang.Closure<T> closure) {
+        def lock = astLock.readLock()
+        lock.lock()
+        try {
+            closure()
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    public <T> T withWriteLock(groovy.lang.Closure<T> closure) {
+        def lock = astLock.writeLock()
+        lock.lock()
+        try {
+            closure()
+        } finally {
+            lock.unlock()
+        }
+    }
 
     GrailsService() {
         this.errorService = new ErrorService(this)
@@ -128,15 +151,16 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
 
             progressService.update("Project loaded", 20)
 
-            compiler.invalidateCompiler()
-            visitor.invalidateVisitor()
-            fileTracker.resetFQCNDependencies()
-            diagnostics.clearAllDiagnostics()
+            withWriteLock {
+                compiler.invalidateCompiler()
+                visitor.invalidateVisitor()
+                fileTracker.resetFQCNDependencies()
+                diagnostics.clearAllDiagnostics()
 
-            compiler.compileProject()
+                compiler.compileProject()
 
-            progressService.update("Visiting AST...", 80)
-            visitor.visitCompilationUnit(compiler)
+                visitor.visitCompilationUnit(compiler)
+            }
 
             progressService.update("Publishing diagnostics...", 90)
             diagnostics.publishWorkspaceDiagnostics()
@@ -161,15 +185,18 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
             return
         }
 
-        if (!compiler.isDirty(textFile.uri) && compiler.compilationExistsFor(textFile.uri)) {
-            log.debug("[COMPILE] Skipping - no changes detected for: ${textFile.uri}")
-            return
-        }
+        withWriteLock {
+            if (!compiler.isDirty(textFile.uri) && compiler.compilationExistsFor(textFile.uri)) {
+                log.debug("[COMPILE] Skipping - no changes detected for: ${textFile.uri}")
+                return
+            }
 
-        compiler.markDirty(textFile.uri)
-        compiler.compileSourceFile(textFile)
-        visitAST(textFile)
-        diagnostics.publishDiagnosticsForFile(textFile.uri)
+            compiler.markDirty(textFile.uri)
+            compiler.compileSourceFile(textFile)
+            visitASTInternal(textFile)
+            clearCrossFileCaches()
+            diagnostics.publishDiagnosticsForFile(textFile.uri)
+        }
         if (log.isDebugEnabled()) {
             long ms = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)
             log.debug("[PERF] compileAndVisitAST ${textFile.uri} ${ms}ms")
@@ -177,6 +204,25 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
     }
 
     void visitAST(TextFile textFile) {
+        withWriteLock {
+            visitASTInternal(textFile)
+        }
+    }
+
+    /**
+     * Clears all globally tracked symbol caches to ensure cross-file dependency
+     * inferences accurately reflect updated type signatures across the workspace.
+     */
+    void clearCrossFileCaches() {
+        log.debug("[GrailsService] Evicting cross-file symbol caches")
+        providerRegistry.getProvider(kingsk.grails.lsp.providers.document.GrailsCompletionProvider).clearCaches() // Clear all file completions globally
+        discoveryService.clearSymbolCaches()
+        kingsk.grails.lsp.utils.grails.GroovyRuntimeIntegration.clearCaches()
+        kingsk.grails.lsp.utils.grails.GroovyHelperIntegration.clearCaches()
+        kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.clearCaches()
+    }
+
+    private void visitASTInternal(TextFile textFile) {
         if (!textFile) return
         def sourceUnit = compiler.getSourceUnit(textFile)
         if (!sourceUnit) {

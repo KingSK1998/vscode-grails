@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-06-07
+> Last updated: 2026-06-13
 
 ---
 
@@ -99,6 +99,20 @@
 ## TypeInferenceService Utilities:
 - Implemented `findMethodsByName()`, `findProperties()`, `isSubType()` stub methods
 - Utility methods for type analysis - not yet used by main inference logic
+
+### Completed Work (2026-06-13)
+- **Phase 1: AST Ownership, Concurrency & Central LSP Boundaries**:
+  - Implemented `astLock` (ReentrantReadWriteLock) in `GrailsService` to isolate write compilation operations from read providers.
+  - Wrapped incremental compilation, AST visitation, and workspace refresh under `withWriteLock`.
+  - Added `withReadLock` helper in `BaseProvider` to allow safe, thread-safe reading of AST and visitor states.
+  - Implemented central try-catch error boundaries (`safeProviderCall`) for all LSP feature handlers in `GrailsTextDocumentService` to log errors, record provider health, and prevent server crashes.
+  - Refactored `GrailsWorkspaceSymbolProvider` to extend `BaseProvider` and registered it in `ProviderRegistry`, consuming it via `GrailsWorkspaceService`.
+  - Added `@CompileStatic` to `GrailsLanguageServer`, `GrailsWorkspaceService`, and `GrailsWorkspaceSymbolProvider` for optimized, safe bytecode compilation.
+  - Cleaned up all inline fully qualified Java concurrent classes (`java.util.concurrent.*`) in favor of imports and Groovy-idiomatic style across all server files.
+  - Fixed **ASTService Memory Leak**: Added `clearUri(String uri)` to `ASTService` and wired it into `GrailsASTVisitor.visitSourceUnit` to clear cached class nodes when recompiling a file.
+  - Standardized all Java functional interfaces (`Supplier`, `BiFunction`, `Function`) and reflect utility references (`Modifier`) to use standard imports rather than inline fully qualified class names.
+  - Fixed **ThreadSafeLruCache Shared Executor Lifecycle Risk**: Made static executor recreation thread-safe and resilient to shutdowns on server restart/test cleanups, and created `ThreadSafeLruCacheSpec` with Spock test coverage.
+  - Fixed **Incomplete Inter-File AST Invalidation**: Added `clearCrossFileCaches()` in `GrailsService` and `clearSymbolCaches()` in `DiscoveryService`. Wired it to execute globally after AST visitation completes to ensure cross-file dependency updates are correctly reflected in completion and symbol resolution.
 
 ### Completed Work (2026-06-07)
 - **OOM Fix — ClassGraph heap exhaustion (`./gradlew test`)**:

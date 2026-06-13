@@ -15,7 +15,14 @@ class RangeHelper {
 	
 	static boolean isPositionWithinNode(ASTNode node, Position position) {
 		Range range = ASTUtils.astNodeToRange(node)
-		return range && contains(range, position)
+		if (!range) return false
+		if (contains(range, position)) return true
+		
+		// For completions, we often want to find the node even if the cursor is one char after
+		if (position.line == range.end.line && position.character == range.end.character + 1) {
+			return true
+		}
+		return false
 	}
 	
 	static Range zeroRange() {

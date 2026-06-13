@@ -11,6 +11,7 @@ import groovy.lang.MetaClass
 import groovy.lang.MetaMethod
 import groovy.lang.MetaProperty
 
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -74,8 +75,8 @@ class GroovyHelperIntegration {
             try {
                 // Use DefaultGroovyMethods class directly
                 return DefaultGroovyMethods.class.methods.findAll { method ->
-                    java.lang.reflect.Modifier.isPublic(method.modifiers) && 
-                    java.lang.reflect.Modifier.isStatic(method.modifiers) &&
+                    Modifier.isPublic(method.modifiers) && 
+                    Modifier.isStatic(method.modifiers) &&
                     !method.name.startsWith('get') &&
                     !method.name.startsWith('set') &&
                     !method.name.startsWith('is')

@@ -142,10 +142,11 @@ class CompletionProcessor {
 	 * Get maximum results based on prefix specificity
 	 */
 	static int getMaxResults(String prefix) {
-		if (!prefix || prefix.isEmpty()) return 50
-		if (prefix.length() == 1) return 75
-		if (prefix.length() == 2) return 100
-		return 150 // More specific prefixes can show more results
+		if (GrailsUtils.isDummyPrefix(prefix)) return GrailsUtils.MAX_COMPLETION_ITEM_LIMIT
+		if (!prefix || prefix.isEmpty()) return 500
+		if (prefix.length() == 1) return 600
+		if (prefix.length() == 2) return 800
+		return 1000 // More specific prefixes can show more results
 	}
 	
 	/**

@@ -154,8 +154,7 @@ class CompletionUtil {
     private static String getDisplayLabel(ASTNode node) {
         switch (node) {
             case MethodNode:
-                // Use typeDescriptor for display to show parameters
-                return node.typeDescriptor ?: node.name
+                return node.name
             case ConstructorNode:
                 return node.name == "<init>" ?
                     (node.declaringClass.nameWithoutPackage ?: "Constructor") : node.name
@@ -253,19 +252,32 @@ class CompletionUtil {
      * @return True if the name matches the prefix, is under the item limit, and not yet seen.
      */
     static boolean isSeenItem(ASTNode node, String prefix, Set<String> seen) {
+        if (!node || prefix == null) return false
         String name = ASTUtils.astNodeToName(node)
-        // If it's not a dummy prefix, apply startsWith filter
-        if (!GrailsUtils.isDummyPrefix(prefix) && !name.startsWith(prefix)) return false
+        if (name == null) return false
+
+        // If it's not a dummy prefix, apply startsWith filter case-insensitively
+        if (!GrailsUtils.isDummyPrefix(prefix)) {
+            String lowerName = name.toLowerCase()
+            String lowerPrefix = prefix.toLowerCase()
+            if (!lowerName.startsWith(lowerPrefix)) return false
+        }
         String key = generateSeenKey(node)
         if (!key) return false
         return isSeen(key, seen)
     }
 
     static boolean isSeenItem(CompletionItem item, String prefix, Set<String> seen) {
+        if (!item || item.label == null || prefix == null) return false
         String name = item.label
-        // If it's not a dummy prefix, apply startsWith filter
-        if (!GrailsUtils.isDummyPrefix(prefix) && !name.startsWith(prefix)) return false
-        String key = item.label
+
+        // If it's not a dummy prefix, apply startsWith filter case-insensitively
+        if (!GrailsUtils.isDummyPrefix(prefix)) {
+            String lowerName = name.toLowerCase()
+            String lowerPrefix = prefix.toLowerCase()
+            if (!lowerName.startsWith(lowerPrefix)) return false
+        }
+        String key = item.label + (item.detail ?: "")
         if (!key) return false
         return isSeen(key, seen)
     }

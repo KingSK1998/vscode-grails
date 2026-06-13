@@ -1,10 +1,12 @@
 package kingsk.grails.lsp.providers.workspace
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.providers.document.BaseProvider
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import org.codehaus.groovy.ast.*
@@ -15,13 +17,11 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.concurrent.CompletableFuture
 
 @Slf4j
-class GrailsWorkspaceSymbolProvider {
-	private final GrailsASTVisitor visitor
-	private final GrailsProject project
+@CompileStatic
+class GrailsWorkspaceSymbolProvider extends BaseProvider {
 	
 	GrailsWorkspaceSymbolProvider(GrailsService service) {
-		this.visitor = service.visitor
-		this.project = service.project
+		super(service)
 	}
 	
 	CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> provideWorkspaceSymbols(String query) {
@@ -32,39 +32,52 @@ class GrailsWorkspaceSymbolProvider {
 		boolean isClassQuery = Character.isUpperCase(query.charAt(0))
 		List<WorkspaceSymbol> results = []
 		
-		visitor.getNodes().each { node ->
-			if (results.size() >= LIMIT) return
-			
-			String name = null
-			boolean allowed = false
-			
-			if (node instanceof ClassNode && isClassQuery) {
-				// Match only ClassNodes if query starts with a capital letter
-				name = node.nameWithoutPackage
-				allowed = true
-			} else if (!isClassQuery && isMethodOrFieldOrProperty(node)) {
-				// Match only MethodNodes if query starts with a lowercase letter
-				name = node.name
-				allowed = true
+		try {
+			withReadLock {
+				visitor.getNodes().each { ASTNode node ->
+					if (results.size() >= LIMIT) return
+					
+					String name = null
+					boolean allowed = false
+					
+					if (node instanceof ClassNode && isClassQuery) {
+						// Match only ClassNodes if query starts with a capital letter
+						name = ((ClassNode) node).nameWithoutPackage
+						allowed = true
+					} else if (!isClassQuery) {
+						if (node instanceof MethodNode) {
+							name = ((MethodNode) node).name
+							allowed = true
+						} else if (node instanceof FieldNode) {
+							name = ((FieldNode) node).name
+							allowed = true
+						} else if (node instanceof PropertyNode) {
+							name = ((PropertyNode) node).name
+							allowed = true
+						}
+					}
+					
+					if (!allowed || !name) return
+					
+					if (matchesCamelCasePrefix(name, query)) {
+						String fullURI = visitor.getURI(node)
+						if (!fullURI) return
+						
+						// Normalize to project-relative path
+						String relPath = TextFile.normalizePath(project.rootDirectory.toURI().relativize(new File(new URI(fullURI)).toURI()).toString())
+						
+						ClassNode parentClassNode = GrailsASTHelper.getEnclosingClassNode(node, visitor)
+						WorkspaceSymbol symbol = ASTUtils.astNodeToWorkspaceSymbol(node, relPath, parentClassNode)
+						if (symbol) results << symbol
+					}
+				}
 			}
-			
-			if (!allowed || !name) return
-			
-			if (matchesCamelCasePrefix(name, query)) {
-				String fullURI = visitor.getURI(node)
-				if (!fullURI) return
-				
-				// Normalize to project-relative path
-				String relPath = TextFile.normalizePath(project.rootDirectory.toURI().relativize(new File(fullURI).toURI()).toString())
-				
-				def parentClassNode = GrailsASTHelper.getEnclosingClassNode(node, visitor)
-				def symbol = ASTUtils.astNodeToWorkspaceSymbol(node, relPath, parentClassNode)
-				if (symbol) results << symbol
-			}
+			log.info("[WORKSPACE SYMBOLS] Workspace symbols provided for query: ${query}")
+			return CompletableFuture.completedFuture(Either.forRight(results))
+		} catch (Exception e) {
+			log.error("[WORKSPACE SYMBOLS] Failed to provide workspace symbols", e)
+			return CompletableFuture.completedFuture(Either.forRight([]))
 		}
-		
-		log.info("[WORKSPACE SYMBOLS] Workspace symbols provided for query: ${query}")
-		return CompletableFuture.completedFuture(Either.forRight(results))
 	}
 	
 	CompletableFuture<WorkspaceSymbol> resolveWorkspaceSymbol(WorkspaceSymbol workspaceSymbol) {
@@ -75,30 +88,39 @@ class GrailsWorkspaceSymbolProvider {
 		log.debug "[WORKSPACE SYMBOLS] Resolving workspace symbol: ${workspaceSymbol.name}"
 		
 		def eitherLocation = workspaceSymbol.location
-		// Get uri either from left or right if it exists
-		def uri = eitherLocation?.left?.uri ?: eitherLocation?.right?.uri
+		String uri = null
+		if (eitherLocation != null) {
+			if (eitherLocation.isLeft() && eitherLocation.getLeft() != null) {
+				uri = eitherLocation.getLeft().uri
+			} else if (eitherLocation.isRight() && eitherLocation.getRight() != null) {
+				uri = eitherLocation.getRight().getUri()
+			}
+		}
 		if (!uri) {
 			log.info "[WORKSPACE SYMBOLS] No uri found for workspace symbol: ${workspaceSymbol.name}"
 			return CompletableFuture.completedFuture(null)
 		}
 		
-		// Find matching node again, just to confirm or enrich data
-		def nodes = visitor.getNodes(uri)
-		def targetNode = nodes.find { node ->
-			def name = node instanceof ClassNode ? node.nameWithoutPackage : node.name
-			return name == workspaceSymbol.name
-		}
-		
-		if (targetNode) {
-			// Normalize URI to project-relative path
-			String relPath = TextFile.normalizePath(project.rootDirectory.toURI().relativize(new File(uri).toURI()).toString())
-			def parentClassNode = GrailsASTHelper.getEnclosingClassNode(targetNode, visitor)
-			def resolvedSymbol = ASTUtils.astNodeToWorkspaceSymbol(targetNode, relPath, parentClassNode)
-			if (resolvedSymbol) return CompletableFuture.completedFuture(resolvedSymbol)
-		}
-		
-		// Fallback: return as-is
-		return CompletableFuture.completedFuture(workspaceSymbol)
+		final String finalUri = uri
+		return withReadLock({
+			// Find matching node again, just to confirm or enrich data
+			Set<ASTNode> nodes = visitor.getNodes(finalUri)
+			ASTNode targetNode = nodes.find { ASTNode node ->
+				String name = node instanceof ClassNode ? ((ClassNode) node).nameWithoutPackage : (node instanceof MethodNode ? ((MethodNode) node).name : (node instanceof FieldNode ? ((FieldNode) node).name : (node instanceof PropertyNode ? ((PropertyNode) node).name : null)))
+				return name == workspaceSymbol.name
+			}
+			
+			if (targetNode) {
+				// Normalize URI to project-relative path
+				String relPath = TextFile.normalizePath(project.rootDirectory.toURI().relativize(new File(new URI(finalUri)).toURI()).toString())
+				ClassNode parentClassNode = GrailsASTHelper.getEnclosingClassNode(targetNode, visitor)
+				WorkspaceSymbol resolvedSymbol = ASTUtils.astNodeToWorkspaceSymbol(targetNode, relPath, parentClassNode)
+				if (resolvedSymbol) return CompletableFuture.completedFuture(resolvedSymbol)
+			}
+			
+			// Fallback: return as-is
+			return CompletableFuture.completedFuture(workspaceSymbol)
+		} as groovy.lang.Closure<CompletableFuture<WorkspaceSymbol>>)
 	}
 	
 	static boolean isMethodOrFieldOrProperty(ASTNode node) {

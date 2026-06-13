@@ -68,6 +68,31 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
      * Add controller-specific completions using official Grails utilities
      */
     private void addControllerCompletions(CompletionRequest request) {
+        def loader = request.service.compiler.classLoader
+        // Add methods
+        GrailsHelperIntegration.getControllerMethods(loader).each { method ->
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+            item.detail = 'Grails controller method'
+            request.addCompletion(item)
+        }
+
+        // Add properties
+        GrailsHelperIntegration.getControllerProperties(loader).each { prop ->
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(prop)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
+            item.detail = 'Grails controller property'
+            request.addCompletion(item)
+        }
+
+        // Special handling for common web params
+        ['view', 'model', 'template', 'collection', 'bean', 'plugin', 'contentType', 'encoding'].each { webParam ->
+            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(webParam)
+            item.kind = org.eclipse.lsp4j.CompletionItemKind.Keyword
+            item.detail = 'Grails controller parameter'
+            request.addRelatedCompletion(item)
+        }
+
         if (request.offsetNode instanceof BlockStatement) {
             addScopeCompletions(request.offsetNode)
         }
@@ -78,8 +103,9 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
      */
     private void addDomainCompletions(CompletionRequest request) {
         try {
+            def loader = request.service.compiler.classLoader
             // Use GrailsHelperIntegration for official GORM instance methods
-            List<String> gormInstanceMethods = GrailsHelperIntegration.getGormInstanceMethods()
+            List<String> gormInstanceMethods = GrailsHelperIntegration.getGormInstanceMethods(loader)
             gormInstanceMethods.each { method ->
                 org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
                 item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
@@ -88,12 +114,28 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
             }
 
             // Use GrailsHelperIntegration for official GORM static methods
-            List<String> gormStaticMethods = GrailsHelperIntegration.getGormStaticMethods()
+            List<String> gormStaticMethods = GrailsHelperIntegration.getGormStaticMethods(loader)
             gormStaticMethods.each { method ->
                 org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
                 item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
                 item.detail = 'GORM Static Method'
                 request.addCompletion(item)
+            }
+
+            // Dynamically generate dynamic finders for domain properties
+            def currentClass = request.getCurrentClass()
+            if (currentClass) {
+                currentClass.properties.each { prop ->
+                    if (prop.name != 'class' && prop.name != 'metaClass') {
+                        String capitalized = prop.name.capitalize()
+                        ['findBy', 'findAllBy', 'countBy', 'existsBy'].each { prefix ->
+                            org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(prefix + capitalized)
+                            item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
+                            item.detail = 'GORM dynamic finder'
+                            request.addCompletion(item)
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             logDebug("Error getting GORM completions: %s", e.message)

@@ -9,7 +9,7 @@ plugins {
 //=================== Project Configuration ===================
 
 group = 'kingsk.grails.lsp'
-version = '0.4.1-SNAPSHOT'
+version = '0.5.0-SNAPSHOT'
 description = 'An LSP for Groovy on Grails'
 
 //=================== Java Configuration ===================

@@ -66,9 +66,15 @@ abstract class BaseProvider {
         this.class.simpleName
     }
 
+    protected <T> T withReadLock(groovy.lang.Closure<T> closure) {
+        _service.withReadLock(closure)
+    }
+
     protected ASTNode getNodeAtPosition(String uri, Position position) {
-        if (!visitor || visitor.empty) return null
-        visitor.getNodeAtPosition(TextFile.normalizePath(uri), position)
+        withReadLock {
+            if (!visitor || visitor.empty) return null
+            visitor.getNodeAtPosition(TextFile.normalizePath(uri), position)
+        }
     }
 
     protected ASTNode getNodeAtPosition(TextDocumentIdentifier textDocument, Position position) {
@@ -76,12 +82,16 @@ abstract class BaseProvider {
     }
 
     protected ASTNode getNodeAtLineAndColumn(TextDocumentIdentifier textDocument, int line, int character) {
-        if (!visitor || visitor.empty) return null
-        visitor.getNodeAtLineAndColumn(TextFile.normalizePath(textDocument.uri), line, character)
+        withReadLock {
+            if (!visitor || visitor.empty) return null
+            visitor.getNodeAtLineAndColumn(TextFile.normalizePath(textDocument.uri), line, character)
+        }
     }
 
     protected ASTNode getDefinitionNode(ASTNode offsetNode, boolean includeDeclaration = false) {
-        offsetNode ? GrailsASTHelper.getDefinition(offsetNode, includeDeclaration, visitor) : null
+        withReadLock {
+            offsetNode ? GrailsASTHelper.getDefinition(offsetNode, includeDeclaration, visitor) : null
+        }
     }
 
     protected static <T> CompletableFuture<T> emptyResult(T emptyValue) {

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Navigate to project root
+cd "$(dirname "$0")/.."
+
 echo "🧪 Running all tests..."
 
 # Test server
@@ -12,8 +15,7 @@ cd ..
 
 # Test client
 echo "🧪 Running client tests..."
-cd client
-npm test
-cd ..
+npm run compile
+node ./client/out/test/runTest.js
 
 echo "✅ All tests completed!"

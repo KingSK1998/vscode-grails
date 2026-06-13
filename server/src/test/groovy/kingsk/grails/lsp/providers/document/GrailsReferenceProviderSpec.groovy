@@ -22,11 +22,11 @@ class GrailsReferenceProviderSpec extends BaseLspSpec {
         def uri = openExistingFile("TestController.groovy")
         
         when: "Requesting references"
-        def result = provider.handle(new ReferenceParams(
+        def result = provider.provideReferences(
             new TextDocumentIdentifier(uri),
             pos(5, 8),
             new ReferenceContext(false)
-        )).get()
+        ).get()
         
         then: "References are found"
         // TODO: Complete assertions once test project has references
