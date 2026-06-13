@@ -54,7 +54,7 @@ Before modifying code, we must define the theoretical model for state in the lan
 
 ---
 
-## Phase 1: Stabilization & Correctness (Immediate Priority) 🟡
+## Phase 1: Stabilization & Correctness (Immediate Priority) ✅
 
 Before decoupling or adding complex features, the foundation must be mathematically sound, automatically verified, and adhere to the Phase 0 specification.
 
@@ -71,8 +71,9 @@ Before decoupling or adding complex features, the foundation must be mathematica
     *   **Action:** Apply the Request Consistency and Cancellation guarantees from Phase 0 to all LSP handlers.
     *   **Action:** Prevent providers from observing a partially rebuilt AST state if a request fires during incremental compilation.
 
-4.  **Validate Incremental Compilation Correctness** 🔴
-    *   **Action:** Create robust integration tests specifically verifying that incremental edits correctly update dependencies and do not corrupt the global index.
+4.  **Validate Incremental Compilation Correctness** ✅
+    *   **Action:** Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests.
+    *   **Action:** Verified AST update, cross-file cache eviction, correct node removal, ASTService artifact cache rebuilding, diagnostic publication, isolated syntax error boundaries, and position-based lookup post-incremental edits.
 
 ---
 

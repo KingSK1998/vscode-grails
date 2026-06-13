@@ -37,8 +37,9 @@ Avoid hardcoded lists, regexes, and heuristics. Real project state wins.
 - **Static typing first.** Dynamic dispatch requires a written justification.
 - **No dead code.** Delete it — version control remembers.
 - **Avoid deep nesting.** Return early. Extract conditions into named predicates.
-- **Comments explain why, not what.**
+- **Comments explain why, not what.** Add/update proper comments to the modified code.
 - **No magic values.** Constants over literals; enums over stringly-typed flags.
+- **Use Groovy coding style not Java.** Use Groovy idioms, dynamic features appropriately, and standard Groovy libraries over Java equivalents where applicable.
 
 ---
 

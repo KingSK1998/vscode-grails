@@ -31,6 +31,7 @@
    - Fixed ASTService memory leak by evicting cached ClassNodes per URI during visitors' visitSourceUnit pass.
    - ThreadSafeLruCache Executor Lifecycle: Refactored static `cleanupExecutor` to be non-final and nullable, initialized dynamically on demand via synchronized `getExecutor()`. Avoids executor rejection/exhaustion on server restarts or test cleanups. Added ThreadSafeLruCacheSpec Spock verification.
    - Inter-File AST Invalidation: Introduced `clearCrossFileCaches()` in `GrailsService` to explicitly evict globally tracked resolution caches (like `GrailsCompletionProvider` completion lists and static Groovy method caches in `DiscoveryService`, `GroovyRuntimeIntegration`) strictly *after* successful incremental AST cycles, ensuring cross-file completion dependencies never go stale.
+   - Incremental Compilation Test Coverage: Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests verifying AST updates, caching eviction, error handling, etc. Phase 1 is now fully complete ✅.
 
 ## Next Session Priorities
 

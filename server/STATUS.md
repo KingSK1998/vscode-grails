@@ -101,6 +101,9 @@
 - Utility methods for type analysis - not yet used by main inference logic
 
 ### Completed Work (2026-06-13)
+- **Incremental Compilation Test Coverage**:
+  - Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests.
+  - Verified AST update, cross-file cache eviction, correct node removal, ASTService artifact cache rebuilding, diagnostic publication, isolated syntax error boundaries, and position-based lookup post-incremental edits.
 - **Phase 1: AST Ownership, Concurrency & Central LSP Boundaries**:
   - Implemented `astLock` (ReentrantReadWriteLock) in `GrailsService` to isolate write compilation operations from read providers.
   - Wrapped incremental compilation, AST visitation, and workspace refresh under `withWriteLock`.
