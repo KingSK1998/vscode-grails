@@ -14,7 +14,7 @@ class GrailsReferenceProviderSpec extends BaseLspSpec {
 
     def setup() {
         initializeProject(ProjectType.GRAILS, true)
-        provider = new GrailsReferenceProvider(grailsService)
+        provider = grailsService.providerRegistry.getProvider(GrailsReferenceProvider)
     }
 
     def "should find references for controller action"() {

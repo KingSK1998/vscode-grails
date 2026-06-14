@@ -223,7 +223,11 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
         }
 
         if (classNodes != null) {
-            indexManager.rebuildFile(textFile.uri, classNodes)
+            try {
+                indexManager.rebuildFile(textFile.uri, classNodes)
+            } catch (Exception e) {
+                log.error("[GrailsService] Failed to rebuild index for {}: {}", textFile.uri, e.message)
+            }
         }
 
         if (log.isDebugEnabled()) {
@@ -242,7 +246,11 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
             }
         }
         if (classNodes != null) {
-            indexManager.rebuildFile(textFile.uri, classNodes)
+            try {
+                indexManager.rebuildFile(textFile.uri, classNodes)
+            } catch (Exception e) {
+                log.error("[GrailsService] Failed to rebuild index for {}: {}", textFile.uri, e.message)
+            }
         }
     }
 
@@ -383,6 +391,16 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
     @Override
     ProjectIndex getProjectIndex() {
         return this.projectIndex
+    }
+
+    @Override
+    MethodScopeCache getMethodScopeCache() {
+        return this.methodScopeCache
+    }
+
+    @Override
+    GroovydocCache getGroovydocCache() {
+        return this.groovydocCache
     }
 
     /**

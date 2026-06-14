@@ -10,6 +10,10 @@
 **See:** [server-folder-reorganization.md](../../docs/server-folder-reorganization.md)
 
 ### Completed Work (2026-06-14)
+- **Phase 2b: Provider Compliance**: ✅ Wrapped `GrailsHoverProvider`, `GrailsDefinitionProvider`, and `GrailsReferenceProvider` in `CompletableFuture.supplyAsync` for full cancellation and telemetry compliance (`createCancellationToken`, `checkCancellation`, `recordHealth`). Removed inline imports to meet coding standards.
+- **Phase 2b: Index References Support**: ✅ Added `ReferenceInfo`, updated `IndexSnapshot` mapping by target name, and implemented AST traversal in `IndexBuilder.buildReferences` for index-based reference lookups.
+- **Phase 2b: Provider Migration**: ✅ Migrated `GrailsHoverProvider`, `GrailsDefinitionProvider`, and `GrailsReferenceProvider` to use tiered index lookup (`MethodScopeCache` -> `ProjectIndex` -> `AST Fallback`) guided by `GrailsLspConfig` experimental flags.
+- **Phase 2a.6: Provider Test Stabilization**: ✅ Resolved compiler configuration `GROOVYDOC` flag issues causing regressions in `GrailsHoverProviderSpec` and `GrailsdocExtractionSpec`. Handled indexing exceptions to avoid cascading test failures.
 - **Phase 2a.5: GrailsService Wiring**: ✅ Wired `IndexManager`, `ProjectIndex`, `MethodScopeCache`, and `GroovydocCache` into `GrailsService`. Ast locks respected, index updates run outside write lock. Exposed `ProjectIndex` via `CompilationContext`.
 - **Phase 2a.4: GroovydocCache**: ✅ Implemented LRU cache with O(1) reverse-index file eviction tracking. Verified in `GroovydocCacheSpec`.
 - **Phase 2a.3: IndexManager & CAS**: ✅ Implemented CAS atomic update in `ProjectIndex` and created `IndexManager` orchestrator. Verified in `IndexManagerSpec`.

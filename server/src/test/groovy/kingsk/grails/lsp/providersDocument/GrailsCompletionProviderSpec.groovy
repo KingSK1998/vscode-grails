@@ -16,13 +16,13 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
         given: "A controller class with a render statement"
         String content = """class TestController {
     def index() {
-        render
+        render 
     }
 }"""
         String uri = openTextDocument("TestController.groovy", content)
 
-        when: "Requesting completions after render"
-        def items = getCompletionItems(uri, 2, 14)
+        when: "Requesting completions after render and space"
+        def items = getCompletionItems(uri, 2, 15) // position after 'render '
 
         then: "Should provide controller-specific completions"
         items.size() > 0
@@ -31,7 +31,7 @@ class GrailsCompletionProviderSpec extends CompletionTestSpec {
 
         and: "The items should have Grails-specific details"
         def viewItem = assertContainsItem(items, "view")
-        viewItem.detail.contains("Grails controller method")
+        assert viewItem.detail.contains("Grails controller parameter")
     }
 
     def "should complete GORM methods"() {

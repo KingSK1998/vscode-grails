@@ -128,8 +128,7 @@ class GrailsCompiler {
         if (buildDir?.exists()) compilerConfig.targetDirectory = buildDir
         else compilerConfig.targetDirectory = option.TARGET_DIRECTORY
         
-        compilerConfig.optimizationOptions.put("runtimeGroovydoc", true)
-        compilerConfig.runtimeGroovydocEnabled = true
+        compilerConfig.optimizationOptions.put(CompilerConfiguration.GROOVYDOC, true)
 
         if (option.SOURCE_ENCODING) compilerConfig.sourceEncoding = option.SOURCE_ENCODING
         if (option.VERBOSE) compilerConfig.verbose = option.VERBOSE

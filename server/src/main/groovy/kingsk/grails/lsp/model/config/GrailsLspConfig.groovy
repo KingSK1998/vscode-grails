@@ -36,6 +36,11 @@ class GrailsLspConfig {
 		this.debounceDelayMs = 500L
 	}
 
+	boolean hoverUsesIndex = false
+	boolean definitionUsesIndex = false
+	boolean referencesUsesIndex = false
+	boolean shadowMode = false
+
 	void updateFromClient(JsonObject config) {
 		def codeLens = config.get("codeLensMode")?.asString?.toUpperCase()
 		this.codeLensMode = CodeLensMode.fromString(codeLens)
@@ -51,5 +56,13 @@ class GrailsLspConfig {
 		this.includeSnippets = config.get("includeSnippets")?.asBoolean ?: true
 		this.enableGrailsMagic = config.get("enableGrailsMagic")?.asBoolean ?: true
 		this.debounceDelayMs = config.get("debounceDelayMs")?.asLong ?: 500L
+
+		if (config.has("experimental") && config.get("experimental").isJsonObject()) {
+			def exp = config.getAsJsonObject("experimental")
+			this.hoverUsesIndex = exp.get("hoverIndex")?.asBoolean ?: false
+			this.definitionUsesIndex = exp.get("definitionIndex")?.asBoolean ?: false
+			this.referencesUsesIndex = exp.get("referencesIndex")?.asBoolean ?: false
+			this.shadowMode = exp.get("shadowMode")?.asBoolean ?: false
+		}
 	}
 }

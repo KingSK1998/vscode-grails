@@ -29,11 +29,13 @@ class IndexManager {
 
         List<SymbolInfo> newSymbols = IndexBuilder.buildSymbols(uri, classNodes)
         List<LocalSymbolInfo> newLocals = IndexBuilder.buildLocals(uri, classNodes)
+        List<ReferenceInfo> newReferences = IndexBuilder.buildReferences(uri, classNodes)
 
         while (true) {
             IndexSnapshot expected = projectIndex.getSnapshot()
             Map<String, SymbolInfo> newByDescriptor = new HashMap<>(expected.byDescriptor)
             Map<String, List<SymbolInfo>> newByUri = new HashMap<>(expected.byUri)
+            Map<String, List<ReferenceInfo>> newReferencesByName = new HashMap<>(expected.referencesByName)
 
             // Evict old descriptors for this URI
             Iterator<Map.Entry<String, SymbolInfo>> it = newByDescriptor.entrySet().iterator()
@@ -43,9 +45,18 @@ class IndexManager {
                 }
             }
 
+            // Evict old references for this URI
+            newReferencesByName.values().each { list -> list.removeIf { it.fileUri == uri } }
+            newReferencesByName.entrySet().removeIf { it.value.isEmpty() }
+
             // Insert new symbols
             for (SymbolInfo sym : newSymbols) {
                 newByDescriptor.put(sym.descriptor, sym)
+            }
+
+            // Insert new references
+            for (ReferenceInfo ref : newReferences) {
+                newReferencesByName.computeIfAbsent(ref.targetName, { k -> [] }).add(ref)
             }
 
             // Update positional map
@@ -55,7 +66,7 @@ class IndexManager {
                 newByUri.put(uri, newSymbols)
             }
 
-            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri)
+            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri, newReferencesByName)
             if (projectIndex.compareAndCommit(expected, next)) {
                 break
             }
@@ -77,6 +88,7 @@ class IndexManager {
             IndexSnapshot expected = projectIndex.getSnapshot()
             Map<String, SymbolInfo> newByDescriptor = new HashMap<>(expected.byDescriptor)
             Map<String, List<SymbolInfo>> newByUri = new HashMap<>(expected.byUri)
+            Map<String, List<ReferenceInfo>> newReferencesByName = new HashMap<>(expected.referencesByName)
             Map<String, List<LocalSymbolInfo>> allLocals = new HashMap<>()
 
             for (Map.Entry<String, List<ClassNode>> entry : allNodes.entrySet()) {
@@ -85,6 +97,7 @@ class IndexManager {
 
                 List<SymbolInfo> newSymbols = IndexBuilder.buildSymbols(uri, classNodes)
                 List<LocalSymbolInfo> newLocals = IndexBuilder.buildLocals(uri, classNodes)
+                List<ReferenceInfo> newReferences = IndexBuilder.buildReferences(uri, classNodes)
                 allLocals.put(uri, newLocals)
 
                 // Evict old descriptors for this URI
@@ -95,9 +108,17 @@ class IndexManager {
                     }
                 }
 
+                // Evict old references for this URI
+                newReferencesByName.values().each { list -> list.removeIf { it.fileUri == uri } }
+
                 // Insert new symbols
                 for (SymbolInfo sym : newSymbols) {
                     newByDescriptor.put(sym.descriptor, sym)
+                }
+
+                // Insert new references
+                for (ReferenceInfo ref : newReferences) {
+                    newReferencesByName.computeIfAbsent(ref.targetName, { k -> [] }).add(ref)
                 }
 
                 // Update positional map
@@ -108,7 +129,10 @@ class IndexManager {
                 }
             }
 
-            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri)
+            // Remove empty reference lists
+            newReferencesByName.entrySet().removeIf { it.value.isEmpty() }
+
+            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri, newReferencesByName)
             if (projectIndex.compareAndCommit(expected, next)) {
                 // Apply local cache and doc evictions for all modified files
                 for (Map.Entry<String, List<LocalSymbolInfo>> entry : allLocals.entrySet()) {
@@ -136,6 +160,7 @@ class IndexManager {
             IndexSnapshot expected = projectIndex.getSnapshot()
             Map<String, SymbolInfo> newByDescriptor = new HashMap<>(expected.byDescriptor)
             Map<String, List<SymbolInfo>> newByUri = new HashMap<>(expected.byUri)
+            Map<String, List<ReferenceInfo>> newReferencesByName = new HashMap<>(expected.referencesByName)
 
             // Remove descriptors
             Iterator<Map.Entry<String, SymbolInfo>> it = newByDescriptor.entrySet().iterator()
@@ -145,9 +170,13 @@ class IndexManager {
                 }
             }
 
+            // Remove references
+            newReferencesByName.values().each { list -> list.removeIf { it.fileUri == uri } }
+            newReferencesByName.entrySet().removeIf { it.value.isEmpty() }
+
             newByUri.remove(uri)
 
-            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri)
+            IndexSnapshot next = new IndexSnapshot(newByDescriptor, newByUri, newReferencesByName)
             if (projectIndex.compareAndCommit(expected, next)) {
                 break
             }

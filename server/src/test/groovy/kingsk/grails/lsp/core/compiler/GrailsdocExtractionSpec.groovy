@@ -39,11 +39,11 @@ class DocTestClass {
 
         when: "The file is compiled using existing GrailsCompiler"
         def uri = tempFile.toURI().toString()
-        SourceUnit sourceUnit = SourceUnit.create(uri, content)
         compiler.compilationUnit = new kingsk.grails.lsp.core.compiler.GrailsCU(configuration, null, compiler.classLoader)
-        compiler.compilationUnit.addSource(sourceUnit)
+        compiler.compilationUnit.addSource("DocTestClass.groovy", content)
         compiler.compilationUnit.compile(org.codehaus.groovy.control.Phases.INSTRUCTION_SELECTION)
         
+        def sourceUnit = compiler.compilationUnit.iterator().next()
         def moduleNode = sourceUnit.getAST()
         
         then: "Compiler configuration should be reported"

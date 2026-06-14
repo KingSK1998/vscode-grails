@@ -56,8 +56,13 @@
    - **Task 2a.4 (GroovydocCache)**: ✅ Done. Implemented thread-safe LRU cache with O(1) reverse-index file eviction tracking.
    - **Task 2a.5 (GrailsService Wiring)**: ✅ Done. Wired `IndexManager`, `ProjectIndex`, `MethodScopeCache`, and `GroovydocCache` into `GrailsService`.
    - **Phase 2a (Infrastructure)**: ✅ Fully completed and verified.
-2. **Phase 2b Implementation (HoverProvider Migration)**:
-   - **Task 2b.1 (HoverProvider Migration)**: Migrate `HoverProvider` to resolve symbols using the new `ProjectIndex` snapshot instead of holding live AST references.
-   - **Task 2b.2 (Feature Flag & Fallback Wiring)**: Add experimental config flags and ensure robust fallback to live AST path on missing index symbols.
-3. **Global Skills Cleanup**:
+2. **Phase 2b Implementation (Provider Migrations)**:
+   - **Task 2b.1 (HoverProvider Migration)**: ✅ Done. Migrated `HoverProvider` to resolve symbols using the new `ProjectIndex` snapshot instead of holding live AST references.
+   - **Task 2b.2 (Definition & Reference Migration)**: ✅ Done. Migrated `GrailsDefinitionProvider` and `GrailsReferenceProvider` to tiered lookup architecture.
+   - **Task 2b.3 (Index References Support)**: ✅ Done. Added `ReferenceInfo`, updated `IndexSnapshot` mapping by target name, and implemented AST traversal in `IndexBuilder.buildReferences`.
+   - **Task 2b.4 (Telemetry & Cancellation Wiring)**: ✅ Done. Wrapped `Hover`, `Definition`, and `Reference` providers in `supplyAsync` and properly wired `createCancellationToken`, `checkCancellation`, and `recordHealth`.
+   - **Phase 2b (Provider Migrations)**: ✅ Fully completed, compilation passes, all regression tests pass.
+3. **Phase 3 Implementation (Architecture Evolution)**:
+   - Proceed to Phase 3: Snapshot Versioning, Workspace Manager, and Garbage Collection.
+4. **Global Skills Cleanup**:
    - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders to save context.

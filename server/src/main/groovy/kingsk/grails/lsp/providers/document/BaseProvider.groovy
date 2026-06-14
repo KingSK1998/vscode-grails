@@ -2,6 +2,7 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.context.ProviderContext
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
@@ -24,9 +25,9 @@ import java.util.concurrent.CompletableFuture
 abstract class BaseProvider {
     protected final ProviderContext providerContext
     protected final CompilationContext compilationContext
-    protected final kingsk.grails.lsp.context.ProjectContext projectContext
+    protected final ProjectContext projectContext
 
-    BaseProvider(ProviderContext providerContext, CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+    BaseProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         this.providerContext = providerContext
         this.compilationContext = compilationContext
         this.projectContext = projectContext

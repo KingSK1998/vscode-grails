@@ -151,6 +151,42 @@ class IndexBuilder {
         return locals
     }
 
+    static List<ReferenceInfo> buildReferences(String uri, List<ClassNode> classNodes) {
+        List<ReferenceInfo> references = []
+        for (ClassNode clazz : classNodes) {
+            for (MethodNode method : clazz.methods) {
+                if (method.isSynthetic() || !method.code) continue
+
+                method.code.visit(new CodeVisitorSupport() {
+                    @Override
+                    void visitVariableExpression(VariableExpression expression) {
+                        super.visitVariableExpression(expression)
+                        if (expression.name != "this" && expression.name != "super") {
+                            references.add(new ReferenceInfo(expression.name, uri, ASTUtils.astNodeToRange(expression)))
+                        }
+                    }
+
+                    @Override
+                    void visitMethodCallExpression(org.codehaus.groovy.ast.expr.MethodCallExpression call) {
+                        super.visitMethodCallExpression(call)
+                        if (call.methodAsString) {
+                            references.add(new ReferenceInfo(call.methodAsString, uri, ASTUtils.astNodeToRange(call.method)))
+                        }
+                    }
+
+                    @Override
+                    void visitPropertyExpression(org.codehaus.groovy.ast.expr.PropertyExpression expression) {
+                        super.visitPropertyExpression(expression)
+                        if (expression.propertyAsString) {
+                            references.add(new ReferenceInfo(expression.propertyAsString, uri, ASTUtils.astNodeToRange(expression.property)))
+                        }
+                    }
+                })
+            }
+        }
+        return references
+    }
+
     static String buildDescriptor(ClassNode clazz, MethodNode method) {
         String params = ""
         if (method.parameters) {

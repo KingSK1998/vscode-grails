@@ -7,17 +7,21 @@ import java.util.Collections
 
 @CompileStatic
 class IndexSnapshot {
-    static final IndexSnapshot EMPTY = new IndexSnapshot([:], [:])
+    static final IndexSnapshot EMPTY = new IndexSnapshot([:], [:], [:])
     
     // Primary lookup: descriptor → SymbolInfo (cross-file, O(1))
     final Map<String, SymbolInfo> byDescriptor
     
     // Positional lookup: uri → sorted list for binary search by position
     final Map<String, List<SymbolInfo>> byUri
+
+    // Reference lookup: name → List of references (usages)
+    final Map<String, List<ReferenceInfo>> referencesByName
     
-    IndexSnapshot(Map<String, SymbolInfo> byDescriptor, Map<String, List<SymbolInfo>> byUri) {
+    IndexSnapshot(Map<String, SymbolInfo> byDescriptor, Map<String, List<SymbolInfo>> byUri, Map<String, List<ReferenceInfo>> referencesByName = [:]) {
         this.byDescriptor = Collections.unmodifiableMap(byDescriptor)
         this.byUri = Collections.unmodifiableMap(byUri)
+        this.referencesByName = Collections.unmodifiableMap(referencesByName)
     }
     
     SymbolInfo getSymbolAt(String uri, Position pos) {
@@ -43,6 +47,10 @@ class IndexSnapshot {
     
     List<SymbolInfo> getSymbolsForFile(String uri) {
         return byUri[uri] ?: []
+    }
+
+    List<ReferenceInfo> getReferencesFor(String name) {
+        return referencesByName[name] ?: []
     }
     
     private static boolean isPositionInRange(Position pos, Range range) {
