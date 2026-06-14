@@ -17,5 +17,6 @@ record SymbolInfo(
     String returnType,
     GrailsArtifactType artifact,
     int modifierFlags,
-    String fileUri
+    String fileUri,
+    String fieldType
 ) {}

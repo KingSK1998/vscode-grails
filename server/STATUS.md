@@ -101,6 +101,7 @@
 - Utility methods for type analysis - not yet used by main inference logic
 
 ### Completed Work (2026-06-14)
+- **Phase 2a.2: IndexBuilder**: ✅ Extended `SymbolInfo` with `fieldType` and implemented TIER 2 `IndexBuilder` to extract AST nodes into safe DTOs (`SymbolInfo` and `LocalSymbolInfo`).
 - **Phase 2a.1: Groovydoc Gate Check**: ✅ Verified Groovy 4.0.23 compiler extracts Groovydoc metadata for AST nodes via `CompilerConfiguration.GROOVYDOC = true`. Test added in `GroovydocGateSpec`.
 
 ### Completed Work (2026-06-13)
