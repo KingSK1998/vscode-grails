@@ -40,7 +40,7 @@ class KeywordStrategy extends BaseCompletionStrategy {
 	
 	private void addLanguageKeywords(CompletionRequest request) {
 		// Use dynamic discovery instead of hardcoded list
-		List<String> keywords = request.service.discoveryService.getLanguageKeywords()
+		List<String> keywords = request.providerContext.discoveryService.getLanguageKeywords()
 		
 		keywords.each { keyword ->
 			CompletionItem item = new CompletionItem(keyword)

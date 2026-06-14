@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.enums.DocumentationType
 import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.providers.completions.CompletionBuilder
@@ -49,8 +48,8 @@ class GrailsCompletionProvider extends BaseProvider {
         }, CLEANUP_INTERVAL_MS, CLEANUP_INTERVAL_MS, TimeUnit.MILLISECONDS)
     }
 
-GrailsCompletionProvider(GrailsService service) {
-        super(service)
+GrailsCompletionProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     /** Entry point for textDocument/completion */
@@ -179,11 +178,11 @@ GrailsCompletionProvider(GrailsService service) {
     }
 
     private List<CompletionItem> generateCompletions(CompletionContextInfo context, String prefix, Position position) {
-           def request = new CompletionRequest(
-               context.offsetNode, context.parentNode, prefix, position,
-               [], [] as Set<String>, context.textFile,
-               project.isGrailsProject, service
-           )
+            def request = new CompletionRequest(
+                context.offsetNode, context.parentNode, prefix, position,
+                [], [] as Set<String>, context.textFile,
+                project.isGrailsProject, providerContext, compilationContext, projectContext
+            )
 
         CompletionBuilder.buildCompletions(request)
         request.items

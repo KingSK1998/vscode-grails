@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import org.codehaus.groovy.ast.ASTNode
@@ -20,8 +19,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsImplementationProvider extends BaseProvider {
     
-    GrailsImplementationProvider(GrailsService service) {
-        super(service)
+    GrailsImplementationProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
     
     CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> provideImplementation(TextDocumentIdentifier textDocument, Position position) {

@@ -13,4 +13,5 @@ interface CompilationContext {
     ASTService getAstService()
     void compileAndVisitAST(TextFile textFile)
     void visitAST(TextFile textFile)
+    <T> T withReadLock(groovy.lang.Closure<T> closure)
 }

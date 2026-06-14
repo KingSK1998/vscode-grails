@@ -15,6 +15,15 @@
 
 ---
 
+## 0.1 PHASE 2 AST BOUNDARY RULE (PROJECTINDEX)
+
+> **No ASTNode reference of any kind may exist inside ProjectIndex, SymbolInfo, or MethodScopeCache after construction. All data must be extracted and serialized to primitive/LSP types at index-build time.**
+
+Providers query `ProjectIndex` and `MethodScopeCache` and receive `SymbolInfo` or `ReferenceInfo`. They must NEVER receive an `ASTNode`.
+This guarantees that incremental recompilation can safely destroy the old AST without corrupting the index or locking readers.
+
+---
+
 ## 1. STACK
 
 | Layer | Technology |

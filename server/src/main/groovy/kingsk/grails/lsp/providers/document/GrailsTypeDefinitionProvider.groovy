@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
@@ -19,9 +18,9 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsTypeDefinitionProvider extends BaseProvider {
 	
-	GrailsTypeDefinitionProvider(GrailsService service) {
-		super(service)
-	}
+	GrailsTypeDefinitionProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
+    }
 	
 	CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> provideTypeDefinition(TextDocumentIdentifier textDocument, Position position) {
 		def offsetNode = getNodeAtPosition(textDocument, position)

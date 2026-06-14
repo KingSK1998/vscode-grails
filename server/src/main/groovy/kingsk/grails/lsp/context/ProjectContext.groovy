@@ -13,4 +13,5 @@ interface ProjectContext {
     void addProject(GrailsProject project)
     void removeProject(String projectDir)
     void updateProject(GrailsProject project, String projectDir)
+    GrailsProject getProjectForUri(String uri)
 }

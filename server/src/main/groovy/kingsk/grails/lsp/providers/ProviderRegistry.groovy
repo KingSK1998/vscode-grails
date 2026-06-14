@@ -8,14 +8,22 @@ import kingsk.grails.lsp.providers.workspace.*
 
 import java.util.concurrent.ConcurrentHashMap
 
+import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+
 @Slf4j
 @CompileStatic
 class ProviderRegistry {
-    private final GrailsService service
+    private final ProviderContext providerContext
+    private final CompilationContext compilationContext
+    private final ProjectContext projectContext
     private final Map<Class<?>, Object> providers = new ConcurrentHashMap<>()
 
-    ProviderRegistry(GrailsService service) {
-        this.service = service
+    ProviderRegistry(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
+        this.providerContext = providerContext
+        this.compilationContext = compilationContext
+        this.projectContext = projectContext
     }
 
     @SuppressWarnings("unchecked")
@@ -33,26 +41,26 @@ class ProviderRegistry {
     private Object createProvider(Class<?> type) {
         log.debug("[REGISTRY] Creating provider: ${type.simpleName}")
 
-        if (type == GrailsCompletionProvider) return new GrailsCompletionProvider(service)
-        if (type == GrailsHoverProvider) return new GrailsHoverProvider(service)
-        if (type == GrailsDefinitionProvider) return new GrailsDefinitionProvider(service)
-        if (type == GrailsTypeDefinitionProvider) return new GrailsTypeDefinitionProvider(service)
-        if (type == GrailsImplementationProvider) return new GrailsImplementationProvider(service)
-        if (type == GrailsFormattingProvider) return new GrailsFormattingProvider(service)
-        if (type == GrailsFoldingRangeProvider) return new GrailsFoldingRangeProvider(service)
-        if (type == GrailsCodeActionProvider) return new GrailsCodeActionProvider(service)
-        if (type == GrailsReferenceProvider) return new GrailsReferenceProvider(service)
-        if (type == GrailsSignatureHelpProvider) return new GrailsSignatureHelpProvider(service)
-        if (type == GrailsDocumentSymbolProvider) return new GrailsDocumentSymbolProvider(service)
-        if (type == GrailsCodeLensProvider) return new GrailsCodeLensProvider(service)
-        if (type == GrailsInlayHintProvider) return new GrailsInlayHintProvider(service)
-        if (type == GrailsRenameProvider) return new GrailsRenameProvider(service)
-        if (type == GrailsSemanticTokensProvider) return new GrailsSemanticTokensProvider(service)
-        if (type == GrailsYamlIntelligenceProvider) return new GrailsYamlIntelligenceProvider(service)
-        if (type == GrailsGormSqlProvider) return service.gormSqlProvider
-        if (type == GrailsDependencyProvider) return service.dependencyProvider
-        if (type == GrailsTestDiscoveryProvider) return service.testDiscoveryProvider
-        if (type == GrailsWorkspaceSymbolProvider) return new GrailsWorkspaceSymbolProvider(service)
+        if (type == GrailsCompletionProvider) return new GrailsCompletionProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsHoverProvider) return new GrailsHoverProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsDefinitionProvider) return new GrailsDefinitionProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsTypeDefinitionProvider) return new GrailsTypeDefinitionProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsImplementationProvider) return new GrailsImplementationProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsFormattingProvider) return new GrailsFormattingProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsFoldingRangeProvider) return new GrailsFoldingRangeProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsCodeActionProvider) return new GrailsCodeActionProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsReferenceProvider) return new GrailsReferenceProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsSignatureHelpProvider) return new GrailsSignatureHelpProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsDocumentSymbolProvider) return new GrailsDocumentSymbolProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsCodeLensProvider) return new GrailsCodeLensProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsInlayHintProvider) return new GrailsInlayHintProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsRenameProvider) return new GrailsRenameProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsSemanticTokensProvider) return new GrailsSemanticTokensProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsYamlIntelligenceProvider) return new GrailsYamlIntelligenceProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsGormSqlProvider) return new GrailsGormSqlProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsDependencyProvider) return new GrailsDependencyProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsTestDiscoveryProvider) return new GrailsTestDiscoveryProvider(providerContext, compilationContext, projectContext)
+        if (type == GrailsWorkspaceSymbolProvider) return new GrailsWorkspaceSymbolProvider(providerContext, compilationContext, projectContext)
 
         log.warn("[REGISTRY] Unknown provider type: ${type.name}")
         null

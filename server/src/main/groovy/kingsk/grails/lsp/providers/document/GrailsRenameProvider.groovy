@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.position.RangeHelper
@@ -20,8 +19,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsRenameProvider extends BaseProvider {
 
-    GrailsRenameProvider(GrailsService service) {
-        super(service)
+    GrailsRenameProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     CompletableFuture<WorkspaceEdit> provideRename(RenameParams params) {

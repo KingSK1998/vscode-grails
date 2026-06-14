@@ -3,7 +3,6 @@ package kingsk.grails.lsp.providers.document
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
@@ -30,9 +29,9 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsInlayHintProvider extends BaseProvider {
 	
-	GrailsInlayHintProvider(GrailsService service) {
-		super(service)
-	}
+	GrailsInlayHintProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
+    }
 	
 	/**
 	 * Collects inlay hints within a given range.

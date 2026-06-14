@@ -30,7 +30,9 @@ class CompletionRequest {
 	final Set<String> seen
 	final TextFile file
 	final boolean isGrailsProject
-	final GrailsService service
+	final kingsk.grails.lsp.context.CompilationContext compilationContext
+	final kingsk.grails.lsp.context.ProviderContext providerContext
+	final kingsk.grails.lsp.context.ProjectContext projectContext
 	
 	// Lazy-loaded high-level context (expensive to compute)
 	private ModuleNode _currentModule
@@ -51,7 +53,7 @@ class CompletionRequest {
 	
 	CompletionRequest(ASTNode offsetNode, ASTNode parentNode, String prefix, Position position,
 	                  List<CompletionItem> items, Set<String> seen, TextFile file,
-	                  boolean isGrailsProject, GrailsService service) {
+	                  boolean isGrailsProject, kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
 		this.offsetNode = offsetNode
 		this.parentNode = parentNode
 		this.prefix = prefix
@@ -60,11 +62,13 @@ class CompletionRequest {
 		this.seen = seen
 		this.file = file
 		this.isGrailsProject = isGrailsProject
-		this.service = service
+		this.providerContext = providerContext
+		this.compilationContext = compilationContext
+		this.projectContext = projectContext
 	}
 	
 	GrailsASTVisitor getVisitor() {
-		return service.visitor
+		return compilationContext.visitor
 	}
 	
 	/**
@@ -165,7 +169,7 @@ class CompletionRequest {
 	 */
 	ModuleNode getCurrentModule() {
 		if (!_currentModuleComputed) {
-			_currentModule = GrailsASTHelper.getEnclosingModuleNode(offsetNode, service.visitor)
+			_currentModule = GrailsASTHelper.getEnclosingModuleNode(offsetNode, compilationContext.visitor)
 			_currentModuleComputed = true
 		}
 		return _currentModule
@@ -177,7 +181,7 @@ class CompletionRequest {
 	 */
 	ClassNode getCurrentClass() {
 		if (!_currentClassComputed) {
-			_currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, service.visitor)
+			_currentClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, compilationContext.visitor)
 			_currentClassComputed = true
 		}
 		return _currentClass
@@ -189,7 +193,7 @@ class CompletionRequest {
 	 */
 	MethodNode getCurrentMethod() {
 		if (!_currentMethodComputed) {
-			_currentMethod = GrailsASTHelper.getEnclosingMethodNode(offsetNode, service.visitor)
+			_currentMethod = GrailsASTHelper.getEnclosingMethodNode(offsetNode, compilationContext.visitor)
 			_currentMethodComputed = true
 		}
 		return _currentMethod
@@ -219,7 +223,7 @@ class CompletionRequest {
 	
 	ClassNode getOffsetNodeType() {
 		if (!_offsetNodeTypeComputed) {
-			_offsetNodeType = GrailsASTHelper.getTypeOfNode(offsetNode, service.visitor)
+			_offsetNodeType = GrailsASTHelper.getTypeOfNode(offsetNode, compilationContext.visitor)
 			_offsetNodeTypeComputed = true
 		}
 		return _offsetNodeType
@@ -227,7 +231,7 @@ class CompletionRequest {
 	
 	ClassNode getParentNodeType() {
 		if (!_parentNodeTypeComputed) {
-			_parentNodeType = GrailsASTHelper.getTypeOfNode(parentNode, service.visitor)
+			_parentNodeType = GrailsASTHelper.getTypeOfNode(parentNode, compilationContext.visitor)
 			_parentNodeTypeComputed = true
 		}
 		return _parentNodeType

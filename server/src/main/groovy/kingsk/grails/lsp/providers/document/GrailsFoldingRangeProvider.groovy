@@ -1,7 +1,6 @@
 package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
-import kingsk.grails.lsp.GrailsService
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
@@ -15,8 +14,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsFoldingRangeProvider extends BaseProvider {
 
-    GrailsFoldingRangeProvider(GrailsService service) {
-        super(service)
+    GrailsFoldingRangeProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     CompletableFuture<List<FoldingRange>> provideFoldingRanges(TextDocumentIdentifier textDocument) {

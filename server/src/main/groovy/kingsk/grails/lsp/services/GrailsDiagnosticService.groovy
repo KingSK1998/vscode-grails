@@ -14,14 +14,17 @@ import org.eclipse.lsp4j.services.LanguageClient
 
 import java.util.concurrent.CompletableFuture
 
+import kingsk.grails.lsp.GrailsService
+
 /** Provides diagnostics for workspace and documents using the Grails compiler. */
 @Slf4j
 @CompileStatic
-class GrailsDiagnosticService extends BaseProvider {
+class GrailsDiagnosticService {
     private Map<String, Set<Diagnostic>> currentDiagnostics = [:]
+    private final GrailsService service
 
     GrailsDiagnosticService(GrailsService service) {
-        super(service)
+        this.service = service
     }
 
     protected LanguageClient getClient() { return service.client }
@@ -33,15 +36,15 @@ class GrailsDiagnosticService extends BaseProvider {
      * @return A WorkspaceDiagnosticReport containing updated or unchanged diagnostic reports.
      */
     CompletableFuture<WorkspaceDiagnosticReport> provideWorkspaceDiagnostics(String identifier, List<PreviousResultId> previousResultIds) {
-        if (!compiler.errorCollectorOrNull) {
+        if (!service.compiler.errorCollectorOrNull) {
             return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport([]))
         }
 
         log.debug("[DIAGNOSTICS] Generating workspace diagnostics for $identifier")
-        Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(compiler.errorCollectorOrNull)
+        Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(service.compiler.errorCollectorOrNull)
 
         if (newDiagnostics.isEmpty()) {
-            errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
+            service.errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
             clearAllDiagnostics()
             return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport([]))
         }
@@ -81,7 +84,7 @@ class GrailsDiagnosticService extends BaseProvider {
      * @return A DocumentDiagnosticReport containing updated or unchanged diagnostic reports.
      */
     CompletableFuture<DocumentDiagnosticReport> provideDocumentDiagnostics(TextDocumentIdentifier textDocument, String identifier, String previousResultId) {
-        if (!compiler.errorCollectorOrNull) {
+        if (!service.compiler.errorCollectorOrNull) {
             return CompletableFuture.completedFuture(new DocumentDiagnosticReport(
                 new RelatedFullDocumentDiagnosticReport(resultId: "empty", items: [])
             ))
@@ -92,7 +95,7 @@ class GrailsDiagnosticService extends BaseProvider {
 
         // Extract fresh diagnostics
         log.debug("[DIAGNOSTICS] Generating diagnostics for $uri")
-        Set<Diagnostic> newDiagnostics = extractDiagnostics(compiler.errorCollectorOrNull).getOrDefault(uri, [] as Set)
+        Set<Diagnostic> newDiagnostics = extractDiagnostics(service.compiler.errorCollectorOrNull).getOrDefault(uri, [] as Set)
         String newResultId = DiagnosticUtils.computeResultId(newDiagnostics) ?: "empty"
         String oldResultId = DiagnosticUtils.computeResultId(currentDiagnostics[uri] ?: [] as Set) ?: "empty"
 

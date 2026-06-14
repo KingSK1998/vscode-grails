@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import org.eclipse.lsp4j.DocumentSymbol
@@ -20,9 +19,9 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsDocumentSymbolProvider extends BaseProvider {
 	
-	GrailsDocumentSymbolProvider(GrailsService service) {
-		super(service)
-	}
+	GrailsDocumentSymbolProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
+    }
 	
     CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> provideDocumentSymbols(TextDocumentIdentifier textDocument) {
         if (!textDocument?.uri) {

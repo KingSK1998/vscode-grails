@@ -18,7 +18,7 @@ class GrailsSnippetStrategy extends BaseCompletionStrategy {
 
     @Override
     boolean canHandle(ASTNode node) {
-        return request.service.config.includeSnippets && request.prefix != null
+        return request.providerContext.config.includeSnippets && request.prefix != null
     }
 
     @Override

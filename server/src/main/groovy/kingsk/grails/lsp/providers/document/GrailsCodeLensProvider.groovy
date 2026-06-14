@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.enums.CodeLensMode
 import kingsk.grails.lsp.model.enums.GrailsArtifactType
 import kingsk.grails.lsp.model.types.TextFile
@@ -23,8 +22,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsCodeLensProvider extends BaseProvider {
 
-    GrailsCodeLensProvider(GrailsService service) {
-        super(service)
+    GrailsCodeLensProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     /**

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 @Slf4j
 @CompileStatic
-class FileContentTracker extends BaseProvider {
+class FileContentTracker {
     private static final int MAX_TRACKED_FILES = 500
     private static final int MAX_FQCN_ENTRIES = 10000
     private static final long STALE_CHECK_INTERVAL_MS = 30000
@@ -36,8 +36,10 @@ class FileContentTracker extends BaseProvider {
 
     private final ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1)
 
+    private final GrailsService service
+
     FileContentTracker(GrailsService service) {
-        super(service)
+        this.service = service
         startCleanupTask()
     }
 
@@ -367,13 +369,15 @@ class FileContentTracker extends BaseProvider {
 
             try {
                 log.info("[FILE_TRACKER] Initializing FQCN map...")
-                def sourceFiles = ServiceUtils.getAllGroovySourceFilesFromProject(project)
-                def fqcnMap = ServiceUtils.generateFQCNFromSourceFiles(sourceFiles)
-                fQCNToTextFile.putAll(fqcnMap)
-                isFQCNInitialized = true
-                log.info("[FILE_TRACKER] FQCN map initialized with ${fQCNToTextFile.size()} entries")
+                if (service.project) {
+                    def sourceFiles = kingsk.grails.lsp.utils.services.ServiceUtils.getAllGroovySourceFilesFromProject(service.project)
+                    def fqcnMap = kingsk.grails.lsp.utils.services.ServiceUtils.generateFQCNFromSourceFiles(sourceFiles)
+                    fQCNToTextFile.putAll(fqcnMap)
+                    isFQCNInitialized = true
+                    log.info("[FILE_TRACKER] FQCN map initialized with ${fQCNToTextFile.size()} entries")
+                }
             } catch (Exception e) {
-                errorService.handleError("Failed to initialize FQCN map", e, ErrorSource.FILE_TRACKER)
+                service.errorService.handleError("Failed to initialize FQCN map", e, kingsk.grails.lsp.model.enums.ErrorSource.FILE_TRACKER)
                 isFQCNInitialized = false
             }
         }

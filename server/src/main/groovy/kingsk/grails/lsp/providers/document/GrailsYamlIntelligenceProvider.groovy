@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.types.TextFile
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
@@ -40,8 +39,8 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
         "password", "secret", "apiKey", "api_key", "token", "credential", "private_key"
     ]
 
-    GrailsYamlIntelligenceProvider(GrailsService service) {
-        super(service)
+    GrailsYamlIntelligenceProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     CompletableFuture<Either<List<CompletionItem>, CompletionList>> provideCompletions(TextFile file, Position position) {

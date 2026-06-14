@@ -3,7 +3,6 @@ package kingsk.grails.lsp.providers.workspace
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import java.nio.file.Files
@@ -11,10 +10,16 @@ import java.nio.file.Files
 import kingsk.grails.lsp.model.enums.ErrorSource
 import kingsk.grails.lsp.model.enums.ErrorSeverity
 
+import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+
 @Slf4j
 @CompileStatic
 class GrailsDependencyProvider {
-    private final GrailsService service
+    private final ProviderContext providerContext
+    private final CompilationContext compilationContext
+    private final ProjectContext projectContext
 
     private static final String GRAPH_EXTRACTOR_SCRIPT = """
 initscript {
@@ -52,8 +57,10 @@ allprojects {
 }
 """
 
-    GrailsDependencyProvider(GrailsService service) {
-        this.service = service
+    GrailsDependencyProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
+        this.providerContext = providerContext
+        this.compilationContext = compilationContext
+        this.projectContext = projectContext
     }
 
     String getDependencyGraphJson(String projectDir) {
@@ -85,7 +92,7 @@ allprojects {
                 }
             }
         } catch (Exception e) {
-            service.errorService.handleError("Failed to extract dependency graph", e, ErrorSource.GRADLE_SERVICE)
+            providerContext.errorService.handleError("Failed to extract dependency graph", e, ErrorSource.GRADLE_SERVICE)
         } finally {
             Files.deleteIfExists(initScript.toPath())
         }

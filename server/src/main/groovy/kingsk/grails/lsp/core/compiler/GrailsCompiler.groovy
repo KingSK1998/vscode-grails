@@ -123,10 +123,13 @@ class GrailsCompiler {
         }
 
         // optimization options
-        def buildDir = grailsService.project.excludeDirectories
+        def buildDir = grailsService.project?.excludeDirectories
             ?.find { it.name == "build" }
         if (buildDir?.exists()) compilerConfig.targetDirectory = buildDir
         else compilerConfig.targetDirectory = option.TARGET_DIRECTORY
+        
+        compilerConfig.optimizationOptions.put("runtimeGroovydoc", true)
+        compilerConfig.runtimeGroovydocEnabled = true
 
         if (option.SOURCE_ENCODING) compilerConfig.sourceEncoding = option.SOURCE_ENCODING
         if (option.VERBOSE) compilerConfig.verbose = option.VERBOSE

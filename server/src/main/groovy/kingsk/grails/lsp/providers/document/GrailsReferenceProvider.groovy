@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import org.codehaus.groovy.ast.ASTNode
@@ -17,9 +16,9 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsReferenceProvider extends BaseProvider {
 	
-	GrailsReferenceProvider(GrailsService service) {
-		super(service)
-	}
+	GrailsReferenceProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
+    }
 	
     CompletableFuture<List<? extends Location>> provideReferences(TextDocumentIdentifier textDocument, Position position, ReferenceContext context) {
         def offsetNode = getNodeAtPosition(textDocument, position)

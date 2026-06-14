@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.enums.DocumentationType
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
@@ -20,8 +19,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsSignatureHelpProvider extends BaseProvider {
 
-    GrailsSignatureHelpProvider(GrailsService service) {
-        super(service)
+    GrailsSignatureHelpProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     CompletableFuture<SignatureHelp> provideSignatureHelp(TextDocumentIdentifier textDocument, Position position, SignatureHelpContext context) {

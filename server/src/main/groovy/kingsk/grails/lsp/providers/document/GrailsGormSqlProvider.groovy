@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.FieldNode
@@ -18,8 +17,8 @@ import org.codehaus.groovy.ast.expr.MapEntryExpression
 @CompileStatic
 class GrailsGormSqlProvider extends BaseProvider {
 
-    GrailsGormSqlProvider(GrailsService service) {
-        super(service)
+    GrailsGormSqlProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     String generateSql(String uri) {

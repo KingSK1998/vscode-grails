@@ -1,7 +1,6 @@
 package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.context.CompilationContext
 import kingsk.grails.lsp.context.ProviderContext
 import kingsk.grails.lsp.core.compiler.GrailsCompiler
@@ -23,32 +22,26 @@ import java.util.concurrent.CompletableFuture
 
 @CompileStatic
 abstract class BaseProvider {
-    private final ProviderContext _providerContext
-    private final CompilationContext _compilationContext
-    private final GrailsProjectGetter _projectGetter
-    private final GrailsService _service
+    protected final ProviderContext providerContext
+    protected final CompilationContext compilationContext
+    protected final kingsk.grails.lsp.context.ProjectContext projectContext
 
-    BaseProvider(ProviderContext providerContext, CompilationContext compilationContext, GrailsProjectGetter projectGetter, GrailsService service) {
-        this._providerContext = providerContext
-        this._compilationContext = compilationContext
-        this._projectGetter = projectGetter
-        this._service = service
+    BaseProvider(ProviderContext providerContext, CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        this.providerContext = providerContext
+        this.compilationContext = compilationContext
+        this.projectContext = projectContext
     }
 
-    BaseProvider(GrailsService service) {
-        this(service as ProviderContext, service as CompilationContext, { service.project }, service)
-    }
-
-    protected GrailsASTVisitor getVisitor()             { _compilationContext.visitor }
-    protected FileContentTracker getFileTracker()       { _compilationContext.fileTracker }
-    protected GrailsLspConfig getConfig()               { _providerContext.config }
-    protected GrailsCompiler getCompiler()              { _compilationContext.compiler }
-    protected ErrorService getErrorService()            { _providerContext.errorService }
-    protected GrailsDiagnosticService getDiagnostics()  { _service.diagnostics }
-    protected CancellationService getCancellationService() { _providerContext.cancellationService }
-    protected ProviderHealthService getHealthService() { _providerContext.healthService }
-    protected GrailsProject getProject()                { _projectGetter.getProject() }
-    protected GrailsService getService()               { _service }
+    protected GrailsASTVisitor getVisitor()             { compilationContext.visitor }
+    protected FileContentTracker getFileTracker()       { compilationContext.fileTracker }
+    protected GrailsLspConfig getConfig()               { providerContext.config }
+    protected GrailsCompiler getCompiler()              { compilationContext.compiler }
+    protected ErrorService getErrorService()            { providerContext.errorService }
+    protected GrailsDiagnosticService getDiagnostics()  { providerContext.diagnostics }
+    protected CancellationService getCancellationService() { providerContext.cancellationService }
+    protected ProviderHealthService getHealthService() { providerContext.healthService }
+    protected GrailsProject getProject()                { projectContext.project }
+    
 
     protected CancellationService.CancellationToken createCancellationToken(String uri) {
         cancellationService.createToken(uri)
@@ -67,7 +60,7 @@ abstract class BaseProvider {
     }
 
     protected <T> T withReadLock(groovy.lang.Closure<T> closure) {
-        _service.withReadLock(closure)
+        compilationContext.withReadLock(closure)
     }
 
     protected ASTNode getNodeAtPosition(String uri, Position position) {
@@ -102,7 +95,5 @@ abstract class BaseProvider {
         CompletableFuture.completedFuture(null)
     }
 
-    interface GrailsProjectGetter {
-        GrailsProject getProject()
-    }
+    
 }

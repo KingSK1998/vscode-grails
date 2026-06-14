@@ -99,7 +99,7 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
         this.errorService = new ErrorService(this)
         this.cancellationService = new CancellationService()
         this.healthService = new ProviderHealthService()
-        this.providerRegistry = new ProviderRegistry(this)
+        this.providerRegistry = new ProviderRegistry(this, this, this)
         this.discoveryService = new DiscoveryService()
         this.gradle = new GradleService(this)
         this.fileTracker = new FileContentTracker(this)
@@ -110,9 +110,9 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
         this.document = new GrailsTextDocumentService(this)
         this.workspace = new GrailsWorkspaceService(this)
         this.visitor = new GrailsASTVisitor(this)
-        this.dependencyProvider = new GrailsDependencyProvider(this)
-        this.gormSqlProvider = new GrailsGormSqlProvider(this)
-        this.testDiscoveryProvider = new GrailsTestDiscoveryProvider(this)
+        this.dependencyProvider = new GrailsDependencyProvider(this, this, this)
+        this.gormSqlProvider = new GrailsGormSqlProvider(this, this, this)
+        this.testDiscoveryProvider = new GrailsTestDiscoveryProvider(this, this, this)
         this.config = new GrailsLspConfig()
     }
 

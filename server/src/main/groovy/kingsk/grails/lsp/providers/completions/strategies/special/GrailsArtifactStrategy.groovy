@@ -68,7 +68,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
      * Add controller-specific completions using official Grails utilities
      */
     private void addControllerCompletions(CompletionRequest request) {
-        def loader = request.service.compiler.classLoader
+        def loader = request.compilationContext.compiler.classLoader
         // Add methods
         GrailsHelperIntegration.getControllerMethods(loader).each { method ->
             org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(method)
@@ -103,7 +103,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
      */
     private void addDomainCompletions(CompletionRequest request) {
         try {
-            def loader = request.service.compiler.classLoader
+            def loader = request.compilationContext.compiler.classLoader
             // Use GrailsHelperIntegration for official GORM instance methods
             List<String> gormInstanceMethods = GrailsHelperIntegration.getGormInstanceMethods(loader)
             gormInstanceMethods.each { method ->

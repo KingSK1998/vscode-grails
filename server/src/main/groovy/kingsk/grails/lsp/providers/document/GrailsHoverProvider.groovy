@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.model.enums.DocumentationType
 import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
 import org.codehaus.groovy.ast.ASTNode
@@ -17,8 +16,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsHoverProvider extends BaseProvider {
 
-    GrailsHoverProvider(GrailsService service) {
-        super(service)
+    GrailsHoverProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        super(providerContext, compilationContext, projectContext)
     }
 
     CompletableFuture<Hover> provideHover(TextDocumentIdentifier textDocument, Position position) {

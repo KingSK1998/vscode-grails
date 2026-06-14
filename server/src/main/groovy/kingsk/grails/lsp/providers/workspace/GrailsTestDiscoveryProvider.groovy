@@ -2,7 +2,6 @@ package kingsk.grails.lsp.providers.workspace
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
@@ -10,20 +9,24 @@ import org.codehaus.groovy.ast.MethodNode
 @Slf4j
 @CompileStatic
 class GrailsTestDiscoveryProvider {
-    private final GrailsService service
+    private final kingsk.grails.lsp.context.ProviderContext providerContext
+    private final kingsk.grails.lsp.context.CompilationContext compilationContext
+    private final kingsk.grails.lsp.context.ProjectContext projectContext
 
-    GrailsTestDiscoveryProvider(GrailsService service) {
-        this.service = service
+    GrailsTestDiscoveryProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+        this.providerContext = providerContext
+        this.compilationContext = compilationContext
+        this.projectContext = projectContext
     }
 
     List<Map<String, Object>> discoverTests(String projectUri) {
-        def project = service.getProjectForUri(projectUri)
+        def project = projectContext.getProjectForUri(projectUri)
         if (!project) return []
 
         List<Map<String, Object>> tests = []
 
         // Search in src/test/groovy
-        service.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+        compilationContext.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
             if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
                 classNodes.each { ClassNode classNode ->
                     Map<String, Object> testMap = new HashMap<>()
@@ -42,11 +45,11 @@ class GrailsTestDiscoveryProvider {
         List<Map<String, Object>> allTests = []
         
         for (String projectUri : projectUris) {
-            def project = service.getProjectForUri(projectUri)
+            def project = projectContext.getProjectForUri(projectUri)
             if (!project) continue
 
             // Search in src/test/groovy for this project
-            service.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+            compilationContext.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
                 // Only include tests that belong to this project
                 if (!uri.startsWith(project.rootDirectory.absolutePath)) return
                 if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {

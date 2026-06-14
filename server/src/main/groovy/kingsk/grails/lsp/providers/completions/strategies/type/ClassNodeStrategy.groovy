@@ -79,7 +79,7 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	
 	private void addClassNamesFromProjectSource() {
 		ClassNodeUtils
-		request.service.fileTracker.getFQCNIndex().keySet().each { fqcn ->
+		request.compilationContext.fileTracker.getFQCNIndex().keySet().each { fqcn ->
 			def name = ServiceUtils.getSimpleNameFromFQCN(fqcn)
 			def pkg = ServiceUtils.getPackageNameFromFQCN(fqcn)
 			addClassNameCompletion(name, pkg)
@@ -87,8 +87,8 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	}
 	
 	private void addClassNamesFromDependencies() {
-		def uri = request.service?.project?.rootDirectory?.toURI()?.toString()
-		def scanResult = request.service.discoveryService.getClassGraphScanResult(uri)
+		def uri = request.projectContext?.project?.rootDirectory?.toURI()?.toString()
+		def scanResult = request.providerContext.discoveryService.getClassGraphScanResult(uri)
 		if (scanResult) {
 			int count = 0
 			// Search classes using ClassGraph which already scanned JDK and project dependencies

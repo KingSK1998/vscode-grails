@@ -32,11 +32,28 @@
    - ThreadSafeLruCache Executor Lifecycle: Refactored static `cleanupExecutor` to be non-final and nullable, initialized dynamically on demand via synchronized `getExecutor()`. Avoids executor rejection/exhaustion on server restarts or test cleanups. Added ThreadSafeLruCacheSpec Spock verification.
    - Inter-File AST Invalidation: Introduced `clearCrossFileCaches()` in `GrailsService` to explicitly evict globally tracked resolution caches (like `GrailsCompletionProvider` completion lists and static Groovy method caches in `DiscoveryService`, `GroovyRuntimeIntegration`) strictly *after* successful incremental AST cycles, ensuring cross-file completion dependencies never go stale.
    - Incremental Compilation Test Coverage: Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests verifying AST updates, caching eviction, error handling, etc. Phase 1 is now fully complete ✅.
+6. **Reasoning Guide → v3 (Final)**:
+   - Canonical file: `docs/grails-lsp-reasoning-guide.md`. Old `docs/reasoning-guide.md` removed.
+   - Compiled constraint system with mode-scoped rules, pre-bound step contracts, drift triggers as observation-only, and static document priority.
+   - Version binding scoped to ARCHITECTURE DESIGN only (Phase 3+), not forced on runtime system.
+7. **Architecture Improvement Plan Updated**:
+   - Applied reasoning guide constraints to `docs/architecture-improvement-plan.md`.
+   - Added: state classifications per component, invalidation ownership tables, degradation tier matrices, dependency graphs between phases, read/write contracts for migrated providers, and failure modes.
+   - Fixed stale task backlog statuses (Task #3 incremental compilation now ✅, Task #5 now 🟡).
+8. **Detailed Phase Plans Generated**:
+   - Created `docs/phase-plans/phase-2-plan.md` — 12 steps covering IndexBuilder, IndexManager, MethodScopeCache, GroovydocCache, HoverProvider migration, shadow validation, Definition/References migration, CompletionProvider allowed violation.
+   - Created `docs/phase-plans/phase-3-plan.md` — 7 steps covering VersionedSnapshot, Compilation Commit Protocol, multi-root WorkspaceManager, Gradle timeout/fallback, memory lifecycle.
+   - Created `docs/phase-plans/phase-4-plan.md` — 3 steps (docs alignment, dev scripts, cleanup). REFACTOR MODE.
+   - Created `docs/phase-plans/phase-5-plan.md` — 7 steps covering GrailsEntity type system, SemanticModelBuilder, stable symbol IDs, cross-feature consistency, RefactoringContext, RenameTransaction.
+   - All plans use reasoning guide step format with READS/WRITES contracts, failure modes, invalidation ownership, and degradation tiers.
 
 ## Next Session Priorities
 
-1. **Phase 2 Implementation (Decoupling & Modularity)**:
-   - Reduce `GrailsService` responsibility by introducing `CompilationContext` and `ProjectContext` interfaces.
-   - Clarify Groovy vs. Grails layering in completion and AST provider strategies.
+1. **Phase 2a Implementation (ProjectIndex Infrastructure)**:
+   - Start with Step 1: GroovydocCache gate check (Spock test for `getGroovydoc()`).
+   - Then Step 2: IndexBuilder (TIER 2 static utility, AST → SymbolInfo extraction).
+   - Then Step 3: IndexManager (wiring IndexBuilder → ProjectIndex commits).
+   - See `docs/phase-plans/phase-2-plan.md` for full step sequence.
 2. **Global Skills Cleanup**:
-   - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders (`arch-vscode`, `find-skills`, `read-project-context`) to save another 37 KB of context.
+   - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders to save context.
+
