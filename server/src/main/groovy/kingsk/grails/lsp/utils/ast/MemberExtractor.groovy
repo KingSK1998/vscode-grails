@@ -10,11 +10,13 @@ import org.codehaus.groovy.ast.expr.PropertyExpression
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import groovy.util.logging.Slf4j
 
 /**
  * Extracts class members from Groovy AST expressions for LSP completion support.
  * Handles inheritance hierarchy traversal with duplicate elimination.
  */
+@Slf4j
 @CompileStatic
 class MemberExtractor {
 
@@ -154,7 +156,7 @@ class MemberExtractor {
                     collectFromHierarchy(superClass, statics, currentClass, items, visited, type)
                 }
             } catch (NoClassDefFoundError ignored) {
-                println "Error: No class definition found for superclass: ${classNode.name}"
+                log.warn("Error: No class definition found for superclass: ${classNode.name}")
             }
         }
     }

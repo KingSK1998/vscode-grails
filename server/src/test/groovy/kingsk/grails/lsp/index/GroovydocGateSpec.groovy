@@ -5,7 +5,9 @@ import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import spock.lang.Specification
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class GroovydocGateSpec extends Specification {
 
     def "verify if Groovydoc is extracted by Groovy 4 compiler"() {
@@ -43,10 +45,8 @@ class GroovydocGateSpec extends Specification {
         def classDoc = classNode?.getGroovydoc()?.content
         def methodDoc = methodNode?.getGroovydoc()?.content
         
-        println "=========================================="
-        println "ClassNode Groovydoc: ${classDoc}"
-        println "MethodNode Groovydoc: ${methodDoc}"
-        println "=========================================="
+        log.info("ClassNode Groovydoc: {}", classDoc)
+        log.info("MethodNode Groovydoc: {}", methodDoc)
 
         expect:
         true
