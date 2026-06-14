@@ -100,6 +100,9 @@
 - Implemented `findMethodsByName()`, `findProperties()`, `isSubType()` stub methods
 - Utility methods for type analysis - not yet used by main inference logic
 
+### Completed Work (2026-06-14)
+- **Phase 2a.1: Groovydoc Gate Check**: ✅ Verified Groovy 4.0.23 compiler extracts Groovydoc metadata for AST nodes via `CompilerConfiguration.GROOVYDOC = true`. Test added in `GroovydocGateSpec`.
+
 ### Completed Work (2026-06-13)
 - **Incremental Compilation Test Coverage**:
   - Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests.

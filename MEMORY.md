@@ -50,10 +50,10 @@
 ## Next Session Priorities
 
 1. **Phase 2a Implementation (ProjectIndex Infrastructure)**:
-   - Start with Step 1: GroovydocCache gate check (Spock test for `getGroovydoc()`).
-   - Then Step 2: IndexBuilder (TIER 2 static utility, AST → SymbolInfo extraction).
-   - Then Step 3: IndexManager (wiring IndexBuilder → ProjectIndex commits).
-   - See `docs/phase-plans/phase-2-plan.md` for full step sequence.
+   - **Task 2a.1 (Groovydoc Gate Check)**: ✅ Done. Verified `CompilerConfiguration.GROOVYDOC = true` extracts Groovydoc for Groovy 4.0.23.
+   - **Task 2a.2 (IndexBuilder)**: Extend `SymbolInfo` and implement `IndexBuilder` (TIER 2 utility) to extract AST nodes into `SymbolInfo` without AST leakage.
+   - **Task 2a.3 (IndexManager & ProjectIndex CAS)**: Add thread-safe CAS operations to `ProjectIndex` and implement `IndexManager` orchestration.
+   - **Task 2a.4 (GroovydocCache)**: Implement LRU cache with O(1) reverse index eviction.
+   - **Task 2a.5 (GrailsService Wiring)**: Wire the infrastructure into `GrailsService` with exact lock scoping.
 2. **Global Skills Cleanup**:
    - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders to save context.
-
