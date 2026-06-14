@@ -24,4 +24,8 @@ class ProjectIndex {
     void commit(IndexSnapshot snapshot) { 
         currentSnapshot.set(snapshot) 
     }
+
+    boolean compareAndCommit(IndexSnapshot expected, IndexSnapshot next) {
+        return currentSnapshot.compareAndSet(expected, next)
+    }
 }

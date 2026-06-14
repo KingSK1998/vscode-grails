@@ -34,6 +34,6 @@ Wire the infrastructure components into `GrailsService` and `GrailsTextDocumentS
 - Closing a file successfully evicts its symbols from the index.
 
 ## Status Update
-- Update `server/STATUS.md`: Add `Phase 2a.5: GrailsService Wiring` -> ✅.
+- Update `server/STATUS.md`: Add `Phase 2a.5: GrailsService Wiring` -> ✅. (Done)
 
 **STOP HERE. DO NOT CONTINUE TO THE NEXT STEP IN THE SAME SESSION.**

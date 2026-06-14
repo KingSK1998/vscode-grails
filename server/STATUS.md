@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-06-13
+> Last updated: 2026-06-14
 
 ---
 
@@ -9,15 +9,29 @@
 
 **See:** [server-folder-reorganization.md](../../docs/server-folder-reorganization.md)
 
-### Completed Work (2026-05-12)
-- **Folder Reorganization**: All tasks (TASK-A through TASK-G) completed successfully
-  - 22 utils files reorganized into 10 domain subfolders
-  - 15 model files reorganized into 4 type subfolders
-  - 20+ provider files reorganized into document/, workspace/, completions/strategies/
-  - 100+ import references updated across all files
+### Completed Work (2026-06-14)
+- **Phase 2a.5: GrailsService Wiring**: ✅ Wired `IndexManager`, `ProjectIndex`, `MethodScopeCache`, and `GroovydocCache` into `GrailsService`. Ast locks respected, index updates run outside write lock. Exposed `ProjectIndex` via `CompilationContext`.
+- **Phase 2a.4: GroovydocCache**: ✅ Implemented LRU cache with O(1) reverse-index file eviction tracking. Verified in `GroovydocCacheSpec`.
+- **Phase 2a.3: IndexManager & CAS**: ✅ Implemented CAS atomic update in `ProjectIndex` and created `IndexManager` orchestrator. Verified in `IndexManagerSpec`.
+- **Phase 2a.2: IndexBuilder**: ✅ Extended `SymbolInfo` with `fieldType` and implemented TIER 2 `IndexBuilder` to extract AST nodes into safe DTOs (`SymbolInfo` and `LocalSymbolInfo`).
+- **Phase 2a.1: Groovydoc Gate Check**: ✅ Verified Groovy 4.0.23 compiler extracts Groovydoc metadata for AST nodes via `CompilerConfiguration.GROOVYDOC = true`. Test added in `GroovydocGateSpec`.
 - **`grails.discoverTestsBatch`**: Implemented server-side for client ISSUE-013
   - `GrailsTestDiscoveryProvider.discoverTestsBatch(List<String> projectUris)`
   - Command registered in `GrailsLanguageServer.executeCommandProvider`
+
+### Completed Work (2026-05-14)
+- **FileContentTracker Thread Safety (SERVER-008)**:
+  - Fixed `evictIfNecessary()` - iterator-based removal instead of list index
+  - Fixed `removeFQCNEntriesForUri()` - atomic iterator removal
+  - Fixed `hasStaleEntries()` - snapshot-based iteration
+- **GrailsCompiler Thread Safety (SERVER-009)**:
+  - All subtasks complete - locking is appropriate for this use case
+- **Provider Architecture (SERVER-014)**:
+  - All subtasks complete - BaseProvider contexts + ProviderRegistry
+- **Communication Protocol Fixes**:
+  - `GrailsWorkspaceService.executeCommand()` now returns error for unknown commands
+  - Previously returned null silently; now returns `IllegalArgumentException` via `failedFuture()`
+- **Server Improvement Plan**: ✅ 20/21 items complete
 
 ### Completed Work (2026-05-13)
 - **Cache Management Improvements**:
@@ -65,6 +79,13 @@
   - Replaced non-atomic `removeAll` calls with `removeFQCNEntriesForUri()` helper
   - Added `removeFQCNEntriesForUri()` helper for atomic removal by URI
 
+### Completed Work (2026-05-12)
+- **Folder Reorganization**: All tasks (TASK-A through TASK-G) completed successfully
+  - 22 utils files reorganized into 10 domain subfolders
+  - 15 model files reorganized into 4 type subfolders
+  - 20+ provider files reorganized into document/, workspace/, completions/strategies/
+  - 100+ import references updated across all files
+
 ### Context Interfaces (SERVER-001/SERVER-003) - 2026-05-13:
 - **GrailsService now implements context interfaces**: `ProjectContext`, `ProviderContext`, `CompilationContext`
 - **CompilationContext fixed**: Removed misaligned `compileProject()` and `invalidateCompiler()` methods
@@ -73,20 +94,6 @@
   - New constructor: `BaseProvider(ProviderContext, CompilationContext, GrailsProjectGetter, GrailsService)`
   - Old constructor: `BaseProvider(GrailsService)` still works - extracts contexts from service
   - `getService()` preserved for backward compatibility
-
-### Completed Work (2026-05-14)
-- **FileContentTracker Thread Safety (SERVER-008)**:
-  - Fixed `evictIfNecessary()` - iterator-based removal instead of list index
-  - Fixed `removeFQCNEntriesForUri()` - atomic iterator removal
-  - Fixed `hasStaleEntries()` - snapshot-based iteration
-- **GrailsCompiler Thread Safety (SERVER-009)**:
-  - All subtasks complete - locking is appropriate for this use case
-- **Provider Architecture (SERVER-014)**:
-  - All subtasks complete - BaseProvider contexts + ProviderRegistry
-- **Communication Protocol Fixes**:
-  - `GrailsWorkspaceService.executeCommand()` now returns error for unknown commands
-  - Previously returned null silently; now returns `IllegalArgumentException` via `failedFuture()`
-- **Server Improvement Plan**: ✅ 20/21 items complete
 
 ## Current Priority: ✅ ALL TASKS COMPLETE (mostly)
 
@@ -99,10 +106,6 @@
 ## TypeInferenceService Utilities:
 - Implemented `findMethodsByName()`, `findProperties()`, `isSubType()` stub methods
 - Utility methods for type analysis - not yet used by main inference logic
-
-### Completed Work (2026-06-14)
-- **Phase 2a.2: IndexBuilder**: ✅ Extended `SymbolInfo` with `fieldType` and implemented TIER 2 `IndexBuilder` to extract AST nodes into safe DTOs (`SymbolInfo` and `LocalSymbolInfo`).
-- **Phase 2a.1: Groovydoc Gate Check**: ✅ Verified Groovy 4.0.23 compiler extracts Groovydoc metadata for AST nodes via `CompilerConfiguration.GROOVYDOC = true`. Test added in `GroovydocGateSpec`.
 
 ### Completed Work (2026-06-13)
 - **Incremental Compilation Test Coverage**:

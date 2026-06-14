@@ -20,6 +20,7 @@ import kingsk.grails.lsp.providers.ProviderRegistry
 import kingsk.grails.lsp.providers.document.GrailsGormSqlProvider
 import kingsk.grails.lsp.providers.workspace.GrailsDependencyProvider
 import kingsk.grails.lsp.providers.workspace.GrailsTestDiscoveryProvider
+import kingsk.grails.lsp.index.*
 import kingsk.grails.lsp.services.*
 import kingsk.grails.lsp.utils.cache.ThreadSafeLruCache
 import kingsk.grails.lsp.utils.project.ProjectDiffUtil
@@ -72,6 +73,11 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
 
     final GrailsLspConfig config
 
+    final ProjectIndex projectIndex
+    final IndexManager indexManager
+    final MethodScopeCache methodScopeCache
+    final GroovydocCache groovydocCache
+
     private final Executor backgroundExecutor = Executors.newFixedThreadPool(4)
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
 
@@ -114,6 +120,10 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
         this.gormSqlProvider = new GrailsGormSqlProvider(this, this, this)
         this.testDiscoveryProvider = new GrailsTestDiscoveryProvider(this, this, this)
         this.config = new GrailsLspConfig()
+        this.projectIndex = new ProjectIndex("root")
+        this.methodScopeCache = new MethodScopeCache()
+        this.groovydocCache = new GroovydocCache(100)
+        this.indexManager = new IndexManager(projectIndex, methodScopeCache, groovydocCache)
     }
 
     /**
@@ -151,6 +161,7 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
 
             progressService.update("Project loaded", 20)
 
+            Map<String, List<org.codehaus.groovy.ast.ClassNode>> allNodes = [:]
             withWriteLock {
                 compiler.invalidateCompiler()
                 visitor.invalidateVisitor()
@@ -160,7 +171,13 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
                 compiler.compileProject()
 
                 visitor.visitCompilationUnit(compiler)
+
+                visitor.getAllClassNodes().each { uri, nodes ->
+                    allNodes[uri] = nodes as List<org.codehaus.groovy.ast.ClassNode>
+                }
             }
+
+            indexManager.rebuildAll(allNodes)
 
             progressService.update("Publishing diagnostics...", 90)
             diagnostics.publishWorkspaceDiagnostics()
@@ -185,6 +202,7 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
             return
         }
 
+        List<org.codehaus.groovy.ast.ClassNode> classNodes = null
         withWriteLock {
             if (!compiler.isDirty(textFile.uri) && compiler.compilationExistsFor(textFile.uri)) {
                 log.debug("[COMPILE] Skipping - no changes detected for: ${textFile.uri}")
@@ -194,9 +212,20 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
             compiler.markDirty(textFile.uri)
             compiler.compileSourceFile(textFile)
             visitASTInternal(textFile)
+            
+            def sourceUnit = compiler.getSourceUnit(textFile)
+            if (sourceUnit) {
+                classNodes = sourceUnit.getAST()?.getClasses()
+            }
+            
             clearCrossFileCaches()
             diagnostics.publishDiagnosticsForFile(textFile.uri)
         }
+
+        if (classNodes != null) {
+            indexManager.rebuildFile(textFile.uri, classNodes)
+        }
+
         if (log.isDebugEnabled()) {
             long ms = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)
             log.debug("[PERF] compileAndVisitAST ${textFile.uri} ${ms}ms")
@@ -204,8 +233,16 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
     }
 
     void visitAST(TextFile textFile) {
+        List<org.codehaus.groovy.ast.ClassNode> classNodes = null
         withWriteLock {
             visitASTInternal(textFile)
+            def sourceUnit = compiler.getSourceUnit(textFile)
+            if (sourceUnit) {
+                classNodes = sourceUnit.getAST()?.getClasses()
+            }
+        }
+        if (classNodes != null) {
+            indexManager.rebuildFile(textFile.uri, classNodes)
         }
     }
 
@@ -341,6 +378,11 @@ class GrailsService implements LanguageClientAware, ProjectContext, ProviderCont
         }
 
         return null
+    }
+
+    @Override
+    ProjectIndex getProjectIndex() {
+        return this.projectIndex
     }
 
     /**

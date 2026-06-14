@@ -175,6 +175,7 @@ log.debug("[DOCUMENT] GrailsTextDocumentService initialized with lazy provider r
             def textFile = service.fileTracker.didCloseFile(params)
             if (textFile) {
                 service.visitor.removeFileWithDependencies(textFile.uri)
+                service.indexManager.evictFile(textFile.uri)
                 service.diagnostics.clearDiagnosticsForFile(textFile.uri)
                 completionProvider.clearCaches(textFile.uri)
             }

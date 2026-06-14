@@ -52,8 +52,12 @@
 1. **Phase 2a Implementation (ProjectIndex Infrastructure)**:
    - **Task 2a.1 (Groovydoc Gate Check)**: ✅ Done. Verified `CompilerConfiguration.GROOVYDOC = true` extracts Groovydoc for Groovy 4.0.23.
    - **Task 2a.2 (IndexBuilder)**: ✅ Done. Extended `SymbolInfo` and implemented `IndexBuilder` (TIER 2 utility).
-   - **Task 2a.3 (IndexManager & ProjectIndex CAS)**: Add thread-safe CAS operations to `ProjectIndex` and implement `IndexManager` orchestration.
-   - **Task 2a.4 (GroovydocCache)**: Implement LRU cache with O(1) reverse index eviction.
-   - **Task 2a.5 (GrailsService Wiring)**: Wire the infrastructure into `GrailsService` with exact lock scoping.
-2. **Global Skills Cleanup**:
+   - **Task 2a.3 (IndexManager & ProjectIndex CAS)**: ✅ Done. Added CAS operation to `ProjectIndex` and created `IndexManager` orchestrator.
+   - **Task 2a.4 (GroovydocCache)**: ✅ Done. Implemented thread-safe LRU cache with O(1) reverse-index file eviction tracking.
+   - **Task 2a.5 (GrailsService Wiring)**: ✅ Done. Wired `IndexManager`, `ProjectIndex`, `MethodScopeCache`, and `GroovydocCache` into `GrailsService`.
+   - **Phase 2a (Infrastructure)**: ✅ Fully completed and verified.
+2. **Phase 2b Implementation (HoverProvider Migration)**:
+   - **Task 2b.1 (HoverProvider Migration)**: Migrate `HoverProvider` to resolve symbols using the new `ProjectIndex` snapshot instead of holding live AST references.
+   - **Task 2b.2 (Feature Flag & Fallback Wiring)**: Add experimental config flags and ensure robust fallback to live AST path on missing index symbols.
+3. **Global Skills Cleanup**:
    - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders to save context.
