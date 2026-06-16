@@ -1,13 +1,17 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-06-14
+> Last updated: 2026-06-16
 
 ---
 
 ## Current Priority: ✅ ALL TASKS COMPLETE
 
 **See:** [server-folder-reorganization.md](../../docs/server-folder-reorganization.md)
+
+### Completed Work (2026-06-16)
+- **Code Quality Standardization**: ✅ Removed inline FQCNs (`kingsk.grails.lsp.context.*`) across all 21 T1/T2 providers and utilities. Updated them to use explicit imports per the new rules in `CODING_STANDARDS.md` and `server/RULES.md §10.1`. Fixed stale constructor instantiation in `GrailsRenameProviderSpec` to use `ProviderRegistry`. 
+- **SignatureHelp AST Climbing**: ✅ Resolved active parameter and constructor signature help regressions by climbing the AST to find the closest enclosing `MethodCall` (which both `MethodCallExpression` and `ConstructorCallExpression` implement) and fixed a Groovy truthiness bug in active parameter calculation. Applied review fixes: added `CompletableFuture.supplyAsync`, cancellation token wiring, health reporting, infinite loop guards, and updated `RULES.md` to reflect `BaseProvider`'s context-aware constructor pattern.
 
 ### Completed Work (2026-06-14)
 - **Phase 2b: Provider Compliance**: ✅ Wrapped `GrailsHoverProvider`, `GrailsDefinitionProvider`, and `GrailsReferenceProvider` in `CompletableFuture.supplyAsync` for full cancellation and telemetry compliance (`createCancellationToken`, `checkCancellation`, `recordHealth`). Removed inline imports to meet coding standards.

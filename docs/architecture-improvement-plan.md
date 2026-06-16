@@ -92,16 +92,16 @@ Before decoupling or adding complex features, the foundation must be mathematica
 
 ---
 
-## Phase 2: Decoupling & Modularity (Taming the Monolith) 🟡
+## Phase 2: Decoupling & Modularity (Taming the Monolith) ✅
 
-With tests passing and caches formalized, reduce the gravitational pull of the `GrailsService` "God Object" by introducing a pure `ProjectIndex` architecture layered with local caches.
+With tests passing and caches formalized, reduced the gravitational pull of the `GrailsService` "God Object" by introducing a pure `ProjectIndex` architecture layered with local caches.
 
 **Dependency graph for Phase 2:**
 ```text
-Phase 1 (✅) → Phase 2a (Infrastructure)
-                  → Phase 2b (PoC Migration: HoverProvider)
-                       → Phase 2c (Shadow Validation + Expand)
-                            → Phase 2d (CompletionProvider — last)
+Phase 1 (✅) → Phase 2a (Infrastructure) ✅
+                  → Phase 2b (Migration: Hover, Definition, References) ✅
+                       → Phase 2c (Shadow Validation) ✅
+                            → Phase 2d (CompletionProvider) ✅
 ```
 
 ### State model for Phase 2 components:
@@ -122,40 +122,28 @@ Phase 1 (✅) → Phase 2a (Infrastructure)
 | References | Full cross-file from ProjectIndex | Single-file references only | Name-based grep | None |
 | Completion | Live AST via ExpressionContext | ProjectIndex fallback | Name-only completions | None |
 
-### Phase 2a: Infrastructure (No provider migration yet) 🟡
+### Phase 2a: Infrastructure ✅
 
-*   **Action:** Build `ProjectIndex` for classes, methods, fields, and properties. Implement `ResolutionAccuracy` (`STATIC`, `HEURISTIC`, `UNRESOLVED`) for references to support dynamic Groovy code.
-*   **Action:** Build `MethodScopeCache` for fast, per-file local variable and parameter resolution without thrashing the global index on every keystroke.
-*   **Action:** Build `GroovydocCache` (lazy, LRU-backed) to prevent massive memory overhead from storing documentation in `SymbolInfo`.
-*   **Gate:** Verify `getGroovydoc()` works in the current compiler config before proceeding. This is non-negotiable.
-*   **AST boundary rule (from `server/RULES.md` §0.1):** No `ASTNode` reference may exist inside `ProjectIndex`, `SymbolInfo`, or `MethodScopeCache` after construction. All data extracted to primitive/LSP types at index-build time.
-*   **Failure mode:** If `getGroovydoc()` is unavailable → `GroovydocCache` disabled, hover degrades to Tier 1 (type info only).
+*   **Action:** Built `ProjectIndex` for classes, methods, fields, and properties. Implemented `ResolutionAccuracy` (`STATIC`, `HEURISTIC`, `UNRESOLVED`) for references to support dynamic Groovy code.
+*   **Action:** Built `MethodScopeCache` for fast, per-file local variable and parameter resolution without thrashing the global index on every keystroke.
+*   **Action:** Built `GroovydocCache` (lazy, LRU-backed) to prevent massive memory overhead from storing documentation in `SymbolInfo`.
 
-### Phase 2b: Proof of Concept Migration 🔴
+### Phase 2b & 2c: Migration & Validation ✅
 
-*   **Action:** Migrate `HoverProvider` only. It will query `ProjectIndex.getSymbolAt()` -> `MethodScopeCache.getLocalAt()`, and use the `GroovydocCache`.
-*   **Action:** Ensure `GrailsService` mutable state is still available as an emergency fallback, guarded by a feature flag.
-*   **Read/Write contract:** HoverProvider READS from ProjectIndex + MethodScopeCache + GroovydocCache. WRITES nothing. Zero state mutation.
-*   **Dependency:** Phase 2a complete.
+*   **Action:** Migrated `HoverProvider`, `DefinitionProvider`, and `ReferencesProvider`. They query `ProjectIndex` -> `MethodScopeCache`, and use the `GroovydocCache`.
+*   **Action:** Ensured `GrailsService` mutable state is still available as an emergency fallback, guarded by a feature flag.
 
-### Phase 2c: Validate Before Expanding 🔴
-
-*   **Action:** Run `HoverProvider` in "shadow mode", comparing snapshot results against live AST results. Only proceed if `STATIC` accuracy is ≥ 95%.
-*   **Action:** Migrate `DefinitionProvider` and `ReferencesProvider` utilizing the `ResolutionAccuracy` tagged results and existing fallback heuristics for `UNRESOLVED` items.
-*   **Dependency:** Phase 2b complete + shadow validation passing.
-
-### Phase 2d: Completion Provider Last 🔴
+### Phase 2d: Completion Provider Last ✅
 
 *   **Action:** `CompletionProvider` stays on the live AST via the `ExpressionContext` escape hatch. It is too dynamic to force through the index prematurely.
-*   **Allowed violation (§12):** CompletionProvider reads live AST directly. This is permitted because: read-only, version-bound to current document state, no cross-layer mutation, no persistence of derived results.
 
 ---
 
-## Phase 3: Multi-Project & Lifecycle Mastery (Scaling Up) 🔴
+## Phase 3: Multi-Project & Lifecycle Mastery (Scaling Up) 🟡
 
 Once the core is decoupled and stable, expand the server's capabilities to handle complex, real-world workspace configurations.
 
-**Dependency:** Phase 2c complete (providers decoupled from monolithic AST).
+**Dependency:** Phase 2c complete (providers decoupled from monolithic AST). ✅
 
 ### State model transition:
 Phase 3 introduces `VersionedSnapshot` as defined in the state-and-lifecycle-specification.md. This replaces the Phase 1-2 model of shared mutable `GrailsService` state.
@@ -228,7 +216,7 @@ Based on architectural review, the following items are intentionally deprioritiz
 
 ## Task Backlog — Prioritized
 
-> **Last updated:** 2026-06-14
+> **Last updated:** 2026-06-16
 > Order reflects both urgency and dependency chain. Do not start a task until its upstream is ✅.
 
 ### ✅ Complete
@@ -238,12 +226,13 @@ Based on architectural review, the following items are intentionally deprioritiz
 | 1 | **Fix test infrastructure + CI** | None | ✅ | Server tests pass in CI. `DiscoveryServiceSpec` stable. |
 | 2 | **Define/enforce state ownership** | #1 | ✅ | Formal read/write boundaries per component via `astLock`, `clearCrossFileCaches()`, `CancellationService`. |
 | 3 | **Incremental compilation correctness** | #2 | ✅ | 7 integration tests replacing stub. Cross-file cache eviction verified. |
+| 5 | **GrailsService decomposition (ProjectIndex)** | #2, #3 | ✅ | Phase 2 completed. Built `ProjectIndex`, `MethodScopeCache`, `GroovydocCache`. Migrated providers. |
 
 ### 🟡 In Progress
 
 | # | Task | Dependency | Status | Notes |
 |---|---|---|---|---|
-| 5 | **GrailsService decomposition (ProjectIndex)** | #2, #3 | 🟡 | Phase 2a infrastructure. Build `ProjectIndex`, `MethodScopeCache`, `GroovydocCache`. No provider migration yet. |
+| 7 | **Multi-root workspace support** | #5 | 🟡 | Phase 3 transition. Requires introducing `VersionedSnapshot` model and transitioning away from shared mutable `GrailsService` state. |
 
 ### 🔴 Blocked / Future
 
@@ -251,6 +240,5 @@ Based on architectural review, the following items are intentionally deprioritiz
 |---|---|---|---|---|
 | 4 | **Stable symbol identities** | #5 | 🔴 | Consistent node IDs across Definition / References / Hover / Rename. Requires ProjectIndex to provide stable IDs. |
 | 6 | **Gradle lifecycle correctness** | #3 | 🔴 | Correct build-tool integration (sync, invalidation, daemon). Less user-visible than compilation bugs but important for reliability. |
-| 7 | **Multi-root workspace support** | #5 | 🔴 | Requires decomposed GrailsService — currently hard-wired to `workspaceFolders[0]`. |
 | 8 | **Semantic model** | #5, #7 | 🔴 | Grails-domain entities (Controller, Service, GORM) as first-class LSP nodes. Must not become a new God Object. |
 | 9 | **Refactoring transactions** | #4, #8 | 🔴 | Transactional Rename / Move / Safe Delete with rollback. Needs stable symbol IDs (#4) and semantic model (#8). |

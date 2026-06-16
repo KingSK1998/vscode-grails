@@ -11,6 +11,10 @@
    - Created `scripts/sync-line-refs.js`. It parses `AGENTS.md` headers for sections (`## §N TITLE (LXX-LYY)`), updates them to their actual positions, and propagates these line-number updates to `CLAUDE.md`, `GEMINI.md`, and `.claude/agents/*.md`.
    - Pattern established: Always run `node scripts/sync-line-refs.js` (or `npm run sync-refs` if mapped) after modifying `AGENTS.md`.
 
+3. **Strict Code Quality Enforcement**:
+   - Upgraded `CODING_STANDARDS.md`, `client/RULES.md`, and `server/RULES.md` into brutal, uncompromising style guides. Added concrete SOLID mappings and threshold-based wildcard import rules (e.g. `kingsk.*` always explicit, external libraries >5 classes OK for wildcards).
+   - Rewrote `docs/skills/review.md` to be an aggressive auto-fixer and architectural validator. Separated mechanical fixes (imports, formatting) from architectural reports (state, DI). Added Anti-Hallucination rules to force verification of builds/tests.
+
 3. **Status Check Pre-commit Guard**:
    - Created `scripts/pre-commit-guard.js`. It checks staged files; if code changes are staged under `client/` or `server/`, it blocks the commit unless the corresponding `STATUS.md` is also staged.
    - Hook is installed to `.git/hooks/pre-commit` via `scripts/install-hooks.js`.
