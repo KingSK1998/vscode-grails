@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.workspace
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.utils.grails.GrailsUtils
@@ -9,11 +13,11 @@ import org.codehaus.groovy.ast.MethodNode
 @Slf4j
 @CompileStatic
 class GrailsTestDiscoveryProvider {
-    private final kingsk.grails.lsp.context.ProviderContext providerContext
-    private final kingsk.grails.lsp.context.CompilationContext compilationContext
-    private final kingsk.grails.lsp.context.ProjectContext projectContext
+    private final ProviderContext providerContext
+    private final CompilationContext compilationContext
+    private final ProjectContext projectContext
 
-    GrailsTestDiscoveryProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+    GrailsTestDiscoveryProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         this.providerContext = providerContext
         this.compilationContext = compilationContext
         this.projectContext = projectContext

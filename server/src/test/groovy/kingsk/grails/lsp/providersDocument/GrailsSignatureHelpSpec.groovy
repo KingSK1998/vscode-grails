@@ -105,7 +105,9 @@ class GrailsSignatureHelpSpec extends SignatureHelpTestSpec {
         String uri = openTextDocument("SignatureHelp.groovy", content)
 
         when: "Requesting signature help at constructor call"
-        def signatureHelp = getSignatureHelp(uri, 8, 25) // Position after "SignatureHelp("
+        // Position 8, 25 is INSIDE the "test" argument string.
+        // Because there is only one parameter (index 0), activeParameter is expected to be 0.
+        def signatureHelp = getSignatureHelp(uri, 8, 25)
 
         then: "Should provide constructor signature information"
         signatureHelp != null
@@ -122,7 +124,7 @@ class GrailsSignatureHelpSpec extends SignatureHelpTestSpec {
 
         and: "Should track active signature and parameter"
         signatureHelp.activeSignature == 0
-        signatureHelp.activeParameter == 1
+        signatureHelp.activeParameter == 0
     }
 
     def "should provide signature help for overloaded methods"() {

@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.workspace
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
@@ -19,7 +23,7 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsWorkspaceSymbolProvider extends BaseProvider {
 	
-	GrailsWorkspaceSymbolProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+	GrailsWorkspaceSymbolProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         super(providerContext, compilationContext, projectContext)
     }
 	

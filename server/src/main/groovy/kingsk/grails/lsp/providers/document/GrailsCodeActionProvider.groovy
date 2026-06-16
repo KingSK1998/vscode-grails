@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.document
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.utils.ast.ASTUtils
 import org.codehaus.groovy.ast.ClassNode
@@ -12,7 +16,7 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsCodeActionProvider extends BaseProvider {
 
-    GrailsCodeActionProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+    GrailsCodeActionProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         super(providerContext, compilationContext, projectContext)
     }
 

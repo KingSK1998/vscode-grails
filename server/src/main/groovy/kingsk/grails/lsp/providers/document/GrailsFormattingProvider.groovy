@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.document
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import org.eclipse.lsp4j.FormattingOptions
 import org.eclipse.lsp4j.TextDocumentIdentifier
@@ -12,7 +16,7 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsFormattingProvider extends BaseProvider {
 
-    GrailsFormattingProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+    GrailsFormattingProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         super(providerContext, compilationContext, projectContext)
     }
 

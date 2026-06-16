@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.document
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.types.TextFile
@@ -17,7 +21,7 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsDefinitionProvider extends BaseProvider {
 
-    GrailsDefinitionProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+    GrailsDefinitionProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
         super(providerContext, compilationContext, projectContext)
     }
 

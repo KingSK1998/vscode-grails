@@ -13,7 +13,7 @@ class GrailsRenameProviderSpec extends BaseLspSpec {
 
     def setup() {
         initializeProject(ProjectType.GRAILS, true)
-        provider = new GrailsRenameProvider(grailsService)
+        provider = grailsService.providerRegistry.getProvider(GrailsRenameProvider)
     }
 
     def "should rename controller action"() {

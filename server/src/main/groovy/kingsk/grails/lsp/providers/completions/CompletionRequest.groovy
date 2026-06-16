@@ -1,5 +1,9 @@
 package kingsk.grails.lsp.providers.completions
 
+import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.context.ProviderContext
+
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
@@ -30,9 +34,9 @@ class CompletionRequest {
 	final Set<String> seen
 	final TextFile file
 	final boolean isGrailsProject
-	final kingsk.grails.lsp.context.CompilationContext compilationContext
-	final kingsk.grails.lsp.context.ProviderContext providerContext
-	final kingsk.grails.lsp.context.ProjectContext projectContext
+	final CompilationContext compilationContext
+	final ProviderContext providerContext
+	final ProjectContext projectContext
 	
 	// Lazy-loaded high-level context (expensive to compute)
 	private ModuleNode _currentModule
@@ -53,7 +57,7 @@ class CompletionRequest {
 	
 	CompletionRequest(ASTNode offsetNode, ASTNode parentNode, String prefix, Position position,
 	                  List<CompletionItem> items, Set<String> seen, TextFile file,
-	                  boolean isGrailsProject, kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.context.CompilationContext compilationContext, kingsk.grails.lsp.context.ProjectContext projectContext) {
+	                  boolean isGrailsProject, ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
 		this.offsetNode = offsetNode
 		this.parentNode = parentNode
 		this.prefix = prefix
