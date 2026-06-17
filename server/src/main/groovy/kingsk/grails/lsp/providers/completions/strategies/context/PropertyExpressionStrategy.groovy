@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.providers.completions.strategies.context
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
@@ -10,15 +11,13 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.PropertyExpression
+import org.eclipse.lsp4j.CompletionItem
 
 /**
  * Handles completions for property expressions (obj.prop|)
- * Provides smart, detailed completions for object member access
  */
 @CompileStatic
 class PropertyExpressionStrategy extends BaseCompletionStrategy {
-	
-	PropertyExpressionStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	int getPriority() { return 90 }
@@ -27,59 +26,42 @@ class PropertyExpressionStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.BOTH }
 	
 	@Override
-	boolean canHandle(ASTNode node) {
-		node instanceof PropertyExpression || request.parentNode instanceof PropertyExpression
+	boolean canHandle(CompletionRequest request, RequestContext ctx) {
+		request.offsetNode instanceof PropertyExpression || request.parentNode instanceof PropertyExpression
 	}
 	
-	/**
-	 * Handles chained property access, e.g. <code>foo.bar</code>
-	 * @param node The PropertyExpression node to handle
-	 */
 	@Override
-	void provideCompletions(ASTNode node) {
-		if (node instanceof PropertyExpression) {
-			provideCompletions(node as PropertyExpression)
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+		List<CompletionItem> completions = []
+		if (request.offsetNode instanceof PropertyExpression) {
+			provideCompletionsInternal((PropertyExpression) request.offsetNode, request, ctx, completions)
 		} else if (request.parentNode instanceof PropertyExpression) {
-			provideCompletions(request.parentNode as PropertyExpression)
+			provideCompletionsInternal((PropertyExpression) request.parentNode, request, ctx, completions)
 		}
+		return completions
 	}
 	
-	protected void provideCompletions(PropertyExpression propExpr) {
-		// Cursor might land on a PropertyExpression, or the parent could be one if cursor is in .foo.
-		logDebug("Providing completions for property expression: %s", propExpr.text)
-		
+	private void provideCompletionsInternal(PropertyExpression propExpr, CompletionRequest request, RequestContext ctx, List<CompletionItem> completions) {
 		Expression objectExpression = propExpr.objectExpression
-		if (!objectExpression) {
-			logDebug("No object expression found")
-			return
-		}
+		if (!objectExpression) return
 		
-		// Get the type of the object being accessed
-		ClassNode objectType = getTypeOf(objectExpression)
-		if (!objectType) {
-			logDebug("Could not determine object type for: %s", objectExpression.text)
-			return
-		}
+		ClassNode objectType = getTypeOf(objectExpression, ctx)
+		if (!objectType) return
 		
-		logDebug("Object type resolved to: %s", objectType.name)
+		addMemberCompletions(objectExpression, ctx, completions)
 		
-		// Use MemberExtractor as primary source for all member completions, with superclasses, interfaces i.e. till Metaclass
-		addMemberCompletions(objectExpression)
-		
-		// Add Grails-specific completions if in Grails project
 		if (request.isGrailsProject) {
-			addGrailsSpecificCompletions(objectType)
+			addGrailsSpecificCompletions(objectType, request.uri, completions)
 		}
 	}
 	
-	/**
-	 * Add Grails-specific completions based on object type using existing GrailsUtils detection
-	 */
-	private void addGrailsSpecificCompletions(ClassNode objectType) {
-		// Automatic handling of Grails injected properties such as param, request, response, etc
-		if (GrailsUtils.isGrailsArtefact(objectType, request.file.uri)) {
-			getClassMembersAsASTNodes(objectType).each { node ->
-				if (!ASTUtils.isInvalidDocumentSymbol(node)) request.addCompletion(node)
+	private void addGrailsSpecificCompletions(ClassNode objectType, String uri, List<CompletionItem> completions) {
+		if (GrailsUtils.isGrailsArtefact(objectType, uri)) {
+			// Extract members using static helper rather than strategy method
+			kingsk.grails.lsp.utils.ast.MemberExtractor.collectMembers(objectType, false, null).properties.each { node ->
+				if (!ASTUtils.isInvalidDocumentSymbol(node)) {
+					completions.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(node))
+				}
 			}
 		}
 	}

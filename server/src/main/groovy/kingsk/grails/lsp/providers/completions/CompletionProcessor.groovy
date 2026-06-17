@@ -36,6 +36,24 @@ class CompletionProcessor {
 	private static final int SYNTHETIC_PENALTY = -10
 	
 	/**
+	 * Extracts the word prefix before the cursor position for completion filtering.
+	 */
+	static String extractPrefix(String text, org.eclipse.lsp4j.Position position) {
+		if (!text) return ""
+		def lines = text.readLines()
+		if (position.line >= lines.size()) return ""
+		String line = lines[position.line]
+		int charPos = Math.min(position.character, line.length())
+		String beforeCursor = line.substring(0, charPos)
+		
+		def matcher = beforeCursor =~ /([a-zA-Z0-9_$]+)$/
+		if (matcher.find()) {
+			return matcher.group(1)
+		}
+		return ""
+	}
+	
+	/**
 	 * Process completions with unified filtering, scoring, and ranking
 	 * Returns the final filtered, scored, and limited completion items
 	 */

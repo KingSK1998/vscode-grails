@@ -1,8 +1,7 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.services.WorkspaceManager
 
 import groovy.transform.CompileStatic
 import org.eclipse.lsp4j.FormattingOptions
@@ -16,8 +15,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsFormattingProvider extends BaseProvider {
 
-    GrailsFormattingProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsFormattingProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
     CompletableFuture<List<? extends TextEdit>> provideFormatting(TextDocumentIdentifier textDocument, FormattingOptions options) {

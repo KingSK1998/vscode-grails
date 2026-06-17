@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.providers.completions.strategies.snippet
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
@@ -10,11 +11,10 @@ import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.eclipse.lsp4j.CompletionItem
 
 @CompileStatic
 class ArgumentListStrategy extends BaseCompletionStrategy {
-	
-	ArgumentListStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	int getPriority() { return 82 }
@@ -23,31 +23,31 @@ class ArgumentListStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.BOTH }
 	
 	@Override
-	boolean canHandle(ASTNode node) {
-		return node instanceof ArgumentListExpression && getParentOf(node) instanceof MethodCallExpression
+	boolean canHandle(CompletionRequest request, RequestContext ctx) {
+		request.offsetNode instanceof ArgumentListExpression && ctx.ast().getParent(request.offsetNode) instanceof MethodCallExpression
 	}
 	
 	@Override
-	void provideCompletions(ASTNode node) { provideCompletion(node as ArgumentListExpression) }
-	
-	private void provideCompletion(ArgumentListExpression argumentList) {
-		def methodCall = getParentOf(argumentList)
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+		ArgumentListExpression argumentList = (ArgumentListExpression) request.offsetNode
+		
+		def methodCall = ctx.ast().getParent(argumentList)
 		if (methodCall instanceof MethodCallExpression) {
-			addMethodParameterCompletions(methodCall)
+			addMethodParameterCompletions((MethodCallExpression) methodCall, ctx, completions)
 		}
-		addScopeCompletions(argumentList)
+		addScopeCompletions(argumentList, ctx, completions)
+		
+		return completions
 	}
 	
-	/**
-	 * Add completions for method parameters based on the method signature.
-	 */
-	private void addMethodParameterCompletions(MethodCallExpression methodCall) {
-		def method = GrailsASTHelper.getMethodFromCallExpression(methodCall, request.visitor)
+	private void addMethodParameterCompletions(MethodCallExpression methodCall, RequestContext ctx, List<CompletionItem> completions) {
+		def visitor = ctx.compilationContext().visitor
+		def method = GrailsASTHelper.getMethodFromCallExpression(methodCall, visitor)
 		if (method instanceof MethodNode && method.parameters) {
-			logDebug("Adding parameter completions for method: %s", method.name)
 			method.parameters.each { Parameter param ->
-				request.addCompletion(param)
+				completions.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(param))
 			}
 		}
-	}
+    }
 }

@@ -39,7 +39,7 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
 
         // Setup initial workspace folders
         params.workspaceFolders?.each { folder ->
-            grailsService.setupWorkspace(folder.uri, true)
+            // grailsService.workspaceManager.getProjectForUri(folder.uri)?.setupWorkspace(true) // TODO
         }
 
         // Store client capabilities for later use

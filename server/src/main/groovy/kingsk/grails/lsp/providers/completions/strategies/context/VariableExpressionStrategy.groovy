@@ -1,20 +1,19 @@
 package kingsk.grails.lsp.providers.completions.strategies.context
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.expr.VariableExpression
+import org.eclipse.lsp4j.CompletionItem
 
 /**
  * Handles completions for variable expressions (var|)
- * Provides scope-aware variable and type completions
  */
 @CompileStatic
 class VariableExpressionStrategy extends BaseCompletionStrategy {
-	
-	VariableExpressionStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	int getPriority() { return 70 }
@@ -23,22 +22,17 @@ class VariableExpressionStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.OFFSET }
 	
 	@Override
-	boolean canHandle(ASTNode node) { return node instanceof VariableExpression }
-	
-	/**
-	 * Local or field variable completions
-	 * @param node The VariableExpression node to complete
-	 */
-	@Override
-	void provideCompletions(ASTNode node) {
-		provideCompletion(node as VariableExpression)
+	boolean canHandle(CompletionRequest request, RequestContext ctx) { 
+		request.offsetNode instanceof VariableExpression 
 	}
 	
-	void provideCompletion(VariableExpression varExpr) {
-		logDebug("Providing completions for variable expression: %s", varExpr.name)
-		addScopeCompletions(varExpr)
-		if (request.isGrailsProject) {
-			// TODO: analyse and see if completion already present if yes just enhance
-		}
+	@Override
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+		VariableExpression varExpr = (VariableExpression) request.offsetNode
+		
+		addScopeCompletions(varExpr, ctx, completions)
+		
+		return completions
 	}
 }

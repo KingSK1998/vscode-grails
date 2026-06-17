@@ -5,6 +5,7 @@ import io.github.classgraph.ClassInfo
 import io.github.classgraph.PackageInfo
 import io.github.classgraph.ScanResult
 import kingsk.grails.lsp.model.enums.CompletionTarget
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import kingsk.grails.lsp.services.DiscoveryService
@@ -19,24 +20,18 @@ import org.eclipse.lsp4j.CompletionItemKind
 @CompileStatic
 class ImportStrategy extends BaseCompletionStrategy {
 
-    ImportStrategy(CompletionRequest request) { super(request) }
-
     @Override
     int getPriority() { return 95 }
 
     @Override
-    CompletionTarget target() { return CompletionTarget.OFFSET }
+    boolean canHandle(CompletionRequest request, RequestContext ctx) {
+        return request.offsetNode instanceof ImportNode
+    }
 
     @Override
-    boolean canHandle(ASTNode node) { return node instanceof ImportNode }
-
-    /**
-     * Inside import statements like <code>import java.ut</code>
-     * @param node The ImportNode node to complete
-     */
-    @Override
-    void provideCompletions(ASTNode node) {
-        ScanResult scanResult = DiscoveryService.getClassGraphScanResult(request.file.uri)
+    List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+        ScanResult scanResult = DiscoveryService.getClassGraphScanResult(request.uri)
         if (scanResult) {
             String prefix = request.prefix ?: ""
             int pkgCount = 0
@@ -45,7 +40,7 @@ class ImportStrategy extends BaseCompletionStrategy {
                 if (pkgInfo.name.startsWith(prefix)) {
                     CompletionItem item = new CompletionItem(pkgInfo.name)
                     item.kind = CompletionItemKind.Module
-                    request.addCompletion(item)
+                    completions.add(item)
                     pkgCount++
                 }
             }
@@ -61,20 +56,21 @@ class ImportStrategy extends BaseCompletionStrategy {
                         (classInfo.isEnum() ? CompletionItemKind.Enum : CompletionItemKind.Class)
                     item.detail = classInfo.packageName
                     item.insertText = className
-                    request.addCompletion(item)
+                    completions.add(item)
                     clsCount++
                 }
             }
         }
 
-        addPackageCompletions(request)
-        addClassCompletions(request)
+        addPackageCompletions(request, completions)
+        addClassCompletions(request, completions)
         if (request.isGrailsProject) {
-            addGrailsImportCompletions(request)
+            addGrailsImportCompletions(request, completions)
         }
+        return completions
     }
 
-    private static void addPackageCompletions(CompletionRequest request) {
+    private static void addPackageCompletions(CompletionRequest request, List<CompletionItem> completions) {
         List<String> commonPackages = [
             'java.lang', 'java.util', 'java.io', 'java.net',
             'groovy.lang', 'groovy.util', 'groovy.transform'
@@ -91,34 +87,34 @@ class ImportStrategy extends BaseCompletionStrategy {
             CompletionItem item = new CompletionItem(pkg)
             item.kind = CompletionItemKind.Module
             item.detail = 'Package'
-            request.addCompletion(item)
+            completions.add(item)
         }
     }
 
-    private static void addClassCompletions(CompletionRequest request) {
+    private static void addClassCompletions(CompletionRequest request, List<CompletionItem> completions) {
         DiscoveryService.getJavaLangTypes().each { cls ->
             CompletionItem item = new CompletionItem(cls)
             item.kind = CompletionItemKind.Class
             item.detail = 'Java Lang Class'
-            request.addCompletion(item)
+            completions.add(item)
         }
 
         DiscoveryService.getJavaUtilTypes().each { cls ->
             CompletionItem item = new CompletionItem(cls)
             item.kind = CompletionItemKind.Class
             item.detail = 'Java Util Class'
-            request.addCompletion(item)
+            completions.add(item)
         }
 
         DiscoveryService.getGroovyTypeNodes().each { clsNode ->
             CompletionItem item = new CompletionItem(clsNode.nameWithoutPackage)
             item.kind = CompletionItemKind.Class
             item.detail = 'Groovy Class'
-            request.addCompletion(item)
+            completions.add(item)
         }
     }
 
-    private static void addGrailsImportCompletions(CompletionRequest request) {
+    private static void addGrailsImportCompletions(CompletionRequest request, List<CompletionItem> completions) {
         List<String> grailsImports = [
             'grails.validation.Validateable',
             'grails.artefact.Controller',
@@ -135,7 +131,7 @@ class ImportStrategy extends BaseCompletionStrategy {
             CompletionItem item = new CompletionItem(cls)
             item.kind = CompletionItemKind.Class
             item.detail = 'Grails class'
-            request.addCompletion(item)
+            completions.add(item)
         }
     }
 }

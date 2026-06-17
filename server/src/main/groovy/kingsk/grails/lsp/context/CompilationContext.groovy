@@ -20,4 +20,5 @@ interface CompilationContext {
     void compileAndVisitAST(TextFile textFile)
     void visitAST(TextFile textFile)
     <T> T withReadLock(groovy.lang.Closure<T> closure)
+    kingsk.grails.lsp.GrailsService getGrailsService()
 }

@@ -18,4 +18,5 @@ interface ProviderContext {
     GrailsLspConfig getConfig()
     ProviderRegistry getProviderRegistry()
     GrailsLanguageClient getClient()
+    kingsk.grails.lsp.services.FileContentTracker getFileTracker()
 }

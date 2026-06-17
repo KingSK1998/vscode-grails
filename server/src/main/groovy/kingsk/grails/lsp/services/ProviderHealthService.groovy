@@ -39,16 +39,20 @@ class ProviderHealthService {
         Map<String, ProviderHealthStatus> status = [:]
         for (Map.Entry<String, ProviderMetrics> entry : providerMetrics.entrySet()) {
             ProviderMetrics m = entry.getValue()
-            long count = m.requestCount.get()
-            double avgLatency = count > 0 ? (double) m.totalDurationMs.get() / count : 0
-            double errorRate = count > 0 ? (double) m.errorCount.get() / count * 100 : 0
-            String health = errorRate > 10 ? "UNHEALTHY" : errorRate > 5 ? "DEGRADED" : "HEALTHY"
-            status[entry.key] = new ProviderHealthStatus(
-                entry.key, count, avgLatency, m.minLatencyMs.get(), m.maxLatencyMs.get(),
-                m.errorCount.get(), errorRate, health
-            )
+            status[entry.key] = buildStatus(m)
         }
         status
+    }
+
+    private ProviderHealthStatus buildStatus(ProviderMetrics m) {
+        long count = m.requestCount.get()
+        double avgLatency = count > 0 ? (double) m.totalDurationMs.get() / count : 0
+        double errorRate = count > 0 ? (double) m.errorCount.get() / count * 100 : 0
+        String health = errorRate > 10 ? "UNHEALTHY" : errorRate > 5 ? "DEGRADED" : "HEALTHY"
+        new ProviderHealthStatus(
+            m.providerName, count, avgLatency, m.minLatencyMs.get(), m.maxLatencyMs.get(),
+            m.errorCount.get(), errorRate, health
+        )
     }
 
     void reset() {
@@ -65,6 +69,11 @@ class ProviderHealthService {
 
         ProviderMetrics(String providerName) {
             this.providerName = providerName
+        }
+        
+        double getAverageLatency() {
+            long count = requestCount.get()
+            count > 0 ? (double) totalDurationMs.get() / count : 0
         }
     }
 

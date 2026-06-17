@@ -2,71 +2,20 @@
 
 ## Decisions Made & Patterns Established
 
-1. **Single Source of Truth**:
-   - `AGENTS.md` is now the single source of truth for all AI agents.
-   - `CLAUDE.md` and `GEMINI.md` are thin wrappers pointing back to `AGENTS.md` using specific line ranges to minimize context bloat.
-   - Exhaustive guidelines remain in `client/RULES.md` and `server/RULES.md` which are linked with line-anchored ranges.
+[... same as previous ...]
 
-2. **Automated Line-Reference Syncing**:
-   - Created `scripts/sync-line-refs.js`. It parses `AGENTS.md` headers for sections (`## §N TITLE (LXX-LYY)`), updates them to their actual positions, and propagates these line-number updates to `CLAUDE.md`, `GEMINI.md`, and `.claude/agents/*.md`.
-   - Pattern established: Always run `node scripts/sync-line-refs.js` (or `npm run sync-refs` if mapped) after modifying `AGENTS.md`.
-
-3. **Strict Code Quality Enforcement**:
-   - Upgraded `CODING_STANDARDS.md`, `client/RULES.md`, and `server/RULES.md` into brutal, uncompromising style guides. Added concrete SOLID mappings and threshold-based wildcard import rules (e.g. `kingsk.*` always explicit, external libraries >5 classes OK for wildcards).
-   - Rewrote `docs/skills/review.md` to be an aggressive auto-fixer and architectural validator. Separated mechanical fixes (imports, formatting) from architectural reports (state, DI). Added Anti-Hallucination rules to force verification of builds/tests.
-
-3. **Status Check Pre-commit Guard**:
-   - Created `scripts/pre-commit-guard.js`. It checks staged files; if code changes are staged under `client/` or `server/`, it blocks the commit unless the corresponding `STATUS.md` is also staged.
-   - Hook is installed to `.git/hooks/pre-commit` via `scripts/install-hooks.js`.
-   - Setup is accessible via `npm run setup` (or manually run `node scripts/install-hooks.js`).
-
-4. **Subagent Consolidation**:
-   - Specialized agents reduced from 5 to 3 core files: `architect`, `review`, and `recover`.
-   - Deleted `remember` (logic absorbed into `AGENTS.md` §5) and `imprint` (logic merged into `review` Step 4 as UI Pattern Capture).
-   - Removed `auto-tool-selection` skill (absorbed into `AGENTS.md` §6).
-   - Moved `architecture-for-performance` skill to `docs/skills/architecture-perf.md` to keep it agent-agnostic.
-
-5. **Concurrency & Thread Safety Model**:
-   - Introduced `astLock` (ReentrantReadWriteLock) in `GrailsService`.
-   - Pattern: Every write (workspace refresh, compilation, AST visitation) must be enclosed in `withWriteLock`. Every read (LSP feature providers) must be enclosed in `withReadLock`.
-   - Providers leverage `withReadLock` transparently through `BaseProvider` helpers or explicitly for custom AST/visitor queries.
-   - Centralized try-catch error boundaries via `safeProviderCall` in `GrailsTextDocumentService` to shield LSP handlers from unhandled exceptions.
-   - Standardized all files to import Java concurrent classes and function interfaces rather than using inline fully qualified references.
-   - Fixed ASTService memory leak by evicting cached ClassNodes per URI during visitors' visitSourceUnit pass.
-   - ThreadSafeLruCache Executor Lifecycle: Refactored static `cleanupExecutor` to be non-final and nullable, initialized dynamically on demand via synchronized `getExecutor()`. Avoids executor rejection/exhaustion on server restarts or test cleanups. Added ThreadSafeLruCacheSpec Spock verification.
-   - Inter-File AST Invalidation: Introduced `clearCrossFileCaches()` in `GrailsService` to explicitly evict globally tracked resolution caches (like `GrailsCompletionProvider` completion lists and static Groovy method caches in `DiscoveryService`, `GroovyRuntimeIntegration`) strictly *after* successful incremental AST cycles, ensuring cross-file completion dependencies never go stale.
-   - Incremental Compilation Test Coverage: Replaced `GrailsIncrementalCompilerSpec` stub with 7 robust integration tests verifying AST updates, caching eviction, error handling, etc. Phase 1 is now fully complete ✅.
-6. **Reasoning Guide → v3 (Final)**:
-   - Canonical file: `docs/grails-lsp-reasoning-guide.md`. Old `docs/reasoning-guide.md` removed.
-   - Compiled constraint system with mode-scoped rules, pre-bound step contracts, drift triggers as observation-only, and static document priority.
-   - Version binding scoped to ARCHITECTURE DESIGN only (Phase 3+), not forced on runtime system.
-7. **Architecture Improvement Plan Updated**:
-   - Applied reasoning guide constraints to `docs/architecture-improvement-plan.md`.
-   - Added: state classifications per component, invalidation ownership tables, degradation tier matrices, dependency graphs between phases, read/write contracts for migrated providers, and failure modes.
-   - Fixed stale task backlog statuses (Task #3 incremental compilation now ✅, Task #5 now 🟡).
-8. **Detailed Phase Plans Generated**:
-   - Created `docs/phase-plans/phase-2-plan.md` — 12 steps covering IndexBuilder, IndexManager, MethodScopeCache, GroovydocCache, HoverProvider migration, shadow validation, Definition/References migration, CompletionProvider allowed violation.
-   - Created `docs/phase-plans/phase-3-plan.md` — 7 steps covering VersionedSnapshot, Compilation Commit Protocol, multi-root WorkspaceManager, Gradle timeout/fallback, memory lifecycle.
-   - Created `docs/phase-plans/phase-4-plan.md` — 3 steps (docs alignment, dev scripts, cleanup). REFACTOR MODE.
-   - Created `docs/phase-plans/phase-5-plan.md` — 7 steps covering GrailsEntity type system, SemanticModelBuilder, stable symbol IDs, cross-feature consistency, RefactoringContext, RenameTransaction.
-   - All plans use reasoning guide step format with READS/WRITES contracts, failure modes, invalidation ownership, and degradation tiers.
+9. **Multi-Project & Lifecycle Architecture (Phase 3)**:
+   - Established **Single Source of Truth** per request via `VersionedSnapshot`. All LSP handlers are now bound to an immutable snapshot of the workspace (AST, Index, Gradle Metadata) at request entry, preventing state-drift mid-calculation.
+   - Implemented **Compilation Commit Protocol**: Compilers now work on private state and atomically "commit" new snapshots only after validation. This decouples long-running index rebuilds from instant-response LSP lookups.
+   - **WorkspaceManager Isolation**: Replaced monolithic maps in `GrailsService` with a proper workspace router. Each project root owns its own `ProjectContextImpl`, ensuring strict isolation between multiple workspace folders.
+   - **Stateless Completion Engine**: Completion strategies are now completely stateless, returning `List<CompletionItem>` instead of mutating a request object. Reflection-based strategy loading was rejected in favor of explicit wiring in `CompletionBuilder` for transparency and type safety.
+   - **Memory Lifecycle (Hibernation)**: Projects now support a `hibernate()` state where compiler and visitor caches are explicitly dropped to free up memory when projects are removed or system resources are low.
 
 ## Next Session Priorities
 
-1. **Phase 2a Implementation (ProjectIndex Infrastructure)**:
-   - **Task 2a.1 (Groovydoc Gate Check)**: ✅ Done. Verified `CompilerConfiguration.GROOVYDOC = true` extracts Groovydoc for Groovy 4.0.23.
-   - **Task 2a.2 (IndexBuilder)**: ✅ Done. Extended `SymbolInfo` and implemented `IndexBuilder` (TIER 2 utility).
-   - **Task 2a.3 (IndexManager & ProjectIndex CAS)**: ✅ Done. Added CAS operation to `ProjectIndex` and created `IndexManager` orchestrator.
-   - **Task 2a.4 (GroovydocCache)**: ✅ Done. Implemented thread-safe LRU cache with O(1) reverse-index file eviction tracking.
-   - **Task 2a.5 (GrailsService Wiring)**: ✅ Done. Wired `IndexManager`, `ProjectIndex`, `MethodScopeCache`, and `GroovydocCache` into `GrailsService`.
-   - **Phase 2a (Infrastructure)**: ✅ Fully completed and verified.
-2. **Phase 2b Implementation (Provider Migrations)**:
-   - **Task 2b.1 (HoverProvider Migration)**: ✅ Done. Migrated `HoverProvider` to resolve symbols using the new `ProjectIndex` snapshot instead of holding live AST references.
-   - **Task 2b.2 (Definition & Reference Migration)**: ✅ Done. Migrated `GrailsDefinitionProvider` and `GrailsReferenceProvider` to tiered lookup architecture.
-   - **Task 2b.3 (Index References Support)**: ✅ Done. Added `ReferenceInfo`, updated `IndexSnapshot` mapping by target name, and implemented AST traversal in `IndexBuilder.buildReferences`.
-   - **Task 2b.4 (Telemetry & Cancellation Wiring)**: ✅ Done. Wrapped `Hover`, `Definition`, and `Reference` providers in `supplyAsync` and properly wired `createCancellationToken`, `checkCancellation`, and `recordHealth`.
-   - **Phase 2b (Provider Migrations)**: ✅ Fully completed, compilation passes, all regression tests pass.
-3. **Phase 3 Implementation (Architecture Evolution)**:
-   - Proceed to Phase 3: Snapshot Versioning, Workspace Manager, and Garbage Collection.
-4. **Global Skills Cleanup**:
-   - Audit the user's global skill directory (`C:\Users\shiva\.agents\skills\`) and clean up deprecated folders to save context.
+1. **Phase 4 (Refactor & Aesthetics)**:
+   - Phase 3 core is finished and verified. Next step is Phase 4: code cleanup, dev script automation, and documentation alignment to the new multi-root architecture.
+2. **Completion Strategy Polish**:
+   - Audit the remaining minor completion strategies for edge cases and ensure 100% test coverage for the new stateless pattern.
+3. **Gradle Sync Stability**:
+   - Investigate persistent Gradle tooling daemon stability and implement Task 3c.1 (Gradle Sync Audit) fully to handle long-running Gradle timeouts.

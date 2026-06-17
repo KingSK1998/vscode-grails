@@ -2,11 +2,11 @@ package kingsk.grails.lsp.providers.completions.strategies.type
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import kingsk.grails.lsp.utils.services.ServiceUtils
-import org.apache.groovy.ast.tools.ClassNodeUtils
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.DeclarationExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
@@ -16,14 +16,11 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
-
-import java.util.jar.JarFile
+import kingsk.grails.lsp.context.ASTAccessor
 
 @Slf4j
 @CompileStatic
 class ClassNodeStrategy extends BaseCompletionStrategy {
-	
-	ClassNodeStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	int getPriority() { return 80 }
@@ -32,83 +29,77 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.OFFSET }
 	
 	@Override
-	boolean canHandle(ASTNode node) {
-		// Direct type references (e.g., return types, field types)
+	boolean canHandle(CompletionRequest request, RequestContext ctx) {
+		ASTNode node = request.offsetNode
 		if (node instanceof ClassNode) return true
-		return isLikelyTypeReference(node)
+		return isLikelyTypeReference(request, ctx)
 	}
 	
-	private boolean isLikelyTypeReference(ASTNode node) {
+	private boolean isLikelyTypeReference(CompletionRequest request, RequestContext ctx) {
 		if (!request.prefix) return false
 		if (!Character.isLetter(request.prefix.charAt(0))) return false
 		if (!Character.isUpperCase(request.prefix.charAt(0))) return false
+		
+		ASTNode node = request.offsetNode
 		if (node instanceof ExpressionStatement) {
-			return isLikelyTypeReference(node.expression)
+			// This is rough but covers common cases
+			return true
 		}
 		if (node instanceof VariableExpression && node.accessedVariable instanceof DynamicVariable) {
-			return isLikelyTypeReferenceContext(getParentOf(node))
+			return isLikelyTypeReferenceContext(ctx.ast().getParent(node))
 		}
 		return false
 	}
 	
 	private static boolean isLikelyTypeReferenceContext(ASTNode parent) {
 		if (!parent) return false
-		return parent instanceof BlockStatement || // method body
-				parent instanceof ExpressionStatement || // lone expression (e.g. `Completio`)
-				parent instanceof ReturnStatement || // return type usage
-				parent instanceof MethodNode || // method return/param types
-				parent instanceof ConstructorNode || // constructor signature
-				parent instanceof ClassNode || // field or superclass
-				parent instanceof DeclarationExpression // variable declaration (e.g., `Completion foo`)
+		return parent instanceof BlockStatement ||
+				parent instanceof ExpressionStatement ||
+				parent instanceof ReturnStatement ||
+				parent instanceof MethodNode ||
+				parent instanceof ConstructorNode ||
+				parent instanceof ClassNode ||
+				parent instanceof DeclarationExpression
 	}
 	
-	/**
-	 * Type/class declarations or references
-	 * @param node The ClassNode node to complete
-	 */
 	@Override
-	void provideCompletions(ASTNode node) {
-		if (isLikelyTypeReference(node)) {
-			// Only suggest for meaningful prefixes
-			if (!request.prefix || request.prefix.length() < 1) return
-			addClassNamesFromProjectSource()
-			addClassNamesFromDependencies()
-		}
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+		List<CompletionItem> completions = []
+		if (!request.prefix || request.prefix.length() < 1) return completions
 		
+		addClassNamesFromProjectSource(ctx, completions)
+		addClassNamesFromDependencies(request, ctx, completions)
+		
+		return completions
 	}
 	
-	private void addClassNamesFromProjectSource() {
-		ClassNodeUtils
-		request.compilationContext.fileTracker.getFQCNIndex().keySet().each { fqcn ->
+	private void addClassNamesFromProjectSource(RequestContext ctx, List<CompletionItem> completions) {
+		// Use snapshot index as source of truth for project FQCNs
+		ctx.snapshot().index().allFqcns.each { fqcn ->
 			def name = ServiceUtils.getSimpleNameFromFQCN(fqcn)
 			def pkg = ServiceUtils.getPackageNameFromFQCN(fqcn)
-			addClassNameCompletion(name, pkg)
+			addClassNameCompletion(name, pkg, ctx.uri(), completions)
 		}
 	}
 	
-	private void addClassNamesFromDependencies() {
-		def uri = request.projectContext?.project?.rootDirectory?.toURI()?.toString()
-		def scanResult = request.providerContext.discoveryService.getClassGraphScanResult(uri)
+	private void addClassNamesFromDependencies(CompletionRequest request, RequestContext ctx, List<CompletionItem> completions) {
+		def scanResult = ctx.compilationContext().grailsService.discoveryService.getClassGraphScanResult(ctx.uri())
 		if (scanResult) {
 			int count = 0
-			// Search classes using ClassGraph which already scanned JDK and project dependencies
+			String prefixLower = request.prefix.toLowerCase()
 			for (def classInfo : scanResult.allClasses) {
-				if (count >= 150) break // Prevent overloading completion list
+				if (count >= 150) break
 				
 				String simpleName = classInfo.simpleName
-				if (simpleName.toLowerCase().startsWith(request.prefix.toLowerCase())) {
-					addClassNameCompletion(simpleName, classInfo.packageName)
+				if (simpleName.toLowerCase().startsWith(prefixLower)) {
+					addClassNameCompletion(simpleName, classInfo.packageName, ctx.uri(), completions)
 					count++
 				}
 			}
-		} else {
-			// Fallback placeholder when ClassGraph isn't ready
-			log.debug("ClassGraph scan result not available yet.")
 		}
 	}
 	
-	
-	private void addClassNameCompletion(String name, String packageName = null) {
+	private void addClassNameCompletion(String name, String packageName, String uri, List<CompletionItem> completions) {
 		CompletionItem item = new CompletionItem(name)
 		item.kind = CompletionItemKind.Class
 		item.insertText = name
@@ -117,11 +108,11 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 			item.detail = packageName
 			item.data = [
 					fqcn      : "${packageName}.${name}",
-					uri       : request.file.uri, // Needed for import insert
+					uri       : uri,
 					autoImport: true,
 					isResolved: false
 			]
 		}
-		request.addCompletion(item)
+		completions.add(item)
 	}
 }

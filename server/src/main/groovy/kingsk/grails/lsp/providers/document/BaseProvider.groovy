@@ -1,10 +1,9 @@
 package kingsk.grails.lsp.providers.document
 
 import groovy.transform.CompileStatic
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.context.ProviderContext
-import kingsk.grails.lsp.core.compiler.GrailsCompiler
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.services.WorkspaceManager
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.config.GrailsLspConfig
 import kingsk.grails.lsp.model.dto.GrailsProject
@@ -15,34 +14,40 @@ import kingsk.grails.lsp.services.FileContentTracker
 import kingsk.grails.lsp.services.GrailsDiagnosticService
 import kingsk.grails.lsp.services.ProviderHealthService
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
+import kingsk.grails.lsp.core.compiler.GrailsCompiler
 import org.codehaus.groovy.ast.ASTNode
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentIdentifier
+import kingsk.grails.lsp.model.state.VersionedSnapshot
+import kingsk.grails.lsp.context.ProjectContextImpl
+import kingsk.grails.lsp.context.CompilationContext
 
 import java.util.concurrent.CompletableFuture
 
 @CompileStatic
 abstract class BaseProvider {
     protected final ProviderContext providerContext
-    protected final CompilationContext compilationContext
-    protected final ProjectContext projectContext
+    protected final WorkspaceManager workspaceManager
 
-    BaseProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
+    BaseProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
         this.providerContext = providerContext
-        this.compilationContext = compilationContext
-        this.projectContext = projectContext
+        this.workspaceManager = workspaceManager
     }
 
-    protected GrailsASTVisitor getVisitor()             { compilationContext.visitor }
-    protected FileContentTracker getFileTracker()       { compilationContext.fileTracker }
     protected GrailsLspConfig getConfig()               { providerContext.config }
-    protected GrailsCompiler getCompiler()              { compilationContext.compiler }
     protected ErrorService getErrorService()            { providerContext.errorService }
     protected GrailsDiagnosticService getDiagnostics()  { providerContext.diagnostics }
     protected CancellationService getCancellationService() { providerContext.cancellationService }
     protected ProviderHealthService getHealthService() { providerContext.healthService }
-    protected GrailsProject getProject()                { projectContext.project }
-    
+
+    protected RequestContext createRequestContext(String uri) {
+        ProjectContextImpl projectCtx = workspaceManager.getProjectForUri(uri)
+        if (!projectCtx) {
+            // Fallback empty snapshot
+            return new RequestContext(uri, new VersionedSnapshot(0, new kingsk.grails.lsp.index.ProjectIndex("empty").snapshot, null, null, [:], 0), providerContext, null)
+        }
+        return new RequestContext(uri, projectCtx.activeSnapshot.get(), providerContext, (CompilationContext) projectCtx)
+    }
 
     protected CancellationService.CancellationToken createCancellationToken(String uri) {
         cancellationService.createToken(uri)
@@ -60,32 +65,20 @@ abstract class BaseProvider {
         this.class.simpleName
     }
 
-    protected <T> T withReadLock(groovy.lang.Closure<T> closure) {
-        compilationContext.withReadLock(closure)
+    protected FileContentTracker getFileTracker() {
+        providerContext.fileTracker
     }
 
-    protected ASTNode getNodeAtPosition(String uri, Position position) {
-        withReadLock {
-            if (!visitor || visitor.empty) return null
-            visitor.getNodeAtPosition(TextFile.normalizePath(uri), position)
-        }
+    protected ASTNode getNodeAtPosition(RequestContext ctx, Position position) {
+        ctx.ast()?.getNodeAtPosition(TextFile.normalizePath(ctx.uri()), position)
     }
 
-    protected ASTNode getNodeAtPosition(TextDocumentIdentifier textDocument, Position position) {
-        getNodeAtPosition(textDocument.uri, position)
+    protected ASTNode getNodeAtLineAndColumn(RequestContext ctx, int line, int character) {
+        ctx.ast()?.getNodeAtLineAndColumn(TextFile.normalizePath(ctx.uri()), line, character)
     }
 
-    protected ASTNode getNodeAtLineAndColumn(TextDocumentIdentifier textDocument, int line, int character) {
-        withReadLock {
-            if (!visitor || visitor.empty) return null
-            visitor.getNodeAtLineAndColumn(TextFile.normalizePath(textDocument.uri), line, character)
-        }
-    }
-
-    protected ASTNode getDefinitionNode(ASTNode offsetNode, boolean includeDeclaration = false) {
-        withReadLock {
-            offsetNode ? GrailsASTHelper.getDefinition(offsetNode, includeDeclaration, visitor) : null
-        }
+    protected ASTNode getDefinitionNode(ASTNode offsetNode, RequestContext ctx, boolean includeDeclaration = false) {
+        offsetNode && ctx.ast() ? GrailsASTHelper.getDefinition(offsetNode, includeDeclaration, (GrailsASTVisitor) ctx.ast()) : null
     }
 
     protected static <T> CompletableFuture<T> emptyResult(T emptyValue) {
@@ -95,6 +88,4 @@ abstract class BaseProvider {
     protected static <T> CompletableFuture<T> nullResult() {
         CompletableFuture.completedFuture(null)
     }
-
-    
 }

@@ -1,13 +1,14 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.services.WorkspaceManager
 import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.context.RequestContext
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.enums.DocumentationType
 import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
+import kingsk.grails.lsp.model.types.TextFile
 import org.codehaus.groovy.ast.ASTNode
 import org.eclipse.lsp4j.Hover
 import org.eclipse.lsp4j.MarkupContent
@@ -15,10 +16,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import kingsk.grails.lsp.index.LocalSymbolInfo
 import kingsk.grails.lsp.index.SymbolInfo
-
-import kingsk.grails.lsp.utils.ast.GrailsASTHelper
-import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
-import kingsk.grails.lsp.model.enums.DocumentationType
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 
 import java.util.concurrent.CompletableFuture
 
@@ -26,8 +24,8 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsHoverProvider extends BaseProvider {
 
-    GrailsHoverProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsHoverProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
     CompletableFuture<Hover> provideHover(TextDocumentIdentifier textDocument, Position position) {
@@ -37,45 +35,44 @@ class GrailsHoverProvider extends BaseProvider {
         return CompletableFuture.supplyAsync {
             try {
                 checkCancellation(token)
+                def ctx = createRequestContext(textDocument.uri)
+
                 if (getConfig().hoverUsesIndex) {
                     def uri = textDocument.uri
-                    
-                    LocalSymbolInfo local = compilationContext.methodScopeCache.getLocalAt(uri, position)
+                    def local = ctx.compilationContext().methodScopeCache.getLocalAt(uri, position)
                     if (local) {
                         log.info("[HOVER] path=index tier=0 kind=local")
                         return new Hover(buildLocalHover(local))
                     }
                     
                     checkCancellation(token)
-                    SymbolInfo symbol = compilationContext.projectIndex.snapshot.getSymbolAt(uri, position)
+                    SymbolInfo symbol = ctx.snapshot().index().getSymbolAt(uri, position)
                     if (symbol) {
-                        def docs = compilationContext.groovydocCache.getGroovydoc(symbol.descriptor, uri) { (String) null }
+                        def docs = ctx.compilationContext().groovydocCache.getGroovydoc(symbol.descriptor, uri) { (String) null }
                         log.info("[HOVER] path=index tier=${docs ? 0 : 1} kind=symbol")
                         return new Hover(buildSymbolHover(symbol, docs))
                     }
                 }
 
                 checkCancellation(token)
-                // Fallback to live AST
                 log.info("[HOVER] path=ast tier=3 kind=fallback")
-                def offsetNode = getNodeAtPosition(textDocument, position)
+                def offsetNode = getNodeAtPosition(ctx, position)
                 if (!offsetNode) {
                     log.debug("[HOVER] No ASTNode found at the specified position.")
                     return new Hover(new MarkupContent(org.eclipse.lsp4j.MarkupKind.MARKDOWN, ""))
                 }
 
-                def definitionNode = getDefinitionNode(offsetNode, false) ?: offsetNode
+                def definitionNode = getDefinitionNode(offsetNode, ctx, false) ?: offsetNode
                 checkCancellation(token)
 
-                // Use DocumentationHelper for consistent documentation generation
                 def documentation = DocumentationHelper.getDocumentation(
                     definitionNode,
-                    project?.isGrailsProject ?: false,
-                    visitor,
+                    ctx.grailsProject()?.isGrailsProject ?: false,
+                    (GrailsASTVisitor) ctx.ast(),
                     DocumentationType.HOVER
                 )
 
-                if (!documentation?.value) {
+                if (!documentation || !documentation.value) {
                     log.debug("[HOVER] No hover content found for node type: ${definitionNode.class.simpleName}")
                     return new Hover(new MarkupContent(org.eclipse.lsp4j.MarkupKind.MARKDOWN, ""))
                 }

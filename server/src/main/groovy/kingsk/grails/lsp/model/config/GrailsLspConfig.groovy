@@ -38,7 +38,7 @@ class GrailsLspConfig {
 
 	boolean hoverUsesIndex = false
 	boolean definitionUsesIndex = false
-	boolean referencesUsesIndex = false
+	boolean referenceUsesIndex = false
 	boolean shadowMode = false
 
 	void updateFromClient(JsonObject config) {
@@ -61,7 +61,7 @@ class GrailsLspConfig {
 			def exp = config.getAsJsonObject("experimental")
 			this.hoverUsesIndex = exp.get("hoverIndex")?.asBoolean ?: false
 			this.definitionUsesIndex = exp.get("definitionIndex")?.asBoolean ?: false
-			this.referencesUsesIndex = exp.get("referencesIndex")?.asBoolean ?: false
+			this.referenceUsesIndex = exp.get("referencesIndex")?.asBoolean ?: false
 			this.shadowMode = exp.get("shadowMode")?.asBoolean ?: false
 		}
 	}

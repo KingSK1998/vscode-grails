@@ -1,8 +1,7 @@
 package kingsk.grails.lsp.providers.workspace
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.services.WorkspaceManager
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -14,30 +13,30 @@ import org.codehaus.groovy.ast.MethodNode
 @CompileStatic
 class GrailsTestDiscoveryProvider {
     private final ProviderContext providerContext
-    private final CompilationContext compilationContext
-    private final ProjectContext projectContext
+    private final WorkspaceManager workspaceManager
 
-    GrailsTestDiscoveryProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
+    GrailsTestDiscoveryProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
         this.providerContext = providerContext
-        this.compilationContext = compilationContext
-        this.projectContext = projectContext
+        this.workspaceManager = workspaceManager
     }
 
     List<Map<String, Object>> discoverTests(String projectUri) {
-        def project = projectContext.getProjectForUri(projectUri)
-        if (!project) return []
+        def projectCtx = workspaceManager.getProjectForUri(projectUri)
+        if (!projectCtx) return []
 
         List<Map<String, Object>> tests = []
 
         // Search in src/test/groovy
-        compilationContext.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
-            if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
-                classNodes.each { ClassNode classNode ->
-                    Map<String, Object> testMap = new HashMap<>()
-                    testMap.put("uri", uri)
-                    testMap.put("className", classNode.name)
-                    testMap.put("methods", classNode.methods.findAll { MethodNode m -> isTestMethod(m) }.collect { MethodNode m -> m.name })
-                    tests.add(testMap)
+        projectCtx.withReadLock {
+            projectCtx.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+                if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
+                    classNodes.each { ClassNode classNode ->
+                        Map<String, Object> testMap = new HashMap<>()
+                        testMap.put("uri", uri)
+                        testMap.put("className", classNode.name)
+                        testMap.put("methods", classNode.methods.findAll { MethodNode m -> isTestMethod(m) }.collect { MethodNode m -> m.name })
+                        tests.add(testMap)
+                    }
                 }
             }
         }
@@ -49,21 +48,23 @@ class GrailsTestDiscoveryProvider {
         List<Map<String, Object>> allTests = []
         
         for (String projectUri : projectUris) {
-            def project = projectContext.getProjectForUri(projectUri)
-            if (!project) continue
+            def projectCtx = workspaceManager.getProjectForUri(projectUri)
+            if (!projectCtx) continue
 
             // Search in src/test/groovy for this project
-            compilationContext.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
-                // Only include tests that belong to this project
-                if (!uri.startsWith(project.rootDirectory.absolutePath)) return
-                if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
-                    classNodes.each { ClassNode classNode ->
-                        Map<String, Object> testMap = new HashMap<>()
-                        testMap.put("uri", uri)
-                        testMap.put("className", classNode.name)
-                        testMap.put("projectPath", project.rootDirectory.absolutePath)
-                        testMap.put("methods", classNode.methods.findAll { MethodNode m -> isTestMethod(m) }.collect { MethodNode m -> m.name })
-                        allTests.add(testMap)
+            projectCtx.withReadLock {
+                projectCtx.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+                    // Only include tests that belong to this project
+                    if (!uri.startsWith(projectCtx.project.rootDirectory.absolutePath)) return
+                    if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
+                        classNodes.each { ClassNode classNode ->
+                            Map<String, Object> testMap = new HashMap<>()
+                            testMap.put("uri", uri)
+                            testMap.put("className", classNode.name)
+                            testMap.put("projectPath", projectCtx.project.rootDirectory.absolutePath)
+                            testMap.put("methods", classNode.methods.findAll { MethodNode m -> isTestMethod(m) }.collect { MethodNode m -> m.name })
+                            allTests.add(testMap)
+                        }
                     }
                 }
             }

@@ -1,55 +1,33 @@
 package kingsk.grails.lsp.providers.completions.strategies
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.GrailsArtifactType
 import kingsk.grails.lsp.providers.completions.CompletionRequest
+import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
 
 /**
- * Trait for Grails-aware completion providers
- * Provides common Grails context checks
+ * Trait for Grails-aware completion strategies.
  */
 @CompileStatic
 trait GrailsAware {
 	
-	/**
-	 * Check if request is in a Grails project
-	 */
-	boolean isGrailsProject(CompletionRequest request) {
-		return request.isGrailsProject
+	boolean isArtifactType(CompletionRequest request, RequestContext ctx, GrailsArtifactType type) {
+		if (!request.isGrailsProject) return false
+		def currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+		if (!currentClass) return false
+		return GrailsArtefactUtils.getGrailsArtifactType(currentClass, request.uri) == type
 	}
 	
-	/**
-	 * Check if current class is a specific Grails artifact type
-	 */
-	boolean isArtifactType(CompletionRequest request, GrailsArtifactType type) {
-		return request.isGrailsProject && request.artefactType == type
+	boolean isController(CompletionRequest request, RequestContext ctx) {
+		return isArtifactType(request, ctx, GrailsArtifactType.CONTROLLER)
 	}
 	
-	/**
-	 * Check if current class is a Controller
-	 */
-	boolean isController(CompletionRequest request) {
-		return isArtifactType(request, GrailsArtifactType.CONTROLLER)
+	boolean isDomain(CompletionRequest request, RequestContext ctx) {
+		return isArtifactType(request, ctx, GrailsArtifactType.DOMAIN)
 	}
 	
-	/**
-	 * Check if current class is a Domain
-	 */
-	boolean isDomain(CompletionRequest request) {
-		return isArtifactType(request, GrailsArtifactType.DOMAIN)
-	}
-	
-	/**
-	 * Check if current class is a Service
-	 */
-	boolean isService(CompletionRequest request) {
-		return isArtifactType(request, GrailsArtifactType.SERVICE)
-	}
-	
-	/**
-	 * Check if current class is a TagLib
-	 */
-	boolean isTagLib(CompletionRequest request) {
-		return isArtifactType(request, GrailsArtifactType.TAGLIB)
+	boolean isService(CompletionRequest request, RequestContext ctx) {
+		return isArtifactType(request, ctx, GrailsArtifactType.SERVICE)
 	}
 }

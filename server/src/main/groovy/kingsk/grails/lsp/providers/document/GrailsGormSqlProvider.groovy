@@ -1,118 +1,91 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
-import kingsk.grails.lsp.context.ProviderContext
-
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.model.types.TextFile
+import kingsk.grails.lsp.utils.ast.ASTUtils
+import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.grails.GrailsUtils
+import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.FieldNode
-import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
-import org.codehaus.groovy.ast.stmt.ExpressionStatement
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression
-import org.codehaus.groovy.ast.expr.MapEntryExpression
+
+import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Slf4j
 @CompileStatic
 class GrailsGormSqlProvider extends BaseProvider {
 
-    GrailsGormSqlProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsGormSqlProvider(kingsk.grails.lsp.context.ProviderContext providerContext, kingsk.grails.lsp.services.WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
-    String generateSql(String uri) {
-        def normalizedUri = kingsk.grails.lsp.model.types.TextFile.normalizePath(uri)
-        def classNodes = visitor.allClassNodes[normalizedUri]
-        def classNode = classNodes?.find { true }
+    CompletableFuture<String> provideGormSqlPreview(String uri) {
+        long startTime = System.currentTimeMillis()
 
-        if (!classNode || !GrailsUtils.isDomainClass(classNode)) {
-            return "-- Not a valid Grails Domain class."
-        }
+        return CompletableFuture.supplyAsync({ ->
+            try {
+                def ctx = createRequestContext(uri)
+                String normalizedUri = TextFile.normalizePath(uri)
+                
+                def nodes = ctx.ast().getNodes(normalizedUri)
+                if (!nodes) return ""
+                
+                def classNode = nodes.find { it instanceof ClassNode } as ClassNode
+                if (!classNode || !GrailsUtils.isDomainClass(classNode)) {
+                    return "-- Not a Grails Domain Class"
+                }
 
-        def tableName = discoverTableName(classNode)
-        def sql = new StringBuilder()
-        sql.append("/* GORM SQL Preview for ${classNode.nameWithoutPackage} */\n\n")
-        sql.append("CREATE TABLE ${tableName} (\n")
+                def tableName = discoverTableName(classNode)
+                StringBuilder sb = new StringBuilder()
+                sb.append("/* GORM SQL Preview for ").append(classNode.nameWithoutPackage).append(" */\n")
+                sb.append("CREATE TABLE ").append(tableName).append(" (\n")
 
-        def properties = GrailsUtils.getDomainProperties(classNode)
-        List<String> columns = []
+                def properties = GrailsUtils.getDomainProperties(classNode)
+                List<String> columns = []
+                columns.add("    id BIGINT PRIMARY KEY,")
+                columns.add("    version BIGINT NOT NULL,")
 
-        // ID column (default GORM behavior)
-        columns << "    id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
-        columns << "    version BIGINT NOT NULL"
-
-        properties.each { field ->
-            def colName = discoverColumnName(classNode, field.name)
-            def colType = mapToSqlType(field.type.name)
-            columns << "    ${colName} ${colType}".toString()
-        }
-
-        sql.append(columns.join(",\n"))
-        sql.append("\n);")
-
-        sql.toString()
-    }
-
-    private String discoverTableName(ClassNode classNode) {
-        def mapping = GrailsUtils.getMappingField(classNode)
-        if (mapping?.initialExpression instanceof ClosureExpression) {
-            def closure = (ClosureExpression) mapping.initialExpression
-            if (closure.code instanceof BlockStatement) {
-                def block = (BlockStatement) closure.code
-                for (statement in block.statements) {
-                    if (statement instanceof ExpressionStatement) {
-                        def exprStmt = (ExpressionStatement) statement
-                        if (exprStmt.expression instanceof MethodCallExpression) {
-                            def call = (MethodCallExpression) exprStmt.expression
-                            if (call.methodAsString == 'table' && call.arguments instanceof NamedArgumentListExpression) {
-                                def args = (NamedArgumentListExpression) call.arguments
-                                for (entry in args.mapEntryExpressions) {
-                                    if (entry.keyExpression.text == 'name') return entry.valueExpression.text.replaceAll(/['"]/, '')
-                                }
-                            } else if (call.methodAsString == 'table' && call.arguments instanceof ConstantExpression) {
-                                return call.arguments.text.replaceAll(/['"]/, '')
-                            }
-                        }
+                properties.each { FieldNode field ->
+                    if (field.name != 'id' && field.name != 'version') {
+                        def colName = discoverColumnName(classNode, field.name)
+                        def colType = mapToSqlType(field.type.name)
+                        columns.add("    ${colName} ${colType},".toString())
                     }
                 }
+
+                sb.append(columns.join("\n"))
+                sb.append("\n);")
+
+                return sb.toString()
+            } finally {
+                recordHealth("gormSql", System.currentTimeMillis() - startTime, true)
             }
-        }
-        // Default GORM table name strategy (camelCase to snake_case)
-        camelToSnake(classNode.nameWithoutPackage)
+        } as Supplier<String>)
     }
 
-    private String discoverColumnName(ClassNode classNode, String fieldName) {
-        // Simple GORM default mapping
-        camelToSnake(fieldName)
+    private String discoverTableName(ClassNode node) {
+        node.nameWithoutPackage.toLowerCase()
     }
 
-    private String camelToSnake(String str) {
-        str.replaceAll(/([a-z])([A-Z])/, '$1_$2').toLowerCase()
+    private String discoverColumnName(ClassNode node, String fieldName) {
+        fieldName.toLowerCase()
     }
 
-    private String mapToSqlType(String groovyType) {
-        switch (groovyType) {
-            case "java.lang.String": return "VARCHAR(255)"
-            case "java.lang.Integer":
-            case "int": return "INT"
-            case "java.lang.Long":
-            case "long": return "BIGINT"
-            case "java.lang.Boolean":
-            case "boolean": return "BOOLEAN"
-            case "java.util.Date":
-            case "java.time.LocalDate": return "DATE"
-            case "java.time.LocalDateTime": return "TIMESTAMP"
-            case "java.lang.Double":
-            case "double":
-            case "java.lang.Float":
-            case "float": return "DOUBLE"
-            case "java.math.BigDecimal": return "DECIMAL(19,2)"
-            default: return "VARCHAR(255) /* Inferred from ${groovyType} */"
+    private String mapToSqlType(String javaType) {
+        switch (javaType) {
+            case 'java.lang.String': return 'VARCHAR(255)'
+            case 'java.lang.Integer':
+            case 'int': return 'INT'
+            case 'java.lang.Long':
+            case 'long': return 'BIGINT'
+            case 'java.lang.Boolean':
+            case 'boolean': return 'BOOLEAN'
+            case 'java.util.Date': return 'TIMESTAMP'
+            default: return 'VARCHAR(255)'
         }
     }
 }

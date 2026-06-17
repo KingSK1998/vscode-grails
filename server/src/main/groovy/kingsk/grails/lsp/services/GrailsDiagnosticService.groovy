@@ -36,12 +36,12 @@ class GrailsDiagnosticService {
      * @return A WorkspaceDiagnosticReport containing updated or unchanged diagnostic reports.
      */
     CompletableFuture<WorkspaceDiagnosticReport> provideWorkspaceDiagnostics(String identifier, List<PreviousResultId> previousResultIds) {
-        if (!service.compiler.errorCollectorOrNull) {
+        if (!service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull) {
             return CompletableFuture.completedFuture(new WorkspaceDiagnosticReport([]))
         }
 
         log.debug("[DIAGNOSTICS] Generating workspace diagnostics for $identifier")
-        Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(service.compiler.errorCollectorOrNull)
+        Map<String, Set<Diagnostic>> newDiagnostics = extractDiagnostics(service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull)
 
         if (newDiagnostics.isEmpty()) {
             service.errorService.handleError("No diagnostics found for $identifier", null, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.INFO)
@@ -84,7 +84,7 @@ class GrailsDiagnosticService {
      * @return A DocumentDiagnosticReport containing updated or unchanged diagnostic reports.
      */
     CompletableFuture<DocumentDiagnosticReport> provideDocumentDiagnostics(TextDocumentIdentifier textDocument, String identifier, String previousResultId) {
-        if (!service.compiler.errorCollectorOrNull) {
+        if (!service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull) {
             return CompletableFuture.completedFuture(new DocumentDiagnosticReport(
                 new RelatedFullDocumentDiagnosticReport(resultId: "empty", items: [])
             ))
@@ -95,7 +95,7 @@ class GrailsDiagnosticService {
 
         // Extract fresh diagnostics
         log.debug("[DIAGNOSTICS] Generating diagnostics for $uri")
-        Set<Diagnostic> newDiagnostics = extractDiagnostics(service.compiler.errorCollectorOrNull).getOrDefault(uri, [] as Set)
+        Set<Diagnostic> newDiagnostics = extractDiagnostics(service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull).getOrDefault(uri, [] as Set)
         String newResultId = DiagnosticUtils.computeResultId(newDiagnostics) ?: "empty"
         String oldResultId = DiagnosticUtils.computeResultId(currentDiagnostics[uri] ?: [] as Set) ?: "empty"
 

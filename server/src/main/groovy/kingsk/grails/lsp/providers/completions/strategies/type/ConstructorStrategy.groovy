@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.providers.completions.strategies.type
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
@@ -8,14 +9,13 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ConstructorNode
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression
+import org.eclipse.lsp4j.CompletionItem
 
 /**
  * Handles completions for constructor calls
  */
 @CompileStatic
 class ConstructorStrategy extends BaseCompletionStrategy {
-	
-	ConstructorStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	CompletionTarget target() { return CompletionTarget.PARENT }
@@ -24,56 +24,35 @@ class ConstructorStrategy extends BaseCompletionStrategy {
 	int getPriority() { return 75 }
 	
 	@Override
-	boolean canHandle(ASTNode node) {
-		if (node instanceof ConstructorCallExpression) return true
-		return node instanceof ClassNode && node.declaredConstructors.any {
-			// Additional logic to determine if cursor is in constructor context
-			!it.synthetic
-		}
+	boolean canHandle(CompletionRequest request, RequestContext ctx) {
+		request.offsetNode instanceof ConstructorCallExpression
 	}
 	
 	@Override
-	void provideCompletions(ASTNode node) {
-		// Offset is often ClassNode, but context matters (in constructor).
-		ConstructorCallExpression constructorCall = (ConstructorCallExpression) node
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+		ConstructorCallExpression constructorCall = (ConstructorCallExpression) request.offsetNode
 		ClassNode constructorType = constructorCall.type
 		
-		if (!constructorType) return
+		if (!constructorType) return completions
 		
-		// Add constructor parameter completions
-		addConstructorParameterCompletions(constructorType, request)
+		addConstructorParameterCompletions(constructorType, completions)
+		addNamedParameterCompletions(constructorType, completions)
 		
-		// Add named parameter completions for Groovy-style constructors
-		addNamedParameterCompletions(constructorType, request)
-		
-		// Add Grails-specific constructor completions
-		if (request.isGrailsProject) {
-			addGrailsConstructorCompletions(constructorType, request)
-		}
+		return completions
 	}
 	
-	private void addConstructorParameterCompletions(ClassNode constructorType, CompletionRequest request) {
+	private void addConstructorParameterCompletions(ClassNode constructorType, List<CompletionItem> completions) {
 		constructorType.declaredConstructors?.each { ConstructorNode constructor ->
 			constructor.parameters?.each { param ->
-				request.addCompletion(param)
+				completions.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(param))
 			}
 		}
 	}
 	
-	private void addNamedParameterCompletions(ClassNode constructorType, CompletionRequest request) {
-		// Add property-based named parameters
+	private void addNamedParameterCompletions(ClassNode constructorType, List<CompletionItem> completions) {
 		constructorType.properties?.each { property ->
-			request.addCompletion(property)
-		}
-	}
-	
-	private void addGrailsConstructorCompletions(ClassNode constructorType, CompletionRequest request) {
-		// Add domain-specific constructor completions
-		if (constructorType.name.endsWith('Domain')) {
-			List<String> domainParams = ['id', 'version']
-			domainParams.each { param ->
-				//request.addCompletion(param)
-			}
+			completions.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(property))
 		}
 	}
 }

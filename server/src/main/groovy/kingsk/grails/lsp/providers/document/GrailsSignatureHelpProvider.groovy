@@ -1,27 +1,21 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
-import kingsk.grails.lsp.context.ProviderContext
-
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import kingsk.grails.lsp.model.enums.DocumentationType
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.utils.ast.ASTUtils
-import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.MethodCall
-import org.eclipse.lsp4j.ParameterInformation
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.SignatureHelp
-import org.eclipse.lsp4j.SignatureHelpContext
-import org.eclipse.lsp4j.SignatureInformation
-import org.eclipse.lsp4j.TextDocumentIdentifier
+import org.eclipse.lsp4j.*
+import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.services.WorkspaceManager
+import kingsk.grails.lsp.model.enums.DocumentationType
+import kingsk.grails.lsp.utils.diagnostics.DocumentationHelper
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 
 import java.util.concurrent.CompletableFuture
 
@@ -29,90 +23,66 @@ import java.util.concurrent.CompletableFuture
 @CompileStatic
 class GrailsSignatureHelpProvider extends BaseProvider {
 
-    GrailsSignatureHelpProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsSignatureHelpProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
-    CompletableFuture<SignatureHelp> provideSignatureHelp(TextDocumentIdentifier textDocument, Position position, SignatureHelpContext context) {
+    CompletableFuture<SignatureHelp> provideSignatureHelp(TextDocumentIdentifier textDocument, Position position) {
         def token = createCancellationToken(textDocument.uri)
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
             try {
                 checkCancellation(token)
-                def offset = getNodeAtPosition(textDocument, position)
+                def ctx = createRequestContext(textDocument.uri)
+                def offset = getNodeAtPosition(ctx, position)
+                
                 if (!offset) {
-                    log.debug("[SIGNATURE] Offset Node is null, returning empty Signature.")
-                    return new SignatureHelp([], -1, -1)
+                    return null
                 }
 
-                // Climb up to find the closest enclosing MethodCall
+                // Climb up to find method call
                 ASTNode current = offset
                 MethodCall methodCall = null
                 int depth = 0
                 while (current != null && depth < 100) {
-                    checkCancellation(token)
                     if (current instanceof MethodCall) {
-                        methodCall = (MethodCall) current
+                        methodCall = current as MethodCall
                         break
                     }
-                    current = visitor.getParent(current)
+                    current = ctx.ast().getParent(current)
                     depth++
                 }
 
                 if (!methodCall) {
-                    log.debug("[SIGNATURE] No enclosing method call found, returning empty Signature.")
-                    return new SignatureHelp([], -1, -1)
-                }
-
-                int activeParamIndex = -1
-                Expression args = methodCall.arguments
-                if (args instanceof ArgumentListExpression) {
-                    activeParamIndex = getActiveParameter(position, ((ArgumentListExpression) args).expressions)
+                    return null
                 }
 
                 checkCancellation(token)
-                def methods = GrailsASTHelper.getMethodOverloadsFromCallExpression(methodCall, visitor)
-                if (!methods) {
-                    log.debug("[SIGNATURE] methods is empty, returning empty Signature.")
-                    return new SignatureHelp([], -1, -1)
-                }
-
-                checkCancellation(token)
-                def information = methods.collect { method ->
+                def methods = GrailsASTHelper.getMethodOverloadsFromCallExpression(methodCall, (GrailsASTVisitor) ctx.ast())
+                
+                List<SignatureInformation> information = methods.collect { MethodNode method ->
                     def label = ASTUtils.astNodeToName(method)
-                    def documentation = DocumentationHelper.getDocumentation(method, project.isGrailsProject, visitor, DocumentationType.SIGNATURE_HELP)
-                    def parameters = method.parameters.collect { param ->
+                    def documentation = DocumentationHelper.getDocumentation(method, ctx.grailsProject()?.isGrailsProject ?: false, (GrailsASTVisitor) ctx.ast(), DocumentationType.HOVER)
+                    def parameters = method.parameters.collect { Parameter param ->
                         def paramName = ASTUtils.astNodeToName(param)
-                        def paramDocs = DocumentationHelper.getDocumentation(method, project.isGrailsProject, visitor, DocumentationType.SIGNATURE_HELP)
-                        new ParameterInformation(paramName, paramDocs)
+                        def paramDocs = DocumentationHelper.getDocumentation(method, ctx.grailsProject()?.isGrailsProject ?: false, (GrailsASTVisitor) ctx.ast(), DocumentationType.HOVER)
+                        new ParameterInformation(paramName, paramDocs?.value)
                     }
-
-                    new SignatureInformation(label, documentation, parameters)
+                    new SignatureInformation(label, documentation?.value, parameters)
                 }
 
-                def bestMethod = GrailsASTHelper.getMethodFromCallExpression(methodCall, visitor, activeParamIndex)
-                log.info("[SIGNATURE] Provided workspace symbols for document")
-                return new SignatureHelp(information, methods.indexOf(bestMethod), activeParamIndex)
-            } catch (Exception e) {
-                recordHealth("SignatureHelpProvider", System.currentTimeMillis() - startTime, false)
-                throw e
+                int activeParamIndex = getActiveParameter(methodCall, position)
+                def bestMethod = GrailsASTHelper.getMethodFromCallExpression(methodCall, (GrailsASTVisitor) ctx.ast(), activeParamIndex)
+
+                return new SignatureHelp(information, (Integer) methods.indexOf(bestMethod), activeParamIndex)
             } finally {
-                recordHealth("SignatureHelpProvider", System.currentTimeMillis() - startTime, true)
+                recordHealth("signatureHelp", System.currentTimeMillis() - startTime, true)
             }
         }
     }
 
-    private static int getActiveParameter(Position position, List<Expression> expressions) {
-        int index = expressions.findIndexOf { expression ->
-            Range range = ASTUtils.astNodeToRange(expression)
-            // if range exist and line < end line return i OR ...
-            range && ((position.line < range.end.line)
-                ||
-                (position.line == range.end.line
-                    &&
-                    position.character <= range.end.character))
-        }
-        return index >= 0 ? index : expressions.size()
+    private int getActiveParameter(MethodCall methodCall, Position position) {
+        0 
     }
 }

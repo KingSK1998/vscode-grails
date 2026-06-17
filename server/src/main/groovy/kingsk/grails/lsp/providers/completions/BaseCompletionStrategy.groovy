@@ -2,208 +2,105 @@ package kingsk.grails.lsp.providers.completions
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.ASTAccessor
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
-import kingsk.grails.lsp.providers.completions.CompletionRequest
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.ast.MemberExtractor
 import kingsk.grails.lsp.utils.ast.ScopeHelper
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.Expression
+import org.eclipse.lsp4j.CompletionItem
+import kingsk.grails.lsp.model.enums.GrailsArtifactType
+import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
 
 /**
- * Base implementation for completion strategies providing common utilities and automatic request lifecycle management.
+ * Base implementation for completion strategies providing common utilities.
  */
 @Slf4j
 @CompileStatic
-abstract class BaseCompletionStrategy {
+abstract class BaseCompletionStrategy implements CompletionStrategy {
 	
-	// Request injected via constructor (immutable, thread-safe)
-	protected final CompletionRequest request
-	
-	BaseCompletionStrategy(CompletionRequest request) { this.request = request }
-	
-	/**
-	 * Get the priority of this strategy (higher = more specific)
-	 * @return priority value (0-100, where 100 is highest priority)
-	 */
+	@Override
 	int getPriority() { return 50 }
-	
-	/**
-	 * Get the target of this strategy (OFFSET, PARENT or BOTH)
-	 */
+
 	CompletionTarget target() { return CompletionTarget.OFFSET }
 	
-	/**
-	 * Check if this strategy can handle the given AST node
-	 * @param node The AST node at completion position
-	 * @return true if this strategy can provide completions for this node
-	 */
-	abstract boolean canHandle(ASTNode node)
+	abstract boolean canHandle(CompletionRequest request, RequestContext ctx)
 	
-	/**
-	 * Provide completions for the given node
-	 * @param node The AST node at completion position
-	 */
-	abstract void provideCompletions(ASTNode node)
+	abstract List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx)
 	
 	// ===== Core AST Helper Methods =====
 	
-	/**
-	 * Get the parent of an AST node safely
-	 * @return The parent node, or null if not found
-	 */
-	protected ASTNode getParentOf(ASTNode node) {
+	protected ASTNode getParentOf(ASTNode node, RequestContext ctx) {
 		if (!node) return null
-		return request.visitor.getParent(node)
+		return ctx.ast().getParent(node)
 	}
 	
-	/**
-	 * Get the type of an AST node safely
-	 * @return ClassNode of the AST node, or null if not found
-	 */
-	protected ClassNode getTypeOf(ASTNode node) {
+	protected ClassNode getTypeOf(ASTNode node, RequestContext ctx) {
 		if (!node) return null
-		return GrailsASTHelper.getTypeOfNode(node, request.visitor)
+		return GrailsASTHelper.getTypeOfNode(node, ctx.compilationContext().visitor)
 	}
 	
 	// ===== Member Completion Methods =====
 	
-	/**
-	 * Add completions for members of an expression (most common use case)
-	 * Automatically determines static vs instance based on expression type
-	 */
-	protected void addMemberCompletions(Expression expression) {
+	protected void addMemberCompletions(Expression expression, RequestContext ctx, List<CompletionItem> items) {
 		if (!expression) return
-		def items = MemberExtractor.collectMembers(expression, request.visitor)
-		request.addAllCompletions(items)
+		def visitor = ctx.compilationContext().visitor
+		def members = MemberExtractor.collectMembers(expression, visitor)
 		
-		// Add Groovy dynamic extension methods (e.g. DefaultGroovyMethods)
-		ClassNode expressionType = GrailsASTHelper.getTypeOfNode(expression, request.visitor)
+		members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		members.fields.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		members.methods.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		
+		ClassNode expressionType = GrailsASTHelper.getTypeOfNode(expression, visitor)
 		if (expressionType) {
-			request.providerContext.discoveryService.getMethodsForType(expressionType).each { String dgmMethod ->
-				// don't add if already collected from MemberExtractor
-				if (!items.methods.any { it.name == dgmMethod }) {
-					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(dgmMethod)
+			ctx.compilationContext().grailsService.discoveryService.getMethodsForType(expressionType).each { String dgmMethod ->
+				if (!members.methods.any { it.name == dgmMethod }) {
+					CompletionItem item = new CompletionItem(dgmMethod)
 					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
 					item.detail = 'Groovy Default Method'
-					request.addCompletion(item)
+					items.add(item)
 				}
 			}
 		}
 	}
 	
-	/**
-	 * Add static class completions for a given type
-	 */
-	protected void addStaticMemberCompletions(ClassNode classType) {
+	protected void addStaticMemberCompletions(ClassNode classType, RequestContext ctx, List<CompletionItem> items) {
 		if (!classType) return
-		def items = MemberExtractor.collectMembers(classType, true, request.getCurrentClass())
-		request.addAllCompletions(items)
+		def visitor = ctx.compilationContext().visitor
+		def members = MemberExtractor.collectMembers(classType, true, null)
 		
-		if (request.isGrailsProject) {
-			kingsk.grails.lsp.model.enums.GrailsArtifactType type = kingsk.grails.lsp.utils.grails.GrailsArtefactUtils.getGrailsArtifactType(classType)
-			if (type == kingsk.grails.lsp.model.enums.GrailsArtifactType.DOMAIN) {
+		members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		members.fields.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		members.methods.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		
+		if (ctx.grailsProject()?.isGrailsProject) {
+			GrailsArtifactType type = GrailsArtefactUtils.getGrailsArtifactType(classType)
+			if (type == GrailsArtifactType.DOMAIN) {
 				kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getGormStaticMethods().each { String m ->
-					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(m)
+					CompletionItem item = new CompletionItem(m)
 					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
 					item.detail = 'GORM Static Method'
-					request.addCompletion(item)
-				}
-				
-				// Generate basic dynamic finders for each property
-				classType.properties.each { org.codehaus.groovy.ast.PropertyNode p ->
-					String capitalized = p.name.capitalize()
-					['findBy', 'findAllBy', 'countBy', 'existsBy', 'findOrCreateBy'].each { prefix ->
-						org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(prefix + capitalized)
-						item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
-						item.detail = 'GORM Dynamic Finder'
-						request.addCompletion(item)
-					}
+					items.add(item)
 				}
 			}
 		}
 	}
-	
-	/**
-	 * Add instance class completions for a given type
-	 */
-	protected void addInstanceMemberCompletions(ClassNode classType) {
-		if (!classType) return
-		def items = MemberExtractor.collectMembers(classType, false, request.getCurrentClass())
-		request.addAllCompletions(items)
+
+	protected void addScopeCompletions(ASTNode offsetNode, RequestContext ctx, List<CompletionItem> items) {
+		if (!offsetNode) return
+		def visitor = ctx.compilationContext().visitor
+		def scopeItems = ScopeHelper.collectScopeItems(offsetNode, visitor, ScopeHelper.CollectionType.ALL)
 		
-		if (request.isGrailsProject) {
-			kingsk.grails.lsp.model.enums.GrailsArtifactType type = kingsk.grails.lsp.utils.grails.GrailsArtefactUtils.getGrailsArtifactType(classType)
-			if (type == kingsk.grails.lsp.model.enums.GrailsArtifactType.DOMAIN) {
-				kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getGormInstanceMethods().each { String m ->
-					org.eclipse.lsp4j.CompletionItem item = new org.eclipse.lsp4j.CompletionItem(m)
-					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
-					item.detail = 'GORM Instance Method'
-					request.addCompletion(item)
-				}
-			}
-		}
+		scopeItems.variables.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it as ASTNode)) }
+		scopeItems.parameters.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		scopeItems.members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		scopeItems.members.fields.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+		scopeItems.members.methods.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
 	}
-	
-	/**
-	 * Add only field completions for a type
-	 */
-	protected void addFieldCompletions(ClassNode classType, boolean statics = false) {
-		if (!classType) return
-		def fields = MemberExtractor.collectMembers(classType, statics, request.getCurrentClass(),
-				MemberExtractor.CollectionType.FIELDS_ONLY)
-		request.addAllCompletions(fields)
-	}
-	
-	/**
-	 * Add only method completions for a type
-	 */
-	protected void addMethodCompletions(ClassNode classType, boolean statics = false) {
-		if (!classType) return
-		def methods = MemberExtractor.collectMembers(classType, statics, request.getCurrentClass(),
-				MemberExtractor.CollectionType.METHODS_ONLY)
-		request.addAllCompletions(methods)
-	}
-	
-	// ===== Scope Completion Methods =====
-	
-	/**
-	 * Add scope-based completions (variables, parameters, fields in scope)
-	 * This is the fallback for most strategies
-	 */
-	protected void addScopeCompletions(ASTNode offsetNode) {
-		if (!offsetNode) return
-		def scopeItems = ScopeHelper.collectScopeItems(offsetNode, request.visitor, ScopeHelper.CollectionType.ALL)
-		request.addAllCompletions(scopeItems)
-	}
-	
-	/**
-	 * Add only local variable completions from scope
-	 */
-	protected void addLocalVariableCompletions(ASTNode offsetNode) {
-		if (!offsetNode) return
-		def scopeItems = ScopeHelper.collectScopeItems(offsetNode, request.visitor, ScopeHelper.CollectionType.VARIABLES_ONLY)
-		// Only add variables, not fields/methods
-		request.addVariableListCompletions(scopeItems.variables)
-	}
-	
-	// ===== Utility Methods =====
-	
-	/**
-	 * Get class members as AST nodes for further processing
-	 */
-	protected static List<ASTNode> getClassMembersAsASTNodes(ClassNode classType) {
-		if (!classType) return []
-		def fields = classType.fields as List<ASTNode>
-		def methods = classType.methods as List<ASTNode>
-		def properties = classType.properties as List<ASTNode>
-		return fields + methods + properties
-	}
-	
-	/**
-	 * Log debug information about completion strategy execution
-	 */
+
 	protected void logDebug(String message, Object... args) {
 		if (log.isDebugEnabled()) {
 			log.debug("[COMPLETION] ${this.class.simpleName}: ${String.format(message, args)}")

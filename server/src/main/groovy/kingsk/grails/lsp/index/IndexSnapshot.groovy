@@ -52,6 +52,10 @@ class IndexSnapshot {
     List<ReferenceInfo> getReferencesFor(String name) {
         return referencesByName[name] ?: []
     }
+
+    Set<String> getAllFqcns() {
+        return byDescriptor.keySet().findAll { !it.contains('#') } // basic heuristic for class descriptors
+    }
     
     private static boolean isPositionInRange(Position pos, Range range) {
         if (pos.line < range.start.line || pos.line > range.end.line) return false

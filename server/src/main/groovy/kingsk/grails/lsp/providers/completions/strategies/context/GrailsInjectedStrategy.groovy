@@ -1,6 +1,9 @@
 package kingsk.grails.lsp.providers.completions.strategies.context
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import kingsk.grails.lsp.utils.grails.GrailsUtils
@@ -8,187 +11,62 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
+import org.eclipse.lsp4j.CompletionItem
+import org.eclipse.lsp4j.CompletionItemKind
 
 /**
  * Handles Grails injected properties (log, grailsApplication, etc.) only in appropriate contexts.
- *
- * This strategy provides Grails injected completions ONLY when:
- * - We're in a Grails artifact (Controller, Service, etc.)
- * - We're NOT in a property expression context (obj.prop|)
- * - We're at the start of a statement or after 'this.'
  */
+@Slf4j
 @CompileStatic
 class GrailsInjectedStrategy extends BaseCompletionStrategy {
 	
-	GrailsInjectedStrategy(CompletionRequest request) {
-		super(request)
-	}
+	@Override
+	int getPriority() { return 70 }
 	
 	@Override
-	int getPriority() {
-		return 70 // High priority for Grails injected properties
-	}
-	
-	// GrailsInjectedStrategy - handles Grails service injection and dependency injection
-	@Override
-	boolean canHandle(ASTNode node) {
-		//		if (!(node instanceof VariableExpression || node instanceof PropertyExpression)) {
-		//			return false
-		//		}
+	boolean canHandle(CompletionRequest request, RequestContext ctx) {
+		if (!request.isGrailsProject) return false
+		if (request.offsetNode instanceof PropertyExpression) return false
+		if (request.offsetNode instanceof MethodCallExpression) return false
 		
-		// Only in Grails projects
-		if (!request.isGrailsProject) {
-			return false
-		}
-		
-		// Don't provide injected properties in property expression contexts
-		// (they should come from the object type, not as global completions)
-		if (node instanceof PropertyExpression) {
-			return false
-		}
-		
-		// Don't provide in method call contexts
-		if (node instanceof MethodCallExpression) {
-			return false
-		}
-		
-		// Only provide in Grails artifacts
-		if (!isInGrailsArtifact()) {
-			return false
-		}
-		
-		// Provide when we're at statement level or after 'this.'
-		return isAtStatementLevel() || isAfterThis()
-	}
-	
-	@Override
-	void provideCompletions(ASTNode node) {
-		logDebug("Providing Grails injected property completions")
-		
-		ClassNode currentClass = request.getCurrentClass()
-		if (!currentClass) return
-		
-		// Add common Grails injected properties
-		addCommonGrailsInjectedProperties()
-		
-		// Add artifact-specific injected properties
-		addArtifactSpecificInjectedProperties(currentClass)
-	}
-	
-	/**
-	 * Check if we're in a Grails artifact class
-	 */
-	private boolean isInGrailsArtifact() {
-		ClassNode currentClass = request.getCurrentClass()
+		ClassNode currentClass = request.offsetNode ? ctx.ast().getParent(request.offsetNode) as ClassNode : null // FIXME: use helper
 		if (!currentClass) return false
 		
-		// Use existing GrailsUtils method
-		return GrailsUtils.isGrailsArtefact(currentClass, request.file?.uri)
+		return GrailsUtils.isGrailsArtefact(currentClass, request.uri)
 	}
 	
-	/**
-	 * Check if we're at statement level (not inside an expression)
-	 */
-	private boolean isAtStatementLevel() {
-		String lineText = request.file?.textAtLine(request.position?.line ?: 0) ?: ""
-		String beforeCursor = lineText.substring(0, Math.min(request.position?.character ?: 0, lineText.length()))
+	@Override
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
 		
-		String prefix = request.prefix ?: ""
-		String beforePrefix = beforeCursor
-		if (prefix && beforeCursor.endsWith(prefix)) {
-			beforePrefix = beforeCursor.substring(0, beforeCursor.length() - prefix.length())
-		}
-		
-		// At start of line or after common statement patterns
-		return beforePrefix.trim().isEmpty() ||
-				beforePrefix.matches(".*[;{}]\\s*\$") ||
-				beforePrefix.matches(".*\\b(if|while|for|return|def|var)\\s*\\(?\\s*\$")
-	}
-	
-	/**
-	 * Check if we're after 'this.'
-	 */
-	private boolean isAfterThis() {
-		String lineText = request.file?.textAtLine(request.position?.line ?: 0) ?: ""
-		String beforeCursor = lineText.substring(0, Math.min(request.position?.character ?: 0, lineText.length()))
-		
-		return beforeCursor.endsWith("this.")
-	}
-	
-	/**
-	 * Add common Grails injected properties available in all artifacts
-	 */
-	private void addCommonGrailsInjectedProperties() {
-		// Common injected properties from helper
-		kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getGrailsConfigurationKeys().take(5).each { String propName ->
-			request.addGrailsCompletion(propName, 'Grails Configuration Property')
-		}
-		// Core injected properties
+		// 1. Common properties
 		['log', 'grailsApplication'].each { String propName ->
-			request.addGrailsCompletion(propName, "Grails Injected Property")
+			CompletionItem item = new CompletionItem(propName)
+			item.kind = CompletionItemKind.Property
+			item.detail = "Grails Injected Property"
+			completions.add(item)
 		}
-	}
-	
-	/**
-	 * Add artifact-specific injected properties
-	 */
-	private void addArtifactSpecificInjectedProperties(ClassNode currentClass) {
-		String uri = request.file?.uri
-		// Use existing GrailsUtils methods for artifact detection
-		if (GrailsUtils.isControllerClass(currentClass, uri)) {
-			addControllerInjectedProperties()
-		} else if (GrailsUtils.isServiceClass(currentClass, uri)) {
-			addServiceInjectedProperties()
-		} else if (GrailsUtils.isDomainClass(currentClass, uri)) {
-			addDomainInjectedProperties()
-		} else if (GrailsUtils.isTagLibClass(currentClass, uri)) {
-			addTagLibInjectedProperties()
-		} else if (GrailsUtils.isJobClass(currentClass, uri)) {
-			addJobInjectedProperties()
+		
+		// 2. Artifact-specific
+		ClassNode currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+		if (currentClass) {
+			if (GrailsUtils.isControllerClass(currentClass, request.uri)) {
+				addArtifactCompletions(completions, kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getControllerProperties(), 'Controller')
+			} else if (GrailsUtils.isServiceClass(currentClass, request.uri)) {
+				addArtifactCompletions(completions, kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getServiceProperties(), 'Service')
+			}
 		}
+		
+		return completions
 	}
-	
-	/**
-	 * Add Job-specific injected properties
-	 */
-	private void addJobInjectedProperties() {
-		// Jobs have access to basic Grails services
-		// Most are covered by common injected properties
-	}
-	
-	/**
-	 * Add controller-specific injected properties
-	 */
-	private void addControllerInjectedProperties() {
-		kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getControllerProperties().each { String propName ->
-			request.addGrailsCompletion(propName, 'Controller Injected Property')
-		}
-	}
-	
-	/**
-	 * Add service-specific injected properties
-	 */
-	private void addServiceInjectedProperties() {
-		kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getServiceProperties().each { String propName ->
-			request.addGrailsCompletion(propName, 'Service Injected Property')
-		}
-	}
-	
-	/**
-	 * Add domain-specific injected properties
-	 */
-	private void addDomainInjectedProperties() {
-		kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getPropertiesForArtifactType('domain').each { String propName ->
-			request.addGrailsCompletion(propName, 'Domain Injected Property')
-		}
-	}
-	
-	/**
-	 * Add TagLib-specific injected properties
-	 */
-	private void addTagLibInjectedProperties() {
-		kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getTagLibProperties().each { String propName ->
-			request.addGrailsCompletion(propName, 'TagLib Injected Property')
+
+	private void addArtifactCompletions(List<CompletionItem> completions, List<String> props, String type) {
+		props.each { String name ->
+			CompletionItem item = new CompletionItem(name)
+			item.kind = CompletionItemKind.Property
+			item.detail = "${type} Injected Property"
+			completions.add(item)
 		}
 	}
 }

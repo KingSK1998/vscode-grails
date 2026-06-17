@@ -1,8 +1,7 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.services.WorkspaceManager
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -43,8 +42,8 @@ class GrailsYamlIntelligenceProvider extends BaseProvider {
         "password", "secret", "apiKey", "api_key", "token", "credential", "private_key"
     ]
 
-    GrailsYamlIntelligenceProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsYamlIntelligenceProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
     CompletableFuture<Either<List<CompletionItem>, CompletionList>> provideCompletions(TextFile file, Position position) {

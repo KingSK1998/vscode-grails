@@ -95,7 +95,9 @@ class ASTService {
      */
     ASTNode getNodeAtPosition(String uri, Position position) {
         try {
-            return service.visitor.getNodeAtPosition(TextFile.normalizePath(uri), position)
+            def ctx = service.workspaceManager.getProjectForUri(uri)
+            if (!ctx) return null
+            return ctx.visitor.getNodeAtPosition(TextFile.normalizePath(uri), position)
         } catch (Exception e) {
             service.errorService.handleError("Error retrieving AST node at position", e, ErrorSource.AST_SERVICE)
             return null

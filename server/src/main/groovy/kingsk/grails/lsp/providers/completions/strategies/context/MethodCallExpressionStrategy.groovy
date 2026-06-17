@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.providers.completions.strategies.context
 
 import groovy.transform.CompileStatic
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
@@ -8,15 +9,13 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.eclipse.lsp4j.CompletionItem
 
 /**
  * Handles completions for method calls (obj.method(|))
- * Provides smart argument completions and method-specific suggestions
  */
 @CompileStatic
 class MethodCallExpressionStrategy extends BaseCompletionStrategy {
-	
-	MethodCallExpressionStrategy(CompletionRequest request) { super(request) }
 	
 	@Override
 	int getPriority() { return 85 }
@@ -25,38 +24,23 @@ class MethodCallExpressionStrategy extends BaseCompletionStrategy {
 	CompletionTarget target() { return CompletionTarget.BOTH }
 	
 	@Override
-	boolean canHandle(ASTNode node) { return node instanceof MethodCallExpression }
-	
-	/**
-	 * Handles method or constructor calls like <code>service.save()</code>
-	 * @param node The MethodCallExpression to process
-	 */
-	@Override
-	void provideCompletions(ASTNode node) {
-		provideCompletion(node as MethodCallExpression)
+	boolean canHandle(CompletionRequest request, RequestContext ctx) { 
+		request.offsetNode instanceof MethodCallExpression 
 	}
 	
-	protected void provideCompletion(MethodCallExpression methodCall) {
-		if (!methodCall) return
-		
-		logDebug("Providing completions for method call: %s", methodCall.methodAsString)
+	@Override
+	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+		MethodCallExpression methodCall = (MethodCallExpression) request.offsetNode
 		
 		Expression objectExpression = methodCall.objectExpression
-		if (!objectExpression) {
-			logDebug("No object expression found")
-			return
-		}
+		if (!objectExpression) return completions
 		
-		// Get the type of the object being accessed
-		ClassNode objectType = getTypeOf(objectExpression)
-		if (!objectType) {
-			logDebug("Could not determine object type for: %s", objectExpression.text)
-			return
-		}
+		ClassNode objectType = getTypeOf(objectExpression, ctx)
+		if (!objectType) return completions
 		
-		logDebug("Object type resolved to: %s", objectType.name)
+		addMemberCompletions(objectExpression, ctx, completions)
 		
-		// Use MemberExtractor as primary source for all member completions, with superclasses, interfaces i.e. till Metaclass
-		addMemberCompletions(objectExpression)
+		return completions
 	}
 }

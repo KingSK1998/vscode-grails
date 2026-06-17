@@ -11,15 +11,13 @@ import kingsk.grails.lsp.model.enums.ErrorSource
 import kingsk.grails.lsp.model.enums.ErrorSeverity
 
 import kingsk.grails.lsp.context.ProviderContext
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
+import kingsk.grails.lsp.services.WorkspaceManager
 
 @Slf4j
 @CompileStatic
 class GrailsDependencyProvider {
     private final ProviderContext providerContext
-    private final CompilationContext compilationContext
-    private final ProjectContext projectContext
+    private final WorkspaceManager workspaceManager
 
     private static final String GRAPH_EXTRACTOR_SCRIPT = """
 initscript {
@@ -57,10 +55,9 @@ allprojects {
 }
 """
 
-    GrailsDependencyProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
+    GrailsDependencyProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
         this.providerContext = providerContext
-        this.compilationContext = compilationContext
-        this.projectContext = projectContext
+        this.workspaceManager = workspaceManager
     }
 
     String getDependencyGraphJson(String projectDir) {

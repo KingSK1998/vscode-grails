@@ -2,15 +2,15 @@ package kingsk.grails.lsp.providers.completions.strategies.context
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.ASTAccessor
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
-import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.eclipse.lsp4j.CompletionItem
 
 /**
@@ -20,123 +20,89 @@ import org.eclipse.lsp4j.CompletionItem
 @CompileStatic
 class ClosureDelegateStrategy extends BaseCompletionStrategy {
 
-    ClosureDelegateStrategy(CompletionRequest request) { super(request) }
-
     @Override
     int getPriority() { return 65 }
 
     @Override
-    CompletionTarget target() { return CompletionTarget.OFFSET }
-
-    @Override
-    boolean canHandle(ASTNode node) {
-        return getEnclosingClosureMethodCall(node) != null || getEnclosingClosureField(node) != null
+    boolean canHandle(CompletionRequest request, RequestContext ctx) {
+        return getEnclosingClosureMethodCall(request.offsetNode, ctx.ast()) != null || 
+               getEnclosingClosureField(request.offsetNode, ctx.ast()) != null
     }
 
     @Override
-    void provideCompletions(ASTNode node) {
-        MethodCallExpression methodCall = getEnclosingClosureMethodCall(node)
+    List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
+        List<CompletionItem> completions = []
+        MethodCallExpression methodCall = getEnclosingClosureMethodCall(request.offsetNode, ctx.ast())
         if (methodCall) {
-            ClassNode delegateType = resolveDelegateType(methodCall)
+            ClassNode delegateType = resolveDelegateType(methodCall, ctx)
             if (delegateType) {
                 log.debug("Found closure delegate type from method call: ${delegateType.name}")
                 org.codehaus.groovy.ast.expr.VariableExpression dummyObj = new org.codehaus.groovy.ast.expr.VariableExpression("it", delegateType)
-                addMemberCompletions(dummyObj)
+                addMemberCompletions(dummyObj, ctx, completions)
             }
-            return
+            return completions
         }
 
-        def fieldClosure = getEnclosingClosureField(node)
+        def fieldClosure = getEnclosingClosureField(request.offsetNode, ctx.ast())
         if (fieldClosure) {
             String fieldName = fieldClosure.name
-            ClassNode domainClass = request.getCurrentClass()
+            // Domain class can be derived from visitor
+            ClassNode domainClass = ctx.compilationContext().visitor.allClassNodes.values().flatten().find { it instanceof ClassNode && ((ClassNode)it).name == ctx.uri() } as ClassNode
+            
             if (domainClass) {
                 if (fieldName == 'constraints') {
-                    // Inject domain properties as they can be constrained
                     domainClass.properties.each { org.codehaus.groovy.ast.PropertyNode p ->
                         CompletionItem item = new CompletionItem(p.name)
                         item.kind = org.eclipse.lsp4j.CompletionItemKind.Property
                         item.detail = "Domain property constraint"
                         item.insertText = (p.name + "(nullable: false)").toString()
-                        request.addCompletion(item)
-                    }
-                } else if (fieldName == 'mapping') {
-                    // Standard GORM mapping DSL keywords
-                    ['table', 'version', 'cache', 'id', 'columns', 'autoTimestamp', 'sort', 'datasource'].each { String m ->
-                        CompletionItem item = new CompletionItem(m)
-                        item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
-                        item.detail = "GORM Mapping DSL"
-                        item.insertText = (m + " ").toString()
-                        request.addCompletion(item)
-                    }
-                } else if (fieldName == 'namedQueries') {
-                    // Provide basic criteria keywords
-                    ['eq', 'ne', 'like', 'ilike', 'gt', 'lt', 'ge', 'le', 'between', 'inList', 'isNull', 'isNotNull'].each { String m ->
-                        CompletionItem item = new CompletionItem(m)
-                        item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
-                        item.detail = "GORM Criteria Method"
-                        item.insertText = (m + "('')").toString()
-                        request.addCompletion(item)
+                        completions.add(item)
                     }
                 }
             }
         }
+        return completions
     }
 
-    private org.codehaus.groovy.ast.FieldNode getEnclosingClosureField(ASTNode node) {
+    private org.codehaus.groovy.ast.FieldNode getEnclosingClosureField(ASTNode node, ASTAccessor ast) {
         ASTNode current = node
         while (current != null) {
             if (current instanceof ClosureExpression) {
-                ASTNode parent = getParentOf(current)
+                ASTNode parent = ast.getParent(current)
                 if (parent instanceof org.codehaus.groovy.ast.FieldNode) {
                     return parent as org.codehaus.groovy.ast.FieldNode
                 }
             }
-            current = getParentOf(current)
+            current = ast.getParent(current)
         }
         return null
     }
 
-    private MethodCallExpression getEnclosingClosureMethodCall(ASTNode node) {
+    private MethodCallExpression getEnclosingClosureMethodCall(ASTNode node, ASTAccessor ast) {
         ASTNode current = node
         while (current != null) {
             if (current instanceof ClosureExpression) {
-                ASTNode parent = getParentOf(current)
+                ASTNode parent = ast.getParent(current)
                 if (parent instanceof org.codehaus.groovy.ast.expr.ArgumentListExpression) {
-                    ASTNode grandParent = getParentOf(parent)
+                    ASTNode grandParent = ast.getParent(parent)
                     if (grandParent instanceof MethodCallExpression) {
                         return grandParent
                     }
                 }
             }
-            current = getParentOf(current)
+            current = ast.getParent(current)
         }
         return null
     }
 
-    private ClassNode resolveDelegateType(MethodCallExpression methodCall) {
+    private ClassNode resolveDelegateType(MethodCallExpression methodCall, RequestContext ctx) {
         String methodName = methodCall.methodAsString
-        
-        // Handle common groovy methods like 'with', 'tap'
         if (methodName in ['with', 'tap']) {
-            return getTypeOf(methodCall.objectExpression)
+            return getTypeOf(methodCall.objectExpression, ctx)
         }
-        
-        // Handle Grails DSLs
         if (methodName in ['createCriteria', 'where', 'withCriteria']) {
-            return getTypeOf(methodCall.objectExpression) // The domain class
+            return getTypeOf(methodCall.objectExpression, ctx)
         }
-        
-        // Custom DSL handling based on simple heuristics:
-        // if it's called on an object, assume that object is the delegate sometimes, but not always.
-        // Actually, without explicit @DelegatesTo, it's hard. 
-        // We'll just rely on object type for known DSLs.
-        
-        // For Grails controllers/services, certain blocks have known delegates
-        if (methodName == 'mapping') {
-            // maybe mapping block
-        }
-        
         return null
     }
 }

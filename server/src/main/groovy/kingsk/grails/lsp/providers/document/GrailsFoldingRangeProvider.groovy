@@ -1,57 +1,58 @@
 package kingsk.grails.lsp.providers.document
 
-import kingsk.grails.lsp.context.CompilationContext
-import kingsk.grails.lsp.context.ProjectContext
-import kingsk.grails.lsp.context.ProviderContext
-
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ASTNode
+import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.services.WorkspaceManager
+import org.eclipse.lsp4j.*
 import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.stmt.BlockStatement
-import org.eclipse.lsp4j.FoldingRange
-import org.eclipse.lsp4j.FoldingRangeKind
-import org.eclipse.lsp4j.TextDocumentIdentifier
+import org.codehaus.groovy.ast.stmt.Statement
 
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @CompileStatic
 class GrailsFoldingRangeProvider extends BaseProvider {
 
-    GrailsFoldingRangeProvider(ProviderContext providerContext, CompilationContext compilationContext, ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsFoldingRangeProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
-    CompletableFuture<List<FoldingRange>> provideFoldingRanges(TextDocumentIdentifier textDocument) {
-        List<FoldingRange> ranges = []
+    CompletableFuture<List<FoldingRange>> provideFoldingRanges(FoldingRangeRequestParams params) {
+        def token = createCancellationToken(params.textDocument.uri)
+        long startTime = System.currentTimeMillis()
 
-        visitor.getClassNodes().each { ClassNode clazz ->
-            if (visitor.getURI(clazz) != textDocument.uri) return
+        return CompletableFuture.supplyAsync({ ->
+            try {
+                checkCancellation(token)
+                def ctx = createRequestContext(params.textDocument.uri)
+                String uri = params.textDocument.uri
+                
+                List<FoldingRange> ranges = []
+                def nodes = ctx.ast().getNodes(uri)
+                if (!nodes) return ranges
 
-            if (clazz.lineNumber > 0 && clazz.lastLineNumber > clazz.lineNumber) {
-                ranges << new FoldingRange(clazz.lineNumber - 1, clazz.lastLineNumber - 1)
-            }
-
-            clazz.methods.each { MethodNode method ->
-                if (method.lineNumber > 0 && method.lastLineNumber > method.lineNumber) {
-                    ranges << new FoldingRange(method.lineNumber - 1, method.lastLineNumber - 1)
+                nodes.each { node ->
+                    if (node instanceof ClassNode) {
+                        ClassNode clazz = node as ClassNode
+                        addFoldingRange(ranges, clazz.lineNumber, clazz.lastLineNumber)
+                        
+                        clazz.methods.each { method ->
+                            addFoldingRange(ranges, method.lineNumber, method.lastLineNumber)
+                        }
+                    }
                 }
-            }
-        }
 
-        def module = visitor.getModuleNode(textDocument.uri)
-        if (module?.imports && module.imports.size() > 1) {
-            def imports = module.imports
-            int start = imports[0].lineNumber
-            int end = imports[-1].lineNumber
-            if (end > start) {
-                ranges << new FoldingRange(start - 1, end - 1).with {
-                    it.kind = FoldingRangeKind.Imports
-                    it
-                }
+                return ranges
+            } finally {
+                recordHealth("foldingRanges", System.currentTimeMillis() - startTime, true)
             }
-        }
+        } as Supplier<List<FoldingRange>>)
+    }
 
-        CompletableFuture.completedFuture(ranges)
+    private void addFoldingRange(List<FoldingRange> ranges, int start, int end) {
+        if (start > 0 && end > start) {
+            ranges << new FoldingRange(start - 1, end - 1)
+        }
     }
 }

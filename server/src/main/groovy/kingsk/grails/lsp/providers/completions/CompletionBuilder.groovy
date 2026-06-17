@@ -2,6 +2,7 @@ package kingsk.grails.lsp.providers.completions
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.strategies.special.ImportStrategy
 import kingsk.grails.lsp.providers.completions.strategies.context.PropertyExpressionStrategy
@@ -19,86 +20,73 @@ import kingsk.grails.lsp.providers.completions.strategies.special.GspTagStrategy
 import kingsk.grails.lsp.providers.completions.strategies.context.ScopeStrategy
 import kingsk.grails.lsp.providers.completions.strategies.special.GrailsArtifactStrategy
 import kingsk.grails.lsp.providers.completions.strategies.context.GrailsInjectedStrategy
-import kingsk.grails.lsp.utils.grails.GrailsUtils
-import org.codehaus.groovy.ast.ASTNode
+import org.eclipse.lsp4j.CompletionItem
 
-/**
- * Clean completion builder that manages strategies internally.
- */
 @Slf4j
 @CompileStatic
 class CompletionBuilder {
 
-    // Strategy classes - instantiated with request injection per completion
-    // Organized by category: special, context, snippet, type
-    private static final List<Class<? extends BaseCompletionStrategy>> STRATEGY_CLASSES = [
-        ImportStrategy, // {OFFSET} {95 - Very High - import statements are specific}
-        PropertyExpressionStrategy, // {BOTH} {90 - High - Very specific context}
-        GrailsArtifactStrategy, // {OFFSET} {92}
-        GrailsInjectedStrategy, // {OFFSET} {70}
-        NamedParameterStrategy, // {BOTH - 85}
-        AnnotationStrategy, // {OFFSET - 88 - High - annotation specific} - @Controller, @Service, etc.
-        MethodCallExpressionStrategy, // {BOTH} {85 - High - Method calls and constructors}
-        ArgumentListStrategy, // {BOTH - 82 - High - method argument} - method argument completion
-        ClassNodeStrategy, // {OFFSET} {80 - High - type completions}
-        DeclarationExpressionStrategy, // {BOTH - 75 - Medium - High} - variable declarations, assignments
-        ClosureDelegateStrategy, // {OFFSET} {65}
-        VariableExpressionStrategy, // {OFFSET} {70 - Medium - High}
-        MethodNodeStrategy, // {OFFSET - 60 - Medium - method signatures, parameters}
-        GrailsSnippetStrategy, // {OFFSET - 55 - Medium - snippets}
-        GspTagStrategy, // {OFFSET - 50 - Medium - GSP tags}
-        ScopeStrategy, // {BOTH - 30 - Low - fallback strategy}
+    private static final List<CompletionStrategy> STRATEGIES = [
+        new ImportStrategy(),
+        new PropertyExpressionStrategy(),
+        new GrailsArtifactStrategy(),
+        new GrailsInjectedStrategy(),
+        new NamedParameterStrategy(),
+        new AnnotationStrategy(),
+        new MethodCallExpressionStrategy(),
+        new ArgumentListStrategy(),
+        new ClassNodeStrategy(),
+        new DeclarationExpressionStrategy(),
+        new ClosureDelegateStrategy(),
+        new VariableExpressionStrategy(),
+        new MethodNodeStrategy(),
+        new GrailsSnippetStrategy(),
+        new GspTagStrategy(),
+        new ScopeStrategy()
     ]
 
-    /**
-     * Build completions using two clear phases:
-     *   1. OFFSET-targeted strategies against request.offsetNode
-     *   2. If none produced results, PARENT-targeted strategies against request.parentNode
-     */
-    static void buildCompletions(CompletionRequest request) {
-        if (!request?.offsetNode) return
+    static List<CompletionItem> buildCompletions(CompletionRequest request, RequestContext ctx) {
+        if (!request?.offsetNode) return []
 
-        // Create strategy instances with request injection
-        List<BaseCompletionStrategy> strategies = STRATEGY_CLASSES.collect { strategyClass ->
-            strategyClass.newInstance(request)
-        }
+        List<CompletionItem> allItems = []
+        Set<String> seen = new HashSet<>()
 
         // Phase 1: OFFSET
-        boolean anyOffset = applyPhase(strategies, CompletionTarget.OFFSET, request.offsetNode, true)
+        applyPhase(STRATEGIES, CompletionTarget.OFFSET, request, ctx, allItems, seen)
 
-        // Phase 2: PARENT fallback
-        if (!anyOffset) {
-            applyPhase(strategies, CompletionTarget.PARENT, request.parentNode, false)
+        // Phase 2: PARENT fallback if empty
+        if (allItems.isEmpty() && request.parentNode) {
+            applyPhase(STRATEGIES, CompletionTarget.PARENT, request, ctx, allItems, seen)
         }
+
+        return allItems
     }
 
-    /**
-     * Runs all strategies whose target matches the given phase, against the given node.
-     * Returns true if any completions were generated.
-     */
-    private static boolean applyPhase(List<BaseCompletionStrategy> strategies, CompletionTarget phase, ASTNode node, boolean skipDummyPrefix) {
-        if (node == null) return false
-
-        boolean produced = false
-        strategies.findAll { it.target().matches(phase) }
-            .each { strategy ->
-                try {
-                    boolean isDummy = skipDummyPrefix && GrailsUtils.isDummyPrefix(strategy.request.prefix)
-                    log.info("[COMPLETION] Checking strategy ${strategy.class.simpleName}: canHandle=${strategy.canHandle(node)}")
-                    if (strategy.canHandle(node) && !isDummy) {
-                        int sizeBefore = strategy.request.items.size()
-                        log.info("[COMPLETION] Executing strategy ${strategy.class.simpleName}")
-                        strategy.provideCompletions(node)
-                        log.info("[COMPLETION] Strategy ${strategy.class.simpleName} added ${strategy.request.items.size() - sizeBefore} items")
-                        if (strategy.request.items.size() > sizeBefore) {
-                            produced = true
+    private static void applyPhase(List<CompletionStrategy> strategies, CompletionTarget target, 
+                                     CompletionRequest request, RequestContext ctx, 
+                                     List<CompletionItem> allItems, Set<String> seen) {
+        
+        strategies.findAll { strategy ->
+            if (strategy instanceof BaseCompletionStrategy) {
+                return ((BaseCompletionStrategy) strategy).target() == target || ((BaseCompletionStrategy) strategy).target() == CompletionTarget.BOTH
+            }
+            return true
+        }.sort { -it.priority }.each { strategy ->
+            try {
+                if (strategy.canHandle(request, ctx)) {
+                    List<CompletionItem> items = strategy.provideCompletions(request, ctx)
+                    if (items) {
+                        items.each { item ->
+                            if (!seen.contains(item.label)) {
+                                allItems.add(item)
+                                seen.add(item.label)
+                            }
                         }
                     }
-                } catch (Exception e) {
-                    log.error("[COMPLETION] {} failed on {}: {}",
-                        strategy.class.simpleName, phase, e.message, e)
                 }
+            } catch (Exception e) {
+                log.error("[COMPLETION] Strategy ${strategy.class.simpleName} failed: ${e.message}")
             }
-        return produced
+        }
     }
 }
