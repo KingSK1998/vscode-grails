@@ -114,9 +114,10 @@ class GrailsIncrementalCompilerSpec extends BaseLspSpec {
         TextFile textFile = grailsService.fileTracker.getTextFile(uri)
         grailsService.compileAndVisitAST(textFile)
 
-        and: "ASTService captured the artifact on first compile"
-        def controllersAfterFirst = grailsService.astService.grailsControllers[uri]
-        assert controllersAfterFirst : "Expected ASTService to detect BookController after first compile"
+        and: "ProjectIndex captured the artifact on first compile"
+        def projectContext = grailsService.workspaceManager.getProjectForUri(uri)
+        def symbols = projectContext.projectIndex.snapshot.getSymbolsForFile(uri)
+        assert symbols.any { it.name == 'BookController' && it.artifact == kingsk.grails.lsp.model.enums.GrailsArtifactType.CONTROLLER }
 
         when: "File changes — class renamed to no longer match controller naming convention"
         String updated = '''
@@ -130,9 +131,10 @@ class GrailsIncrementalCompilerSpec extends BaseLspSpec {
         grailsService.compiler.markDirty(updatedFile.uri)
         grailsService.compileAndVisitAST(updatedFile)
 
-        then: "Old controller entry for this URI is evicted from ASTService"
-        def controllersAfterEdit = grailsService.astService.grailsControllers[uri]
-        !controllersAfterEdit
+        then: "Old controller entry for this URI is evicted and replaced by PlainHelper"
+        def symbolsAfterEdit = projectContext.projectIndex.snapshot.getSymbolsForFile(uri)
+        assert !symbolsAfterEdit.any { it.name == 'BookController' }
+        assert symbolsAfterEdit.any { it.name == 'PlainHelper' && it.artifact != kingsk.grails.lsp.model.enums.GrailsArtifactType.CONTROLLER }
     }
 
     // ─── 4. Cross-file completion cache cleared after edit ───────────────────

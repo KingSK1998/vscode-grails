@@ -39,6 +39,10 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
         return classNodesByURI
     }
 
+    boolean isEmpty() {
+        return nodesByURI.isEmpty()
+    }
+
     // Memory management
     private static final int MAX_FILES_IN_MEMORY = 50
     private final Map<String, Long> fileAccessTimes = new ConcurrentHashMap<>()
@@ -98,6 +102,17 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
         log.info "[AST] Invalidating visitor state"
         nodesByURI.clear(); classNodesByURI.clear(); moduleNodesByURI.clear()
         nodesByLineIndex.clear(); lookup.clear(); stack.clear()
+    }
+
+    void copyFrom(GrailsASTVisitor other) {
+        if (!other) return
+        this.nodesByURI.putAll(other.nodesByURI)
+        this.classNodesByURI.putAll(other.classNodesByURI)
+        if (other.moduleNodesByURI) {
+            this.moduleNodesByURI.putAll(other.moduleNodesByURI)
+        }
+        this.lookup.putAll(other.lookup)
+        this.nodesByLineIndex.putAll(other.nodesByLineIndex)
     }
 
     void removeFileWithDependencies(String uri) {

@@ -172,6 +172,24 @@ class GrailsService implements LanguageClientAware, ProviderContext {
         return workspaceManager.getProjectForUri(uri)?.project
     }
 
+    GrailsCompiler getCompiler() {
+        return (GrailsCompiler) workspaceManager.getDefaultProject()?.compiler
+    }
+
+    GrailsASTVisitor getVisitor() {
+        def project = workspaceManager.getDefaultProject()
+        if (project == null) return null
+        return (GrailsASTVisitor) (project.activeSnapshot.get()?.ast ?: project.visitor)
+    }
+
+    void compileAndVisitAST(TextFile textFile) {
+        workspaceManager.getProjectForUri(textFile.uri)?.compileAndVisitAST(textFile)
+    }
+
+    void visitAST(TextFile textFile) {
+        workspaceManager.getProjectForUri(textFile.uri)?.visitAST(textFile)
+    }
+
     File getJavaDocJarFile(DependencyNode dependency) {
         GrailsProject currentProject = getProject()
         if (!dependency || !currentProject) return null

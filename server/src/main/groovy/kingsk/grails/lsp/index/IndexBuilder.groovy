@@ -213,8 +213,9 @@ class IndexBuilder {
 
     private static GrailsArtifactType determineArtifactType(ClassNode clazz) {
         String pkg = clazz.packageName ?: ""
-        if (pkg.contains("controllers")) return GrailsArtifactType.CONTROLLER
-        if (pkg.contains("services")) return GrailsArtifactType.SERVICE
+        String name = clazz.nameWithoutPackage ?: ""
+        if (pkg.contains("controllers") && name.endsWith("Controller")) return GrailsArtifactType.CONTROLLER
+        if (pkg.contains("services") && name.endsWith("Service")) return GrailsArtifactType.SERVICE
         if (pkg.contains("domain")) return GrailsArtifactType.DOMAIN
         return GrailsArtifactType.UNKNOWN
     }

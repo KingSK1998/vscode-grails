@@ -15,9 +15,8 @@ class FileContentTrackerSpec extends Specification {
 	
 	def setup() {
 		def grailsService = new GrailsService()
-		GrailsProject mockProject = new GrailsProject()
-		grailsService.projects["test"] = mockProject
-		grailsService.activeProjectUri = "test"
+		GrailsProject mockProject = new GrailsProject(name: "test", rootDirectory: new File(System.getProperty("user.dir"), "build/test"))
+		grailsService.workspaceManager.addProject(mockProject)
 		tracker = new FileContentTracker(grailsService)
 	}
 	

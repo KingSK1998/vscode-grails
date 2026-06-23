@@ -143,7 +143,7 @@ class GrailsCompiler {
      * NOTE: Resets the compilation unit
      */
     void updateClassLoader() {
-        def urls = grailsService.projects.values()
+        def urls = grailsService.workspaceManager.getAllProjects()
             .collectMany { project ->
                 project.dependencies.collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) }
             }
@@ -162,7 +162,7 @@ class GrailsCompiler {
 
         def urlCl = new URLClassLoader(urls as URL[], this.class.classLoader)
         classLoader = new GroovyClassLoader(urlCl, compilerConfig, true)
-        log.info("[COMPILER] Unified Classloader created with ${urls.size()} entries across ${grailsService.projects.size()} projects")
+        log.info("[COMPILER] Unified Classloader created with ${urls.size()} entries across ${grailsService.workspaceManager.getAllProjects().size()} projects")
         try {
             def uri = grailsService.project?.rootDirectory?.toURI()?.toString()
             if (uri) {

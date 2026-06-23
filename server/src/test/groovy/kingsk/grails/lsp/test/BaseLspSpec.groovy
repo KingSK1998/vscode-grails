@@ -56,16 +56,16 @@ abstract class BaseLspSpec extends Specification {
     protected GrailsService initializeProject(ProjectType projectType, boolean fullCompile = false) {
         setupProject()
         String projectDir = getProjectDir(projectType)
-        if (fullCompile && projectDir) {
-            grailsService.setupWorkspace(projectDir, false)
-        } else if (projectDir) {
+        if (projectDir) {
             GrailsProject project = grailsService.gradle.getGrailsProject(projectDir)
-            grailsService.projects[projectDir] = project
-            grailsService.activeProjectUri = projectDir
+            grailsService.workspaceManager.addProject(project)
+            if (fullCompile) {
+                def ctx = grailsService.workspaceManager.getProjectForUri(projectDir)
+                ctx?.compiler?.compileProject()
+            }
         } else {
-            GrailsProject emptyProject = new GrailsProject()
-            grailsService.projects[""] = emptyProject
-            grailsService.activeProjectUri = ""
+            GrailsProject emptyProject = new GrailsProject(name: "empty", rootDirectory: new File(""))
+            grailsService.workspaceManager.addProject(emptyProject)
         }
         return grailsService
     }

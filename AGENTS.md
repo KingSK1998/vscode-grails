@@ -1,7 +1,7 @@
 # AGENTS.md — Single Source of Truth
 > ALL AI agents (Claude, Gemini, Copilot, Codex) read this file FIRST.
 > Agent-specific wrappers: `CLAUDE.md`, `GEMINI.md` — thin pointers only.
-> Version: 2.0 | Last updated: 2026-06-12
+> Version: 2.2 | Last updated: 2026-06-23
 
 ---
 
@@ -37,8 +37,14 @@ ROOT/
 │   └── model/                   # Data models (4 subfolders)
 ├── shared/                      # Schemas, configs, templates
 ├── resources/                   # Syntaxes, snippets, icons, styles
-├── docs/                        # Architecture, guides, skills
-│   ├── architecture.md          # Overview (106 lines — read §57-63 for provider tiers)
+├── docs/                        # Architecture, guides, skills, KB
+│   ├── architecture/system-map.md      # System overview — READ FIRST (KB)
+│   ├── architecture/change-triggers.md # When to update KB (KB)
+│   ├── architecture/backlog.md         # Architecture Backlog (KB)
+│   ├── architecture.md          # Component details (106 lines)
+│   ├── invariants.md            # Field ownership + stable identity contracts (KB)
+│   ├── failure-modes.md         # Failure mode registry + test matrix (KB)
+│   ├── adr/decisions.md         # Architecture Decision Records (KB)
 │   └── skills/                  # Agent-agnostic skill files
 └── graphify-out/                # Knowledge graph (read GRAPH_REPORT.md before grep)
 ```
@@ -170,11 +176,14 @@ Prefix temporary files with `tmp_rovodev_` — delete on task completion.
 
 ### Session Flow
 ```
-1. Start  → read MEMORY.md + STATUS.md files
-2. Plan   → Use `docs/skills/architect.md` (before complex changes)
-3. Build  → Normal development loop
-4. Check  → Use `docs/skills/review.md` (verify rules, builds, capture UI patterns)
-5. End    → Update MEMORY.md + STATUS.md (§5 rules)
+1. Start  → read docs/architecture/system-map.md (understand system)
+2. Status → read MEMORY.md + STATUS.md files
+3. Plan   → Use `docs/skills/architect.md` (before complex changes)
+4. Guard  → Check `docs/invariants.md` before touching state/identity code
+5. Build  → Normal development loop
+6. Check  → Use `docs/skills/review.md` (guard rails, checklist, builds)
+7. Bug?   → Add entry to `docs/failure-modes.md` within 30 minutes
+8. End    → Update MEMORY.md + STATUS.md (§5 rules)
 ```
 
 ---
@@ -193,12 +202,21 @@ Prefix temporary files with `tmp_rovodev_` — delete on task completion.
 | Server concurrency | `server/RULES.md` | §11 L325-L333 |
 | Provider tiers quick-ref | This file | §3 L48-L79 |
 | Build commands | This file | §4 L81-L101 |
+| **System map (READ FIRST)** | `docs/architecture/system-map.md` | Full system overview, data flow, state flow |
+| **Change triggers** | `docs/architecture/change-triggers.md` | When/how to update KB files on change |
+| **Architecture backlog** | `docs/architecture/backlog.md` | Unproven architectural proposals |
 | Architecture overview | `docs/architecture.md` | Full file (106 lines) |
 | Runtime flow | `docs/architecture.md` | L5-L18 |
 | Provider tiers detail | `docs/architecture.md` | L57-L63 |
 | Feature ownership | `docs/architecture.md` | L67-L82 |
 | Caching strategy | `docs/architecture.md` | L83-L91 |
-| Coding standards | `CODING_STANDARDS.md` | Full file (119 lines) |
+| **Field ownership map** | `docs/invariants.md` | §1 — who owns every mutable field |
+| **Stable identity contracts** | `docs/invariants.md` | §2 — durable vs. mutable IDs |
+| **State consistency invariants** | `docs/invariants.md` | §3 — non-negotiable rules |
+| **Failure mode registry** | `docs/failure-modes.md` | Known bugs, root causes, fixes |
+| **Failure test matrix** | `docs/failure-modes.md` | Bottom — use before every feature |
+| **Architecture decisions** | `docs/adr/decisions.md` | ADR-001 through ADR-007 |
+| Coding standards | `CODING_STANDARDS.md` | Full file (502 lines) |
 | Client status | `client/STATUS.md` | Check before modifying client |
 | Server status | `server/STATUS.md` | Check before modifying server |
 | Knowledge graph | `graphify-out/GRAPH_REPORT.md` | Read before architecture questions |

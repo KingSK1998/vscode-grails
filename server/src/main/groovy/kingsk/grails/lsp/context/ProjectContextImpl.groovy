@@ -94,6 +94,11 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         
         commitSnapshot()
         grailsService.clearCrossFileCaches()
+        try {
+            grailsService.diagnostics.publishDiagnosticsForFile(textFile.uri)
+        } catch (Exception e) {
+            log.error("[ProjectContext] Failed to publish diagnostics for {}: {}", textFile.uri, e.message)
+        }
     }
 
     @Override
@@ -135,11 +140,13 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         activeSnapshot.set(newSnapshot)
         
         // GENERATION SWAP: Create a fresh visitor for the next compilation cycle.
-        // We reuse the compiler state for incrementalism, but the visitor maps 
-        // are effectively "frozen" inside the snapshotAccessor reference.
-        // Note: In a production refinement, we might copy the maps if visitor is too heavy.
-        // For Phase 3, we ensure the visitor object is detached from clearing.
-        this.visitor = new GrailsASTVisitor(grailsService)
+        // We copy the visitor maps so that files not compiled in the current cycle
+        // are retained, while ensuring the committed snapshot's visitor maps remain frozen/untouched.
+        GrailsASTVisitor nextVisitor = new GrailsASTVisitor(grailsService)
+        if (snapshotAccessor instanceof GrailsASTVisitor) {
+            nextVisitor.copyFrom((GrailsASTVisitor) snapshotAccessor)
+        }
+        this.visitor = nextVisitor
         
         log.debug("[ProjectContext] Committed snapshot v${ver}")
     }
