@@ -163,28 +163,63 @@ Prefix temporary files with `tmp_rovodev_` — delete on task completion.
 
 ---
 
-## §7 SKILLS INDEX (L160-L181)
+## §7 SKILLS INDEX (L160-L199)
 
-### In-repo Skills (docs/skills/)
+### Core Pipeline
 
-| Skill | File | When |
+| Skill | File | Owns |
 |-------|------|------|
-| Architecture & Performance | `docs/skills/architecture-perf.md` | Designing/reviewing perf-sensitive code |
-| Architect (Planning) | `docs/skills/architect.md` | Pre-feature planning, gap analysis, generating implementation plans |
-| Review (Validation) | `docs/skills/review.md` | Post-implementation validation, quality checks, UI pattern capture |
-| Recover (Diagnostics) | `docs/skills/recover.md` | Diagnosing build/test failures, loops, or environment issues |
+| Reviewer | `docs/skills/reviewer.md` | User intent, orchestration, acceptance, retry policy |
+| Analyzer | `docs/skills/analyzer.md` | Evidence gathering, Evidence Brief schema |
+| Writer | `docs/skills/writer.md` | Implementation, smallest diff, Implementation Report |
 
-### Session Flow
+### Review Skills (invoked by Reviewer)
+
+| Skill | File | Invoked When |
+|-------|------|-------------|
+| Code Review | `docs/skills/code-review.md` | Every code change |
+| Architecture Review | `docs/skills/architecture-review.md` | New provider, cache, shared state, identifier, ADR, or bug fix |
+| Build Validation | `docs/skills/build-validation.md` | Every code change (final gate) |
+
+### Support Skills
+
+| Skill | File | Invoked When |
+|-------|------|-------------|
+| Architect | `docs/skills/architect.md` | Pre-feature planning |
+| Architecture Perf | `docs/skills/architecture-perf.md` | Performance reasoning |
+| Recover | `docs/skills/recover.md` | Build failures, spirals |
+
+### Standards Loading
+
+Before invoking review skills, Reviewer loads applicable standards:
+- `CODING_STANDARDS.md` (always)
+- `docs/invariants.md` (always)
+- `docs/failure-modes.md` (always)
+- `client/RULES.md` (if client files changed)
+- `server/RULES.md` (if server files changed)
+
+Review skills may load standards independently if invoked outside the pipeline.
+
+### Ownership
+
+| Responsibility | Owner |
+|----------------|-------|
+| User intent | Reviewer |
+| Evidence | Analyzer |
+| Implementation | Writer |
+| Standards | AGENTS |
+| Code correctness | Code Review |
+| KB consistency | Architecture Review |
+| Build verification | Build Validation |
+| Retry routing | Reviewer |
+
+### Workflow
+
+```text
+Human → Reviewer → Analyzer → Evidence Brief → Reviewer validates → Writer → Implementation Report → Reviewer invokes reviews → Accept / Retry / Reject → Human
 ```
-1. Start  → read docs/architecture/system-map.md (understand system)
-2. Status → read MEMORY.md + STATUS.md files
-3. Plan   → Use `docs/skills/architect.md` (before complex changes)
-4. Guard  → Check `docs/invariants.md` before touching state/identity code
-5. Build  → Normal development loop
-6. Check  → Use `docs/skills/review.md` (guard rails, checklist, builds)
-7. Bug?   → Add entry to `docs/failure-modes.md` within 30 minutes
-8. End    → Update MEMORY.md + STATUS.md (§5 rules)
-```
+
+**Invariant**: Only the Reviewer may create, sequence, or retry subagents. Subagents never invoke other subagents or reinterpret user intent.
 
 ---
 
