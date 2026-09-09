@@ -95,4 +95,33 @@
   - Designed resilient single-threaded scheduler lifecycle in `GrailsWorkspaceService` with `getOrCreateScheduler()` to prevent `RejectedExecutionException` across test/restart cycles.
   - All 6/6 tests in `WorkspaceLifecycleSpec` and full server regression suite (48/48 tests across 7 specs) passed with exit code 0.
   - Client checks (`npm run compile`, `npm run check-types`, `npm run lint`) passed with exit code 0.
-  - Documented in `docs/execution/records/R0-02.md`, updated `task-queue.json` and `STATUS.md` files. Validated with `node scripts/roadmap.js validate`. Next task: **R0-03**.
+  - Documented in `docs/execution/records/R0-02.md`, updated `task-queue.json` and `STATUS.md` files. Validated with `node scripts/roadmap.js validate`.
+
+## R0-03, R0-04, and R0-05 Execution Milestone (2026-09-09)
+
+- **R0-03 Completed & Accepted**:
+  - Validated real bundled stdio transport; protocol framing on stdout strictly compliant with JSON-RPC.
+  - Configured Logback to direct logging to stderr and size-bounded rolling file appender (`~/.grails-lsp/grails-lsp.log`).
+  - Wired `GrailsLanguageClient` remote proxy via `LSPLauncher.Builder` supporting custom notification `grails/allProjects`.
+  - Attached client notification handlers prior to startup launch to eliminate early message loss race conditions.
+  - Real smoke test (`node scripts/smoke-server.js`) passed in 1403 ms (exit code 0): initialized fixture, discovered project, opened unsaved buffer, received diagnostics and document symbols, and exited cleanly with zero lingering processes.
+  - Documented in `docs/execution/records/R0-03.md`. Committed in `9979f99`.
+
+- **R0-04 Completed & Accepted**:
+  - Implemented cross-platform bundler `scripts/bundle.js` using `esbuild.buildSync` Node API, producing a deterministic standalone ~1018 KB CommonJS bundle (`client/out/extension.js`).
+  - Implemented cross-platform cleanup `scripts/clean.js` invoking `gradle.js clean` and removing build outputs and `.vsix` artifacts without shell dependency.
+  - Added obsolete/legacy JAR pruning in `scripts/copy-server.js` to ensure deterministic single-JAR packaging in `client/server/`.
+  - Enhanced Java executable resolution in `serverConfig.ts` and `smoke-server.js` to support surrounding quotes, whitespace trimming, and spaces in `JAVA_HOME`.
+  - Added unit test suite `client/src/test/serverConfig.unit.test.ts` and package audit test `scripts/package.test.js` (verifying 24 runtime assets and 0 forbidden assets via `@vscode/vsce.listFiles`).
+  - Successfully built VSIX package (`vscode-gng-support.vsix`), installed into isolated extension directory with `code --install-extension`, and verified packaged server JAR execution via smoke test (exit code 0, 921 ms).
+  - Aligned CI workflow `.github/workflows/ci.yml` with `npm run test:smoke` and unified package output path.
+  - Documented in `docs/execution/records/R0-04.md`. Committed in `9a2c4a2`.
+
+- **R0-05 Completed & Accepted**:
+  - Reconciled all Phase 0 baseline evidence across `docs/architecture/system-map.md`, `docs/invariants.md`, `docs/failure-modes.md`, `server/STATUS.md`, `client/STATUS.md`, and `MEMORY.md`.
+  - Verified that all R0-01 through R0-04 acceptance cases reflect actual passing tests on the current tree.
+  - Resolved failure modes ST-001, ST-002, ST-003, and CC-001 with documented test evidence.
+  - Indexed and preserved open failure modes for upcoming phases: CC-002 (R1-01: Document queue bounds and fairness), CC-003 (R1-04: Concurrent reader visibility and AST snapshot isolation), and DP-001 (R2-01/R2-03: Classpath isolation and resolved Gradle edges).
+  - Strictly enforced invariant boundaries: documented that AST copies are not deep immutable ASTs and project contexts do not yet isolate classpaths.
+  - Queue validation confirmed passing (38 tasks). Phase 0 is complete. Next milestone: **Phase 1: Concurrency & Lifecycle Correctness** starting with **R1-01**.
+

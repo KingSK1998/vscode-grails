@@ -78,8 +78,8 @@
 |---|---|
 | TypeScript compile | ✅ Clean |
 | ESLint | ✅ Clean |
-| Headless tests | ✅ Five startup/packaging tests passing (2026-09-07) |
-| Packaged-editor integration tests | ⬜ Not run in this session |
+| Headless tests | ✅ Seven startup, packaging, and bundle tests passing (2026-09-09) |
+| Packaged-editor integration tests | ✅ Local VSIX install and packaged server smoke test passed (2026-09-09) |
 | esbuild bundle | ✅ OK |
 
 ---

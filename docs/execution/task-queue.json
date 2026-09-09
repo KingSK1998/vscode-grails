@@ -48,13 +48,13 @@
     {
       "id": "R0-05",
       "title": "Reconcile baseline evidence and architecture documents",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R0-04"
       ],
       "spec": "docs/execution/task-specifications.md#r0-05",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R0-05.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R1-01",

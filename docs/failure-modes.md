@@ -2,7 +2,7 @@
 
 > **Status:** ACTIVE — add entries within 30 minutes of discovering a bug.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-08
+> **Last updated:** 2026-09-09
 > **Validation triggers:** Bug fixed, architecture change
 > **Rule:** Every agent surprise → one entry here. No exceptions.
 
@@ -22,7 +22,8 @@
 | Client startup / packaging | ST-001 |
 | Stdio transport / Logback | ST-002 |
 | Server workspace / Source duplication | ST-003 |
-| Background document compilation / ProjectContextImpl | CC-001 |
+| Background document compilation / ProjectContextImpl | CC-001, CC-002, CC-003 |
+| Classpath isolation / Multi-project | DP-001 |
 
 ### By Invariant
 
@@ -30,8 +31,15 @@
 |---|---|
 | `INV-OWN-001` | PC-001 |
 | `INV-OWN-004` | SM-001, CI-001, RL-001 |
-| `INV-STATE-002` | PC-001 |
+| `INV-OWN-005` | CC-003 |
+| `INV-OWN-008` | DP-001 |
+| `INV-STATE-001` | CC-003 |
+| `INV-STATE-002` | PC-001, ST-003 |
 | `INV-STATE-003` | CI-001 |
+| `INV-STATE-004` | CC-001, CC-003 |
+| `INV-STATE-005` | CC-002 |
+| `INV-PERF-001` | CC-002 |
+| `INV-DISC-001` | DP-001 |
 
 ---
 
@@ -152,14 +160,14 @@
 ## Startup and Interrupted Concurrency Work
 
 ### ST-001: Installed Extension Uses Development Startup Defaults
-- **Status:** Active
+- **Status:** Resolved (verified in R0-04)
 - **Bug:** The manifest default selected a manual TCP server; Java configuration was ignored by the launcher, application/LSP port definitions collided, and initial project notifications could arrive before handlers were registered.
 - **Invariant violated:** Client lifecycle/configuration ownership; `INV-STATE-006` fail-safe defaults.
 - **Root cause:** Development defaults and post-start notification registration persisted into the production path.
-- **Fix:** Source changes select the bundled JAR by default, honor the configured Java installation, separate ports and register project handlers before startup. Deterministic artifact copying was added.
-- **Test:** Five headless tests passed in the preceding implementation session via `npm run test:client`; final packaged-editor acceptance remains pending.
+- **Fix:** Source changes select the bundled JAR by default, honor the configured Java installation (with quote stripping and spaces support), separate ports and register project handlers before startup. Deterministic artifact copying and VSIX packaging verified.
+- **Test:** Headless tests pass via `npm run test:client`; local installation into isolated extensions dir verified with `code --extensions-dir <tempDir> --install-extension vscode-gng-support.vsix` and passing smoke workflow.
 - **Detected by:** September startup audit and failing regression tests.
-- **Date:** 2026-09-08 (handoff recorded).
+- **Date:** 2026-09-09.
 
 ### ST-002: Logs Corrupt Stdio Protocol Framing
 - **Status:** Resolved (verified in R0-03)
@@ -182,14 +190,44 @@
 - **Date:** 2026-09-09.
 
 ### CC-001: Interrupted Background Compilation Migration
-- **Status:** Open — unresolved (R0-01)
-- **Bug:** Latest saved incremental suite has seven failures with `ProjectState` to `AtomicReference` cast errors. Three scheduler tests additionally use `.empty` map assertions that return null for an empty map.
+- **Status:** Resolved (verified in R0-01)
+- **Bug:** Latest saved incremental suite had seven failures with `ProjectState` to `AtomicReference` cast errors. Three scheduler tests additionally used `.empty` map assertions that returned null for an empty map.
 - **Invariant violated:** `INV-STATE-004` publication correctness and the regression-test gate.
-- **Root cause:** The interrupted writer identified Groovy property dispatch inside new project-lock closures; the saved XML confirms the cast. Verify exact stacks before repair. The map failures arise from property/key semantics in the tests.
-- **Fix:** Pending R0-01; see [implementation handoff](implementation-handoff.md). Preserve `@CompileStatic` and behavioral assertions.
-- **Test:** Saved reports dated 2026-09-07: `GrailsIncrementalCompilerSpec` 7/7 failed; `DocumentCompilationSpec` 3/6 failed. Read on 2026-09-08; not rerun during roadmap work.
+- **Root cause:** Property access inside lock closure evaluated dynamically under `@CompileStatic`. Repaired with `this.@state.get()` and explicit map/queue tests.
+- **Fix:** Restored static compilation in `ProjectContextImpl`; repaired scheduler assertions. All 7 incremental and 9 document compilation tests pass.
+- **Test:** `GrailsIncrementalCompilerSpec` (7/7 pass); `DocumentCompilationSpec` (9/9 pass).
 - **Detected by:** Targeted tests during migration from inline to queued document compilation.
-- **Date:** 2026-09-08.
+- **Date:** 2026-09-09.
+
+### CC-002: Unbounded Document Queue and Fairness Starvation
+- **Status:** Open (owned by R1-01)
+- **Bug:** Large edit storms can flood worker queues with unbounded compilation jobs; lack of byte limits and multi-root fairness.
+- **Invariant violated:** `INV-PERF-001`, `INV-STATE-005`
+- **Root cause:** Pre-R1 scheduler coalesces by URI but does not bound aggregate queue memory or guarantee cross-root fairness.
+- **Fix:** Pending R1-01: bound queue bytes, apply all text edits even when jobs coalesce, establish cross-root fair admission.
+- **Test:** To be implemented in R1-01.
+- **Detected by:** Architecture audit.
+- **Date:** 2026-09-09.
+
+### CC-003: Concurrent Reader Visibility and AST Snapshot Isolation
+- **Status:** Open (owned by R1-04)
+- **Bug:** Shallow AST visitor copies retain mutable Groovy AST node object identities; concurrent readers during compile/remove could observe partial publication.
+- **Invariant violated:** `INV-STATE-001`, `INV-STATE-004`, `INV-OWN-005`
+- **Root cause:** Visitor `copyFrom` duplicates collection maps, not deep AST nodes.
+- **Fix:** Pending R1-04: reproduce race condition, prove smallest mechanism satisfying coherent nonblocking reads, extract immutable facts.
+- **Test:** To be implemented in R1-04.
+- **Detected by:** Architecture review.
+- **Date:** 2026-09-09.
+
+### DP-001: Cross-Root Classpath Pollution and Guess-Based Project Edges
+- **Status:** Open (owned by R2-01, R2-03)
+- **Bug:** Two workspace roots with differing dependency versions share an aggregated classloader; cross-project dependencies use name/prefix heuristics instead of resolved Gradle models.
+- **Invariant violated:** `INV-DISC-001`, `INV-DISC-002`, `INV-OWN-008`
+- **Root cause:** Global classpath aggregation in compiler.
+- **Fix:** Pending R2-01 (isolate classpaths per source set) and R2-03 (resolved Gradle build model edges).
+- **Test:** To be implemented in R2-01 and R2-03.
+- **Detected by:** Architecture review.
+- **Date:** 2026-09-09.
 
 ---
 

@@ -16,7 +16,7 @@ flowchart TD
     GS --> GR[GradleService]
     GS --> DS[DiscoveryService]
     DOC --> FT[FileContentTracker]
-    DOC --> Q[Document scheduler: unfinished]
+    DOC --> Q[Document scheduler: repaired baseline, R1 fairness]
     Q --> PC[ProjectContextImpl per project]
     WM --> PC
     PC --> CV[Compiler and visitor]
@@ -34,9 +34,9 @@ The diagram shows logical collaboration, not complete constructor signatures. Gr
 
 | Path | Current implementation evidence | Required/unfinished work |
 |---|---|---|
-| Client launch | Production stdio default, configured Java/stable JAR selection and early project notification handlers exist | Final packaged launch remains unverified: R0-03/R0-04 |
-| Initialize/discovery | Initial workspace loop contains TODO; workspace-folder add/remove incomplete | R0-02: return capabilities promptly, resolve after initialized, generation-aware add/remove/replay |
-| Open/change | FileContentTracker updates buffer; document service captures/coalesces queued work; dependency analysis deferred | R0-01 saved targeted tests fail; R1 verifies order, admission limits and stale rejection |
+| Client launch | Production stdio default, configured Java/stable JAR selection, early project notification handlers, deterministic package bundling | Baseline verified in R0-03 and R0-04. Multi-platform distribution matrix owned by R5-05 |
+| Initialize/discovery | Prompt capability return on initialize; async discovery on initialized; root generations discard late results; longest prefix routing; still-open buffer replay; build-watch debounce | Baseline verified in R0-02. Multi-project classpath isolation and Gradle model edge resolution owned by R2-01/R2-03 |
+| Open/change | FileContentTracker updates buffer; nonblocking document scheduler coalesces rapid edits; copied buffer immutability; blocked worker ordering | Baseline verified in R0-01. R1-01/R1-02 verify admission limits, cross-root fairness, revision ordering and stale rejection |
 | Compile/publication | ProjectContextImpl uses project write lock, compiler/visitor/index work and SnapshotManager commit | Coherent read visibility and stale guards remain R1-02/R1-04 evidence requirements |
 | Provider read | BaseProvider creates request context/captures active snapshot; legacy live access remains in the surrounding pipeline | Capturing a record does not prove nested AST immutability or protect asynchronous work |
 | Dependency refresh | Gradle async support exists; project metadata updated in success path | R2-02 must align compiler/discovery/index with the new dependency revision |

@@ -17,7 +17,7 @@
 | Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
 | Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 6/6 tests pass; zero/multi-root capability response, root generations discard late results, longest prefix boundary matching, still-open buffer replay, build-watch debounce |
 | Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 1403 ms (exit 0) |
-| Packaged release | ⬜ Unverified | No final VSIX/editor acceptance run (R0-04) |
+| Packaged release | ✅ Passing | Deterministic build/copy verified; package asset audit passed; local VSIX installed and verified with smoke test in 921 ms (R0-04) |
 
 Reports were inspected on 2026-09-08; their timestamps are 2026-09-07. No tests were rerun during the roadmap-only update. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
 
