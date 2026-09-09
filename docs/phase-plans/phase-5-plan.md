@@ -1,5 +1,7 @@
 # Phase 5: Semantic Intelligence & Refactoring — Detailed Implementation Plan
 
+> **Current delivery order (2026-09-08):** These are candidate designs for R2/R4/R5 in the [product roadmap](../product-roadmap.md), not completed capabilities. Validate their evidence and prerequisites before implementation. A first set of useful agent read tools is planned in R3, before the entire IDE/refactoring surface is complete.
+
 **Execution Mode:** ARCHITECTURE DESIGN MODE
 **Last updated:** 2026-06-14
 

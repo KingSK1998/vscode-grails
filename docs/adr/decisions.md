@@ -2,7 +2,7 @@
 
 > **Convention:** One section per decision. Newest first.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-06-23
+> **Last updated:** 2026-09-08
 > **Rule:** Document WHAT was decided, WHY, and WHAT was rejected.
 
 ### ADR Lifecycle States
@@ -18,6 +18,30 @@
 
 > **Note:** Future architecture ideas without evidence live in `docs/architecture/backlog.md`, not here.
 > Promote to ADR only when a reproduced issue or benchmark justifies the decision.
+
+---
+
+## ADR-009: Project Ownership and Executable Contracts (2026-09-08)
+
+**Status:** Accepted for documentation/execution contracts within the user's requested roadmap handoff. This records current ownership and required acceptance behavior; it does not accept an unmeasured new snapshot implementation.
+
+**Evidence:** Current GrailsService implements ProviderContext; ProjectContextImpl implements ProjectContext/CompilationContext and owns compiler, visitor, index, state and publication. VersionedSnapshot/SnapshotManager and document scheduling exist, while saved runtime tests fail and visitor `copyFrom()` retains shallow AST references. The user requested actionable specs and automatic task selection that preserve correctness and performance. See [handoff](../implementation-handoff.md), [system map](../architecture/system-map.md) and [state contract](../state-and-lifecycle-specification.md).
+
+**Decision:**
+
+- Keep GrailsService as composition root and assign one explicit scoped owner to each mutable state item. Correct ADR-004's physical field-location rule and ADR-005's all-three-interfaces wiring to reflect project contexts. Providers remain readers; no new service locator or distributed state architecture is implied.
+- Preserve ADR-006's no-AST index boundary. An origin link is a value locator. Coherent request generations and resource release require behavioral evidence, not an atomic record/shallow copy claim.
+- Reconcile active/LKG retention with hibernation: retain usable safe facts while released compiler generations lose all owned retention paths after bounded request leases drain. R1-04 chooses/proves the concrete representation; no automatic deep-clone redesign is approved here.
+- Use the [execution guide](../agent-execution.md), one task queue and acceptance cards/records. Current code evidence, required invariants and future proposals are distinct. A marker validator cannot certify runtime correctness.
+- Discover project APIs from resolved artifacts and bounded capability rules; fixed language grammar is legitimate. Treat responsive reads and bounded resource lifecycles as required contracts and measure claimed optimizations.
+
+**Supersedes:** Only the physical field-owner/wiring clauses of ADR-004/005 and conflicting old documentation. Single writer, context segregation, static compilation and AST boundaries remain in force. New INV-DISC/PERF/TOOL/EDIT rules express the user's requested product constraints; current violations remain open tasks.
+
+**Rejected:** Restoring monolithic field ownership to make old diagrams true; declaring current snapshots immutable without proof; forbidding all constants; permitting unlimited background work because it uses futures; marking tasks complete from source presence or old phase labels.
+
+**Consequences:** Agents repair designated owners with regression tests and update affected KB. Significant isolation/storage changes still require measured alternatives and a separate ADR. The withdrawn snapshot proposal once called ADR-008 remains [BACKLOG-001](../architecture/backlog.md); its number is reserved and is not reused here.
+
+**Related invariants:** INV-OWN-001/002/005/006, INV-STATE-001/003/004/010/011, INV-DISC/PERF/TOOL/EDIT.
 
 ---
 
@@ -66,7 +90,7 @@
 
 ## ADR-005: Context Interfaces Over Direct GrailsService Injection (2026-06-07)
 
-**Status:** Accepted
+**Status:** Accepted interface segregation; wiring clause superseded by ADR-009. Historical wording below describes the original implementation.
 **Last validated:** 2026-06-23
 **Related invariants:** `INV-OWN-001`, `INV-STATE-002`, `INV-KEY-005`
 **Related failure modes:** PC-001
@@ -87,7 +111,7 @@
 
 ## ADR-004: Single GrailsService Composition Root (2026-06-03)
 
-**Status:** Accepted (permanent)
+**Status:** Accepted composition root/single writer; physical field-location clause superseded by ADR-009. Historical wording below describes the original implementation.
 **Last validated:** 2026-06-23
 **Related invariants:** `INV-OWN-001`, `INV-OWN-002`, `INV-STATE-001`
 **Related failure modes:** CI-001

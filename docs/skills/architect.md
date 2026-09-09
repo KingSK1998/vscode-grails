@@ -2,6 +2,8 @@
 > Agent-agnostic skill. Any AI agent (Claude, Gemini, Copilot, Codex) can run this.
 > Target: Pre-feature planning to identify gaps and generate an implementation plan.
 
+For roadmap work, load the selected task card/specs from [agent execution](../agent-execution.md). This skill produces the planning stage; the Reviewer continues authorized implementation afterward. It does not require another user approval for routine design choices already bounded by those contracts.
+
 ## Step 1 — Load Context
 
 Read in order (skip missing):
@@ -27,19 +29,9 @@ Read in order (skip missing):
 Classify gaps: **BLOCKING** (can't proceed) / **IMPORTANT** (has default) / **COSMETIC** (safe default).
 Surface only BLOCKING + IMPORTANT.
 
-## Step 4 — Ask (max 5 questions)
+## Step 4 — Resolve remaining gaps
 
-```
-Before generating plan, I need [N] things:
-
-1. [BLOCKING] <question>
-   → Options: A) ... B) ...
-
-2. [IMPORTANT] <question>
-   → Default: X
-```
-
-Wait for answers.
+Inspect source/tests and the active specifications first. Use a documented reasonable default for reversible implementation choices. Ask only for missing information or a product/authorization decision that materially blocks a conforming implementation. Continue independent work while waiting; do not require a questionnaire before every task.
 
 ## Step 5 — Generate Plan
 

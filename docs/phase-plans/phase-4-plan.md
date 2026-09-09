@@ -1,4 +1,6 @@
-# Phase 4: Developer Experience & Maintenance — Detailed Implementation Plan
+# Phase 4: Developer Experience & Maintenance - Detailed Implementation Plan
+
+> **Current delivery order (2026-09-08):** Use the [product roadmap](../product-roadmap.md) and [implementation handoff](../implementation-handoff.md). The checklist below is historical and must be revalidated against the current implementation before claiming completion.
 
 **Execution Mode:** REFACTOR MODE
 **Last updated:** 2026-06-14

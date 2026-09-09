@@ -8,7 +8,7 @@ If project standards are not already available in context, load the applicable s
 
 ### State Mutation
 - Check `docs/invariants.md §1` — field owned by this component?
-- GrailsService write-path methods → STOP, justify change.
+- Core write-path change → inspect reproducer, ownership and publication impact before accepting. Necessary authorized fixes may change the owning core; no extra permission is implied by review.
 - No provider writes to `visitor`, `compiler`, `fileTracker`.
 
 ### Identity
@@ -18,8 +18,8 @@ If project standards are not already available in context, load the applicable s
 
 ### Cache
 - Document: what/who/scope for invalidation.
-- Check `clearCrossFileCaches()` coverage.
-- No `ASTNode` references stored.
+- Check affected-scope invalidation and coherent publication, including legacy `clearCrossFileCaches()` coverage where used.
+- No ASTNode references in value indexes/caches prohibited by INV-OWN-005. Request/AST generation retention must satisfy the explicit state/lease contract; do not confuse it with a durable cache.
 
 ### Provider (T1)
 - `extends BaseProvider` with context constructor.
@@ -39,13 +39,13 @@ Run mechanically:
 ```text
 State Change?
 □ INV-OWN-001 — Single writer preserved
-□ INV-OWN-002 — No new shared mutable outside GrailsService
+□ INV-OWN-002 — Designated owner and project/workspace scope
 □ INV-STATE-001 — Write-path unchanged or justified
 
 New Cache?
 □ INV-OWN-004 — Invalidation documented
 □ INV-OWN-005 — No ASTNode references
-□ INV-STATE-003 — clearCrossFileCaches() updated
+□ INV-STATE-003 — Coherent affected-scope invalidation/publication verified
 
 New Identifier?
 □ INV-ID-* — Classification in invariants §2
@@ -53,18 +53,18 @@ New Identifier?
 
 New Shared State?
 □ INV-OWN-001 — Ownership in invariants §1
-□ INV-OWN-002 — Lives in GrailsService/ServiceContainer
+□ INV-OWN-002 — Owner appears in the ownership map; providers remain readers
 
 New Architecture Decision?
 □ ADR in docs/adr/decisions.md
 □ Cross-links to invariants and failure modes
 ```
 
-Unchecked box → CRITICAL.
+For each applicable box, record evidence or a violation. Mark unrelated boxes not applicable with a reason; a documentation/helper-script task does not require an artificial compiler architecture change. An unchecked applicable correctness rule blocks acceptance.
 
 ## Auto-Fix
 
-Only if mechanical, safe, and behavior-preserving: imports, formatting, typing, logging prefixes, Groovy property syntax, elvis/safe-nav.
+Only if mechanical, safe, and behavior-preserving: imports, formatting, typing, logging prefixes. Groovy property/getter/field syntax, map member access and elvis/safe-nav can change behavior (including empty/zero values); do not transform them mechanically without proving equivalence.
 
 Never auto-fix: architecture, DI, providers, state ownership, lifecycle, caches, identity.
 

@@ -2,7 +2,7 @@
 
 > **Purpose:** Turns KB from documentation into a maintenance system.
 > **Enforcement:** `scripts/pre-commit-guard.js` warns on missing updates.
-> **Last updated:** 2026-06-23
+> **Last updated:** 2026-09-08
 
 ---
 
@@ -21,6 +21,10 @@
 | ADR reversed or superseded | Update ADR status, do NOT delete | `docs/adr/decisions.md` |
 | Risk area behavior changed | Update risk zones | `docs/architecture/system-map.md` |
 | New cross-file cache | Verify `clearCrossFileCaches()` coverage | `docs/invariants.md §3` |
+| ProjectContext/lifecycle/publication changed | Update designated owner, coherent revision and retention evidence | `docs/invariants.md`, `docs/state-and-lifecycle-specification.md` |
+| Framework discovery or visibility changed | Update provenance, capability, invalidation and negative fixtures | `docs/specs/library-discovery.md`, task record |
+| Roadmap task accepted/reopened/blocked | Update one queue state and preserve/revise acceptance evidence; requeue dependents if invalidated | `docs/execution/task-queue.json`, task record |
+| Operation schema or embedded mapping changed | Update shared contract and source/tool parity cases | `docs/specs/agent-tools.md`, `docs/specs/ide-workflows.md` |
 
 ---
 
@@ -43,7 +47,7 @@ KB warnings are non-blocking. STATUS.md warnings are blocking. This keeps fricti
 
 KB docs are valid when:
 
-1. **Ownership table** — every field in GrailsService + ServiceContainer has a row
+1. **Ownership table** — each shared mutable state concern has a designated owner, including per-project contexts, schedulers and caches; avoid inventing owners from old diagrams
 2. **Identity table** — every identifier type used in cross-system lookups has a classification
 3. **Failure modes** — every bug fixed in last 30 days has an entry
 4. **ADRs** — every architectural choice in last 30 days has a record

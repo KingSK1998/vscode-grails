@@ -2,6 +2,10 @@
 
 Monorepo: TypeScript **client** + Groovy **server** (LSP4J).
 
+The first release target is Grails 7+ with Groovy 4. See the [product roadmap](product-roadmap.md) for compatibility boundaries and release gates. Build commands below run from the repository root unless a different directory is shown.
+
+For implementation work, use the [agent execution guide](agent-execution.md), task cards and specs. Run `node scripts/roadmap.js next` to select work and `node scripts/roadmap.js validate` after task metadata changes. The [system map](architecture/system-map.md) distinguishes current source from unverified target behavior.
+
 ## Prerequisites
 
 - **Node.js 20.x** (CI: **20.18.1**)
@@ -17,21 +21,30 @@ npm ci
 npm run build              # client compile+bundle + server shadowJar
 npm run build:client
 npm run build:server
+npm run copy-server        # copy an already built server JAR
+npm run package            # build and create vscode-gng-support.vsix
 ```
 
 ## Debug
 
 1. Open the **repo root** in VS Code.
-2. `npm run watch` (or compile + bundle watch).
+2. Build once with `npm run build`, then use `npm run watch` for client changes.
 3. **Press F5** — Extension Development Host ([`.vscode/launch.json`](../.vscode/launch.json)).
 4. Optional: attach a Java debugger to the LSP (`GrailsLanguageServer.main`, remote debug flags).
 
 **Server only:** `cd server && ./gradlew run`
 
+Normal extension startup launches the bundled JAR over stdio. Manual TCP development is opt-in with `grails.server.developmentMode: true` and `grails.languageServer.developmentPort: 5007`; launch the server JVM with `-Dgrails.lsp.debug.remote=true`. `grails.server.port` configures the application, not the language-server connection.
+
 ## Tests
 
-- Client: `npm test` (see `package.json`).
-- Server: `cd server && ./gradlew test` — **not** run in default CI.
+- Client unit tests: `npm run test:client` (no editor launch).
+- Server: `npm run test:server`; CI also runs server tests through Gradle `build`.
+- Both: `npm test`.
+- Bundled transport: `npm run test:smoke`, after `npm run build`. Uses the Grails test fixture and an in-memory document; it validates protocol framing, discovery, diagnostics and symbols. It requires the fixture's resolved dependencies and can write normal Gradle/LSP caches.
+- Type/lint gates: `npm run check-types` and `npm run lint`.
+
+Headless tests do not replace a fresh VSIX install in an Extension Development Host. Verify explorer, completion, navigation, run/debug/test, and accessible UI behavior there before a release.
 
 ## Architecture
 
@@ -41,7 +54,7 @@ npm run build:server
 | [`server/`](../server/) | LSP → Gradle `shadowJar`, bundled for the extension |
 | [`resources/`](../resources/) | Grammars, snippets, icons |
 
-**Runtime:** activation → `LanguageServerManager` starts JVM + stdio LSP → `GrailsLanguageServer.initialize` (Gradle load, capabilities) → `GrailsTextDocumentService` + `GrailsCompiler` / `GrailsASTVisitor`.
+**Runtime:** activation → LanguageServerManager starts JVM + stdio LSP → initialize returns capabilities → initialized-time background discovery (R0-02 currently pending) → queued document analysis in project contexts → committed provider reads. Initialize must not wait for Gradle. See the [system map](architecture/system-map.md) for current gaps.
 
 **Caching:** `.grails-lsp` under project root (`ProjectCache`, `grails.cache.*`); AST/completion caches invalidate on `didChange` / `didClose`.
 
@@ -152,7 +165,7 @@ ErrorCollector getErrorCollectorOrNull()
 
 **Thread-safe design:** Uses `ReentrantLock` for compile operations, `ConcurrentHashMap` for source unit caching.
 
-**Performance:** ~2-5s full project, ~50-200ms incremental.
+**Performance:** No reproducible benchmark baseline is established here. Measure warm/cold latency, heap and storage against the [release targets](product-roadmap.md#8-acceptance-scorecard-and-evaluation).
 
 ---
 
@@ -223,8 +236,9 @@ log.error("[GRADLE] Project build failed", exception)
 Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) · [GitHub Actions](https://github.com/KingSK1998/vscode-gng-support/actions)
 
 - **Java 17**, **Node 20.18.1**, Ubuntu
-- Server: `./gradlew clean build -x test`
-- Client: `npm ci`, `compile`, `bundle`
+- Server: `./gradlew --no-daemon clean build --stacktrace` (includes tests).
+- Client: `npm ci`, `compile`, `bundle`, `test:client`.
+- Packaging copies the current server to `client/server/grails-language-server-current-all.jar`. The VSIX excludes obsolete JARs, analysis output, logs and development sources.
 
 Release: `npm ci && npm run vscode:prepublish`
 

@@ -1,7 +1,13 @@
 # AGENTS.md — Single Source of Truth
 > ALL AI agents (Claude, Gemini, Copilot, Codex) read this file FIRST.
 > Agent-specific wrappers: `CLAUDE.md`, `GEMINI.md` — thin pointers only.
-> Version: 2.2 | Last updated: 2026-06-23
+> Version: 2.3 | Last updated: 2026-09-08
+
+## Continue delivery
+
+For a roadmap continuation, read [docs/agent-execution.md](docs/agent-execution.md), then run `node scripts/roadmap.js next`. The [task queue](docs/execution/task-queue.json) owns acceptance status/dependencies; task cards and records define proof and resumption. Never select from old Phase-complete labels. Source/test evidence establishes current behavior; [invariants](docs/invariants.md) and active specs define required behavior, including known gaps.
+
+Use the execution guide's document authority table when old descriptions conflict. ADR-009 corrects the former rule that every field must physically live in GrailsService: it remains the composition root, while designated project/service owners hold scoped state. No invariant is waived by this correction. Historical line ranges below are navigation hints; locate headings/methods in current files.
 
 ---
 
@@ -65,9 +71,9 @@ Command → UseCase → Service(s) → VS Code API / LSP
 
 ### Server Pattern
 ```
-LSP request → GrailsTextDocumentService → Provider (T1) → reads GrailsService state
+LSP request → GrailsTextDocumentService → Provider (T1) → captured project/context view
 ```
-- `GrailsService` = composition root. Shared mutable state is INTENTIONAL.
+- `GrailsService` = composition root. `ProjectContextImpl` owns per-project compilation/publication; other mutable state has an explicit owner in `docs/invariants.md`.
 - Providers NEVER write to `visitor`, `compiler`, `fileTracker`
 - `@CompileStatic` on ALL classes
 - Full rules: `server/RULES.md` §0-§4 (L1-L120)
@@ -76,11 +82,11 @@ LSP request → GrailsTextDocumentService → Provider (T1) → reads GrailsServ
 
 | Tier | Pattern | Inject | Example |
 |------|---------|--------|---------|
-| T1 | extends `BaseProvider` | `GrailsService` | Completion, Hover, Diagnostics |
+| T1 | extends `BaseProvider` | ProviderContext + WorkspaceManager; captures RequestContext | Completion, Hover, Diagnostics |
 | T2 | static utility | nothing | `GrailsUtils`, `CompletionUtil` |
 | T3 | plug-n-play | only what's needed | `GrailsYamlIntelligenceProvider(config)` |
 
-T1 providers MUST: `createCancellationToken(uri)` at entry, `checkCancellation(token)` at yield points, `recordHealth(latencyMs, success)` on exit. See `server/RULES.md` §15-§16 (L391-L433).
+T1 providers MUST: `createCancellationToken(uri)` at entry, `checkCancellation(token)` at yield points, `recordHealth(providerName, latencyMs, success)` on exit. See `server/RULES.md` §15-§16 (L391-L433).
 
 ---
 
@@ -126,6 +132,8 @@ At session end, update or create `MEMORY.md` (project root):
 - Open items, blockers, known fragile areas
 - Next session priorities
 - Merge with existing content — never overwrite prior decisions
+
+For queue tasks, also update their execution record and status. `done` requires all card acceptance cases and applicable validation gates; an interrupted or environmentally unverified task remains open. Run `node scripts/roadmap.js validate` after queue/card changes.
 
 ### Repetition → Automate
 If you are repeating a task, failing repeatedly, or going back-and-forth on same work:
@@ -262,7 +270,7 @@ Human → Reviewer → Analyzer → Evidence Brief → Reviewer validates → Wr
 
 From `CODING_STANDARDS.md` (read full file for details):
 
-- **Source of truth**: Compiler → AST → Project Metadata → Dependencies. No hardcoded lists.
+- **Source of truth**: Resolve language bindings from compiler/AST within the actual project/source-set dependency scope. Framework/library inventories require installed-artifact evidence; fixed language grammar, protocol constants and authoring snippets are valid categories. See `docs/specs/library-discovery.md`.
 - **Naming**: intent, not implementation. If name needs comment, rename.
 - **One responsibility** per unit. Method needing paragraph comment = two methods.
 - **Static typing first**. Dynamic dispatch needs written justification.

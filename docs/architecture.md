@@ -1,105 +1,33 @@
 # Architecture
 
-Client-server extension: TypeScript **client** (VS Code) ↔ Groovy **server** (LSP4J) over stdio JSON-RPC.
+**Updated:** 2026-09-08. The extension has a TypeScript VS Code client and Groovy/LSP4J JVM server over stdio JSON-RPC. See the [system map](architecture/system-map.md) for source-backed current structure and open gaps; this overview does not certify runtime behavior.
 
-## Runtime Flow
+## Component boundaries
 
-```
-VS Code activation
-  → ServiceContainer.initialize()
-    → LanguageServerManager.start() (spawns JVM)
-      → GrailsLanguageServer.main()
-        → Gradle Tooling API loads project
-        → GrailsCompiler full compilation
-        → GrailsASTVisitor builds symbol index
-      ← initialize response (capabilities)
-    ← LanguageClient ready
-  ← extension active
-```
+| Component | Responsibility | Rules |
+|---|---|---|
+| Client | VS Code activation/settings, commands, UseCases, tasks/debug/testing presentation, trees and webviews | [client/RULES.md](../client/RULES.md) |
+| Server composition | GrailsService wires services; WorkspaceManager coordinates registered projects | [server/RULES.md](../server/RULES.md), [invariants](invariants.md) |
+| Project analysis | ProjectContextImpl owns compiler/visitor/index/publication and lifecycle; SnapshotManager owns lineage | [State contract](state-and-lifecycle-specification.md) |
+| Discovery | Resolve actual project/source-set artifacts and capabilities; attach origins and invalidate by inputs | [Discovery spec](specs/library-discovery.md) |
+| Language providers | Request-scoped consumers of coherent analysis; no hidden compile/scan/activation side effects | [Performance spec](specs/performance.md) |
+| Embedded editing/UI | Region/source mapping, configuration metadata, native IDE workflows and bounded views | [IDE spec](specs/ide-workflows.md) |
+| Agent operations | Proposed typed analysis/change/check boundary reused by editor and MCP adapters | [Agent spec](specs/agent-tools.md) |
 
-Subsequent file changes flow through `didChange` → `GrailsCompiler.compileSourceFile()` → `GrailsASTVisitor` update → provider reads fresh AST.
+## Startup and data flow
 
-## Communication
+Client activation wires services and starts the configured JVM. LSP initialize advertises capabilities without waiting for Gradle. Initialized-time background project discovery, root registration and buffer replay are R0-02 work; the current initial root loop is incomplete. The client/server transport and final bundled artifact require R0-03/R0-04 verification.
 
-- **Protocol**: LSP over stdio (JSON-RPC)
-- **Custom namespace**: `grails/` (e.g. `grails/discoverTestsBatch`)
-- **Documents**: `groovy` + `gsp`, `file` scheme only
-- **Watchers**: `*.groovy`, `*.gsp`, `build.gradle`, `application.{yml,yaml,properties}`
-- **Workspace**: Only `workspaceFolders[0]` indexed (single-root)
+Document callbacks apply input changes and queue analysis. Project writers build and validate candidate state, then publish a coherent generation for readers. This is the required contract; current shallow AST copies and mismatched lock coverage do not prove it. Read operations must stay available or explicitly unavailable during a blocked build.
 
-## Client (TypeScript)
+The current client selects Groovy/GSP file documents and has expanded Gradle build-input watchers. Full YAML/JSON and embedded-language service routing is R4 work. Context registration exists, but project classpath isolation and dependency edges still need repair; neither 'single-root only' nor 'complete multi-root support' accurately describes the current source.
 
-| Layer | Responsibility |
-|-------|---------------|
-| `extension.ts` | Activation, DI |
-| `ServiceContainer` | Composition root, service lifecycle |
-| `UseCases` | Multi-service workflow orchestration |
-| `Services` | Single-concern domain services |
-| `UI` | Commands, tree views, webviews |
+## Caches and storage
 
-See [`client/RULES.md`](../client/RULES.md) for architecture rules.
+Keep exact scoped lookup maps and compact extracted index facts; prefer incremental affected-file updates and lazy bounded documentation/metadata loading. Every cache records ownership, revisions, bounds, invalidation and disposal. ProjectIndex, SymbolInfo and MethodScopeCache must not retain ASTNode references. Shared immutable artifact facts are separate from per-project visibility. Disk data is reproducible/schema-versioned and never a substitute for current dependency evidence.
 
-## Server (Groovy)
+The existing cache/snapshot classes are implementation to audit, not a mandate for duplicate caches or full AST persistence. Resource budgets and candidate DSA choices are in the performance spec; R1-05 supplies actual measurements.
 
-| Layer | Responsibility |
-|-------|---------------|
-| `GrailsLanguageServer` | LSP entry point, capability registration |
-| `GrailsService` | Composition root, pipeline coordination |
-| `GrailsTextDocumentService` | Document-level LSP dispatch |
-| `GrailsWorkspaceService` | Workspace-level LSP dispatch |
-| `providers/` | Modular LSP feature implementations |
-| `core/` | Compiler, Gradle integration, AST visitor |
-| `services/` | File tracking, cancellation, health |
-| `utils/` | Static utilities (TIER 2) |
+## Decisions and delivery
 
-See [`server/RULES.md`](../server/RULES.md) for architecture rules.
-
-## Provider Tiers
-
-| Tier | Pattern | Example |
-|------|---------|---------|
-| TIER 1 | Extends `BaseProvider`, takes `GrailsService` | Completion, Hover, Diagnostics |
-| TIER 2 | Static utility, no dependencies | `GrailsUtils`, `CompletionUtil` |
-| TIER 3 | Plug-n-play module, minimal deps | `GrailsYamlIntelligenceProvider(config)` |
-
-## Feature Ownership
-
-| Feature | Server Handler | Server Utility | Client |
-|---------|---------------|----------------|--------|
-| Completion | ✅ | | |
-| Hover | ✅ | | |
-| Diagnostics | ✅ | | |
-| Go to Definition | ✅ | | |
-| Find References | ✅ | | |
-| Inlay Hints | ✅ | | |
-| CodeLens | ✅ | | |
-| Document Symbols | ✅ | | |
-| Artefact type detection | | ✅ | |
-| Class/package detection | | ✅ | |
-| Folding ranges | | ✅ | ✅ |
-| Syntax highlighting | | | ✅ |
-| Auto-closing brackets | | | ✅ |
-
-## Caching
-
-| Scope | Use Case | Invalidation |
-|-------|----------|-------------|
-| Node-level | Hover, inlay hints | On demand |
-| File-level | Folding, symbols | On `didChange` / `didClose` |
-| Workspace-level | References, type index | On `setupWorkspace` / rebuild |
-
-Disk cache: `.grails-lsp/` under project root (`ProjectCache`, `grails.cache.*`).
-
-## GSP Handling
-
-1. `GspToGroovyConverter` replaces HTML with whitespace, preserves Groovy blocks
-2. `GrailsCompiler` injects virtual source into `CompilationUnit`
-3. Standard providers work on the virtual AST
-
-## Key Design Decisions
-
-- **Single GrailsService**: Shared mutable state is intentional — providers read freely, never write to compiler/visitor/fileTracker
-- **`@CompileStatic` everywhere**: Performance for real-time LSP operations
-- **Push diagnostics**: Not pull-based (server pushes on change)
-- **First-folder-only**: Multi-root not yet implemented
-- **Shadow JAR**: Server bundled as single JAR inside extension
+[ADR-009](adr/decisions.md#adr-009-project-ownership-and-executable-contracts-2026-09-08) preserves GrailsService composition and single-writer boundaries while correcting obsolete physical ownership/wiring clauses. Context segregation, static compilation and the no-AST index boundary remain active. Use the [execution guide](agent-execution.md) and task queue to continue; historical phase documents do not select work.

@@ -2,7 +2,7 @@
 
 > **Status:** ACTIVE — add entries within 30 minutes of discovering a bug.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-06-23
+> **Last updated:** 2026-09-08
 > **Validation triggers:** Bug fixed, architecture change
 > **Rule:** Every agent surprise → one entry here. No exceptions.
 
@@ -19,6 +19,9 @@
 | ThreadSafeLruCache | RL-001 |
 | ProviderRegistry / BaseProvider | PC-001 |
 | GrailsIncrementalCompilerSpec | AL-001 |
+| Client startup / packaging | ST-001 |
+| Stdio transport / Logback | ST-002 |
+| Background document compilation / ProjectContextImpl | CC-001 |
 
 ### By Invariant
 
@@ -35,7 +38,7 @@
 
 ```markdown
 ### XX-NNN: Short Title
-- **Status:** Active | Resolved | Historical
+- **Status:** Open | Active | Resolved | Historical
 - **Bug:** What happened
 - **Invariant violated:** INV-XXX-NNN
 - **Root cause:** Why
@@ -50,6 +53,7 @@
 
 | Status | Meaning | Transition when |
 |---|---|---|
+| **Open** | Observed unresolved bug; fix or required validation remains incomplete | Record owning roadmap task and current evidence |
 | **Active** | Fixed but pattern could recur | Default for new entries |
 | **Resolved** | Root cause eliminated by architecture change | ADR or structural change prevents recurrence |
 | **Historical** | Reference only. Skip during review | 6+ months, no recurrence, architecture moved past |
@@ -141,6 +145,40 @@
 - **Detected by:** Architecture review
 - **Related ADRs:** ADR-005
 - **Date:** 2026-06-07
+
+---
+
+## Startup and Interrupted Concurrency Work
+
+### ST-001: Installed Extension Uses Development Startup Defaults
+- **Status:** Active
+- **Bug:** The manifest default selected a manual TCP server; Java configuration was ignored by the launcher, application/LSP port definitions collided, and initial project notifications could arrive before handlers were registered.
+- **Invariant violated:** Client lifecycle/configuration ownership; `INV-STATE-006` fail-safe defaults.
+- **Root cause:** Development defaults and post-start notification registration persisted into the production path.
+- **Fix:** Source changes select the bundled JAR by default, honor the configured Java installation, separate ports and register project handlers before startup. Deterministic artifact copying was added.
+- **Test:** Five headless tests passed in the preceding implementation session via `npm run test:client`; final packaged-editor acceptance remains pending.
+- **Detected by:** September startup audit and failing regression tests.
+- **Date:** 2026-09-08 (handoff recorded).
+
+### ST-002: Logs Corrupt Stdio Protocol Framing
+- **Status:** Open — source fix awaits rebuilt transport verification (R0-03)
+- **Bug:** A real bundled-JAR smoke test received colored log output where an LSP `Content-Length` header was required.
+- **Invariant violated:** LSP transport contract: stdout must carry protocol messages only.
+- **Root cause:** Logback console appender defaulted to stdout.
+- **Fix:** Console target changed to `System.err`; rebuild and passing smoke verification remain required in R0-03.
+- **Test:** `scripts/smoke-server.js` reproduced the failure against the older bundled JAR. No passing rebuilt-JAR run recorded.
+- **Detected by:** Real JVM transport smoke test.
+- **Date:** 2026-09-08 (handoff recorded).
+
+### CC-001: Interrupted Background Compilation Migration
+- **Status:** Open — unresolved (R0-01)
+- **Bug:** Latest saved incremental suite has seven failures with `ProjectState` to `AtomicReference` cast errors. Three scheduler tests additionally use `.empty` map assertions that return null for an empty map.
+- **Invariant violated:** `INV-STATE-004` publication correctness and the regression-test gate.
+- **Root cause:** The interrupted writer identified Groovy property dispatch inside new project-lock closures; the saved XML confirms the cast. Verify exact stacks before repair. The map failures arise from property/key semantics in the tests.
+- **Fix:** Pending R0-01; see [implementation handoff](implementation-handoff.md). Preserve `@CompileStatic` and behavioral assertions.
+- **Test:** Saved reports dated 2026-09-07: `GrailsIncrementalCompilerSpec` 7/7 failed; `DocumentCompilationSpec` 3/6 failed. Read on 2026-09-08; not rerun during roadmap work.
+- **Detected by:** Targeted tests during migration from inline to queued document compilation.
+- **Date:** 2026-09-08.
 
 ---
 

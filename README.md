@@ -1,336 +1,113 @@
-# Grails Framework Support for VS Code
+# Groovy and Grails Support for VS Code
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/KingSK1998.vscode-gng-support)](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support)
-[![GitHub](https://img.shields.io/github/license/KingSK1998/vscode-gng-support)](https://github.com/KingSK1998/vscode-gng-support/blob/main/LICENSE)
 [![Build Status](https://github.com/KingSK1998/vscode-gng-support/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/KingSK1998/vscode-gng-support/actions)
 
-A comprehensive VS Code extension that provides full-featured support for **Grails** and **Groovy** development with intelligent Language Server Protocol (LSP) integration.
+A VS Code extension in development for **Grails 7+ and Groovy 4**, with a TypeScript client and a JVM language server. The goal is an IDE that discovers APIs from each project's resolved libraries, keeps editing responsive during analysis, and makes its project knowledge available to developers and agents. It does not require a patched Grails distribution.
 
-![Grails Action](resources/images/action.png)
+Read the [complete product strategy and roadmap](docs/product-roadmap.md) for the finished-product definition, AI workflows, release tasks and measurable acceptance gates. The [implementation handoff](docs/implementation-handoff.md) records the interrupted work and the exact next coding task. Older Grails/Groovy versions and automatic compatibility with future releases are not currently guaranteed.
 
-## ✨ Core Features
+**Continuing development with an agent:** start with the [execution guide](docs/agent-execution.md) and run `node scripts/roadmap.js next`. It selects from 38 dependency-ordered tasks with [acceptance cards](docs/execution/task-specifications.md), focused specifications and evidence records. `node scripts/roadmap.js validate` checks queue consistency; it does not certify runtime correctness.
 
-- **Grails 7+ Support**: Full compatibility with the latest Grails framework versions, Groovy 4 dependencies, and Spring Boot 3 integration.
-- **Advanced Type Interference**: Robust type analysis for Groovy's dynamic capabilities, ensuring accurate intellisense.
-- **Auto Import Generation**: Automatically suggests and manages your class imports based on context and workspace index powered by ClassGraph.
-- **Closure Delegates DSL**: Intelligent processing of standard Grails closures (e.g. constraints, mapping) giving precise auto-completions.
-- **Named Parameters**: Seamless completion for Grails-specific named params (e.g. renders, redirects, mapping rules).
-- **Multi Root Workspace**: Out-of-the-box support for multiple Grails applications and plugins loaded in the same VS Code window.
-- **Advanced Language Support**: Powered by a robust Core LSP engine with AST Visitor and comprehensive symbol diagnostics.
-- **Experimental AI Intellisense**: Context-aware line completion explorations using ML-based offline suggestions trained on Groovy and Grails code.
-- **Operational Dashboards**: Dual-mode management webview dashboards (User Insights and Developer Diagnostics) running inside the IDE.
-- **In-Editor Quick Fixes**: Smart code actions for missing dependencies (Auto-Dependency Injection for services) and missing methods.
-- **Project Tree Explorer**: Graphical hierarchy specifically structured for Grails artifacts (Controllers, Domains, Services, Views).
-- **Artifact Wizards**: Command-based UI for instantly generating Controllers, Services, and Domains.
-- **Core LSP Engine**: Efficient multi-threaded server architecture communicating instantaneously with the extension client.
-- **Inlay Type Hints**: Semantic type and parameter hints seamlessly floating inline in variable assignments and method calls.
-- **Gutter Navigation**: Intuitive decorators allowing rapid jumps between a Controller action and its View equivalent.
-- **Virtual Groovy Mapping**: Abstracted GSP scriptlet capabilities simulating Groovy script parsing for framework wiring.
-- **Smart Action Links**: Readily identifying actions and domain mapping relationships.
-- **Asset Pipeline Support**: Asset pipeline static resolution improvements for Javascript and CSS imports.
-- **i18n Property Indexing**: Full autocompletion and diagnostic capabilities for your message bundle property files.
-- **Semantic Highlighting**: Syntactic text decoration mapping injected properties, variables, and Grails tags.
-- **Custom TagLib Discovery**: Discovers workspace GSP tags and evaluates them dynamically in GSP templates.
-- **In-Editor Log Stream**: Developer application logs streamed in realtime directly within VS Code's Output channels.
-- **Documentations**: Extended documentation and reference hovering derived straight from standard Groovy, Java, and Grails API/sources.
+## Implemented feature areas
 
-## 📋 Requirements
+The repository contains the following capabilities; their presence does not mean every real-world Grails workflow has been validated:
 
-### Prerequisites
+- Groovy and GSP syntax highlighting, snippets and language configuration.
+- LSP completion, hover, signature help, navigation, references, symbols and diagnostics.
+- Providers for rename, code actions, inlay hints, semantic tokens, formatting and folding.
+- Grails artifact explorer, artifact creation commands, run/debug/test integration.
+- Dashboard, dependency graph and GORM SQL preview views.
+- Dependency-based discovery, GSP-to-Groovy conversion, TagLib and i18n support.
+- Project contexts, snapshots, background work and memory lifecycle infrastructure.
 
-- **VS Code**: `^1.103.0` (see `package.json` `engines.vscode`)
-- **Java**: JDK 17+ (for Language Server)
-- **Grails**: 4.0+ recommended (supports 3.x with limitations)
-- **Gradle**: 7.0+ for project build management
-- **Node.js**: 20.x recommended (CI uses 20.18.1; see [docs/developer-guide.md#ci](./docs/developer-guide.md#ci))
+Full HTML/CSS/JavaScript intelligence inside GSP, comprehensive YAML/JSON schema integration, agent tools and a tested compatibility matrix remain release work. Runtime metaprogramming can limit static resolution; refactoring requires particular care around ambiguous symbols.
 
-### Required Extensions
+## Requirements
 
-- [Gradle for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-gradle) - Automatically installed as dependency
+- VS Code compatible with `engines.vscode` in [package.json](package.json), currently `^1.103.0`.
+- JDK 17 for the language server and the first supported Grails fixture set.
+- A Grails 7/Groovy 4 project with its own Gradle wrapper.
+- Node.js 20+ and Git when building the extension from source.
 
-### Recommended Extensions
+[Gradle for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-gradle) is declared as an extension dependency.
 
-- [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)
-- [Prettier - Code Formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-- [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
+## Build and try the extension
 
-## 🚀 Quick Start
+Run these commands from the repository root on Windows, Linux or macOS:
 
-### For Users
+```sh
+npm ci
+npm run build
+npm run test:client
+npm run test:server
+npm run package
+```
 
-1. **Install from [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=KingSK1998.vscode-gng-support)**
-2. **Open a Grails project** (contains `build.gradle` and `grails-app/` folder)
-3. **Configure Java path** if needed: `Settings → Grails → Java Home`
-4. **Start developing** with full LSP support and IntelliSense!
+`npm run package` builds the extension and creates `vscode-gng-support.vsix` in the repository root. In VS Code, use **Extensions: Install from VSIX**, select that file and open a Grails project. Inspect the Grails output channels if discovery or startup fails. Packaging locally does not publish a Marketplace release.
 
-### Configuration Settings
-
-Configure the extension through VS Code settings:
+The normal configuration launches the bundled language server. Set Java explicitly if needed:
 
 ```json
 {
- "grails.javaHome": "/path/to/java-17",
- "grailsLsp.completionDetail": "ADVANCED",
- "grailsLsp.enableGrailsMagic": true,
- "grailsLsp.codeLensMode": "ADVANCED"
+  "grails.javaHome": "/path/to/jdk-17",
+  "grails.completion.detail": "advanced",
+  "grails.completion.maxItems": 1000,
+  "grails.codeLens.enabled": true
 }
 ```
 
-## 🏗️ Architecture
+Java selection uses `grails.javaHome`, then `JAVA_HOME`, then `java` on PATH. Paths containing spaces are passed as executable paths, not shell commands.
 
-This extension uses a **client-server architecture** for optimal performance:
+## Development
 
-- **[Client](./client/)** - VS Code extension (TypeScript)
+Open the repository root in VS Code, build once, then press **F5** using the existing **Run Extension** launch configuration. Use `npm run watch` for client changes. After server changes, run `npm run build:server` and `npm run copy-server`, then restart the language server.
 
-  - User interface and VS Code integration
-  - Command palette, views, and UI components
-  - Language client that communicates with LSP server
+| Command | Purpose |
+|---|---|
+| `npm run build` | Build server, copy its JAR, compile and bundle client |
+| `npm run build:client` | Compile and bundle client |
+| `npm run build:server` | Build the server fat JAR using the project's Gradle wrapper |
+| `npm run copy-server` | Copy the already built fat JAR to the stable runtime name |
+| `npm run test:client` | Compile and run headless client startup/packaging tests |
+| `npm run test:server` | Run server tests and the configured coverage report |
+| `npm run test:smoke` | Exercise the bundled JAR over stdio with the Grails test fixture |
+| `npm test` | Run both test groups |
+| `npm run check-types` | TypeScript checking without output |
+| `npm run lint` | Client ESLint checks |
+| `npm run watch` | Watch client compilation and bundling |
+| `npm run package` | Build and create a local VSIX |
 
-- **[Server](./server/)** - Language Server (Groovy + LSP4j + Gradle Tooling API)
-  - Advanced Groovy/Grails compilation engine
-  - AST analysis and intelligent code features
-  - Gradle project integration and dependency resolution
+The packaged runtime is `client/server/grails-language-server-current-all.jar`. The copy step requires exactly one versioned fat JAR in `server/build/libs`; it rejects ambiguous old build outputs instead of guessing by file size.
 
-```text
-┌─────────────────┐    LSP Protocol    ┌──────────────────┐
-│   VS Code       │◄──────────────────►│  Language Server │
-│   Extension     │    (JSON-RPC)      │   (Java/Groovy)  │
-│  (TypeScript)   │                    │                  │
-└─────────────────┘                    └──────────────────┘
-```
-
-## 📖 Documentation
-
-| Guide | For |
-|-------|-----|
-| [**User guide**](./docs/user-guide.md) | Install, settings, features, troubleshooting |
-| [**Developer guide**](./docs/developer-guide.md) | Build, debug, testing, compiler, logging, CI |
-| [**Architecture**](./docs/architecture.md) | Client ↔ server design, provider tiers, feature ownership |
-| [Server rules](./server/RULES.md) | Server architecture rules (for AI agents) |
-| [Client rules](./client/RULES.md) | Client architecture rules (for AI agents) |
-
-## 🛠️ Development Workflow
-
-### Prerequisites for Development
-
-- **Git** for version control
-- **Java 17+** for Language Server development
-- **Node.js 20+** for VS Code extension development (match CI)
-- **IntelliJ IDEA** (recommended for server development)
-- **VS Code** (for extension development)
-
-### Step-by-Step Setup
-
-#### 1. Clone and Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/KingSK1998/vscode-gng-support.git
-cd vscode-gng-support
-
-# Initial setup (installs dependencies and builds both components)
-npm run setup
-```
-
-#### 2. IDE Workspace Setup
-
-**VS Code Workspace (Recommended for Extension Development):**
-
-- Open **root folder** (`vscode-gng-support/`) in VS Code
-- This gives you access to:
-  - npm scripts for build automation
-  - Launch configurations (F5 debugging)
-  - Multi-folder workspace with both client and server
-  - Integrated terminal for running commands
-
-**IntelliJ IDEA Workspace (Recommended for Server Development):**
-
-- Open **server folder** (`vscode-gng-support/server/`) in IntelliJ IDEA
-- Import as Gradle project
-
-#### 3. Development Mode
-
-**Terminal 1 - Start Language Server (Debug Mode):**
-
-```bash
-npm run dev:server
-```
-
-Or use IntelliJ IDEA and its F5/Debug configuration to launch in debug mode.
-
-**Terminal 2 - Start VS Code Extension:**
-
-- In VS Code, **press F5** to launch Extension Development Host
-
-#### 4. Daily Development Workflow
-
-1. **Edit server code** in IntelliJ IDEA
-2. **Rebuild server** if needed: `npm run build:server`
-3. **Restart language server** if running
-4. **Test extension** in VS Code Extension Development Host
-5. **Edit client code** in VS Code
-6. **Reload extension** (**Ctrl+R** in Extension Development Host)
-
-### Available npm Scripts
-
-```bash
-npm run setup # One-time setup: install deps + build everything
-npm run build # Build both client and server
-npm run build:client # Build VS Code extension only
-npm run build:server # Build Language Server only
-npm run dev:server # Start Language Server in debug mode
-npm run test # Run all tests (server + client)
-npm run clean # Clean all build artifacts
-npm run package # Create .vsix file for VS Code Marketplace
-```
-
-### Debug Configuration (VS Code)
-
-`.vscode/launch.json`:
+For manual language-server development, start the JVM with `-Dgrails.lsp.debug.remote=true` and configure:
 
 ```json
 {
- "version": "0.2.0",
- "configurations": [
-  {
-   "name": "Launch Extension",
-   "type": "extensionHost",
-   "request": "launch",
-   "args": ["--extensionDevelopmentPath=${workspaceFolder}/client"],
-   "outFiles": ["${workspaceFolder}/client/out/**/*.js"],
-   "preLaunchTask": "npm: compile - client"
-  },
-  {
-   "name": "Debug LSP Server",
-   "type": "java",
-   "request": "attach",
-   "hostName": "localhost",
-   "port": 5005
-  }
- ]
+  "grails.server.developmentMode": true,
+  "grails.languageServer.developmentPort": 5007
 }
 ```
 
-## 🔧 Configuration
+`grails.server.port` is the application port (default 8080). Existing development configurations that used it for the LSP connection must move to `grails.languageServer.developmentPort`. Leave development mode disabled for the bundled server.
 
-### Extension Settings
+## Current limitations
 
-| Setting                        | Default      | Description                                   |
-| ------------------------------ | ------------ | --------------------------------------------- |
-| `grails.javaHome`              | `""`         | Path to Java installation for Language Server |
-| `grails.path`                  | `""`         | Path to Grails installation directory         |
-| `grailsLsp.completionDetail`   | `"ADVANCED"` | Code completion detail level                  |
-| `grailsLsp.maxCompletionItems` | `1000`       | Maximum completion items returned             |
-| `grailsLsp.enableGrailsMagic`  | `true`       | Enable Grails-specific features               |
-| `grailsLsp.codeLensMode`       | `"ADVANCED"` | Code lens configuration                       |
+- Multi-project classpath isolation, Gradle dependency refresh and explicit dependency-graph integration need further work and real-project tests.
+- Snapshot infrastructure does not yet establish deep immutability of every retained AST object.
+- Registered providers and mock tests do not establish complete IDE behavior. Packaged-editor acceptance tests and measured performance baselines are release gates.
+- Agent tooling is planned; there is no shipped ML-based offline completion model or general-purpose agent adapter.
 
-### Workspace Configuration Example
+## Documentation and contributions
 
-Create `.vscode/settings.json` in your Grails project:
+| Document | Purpose |
+|---|---|
+| [Product roadmap](docs/product-roadmap.md) | Vision, compatibility scope, performance targets and acceptance gates |
+| [Developer guide](docs/developer-guide.md) | Build, debug, tests and implementation references |
+| [Architecture](docs/architecture.md) | Component responsibilities |
+| [Client status](client/STATUS.md) / [Server status](server/STATUS.md) | Implementation and validation status |
+| [AGENTS.md](AGENTS.md) | Contributor workflow and project rules |
+| [Failure modes](docs/failure-modes.md) | Regression history and test matrix |
 
-```json
-{
- "grails.javaHome": "/usr/lib/jvm/java-17-openjdk",
- "grailsLsp.completionDetail": "ADVANCED",
- "grailsLsp.enableGrailsMagic": true,
- "java.import.gradle.enabled": true
-}
-```
+Before contributing, read the project rules and the tests for the affected component. Run the applicable validation, update status and knowledge-base documents, and include the observed behavior and test evidence in the pull request.
 
-## 🤝 Contributing
-
-We welcome contributions!
-
-1. Fork the repository on GitHub
-2. Follow the development workflow above to set up your environment
-3. Create a feature branch: `git checkout -b feature/amazing-feature`
-4. Make your changes and add tests
-5. Ensure all tests pass: `npm run test`
-6. Commit your changes: `git commit -m 'Add amazing feature'`
-7. Push to your fork: `git push origin feature/amazing-feature`
-8. Open a Pull Request with a clear description
-
-See [docs/developer-guide.md](./docs/developer-guide.md) for more details.
-
-## 📊 Project status
-
-See **[docs/user-guide.md#status-and-roadmap](./docs/user-guide.md#status-and-roadmap)** (version **0.0.2**). High level:
-
-- LSP: completion, hover, diagnostics, definition, implementation, references, symbols, code lens, inlay hints, rename (best-effort). Not yet: formatting, folding, semantic tokens, code actions / quick fixes.
-- Roadmap: true multi-root indexing, richer refactorings, performance hardening for very large repos.
-
-## 🐛 Known Issues
-
-- Language server may take a few moments to initialize on first startup
-- Large projects (1000+ files) might experience slower completion response times
-- **Rename** is best-effort; complex Groovy AST transformations (metaprogramming) may not always be tracked perfectly
-- No LSP formatting, semantic highlighting, or quick fixes yet ([developer guide — LSP reference](./docs/developer-guide.md#language-server-reference))
-
-Report issues on our [GitHub Issues page](https://github.com/KingSK1998/vscode-gng-support/issues).
-
-## 📄 License
-
-MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-Built with ❤️ for the Grails community using:
-
-- [Grails Framework](https://grails.org/)
-- [Eclipse LSP4j](https://github.com/eclipse/lsp4j)
-- [Gradle Tooling API](https://docs.gradle.org/current/userguide/third_party_integration.html)
-- [VS Code Extension API](https://code.visualstudio.com/api)
-
-### Special Thanks
-
-- Grails community for continuous feedback and support
-- VS Code team for excellent extension development tools
-- Contributors and early adopters who help improve the extension
-
----
-
-**Happy Grails Development!** 🎉
-
-> 💡 **Need help?** Check our [documentation](./docs/) or [open an issue](https://github.com/KingSK1998/vscode-gng-support/issues/new)
-
-# VS Code Extension + Server
-
-This project contains a VS Code extension (`client`) and a backend server (`server`).  
-The client is built with **TypeScript** and bundled using **esbuild**.  
-The server is built with **Gradle** (producing a `-all.jar`).
-
----
-
-## 🚀 Commands
-
-### Client (VS Code Extension)
-
-- **`npm run build`** → Type-checks, lints, and compiles the extension with `tsc`.
-- **`npm run watch`** → Recompiles on file changes (use during development).
-- **`npm run lint`** → Runs ESLint checks on `client/src`.
-- **`npm run format`** → Auto-formats code with Prettier.
-
-### Server
-
-- **`npm run build-server`** → Builds the server JAR with Gradle.
-- **`npm run copy-server`** → Builds the server JAR and copies it into the `client/server/` folder.
-
-### Packaging
-
-- **`npm run vscode:prepublish`** → Prepares the extension for publishing (build + copy server).
-- **`npm run test`** → Runs extension tests (compiles first, then executes tests).
-
----
-
-## 🛠️ Development Workflow
-
-1. Run **`npm run watch`** to keep the client extension rebuilding on changes.
-2. If server code changes, run **`npm run copy-server`** to update the JAR inside the client.
-3. Launch the extension in VS Code (`F5` → "Launch Extension").
-
----
-
-## 📦 CI/CD
-
-- Workflow: **[CI/CD Pipeline on GitHub Actions](https://github.com/KingSK1998/vscode-gng-support/actions)** (Java 17, Node 20.18.1; server build **skips tests**; client `compile` + `bundle`). Details: [docs/developer-guide.md#ci](./docs/developer-guide.md#ci).
-- Local release prep: **`npm ci && npm run vscode:prepublish`** for a clean, reproducible build.
+[Report an issue](https://github.com/KingSK1998/vscode-gng-support/issues) with the project/runtime versions, reproduction steps and relevant output. Licensed under the [MIT License](LICENSE).

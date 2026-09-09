@@ -2,7 +2,7 @@
 > Agent-agnostic skill. Any AI agent (Claude, Gemini, Copilot, Codex) can run this.
 > Target: Diagnosing build failures, test regressions, LSP runtime issues, and agent spirals.
 
-Diagnose. Recovery plan only. NO changes.
+This skill diagnoses a failure and proposes a bounded repair. Its diagnostic stage does not edit code. Return the evidence to the Reviewer, who continues the already authorized repair and validation under [agent execution](../agent-execution.md); do not stop the overall task at a plan or infer a new permission gate.
 
 ## Step 1 — Stop
 
@@ -29,8 +29,8 @@ Check status and VCS state:
 - Check `@CompileStatic` violations, ProviderRegistry wiring (server/RULES.md §15 L391-L406)
 
 ### C: Test Regression
-- Run tests: `cd server && ./gradlew test`
-- Read test result XMLs to inspect failures.
+- Read the current XML/stack trace, then run the smallest affected test through `node scripts/gradle.js test --tests "<pattern>" --console=plain` from the root.
+- Do not repeatedly run the full suite without a change or new diagnostic reason.
 
 ### D: Agent Spiral
 - Look for circular file changes in the last 5-10 commits
@@ -61,20 +61,13 @@ Last good: [SHA or "uncommitted"]
 
 ## Recovery Options
 
-### Option 1: Hard Reset
-git checkout <SHA> -- <files>
-Risk: [what's lost] | When: [condition]
-
-### Option 2: Surgical Fix
+### Bounded repair
 1. [specific step]
 2. [validate: build command]
 Risk: [what could fail] | When: [condition]
 
-### Option 3: Stash + Restart
-git stash
-Then: [what to do differently]
-
-### Recommended: Option [N] because [reason]
+### Alternative, only if materially useful
+[Evidence-based alternative and its tradeoff; preserve unrelated dirty work.]
 
 ### Validation After Recovery
 Client: npm run compile → check-types → lint
@@ -85,6 +78,6 @@ Server: npm run build:server → cd server && ./gradlew test
 ```
 
 ## Rules
-- NEVER make changes. Plan only.
+- Diagnosis first; implementation continues through the Reviewer using validated evidence.
 - Find BAD ASSUMPTION in spirals — treating symptoms won't stop the loop.
-- Always offer at least 2 recovery options.
+- Do not fabricate alternatives or reset/stash unrelated work. A prior passing commit is evidence to inspect, not authority to overwrite the working tree.

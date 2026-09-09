@@ -22,14 +22,56 @@
     - Automated drift prevention by updating **`scripts/pre-commit-guard.js`** to warn on missing KB updates (e.g. `GrailsService` changes without `invariants.md` edits, new caches/providers, bug-fix commit messages without `failure-modes.md` updates).
     - Embedded the **Invariant Review Checklist** and KB update checks directly into the agent-facing **`docs/skills/review.md`** skill.
 
-## Next Session Priorities
+11. **Project reactivation & concurrency locking**: Integrated thread-safe reactivation lock via `activationFuture` and `ensureActivated()` in `ProjectContextImpl` to prevent duplicate compiler instantiation under concurrent requests.
+12. **LRU Memory budgeting and eviction**: Added automatic memory eviction to `WorkspaceManager` that keeps at most 2 active projects READY, evicting the least recently used to HIBERNATED state. Wired the check to trigger both on workspace access and when project states transition to READY.
+13. **Snapshot manager lineage tracking**: Created `SnapshotManager` to maintain versioned snapshot lineage with a maximum of 3 historical records. Used SoftReferences to hold history so the JVM can reclaim them under memory pressure, while guaranteeing LKG is preserved on compilation/sync failures.
+14. **Groovy Direct Field Access in Lifecycle Methods**: Used `this.@compiler` and
+    `this.@visitor` inside `hibernate()` and `dispose()` as a consistency discipline —
+    bypasses Groovy's property dispatch unconditionally, protecting lock-guarded
+    nullification from any future getter side effects introduced in subclasses or refactors.
 
-1. **Phase 4 (Refactor & Aesthetics)**:
-   - Phase 3 core is finished and verified. Next step is Phase 4: code cleanup, dev script automation, and documentation alignment to the new multi-root architecture.
-2. **Completion Strategy Polish**:
-   - Audit the remaining minor completion strategies for edge cases and ensure 100% test coverage for the new stateless pattern.
-3. **Gradle Sync Stability**:
-   - Investigate persistent Gradle tooling daemon stability and implement Task 3c.1 (Gradle Sync Audit) fully to handle long-running Gradle timeouts.
-4. **Knowledge Base Enforcement Habit**:
-   - Ensure subsequent model sessions execute the `docs/skills/review.md` checklist and adhere to the change-trigger update requirements when making code edits.
+## Previous Session Priorities (superseded by the 2026-09-08 handoff below)
 
+1. **Gradle Sync Audit & Debouncing (Phase 3c.1)**:
+   - Implement 2-second debounce on build.gradle watches, a 30-second timeout, and proper connection pool cancellation.
+2. **Memory Escalation Path (Phase 3c.2)**:
+   - Implement 3-stage OOM escalation path (Tier 2 -> Global Hibernation -> Rejected Operations) and cool-down duration exit criteria.
+3. **Dependency Invalidation — Gradle Integration (Phase 3b.3)**:
+   - Integrate actual Gradle dependency graph resolution into `projectDependsOn()`.
+   - Test with real multi-project Gradle workspace.
+4. **Integration Test Suite**:
+   - Write integration tests for reactivation under concurrent edits, dependency propagation, and Gradle timeouts.
+
+## Decisions Made & Patterns Established (2026-06-24)
+
+15. **Dependency Graph Invalidation Tests (Phase 3b.3)**: Created `DependencyInvalidationSpec` with 6 comprehensive tests covering:
+    - Dependency detection by name match
+    - Dependency detection by jar classpath containment
+    - Independent project isolation (no false positives)
+    - Dirty flag propagation on upstream snapshot commit
+    - Cycle protection in circular dependency graphs (A->B->C->A)
+    - All tests passing — validates `WorkspaceManager.propagateInvalidation()` BFS traversal with visited-set cycle detection.
+
+## Product direction and interrupted implementation handoff (2026-09-08)
+
+- The user confirmed **Grails 7+ / Groovy 4 first**, then explicitly requested a complete roadmap and handoff because usage limits interrupted coding. The latest task is documentation/strategy; runtime work remains unfinished.
+- [docs/product-roadmap.md](docs/product-roadmap.md) now defines the intended 1.0 product, human and agent workflows, project-derived framework discovery, performance/storage targets, UI direction and task IDs R0–R6. These are plans, not implementation claims.
+- Strategic direction: maintain one local analysis engine used by the IDE and agent tools. Provide installed-version API evidence, Grails relationships, conservative change impact and reproducible checks. Keep deterministic IDE features useful without a model or hosted account. Evaluate agent benefits against the same agent with ordinary search/build access; future relevance is a hypothesis to measure.
+- Introduce useful editor agent reads in R3 after query correctness, without waiting for every UI/refactoring feature. Add MCP portability when typed operations stabilize. No custom completion-model training or mandatory chat/cloud layer is planned for 1.0.
+- [docs/implementation-handoff.md](docs/implementation-handoff.md) is the execution entry point. **Next task: R0-01**, repair interrupted document scheduling/project publication and pass the affected tests before expanding scope.
+- Current saved reports: `GrailsIncrementalCompilerSpec` has 7 tests / 7 failures (`ProjectState` cast to `AtomicReference`); `DocumentCompilationSpec` has 6 tests / 3 failures (map `.empty` assertions). Reports were read on 2026-09-08, not rerun. The earlier passing compiler baseline predates these changes.
+- Client startup/build changes and five passing headless tests exist from the preceding session. Real JVM smoke reproduced stdout logging corruption; stderr source fix exists but final JAR/VSIX validation remains pending.
+- Initial workspace discovery remains a TODO, folder add/remove remains incomplete, and the startup agent stopped at a usage limit before implementation. Preserve all existing edits. No commit/push/publish was performed.
+- Corrections to older memory: current compiler code combines workspace classpaths, and snapshot map copies do not prove deep AST immutability or classloader release. Earlier broad “strict isolation”/“complete” claims require revalidation; do not use them as acceptance evidence.
+
+## Agent execution contracts and specifications (2026-09-08)
+
+- The user requested actionable documentation/specs so other agents can continue from the roadmap and preserve invariants. This session delivered documentation plus two Node execution-tool files; it did not repair or revalidate client/server runtime behavior.
+- [docs/agent-execution.md](docs/agent-execution.md) is now the continuing-work entry point. The roadmap, README and AGENTS point there. Run `node scripts/roadmap.js next`; current selection is **R0-01**, queued/unassigned with existing partial code. The earlier implementation handoff is baseline evidence, not a permanently fixed next-task instruction.
+- [docs/execution/task-queue.json](docs/execution/task-queue.json) is the single acceptance-status/dependency ledger. All 38 roadmap IDs have [acceptance cards](docs/execution/task-specifications.md); R0-R5 are admitted, R6 deferred. Cards contain numbered cases, source starting points, spec links and invariant mappings. Records preserve evidence and interruption recovery. Reopening a task also requeues accepted/active transitive dependents for reverification.
+- Added specs for library discovery, performance, agent operations, IDE/embedded workflows and validation; replaced the old state/lifecycle proposal with an explicit required contract and current evidence gaps. Fixed grammar keywords remain legitimate; framework/library API inventories need resolved-artifact evidence, capability guards and negative removal/isolation tests.
+- ADR-009 reconciles GrailsService composition with per-project ownership; ADR-004/005 retain historical clauses marked superseded. Actual provider constructors take ProviderContext/WorkspaceManager and capture RequestContext; do not copy obsolete three-context wiring. ADR-008 remains reserved for a withdrawn snapshot proposal.
+- Retention must preserve usable active/LKG facts while releasing compiler/classloader generations after bounded request leases drain. Shallow AST copies, live field nullification and SoftReference alone are not proof. R1-04 must select/prove the concrete mechanism; no automatic deep-AST-copy rewrite is directed.
+- Query freshness and completeness are separate. Project/source-set/document/open/dependency/config revisions constrain results; unknown dynamic behavior never becomes certain refactor evidence. New agent adapters reuse typed operations rather than another index.
+- Reconciled system map, architecture overview, invariants, rules, review/performance/planning/recovery skills and old reasoning-guide status. Planning/diagnostic stages return to authorized implementation; routine fixes do not require repetitive permission requests.
+- Verification: selector focused tests **12/12 passed**, actual queue validates **38 tasks**, and `next` selects R0-01. Direct Node test invocation worked after `node --test` child-worker spawn EPERM. Link/anchor and independent contract review evidence is in [docs/execution/documentation-baseline.md](docs/execution/documentation-baseline.md). No commit, push, publish or new product build/test was performed for this documentation session.

@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-08",
+  "scope": "R0-R5: 1.0 acceptance; R6: deferred candidates",
+  "tasks": [
+    {
+      "id": "R0-01",
+      "title": "Repair interrupted document scheduling and publication",
+      "status": "in_progress",
+      "dependsOn": [],
+      "spec": "docs/execution/task-specifications.md#r0-01",
+      "record": "docs/execution/records/R0-01.md",
+      "owner": "Codex /root"
+    },
+    {
+      "id": "R0-02",
+      "title": "Implement initialized-time discovery and root lifecycle",
+      "status": "queued",
+      "dependsOn": [
+        "R0-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r0-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R0-03",
+      "title": "Validate bundled stdio and custom protocol",
+      "status": "queued",
+      "dependsOn": [
+        "R0-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r0-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R0-04",
+      "title": "Validate deterministic build and package",
+      "status": "queued",
+      "dependsOn": [
+        "R0-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r0-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R0-05",
+      "title": "Reconcile baseline evidence and architecture documents",
+      "status": "queued",
+      "dependsOn": [
+        "R0-04"
+      ],
+      "spec": "docs/execution/task-specifications.md#r0-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R1-01",
+      "title": "Bound document scheduling and establish fairness",
+      "status": "queued",
+      "dependsOn": [
+        "R0-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r1-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R1-02",
+      "title": "Preserve revision order and reject stale publication",
+      "status": "queued",
+      "dependsOn": [
+        "R1-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r1-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R1-03",
+      "title": "Bound Gradle synchronization and retain usable state",
+      "status": "queued",
+      "dependsOn": [
+        "R1-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r1-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R1-04",
+      "title": "Prove publication and lifecycle ownership",
+      "status": "queued",
+      "dependsOn": [
+        "R1-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r1-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R1-05",
+      "title": "Publish performance and resource baselines",
+      "status": "queued",
+      "dependsOn": [
+        "R1-04"
+      ],
+      "spec": "docs/execution/task-specifications.md#r1-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-01",
+      "title": "Isolate classpaths and source-set membership",
+      "status": "queued",
+      "dependsOn": [
+        "R1-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-02",
+      "title": "Refresh dependency-derived state coherently",
+      "status": "queued",
+      "dependsOn": [
+        "R2-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-03",
+      "title": "Use resolved Gradle project edges",
+      "status": "queued",
+      "dependsOn": [
+        "R2-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-04",
+      "title": "Discover declarations and API origins",
+      "status": "queued",
+      "dependsOn": [
+        "R2-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-05",
+      "title": "Implement Grails capability adapters",
+      "status": "queued",
+      "dependsOn": [
+        "R2-04"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R2-06",
+      "title": "Establish tested compatibility evidence",
+      "status": "queued",
+      "dependsOn": [
+        "R2-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r2-06",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R3-01",
+      "title": "Define shared typed analysis operations",
+      "status": "queued",
+      "dependsOn": [
+        "R2-06"
+      ],
+      "spec": "docs/execution/task-specifications.md#r3-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R3-02",
+      "title": "Expose first VS Code agent reads",
+      "status": "queued",
+      "dependsOn": [
+        "R3-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r3-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R3-03",
+      "title": "Evaluate agent tool usefulness",
+      "status": "queued",
+      "dependsOn": [
+        "R3-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r3-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R3-04",
+      "title": "Add MCP adapter for stable operations",
+      "status": "queued",
+      "dependsOn": [
+        "R3-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r3-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-01",
+      "title": "Align language feature resolution",
+      "status": "queued",
+      "dependsOn": [
+        "R2-06"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-02",
+      "title": "Model evidenced Grails relationships",
+      "status": "queued",
+      "dependsOn": [
+        "R4-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-03",
+      "title": "Deliver GSP embedded-language editing",
+      "status": "queued",
+      "dependsOn": [
+        "R4-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-04",
+      "title": "Integrate configuration and i18n intelligence",
+      "status": "queued",
+      "dependsOn": [
+        "R4-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-05",
+      "title": "Finish nested source and artifact exploration",
+      "status": "queued",
+      "dependsOn": [
+        "R4-04"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-06",
+      "title": "Validate run debug and test workflows",
+      "status": "queued",
+      "dependsOn": [
+        "R4-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-06",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R4-07",
+      "title": "Integrate views and accessibility",
+      "status": "queued",
+      "dependsOn": [
+        "R4-06"
+      ],
+      "spec": "docs/execution/task-specifications.md#r4-07",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R5-01",
+      "title": "Implement conservative change impact",
+      "status": "queued",
+      "dependsOn": [
+        "R3-04",
+        "R4-07"
+      ],
+      "spec": "docs/execution/task-specifications.md#r5-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R5-02",
+      "title": "Deliver version-aware rename previews",
+      "status": "queued",
+      "dependsOn": [
+        "R5-01"
+      ],
+      "spec": "docs/execution/task-specifications.md#r5-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R5-03",
+      "title": "Expose scoped compile and test operations",
+      "status": "queued",
+      "dependsOn": [
+        "R5-02"
+      ],
+      "spec": "docs/execution/task-specifications.md#r5-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R5-04",
+      "title": "Present human and agent change reviews",
+      "status": "queued",
+      "dependsOn": [
+        "R5-03"
+      ],
+      "spec": "docs/execution/task-specifications.md#r5-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R5-05",
+      "title": "Verify and prepare the 1.0 release",
+      "status": "queued",
+      "dependsOn": [
+        "R5-04"
+      ],
+      "spec": "docs/execution/task-specifications.md#r5-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-01",
+      "title": "Expand runtime compatibility",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-01",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-02",
+      "title": "Compare dependency upgrades",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-02",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-03",
+      "title": "Support contributor capability adapters",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-03",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-04",
+      "title": "Add scoped runtime observations",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-04",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-05",
+      "title": "Support headless CI and team workflows",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-05",
+      "record": null,
+      "owner": null
+    },
+    {
+      "id": "R6-06",
+      "title": "Add richer refactoring and test-impact selection",
+      "status": "deferred",
+      "dependsOn": [
+        "R5-05"
+      ],
+      "spec": "docs/execution/task-specifications.md#r6-06",
+      "record": null,
+      "owner": null
+    }
+  ]
+}

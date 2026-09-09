@@ -1,65 +1,25 @@
-# Architecture for Performance — Grails Extension
-> Agent-agnostic skill. Any AI agent can read this.
-> Referenced from: `AGENTS.md` §7 (L135-L155)
+# Architecture for performance
 
-## Context
+**Updated:** 2026-09-08. Apply the [performance contract](../specs/performance.md) and the selected task card. This skill supports diagnosis and implementation decisions; it does not create another permission gate for already authorized work.
 
-Extension host → shared → blocking = editor freeze.
-Server → own JVM → throughput over latency.
-Client lightweight logic → acceptable. Client Grails/AST/domain logic → wrong side.
-Before any change → flag finding → ask permission.
+## Workflow
 
-## Where Does Logic Belong?
+1. State the observable requirement or reproduced bottleneck. Read the owning source, existing tests and applicable invariants.
+2. Separate extension-host work, server request latency, queue wait, compiler/Gradle work and resource retention. A separate JVM does not remove latency requirements.
+3. Measure the relevant fixture with environment/input metadata. For a correctness/resource-bound violation, add a deterministic reproducer even when a wall-clock benchmark is inappropriate.
+4. Identify ownership, frequency, affected scope, admission limits and disposal. Compare the simplest existing mechanism against the measured requirement.
+5. Make a bounded fix in the owner, preserving coherent state and regression behavior. Significant architecture changes need an ADR with alternatives/costs; routine changes do not need fresh user approval.
+6. Run relevant correctness checks and compare the same workload. Record improvements, costs and limits in the task record. If a change brings no material benefit, simplify it within the task's diff.
 
-- Needs VS Code API only → client
-- Needs AST / ClassNode / Grails domain → server
-- Needs both → client triggers, server processes, client displays
-- Lightweight, no VS Code API, no AST → either, prefer server
+## Decision prompts
 
-Current placement wrong → flag, ask permission.
+| Observation | Inspect |
+|---|---|
+| Slow activation | Eager service work, synchronous I/O, JVM start versus model wait |
+| Slow completion/hover | Queue/lock wait, live activating getters, repeated scans and uncapped output |
+| Edit storm backlog | Coalescing after text application, count/byte bounds and fairness |
+| Heap keeps growing | Retained generations/classloaders, static maps, observers and owned handles |
+| Large disk cache | Duplicate artifacts, missing schema/size limits and failed eviction |
+| Repeated full rebuilds | Actual affected-input dependencies and cache invalidation scope |
 
-## Performance Flow
-
-- Assumed slow → measure first, do nothing yet
-- Not slow → already best, stop
-- Confirmed slow → root cause?
-  - Wrong architecture → fix architecture first
-  - Right architecture, sync work → would async help?
-  - Right architecture, right async → cannot improve, document why
-
-## Reasoning Dimensions
-
-For any problem, reason across all three:
-- Placement → right time? right side? right frequency?
-- Lifecycle → fully cleaned up? restarts safe?
-- Scope → as narrow as possible?
-
-## Init Order (see client/RULES.md §2 L34-L70)
-
-| Layer | Services |
-|-------|----------|
-| 0 | OutputChannelService, GrailsLspConfig |
-| 1 | ConfigurationService, StatusBarService, ErrorService |
-| 2 | ProjectService, GradleService, LogStreamingService |
-| 3 | LanguageServerManager |
-| 4 | ArtifactService, GrailsTestService, DebugService |
-| 5 | DashboardService, DependencyGraphService, GormSqlPreviewService (lazy only) |
-
-Blocks user before Layer 3? No → Layer 4+. UI-only → Layer 5.
-
-## Budget
-
-| Metric | Target | Red Flag |
-|--------|--------|----------|
-| Activation | < 100ms | > 500ms |
-| First completion | < 500ms | > 2s |
-| didChange → server | debounced 300ms | no debounce |
-| Collections / logs | capped | unbounded |
-| Services at startup | Layers 0–3 | all 13 |
-
-## Diagnose
-
-- Slow activation → which layer initializes eagerly that blocks user?
-- Slow completion → debounce missing? wrong TIER? full reindex on single file?
-- Editor freeze → what holds extension host thread that could yield?
-- Memory grows → which collection uncapped? which service never disposes?
+Use one budget authority: [roadmap scorecard](../product-roadmap.md#8-acceptance-scorecard-and-evaluation) plus its reproducible performance protocol. Do not copy independent debounce/latency constants into this skill. Asynchronous code can still be slow, unbounded or incorrect; 'already async' is not an optimization verdict.

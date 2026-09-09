@@ -8,15 +8,15 @@
 
 > **LSP server = single process, single instance, tight pipeline.**
 >
-> `GrailsService` is the **only** permitted location for shared mutable state.
-> That state is INTENTIONAL — not a smell — because it is strictly controlled via
-> the WRITE PATH (see §2). Shared mutable state **outside** `GrailsService` IS a smell.
-> Do NOT refactor `GrailsService` away. Do NOT add shared state elsewhere.
-> Understand WHY before touching anything.
+> `GrailsService` is the composition root. Per-project `ProjectContextImpl` owns
+> compiler, visitor, index/publication and lifecycle state; other service state
+> has one designated owner in `docs/invariants.md`. Providers never become writers.
+> See ADR-009 for the correction to older single-field-owner diagrams.
 >
-> Phase 2 index migration (ProjectIndex / IndexSnapshot) is **complete**.
-> Phase 3 (VersionedSnapshot, full immutable AST handoff) is upcoming.
-> This file governs current server code until Phase 3 migration begins.
+> Project contexts, VersionedSnapshot and scheduling code exist, but full isolation,
+> coherent publication and classloader reclamation are not certified. Follow
+> `docs/agent-execution.md`, the task queue and `docs/state-and-lifecycle-specification.md`.
+> Phase completion labels are historical, not passing acceptance evidence.
 
 ---
 
@@ -25,7 +25,7 @@
 > **No ASTNode reference of any kind may exist inside ProjectIndex, SymbolInfo, or MethodScopeCache after construction. All data must be extracted and serialized to primitive/LSP types at index-build time.**
 
 Providers query `ProjectIndex` and `MethodScopeCache` and receive `SymbolInfo` or `ReferenceInfo`. They must NEVER receive an `ASTNode`.
-This guarantees that incremental recompilation can safely destroy the old AST without corrupting the index or locking readers.
+This boundary prevents index values from retaining compiler nodes. It does not by itself prove concurrent snapshot safety or responsive readers; R1-04 verifies those properties separately.
 
 ---
 
@@ -48,18 +48,19 @@ This guarantees that incremental recompilation can safely destroy the old AST wi
 
 ```
 GrailsService  ← composition root
-  implements ProjectContext, ProviderContext, CompilationContext
+  implements ProviderContext
+  ├── workspaceManager      WorkspaceManager (owns registered project contexts)
+  │    └── ProjectContextImpl implements ProjectContext, CompilationContext
+  │         ├── compiler, visitor, projectIndex, indexManager
+  │         └── lifecycle, locks, snapshotManager, scoped caches
   ├── errorService          ErrorService
   ├── discoveryService      DiscoveryService
   ├── gradle                GradleService
   ├── fileTracker           FileContentTracker
-  ├── astService            ASTService
-  ├── compiler              GrailsCompiler
   ├── progressService       ProgressService
   ├── diagnostics           GrailsDiagnosticService
   ├── document              GrailsTextDocumentService    ← LSP entry point
   ├── workspace             GrailsWorkspaceService       ← LSP entry point
-  ├── visitor               GrailsASTVisitor
   ├── dependencyProvider    GrailsDependencyProvider
   ├── gormSqlProvider       GrailsGormSqlProvider
   ├── testDiscoveryProvider GrailsTestDiscoveryProvider
@@ -71,26 +72,27 @@ GrailsService  ← composition root
 
 ### WRITE PATH — sacred, untouchable by providers
 
-Only these methods may mutate shared state:
+Only designated owners may mutate their state. Current project write entry points include:
 
 ```groovy
-GrailsService.setupWorkspace()
-GrailsService.refreshAndReindexWorkspace()
-GrailsService.compileAndVisitAST(TextFile)
-GrailsService.visitAST(TextFile)
+ProjectContextImpl.compileAndVisitAST(TextFile)
+ProjectContextImpl.visitAST(TextFile)
+ProjectContextImpl.commitSnapshot()
+ProjectContextImpl.closeDocument(uri)
+// Activation, Gradle refresh, hibernate and dispose are also owned lifecycle writes.
+// Document callbacks delegate buffer writes to FileContentTracker.
 ```
 
 **Providers NEVER write to `visitor`, `compiler`, or `fileTracker`. EVER.**
 
-### READ PATH — open, always fresh
+### READ PATH — captured, coherent and responsive
 
-Providers read freely via `BaseProvider` getters. Never cache — always read live:
+Providers use the context captured for a request. Do not retain mutable references across requests or mix a captured view with newer live getters. The following accesses require coherent revision handling; they are not automatically safe simply because they are getters:
 
 ```groovy
-visitor.getClassNodes(uri)        // always fresh AST
-compiler.getSourceUnit(file)      // always current compile
-fileTracker.getContent(uri)       // always latest content
-config.codeLensMode               // live config
+snapshot.ast.getClassNodes(uri)    // captured generation; actual accessor API must be verified
+fileTracker.getContent(uri)        // current overlay may be NEWER than that generation
+config.codeLensMode               // capture consistent settings for this request as needed
 ```
 
 ---
@@ -113,7 +115,7 @@ All NO, pure function  →  TIER 2  (static utility)
 All NO, own lifecycle  →  TIER 3  (plug-n-play module)
 ```
 
-### TIER 1 — Extends BaseProvider, takes GrailsService
+### TIER 1 — Extends BaseProvider, takes context interfaces
 
 Examples: `GrailsCompletionProvider`, `GrailsHoverProvider`, `GrailsDiagnosticService`, `GrailsGormSqlProvider`, `GrailsTestDiscoveryProvider`
 
@@ -131,15 +133,17 @@ Inject ONLY what is actually used — never full `GrailsService`.
 
 ### Special: Value/Context Objects
 
-`CompletionRequest` and similar context bags are NOT providers. They may hold `GrailsService` directly with their own `getVisitor()` shortcut. This is correct and intentional. Do not change this pattern.
+`CompletionRequest` is a request value record with coordinates/AST inputs and ProviderContext. It is not a provider or a license to retain live GrailsService/compiler access. Any AST inputs stay within a proven request generation/lease; do not store the record across requests.
 
 ---
 
 ## 4. BASEPROVIDER — CANONICAL FORM
 
-Every TIER 1 class MUST extend `BaseProvider`. The canonical constructor takes the three
-context interfaces — `GrailsService` implements all three, so `ProviderRegistry` passes it
-as all three arguments.
+Every TIER 1 class MUST extend BaseProvider. Current constructors receive
+`(ProviderContext, WorkspaceManager)` from ProviderRegistry. `createRequestContext(uri)`
+routes the project and captures its snapshot. ProjectContext/CompilationContext describe
+project access behind that boundary; they are not the current provider constructor arguments.
+Do not restore the obsolete `(service, service, service)` pattern.
 
 ```groovy
 @Slf4j
@@ -147,38 +151,39 @@ as all three arguments.
 class GrailsHoverProvider extends BaseProvider {
 
     // ✅ Context-aware constructor — standard for all providers
-    GrailsHoverProvider(ProviderContext providerContext,
-                        CompilationContext compilationContext,
-                        ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsHoverProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 
     // Public LSP handler — async + cancellation + health
     CompletableFuture<Hover> hover(HoverParams params) {
         def token   = createCancellationToken(params.textDocument.uri)
-        long startTime = System.currentTimeMillis()
+        long startTime = System.nanoTime()
+        def ctx = createRequestContext(params.textDocument.uri)
         return CompletableFuture.supplyAsync {
+            boolean success = false
             try {
                 checkCancellation(token)
-                // ... work using: visitor, fileTracker, config, project ...
+                // ... bounded read using ctx.snapshot()/ctx.ast(); compute result ...
+                checkCancellation(token)
+                success = true
                 return result
             } finally {
-                recordHealth("HoverProvider", System.currentTimeMillis() - startTime, true)
+                recordHealth("HoverProvider", (System.nanoTime() - startTime).intdiv(1_000_000), success)
             }
         }
     }
 }
 ```
 
-**BaseProvider exposes these protected getters — use them, never bypass:**
+**BaseProvider exposes configuration/health/cancellation/file tracking and request capture.** This skeleton illustrates those APIs, not a drop-in complete handler or proof that current request routing is nonblocking. R1-04 repairs/audits that boundary. Do not mix live project getters with a captured view:
 
 ```groovy
-visitor          // GrailsASTVisitor  — compilationContext.visitor
+ctx.ast()        // captured ASTAccessor, when available
+ctx.snapshot()   // captured VersionedSnapshot
 fileTracker      // FileContentTracker
 config           // GrailsLspConfig
-compiler         // GrailsCompiler
 diagnostics      // GrailsDiagnosticService
-project          // GrailsProject
 ```
 
 **Rules:**
@@ -196,15 +201,14 @@ project          // GrailsProject
 
 ```groovy
 // WRONG ❌
-service.visitor.getClassNodes(uri)
+service.visitor.getClassNodes(uri)   // old global access pattern
 service.fileTracker.getContent(uri)
 service.config.codeLensMode
-getVisitor().getClassNodes(uri)       // verbose Java style
 
 // CORRECT ✅
-visitor.getClassNodes(uri)            // Groovy resolves getVisitor() → .visitor
-fileTracker.getContent(uri)
-config.codeLensMode
+ctx.ast()?.getClassNodes(uri)          // request-scoped accessor, not a live visitor
+fileTracker.getContent(uri)           // current overlay; validate its revision before combining
+config.codeLensMode                   // capture relevant settings consistently
 ```
 
 ### No duplicate field declarations
@@ -219,10 +223,8 @@ class GrailsCodeLensProvider {
 @Slf4j
 @CompileStatic
 class GrailsCodeLensProvider extends BaseProvider {
-    GrailsCodeLensProvider(ProviderContext providerContext,
-                           CompilationContext compilationContext,
-                           ProjectContext projectContext) {
-        super(providerContext, compilationContext, projectContext)
+    GrailsCodeLensProvider(ProviderContext providerContext, WorkspaceManager workspaceManager) {
+        super(providerContext, workspaceManager)
     }
 }
 ```
@@ -241,7 +243,7 @@ All TIER 1 providers are created by `ProviderRegistry`. Never construct them man
 // CORRECT ✅ — ProviderRegistry wires contexts automatically
 // Inside ProviderRegistry.createProvider():
 if (type == GrailsHoverProvider)
-    return new GrailsHoverProvider(providerContext, compilationContext, projectContext)
+    return new GrailsHoverProvider(providerContext, workspaceManager)
 
 // CORRECT ✅ — retrieving a provider (lazy, cached)
 def provider = providerRegistry.getProvider(GrailsHoverProvider)
@@ -252,8 +254,9 @@ new GrailsHoverProvider(service, service, service)            // bypass registry
 new GrailsRenameProvider(service.visitor, service.fileTracker) // arbitrary slicing
 ```
 
-Note: `GrailsService` implements `ProviderContext`, `CompilationContext`, and `ProjectContext`,
-so passing `(service, service, service)` is valid — but only inside `ProviderRegistry`.
+Note: GrailsService supplies ProviderContext and WorkspaceManager handles routing for
+request capture. ProjectContext/CompilationContext remain project boundaries; do not
+pass the service as all three contexts based on historical examples.
 
 ---
 
@@ -265,7 +268,7 @@ private ClassNode _currentClass        // private mutable lazy cache
 private boolean _currentClassComputed  // lazy flag
 
 // Protected getters — no underscore, Groovy property style
-protected GrailsASTVisitor getVisitor() { compilationContext.visitor }
+protected GrailsLspConfig getConfig() { providerContext.config }
 ```
 
 Rule: underscore = "internal, hands off". `@CompileStatic` + `private` enforces it.
@@ -295,15 +298,15 @@ ClassNode getCurrentClass() {
 
 ## 9. VISITOR INTERNALS
 
-`GrailsASTVisitor` internal index/mutate methods = `private`.
+GrailsASTVisitor is mutable compiler output. Its mutators may be called only by the owning project pipeline; public visibility does not grant provider write permission.
 
 Only public read getters are exposed:
 
 ```groovy
 visitor.getClassNodes(uri)     ✅
 visitor.allClassNodes          ✅
-visitor.visitSourceUnit(...)   ❌  // called only by GrailsService pipeline
-visitor.invalidateVisitor()    ❌  // called only by GrailsService pipeline
+visitor.visitSourceUnit(...)   ❌  // owning project pipeline only
+visitor.invalidateVisitor()    ❌  // owning project pipeline only
 ```
 
 No provider may call any method that mutates visitor state.
@@ -448,7 +451,12 @@ String uri = (String) textDocument.getUri()
 
 ---
 
-### 10.4 PROPERTY ACCESS — Groovy Properties Only
+### 10.4 PROPERTY ACCESS — Prefer Groovy Properties for Equivalent Value Access
+
+Property syntax is preferred when equivalent. Lifecycle direct-field access and explicit
+methods are required when property dispatch changes meaning, for example `state` versus
+`getState()` or `Map.isEmpty()` versus the `empty` key. Keep static typing and regression
+tests for these cases. Do not mechanically convert these accesses during review.
 
 ```groovy
 // ✅
@@ -458,7 +466,7 @@ node.name
 textDocument.uri
 classNode.methods       // returns List<MethodNode> directly
 
-// ❌ — never call getX() explicitly in Groovy
+// Ordinary equivalent value getters prefer property syntax:
 config.getCodeLensMode()
 method.getParameters()
 node.getName()
@@ -556,8 +564,7 @@ CompletableFuture<SignatureHelp> provideSignatureHelp(...) {
 }
 
 // ✅ Implicit return fine for single-expression getters
-protected GrailsASTVisitor getVisitor() { compilationContext.visitor }
-protected GrailsProject    getProject() { projectContext.project }
+protected GrailsLspConfig getConfig() { providerContext.config }
 
 // ❌ Missing outer return — supplyAsync result dropped silently
 CompletableFuture<SignatureHelp> provideSignatureHelp(...) {
@@ -573,8 +580,8 @@ CompletableFuture<SignatureHelp> provideSignatureHelp(...) {
 ## 11. CONCURRENCY RULES
 
 - All LSP handler methods (`didChange`, `completion`, `hover`, etc.) are called on the LSP I/O thread — **never block it**
-- Off-load work with `CompletableFuture.supplyAsync { }` (uses the JVM common pool — sufficient for LSP providers)
-- Do NOT pass a custom executor to `supplyAsync` unless `GrailsService.backgroundExecutor` is explicitly needed for Gradle/compile ops
+- Off-load expensive work through an owned bounded scheduler/executor. Existing lightweight provider futures may use the common pool; that alone supplies neither admission limits nor isolation.
+- Compilation/document scheduling and Gradle use explicit owned background lifecycles with cancellation/disposal. Do not allocate an executor per provider/request or block readers behind those workers. See `docs/specs/performance.md`.
 - `progressService` for user-facing progress — always begin / update / end trio
 - CancellationToken MUST be checked inside the `supplyAsync` block, not outside it
 
@@ -607,7 +614,7 @@ CompletableFuture<SignatureHelp> provideSignatureHelp(...) {
 
 ```
 kingsk.grails.lsp/
-  GrailsService.groovy              ← composition root (implements ProjectContext, ProviderContext, CompilationContext)
+  GrailsService.groovy              ← composition root (implements ProviderContext; project contexts own compilation state)
   GrailsLanguageServer.groovy       ← LSP entry point
   context/                          ← ProjectContext, ProviderContext, CompilationContext interfaces
   core/
@@ -649,7 +656,7 @@ def provider = providerRegistry.getProvider(GrailsCompletionProvider)
 
 ### Rules
 - Providers retrieved via `ProviderRegistry` MUST extend `BaseProvider`.
-- `ProviderRegistry` passes `(service, service, service)` to satisfy the context-aware constructor.
+- ProviderRegistry passes `(providerContext, workspaceManager)`; project/snapshot selection happens through request capture.
 - NEVER instantiate `ProviderRegistry` outside `GrailsService`.
 - Providers that are never requested are never created — intentional.
 
@@ -664,23 +671,24 @@ def provider = providerRegistry.getProvider(GrailsCompletionProvider)
 @Override
 CompletableFuture<List<CompletionItem>> completion(CompletionParams params) {
     def token   = createCancellationToken(params.textDocument.uri)
-    long startTime = System.currentTimeMillis()
+    long startTime = System.nanoTime()
     return CompletableFuture.supplyAsync {
+        boolean success = false
         try {
             checkCancellation(token)
             // ... work ...
             checkCancellation(token)  // at every major yield point
+            success = true
             return result
         } finally {
-            recordHealth("CompletionProvider", System.currentTimeMillis() - startTime, true)
+            recordHealth("CompletionProvider", (System.nanoTime() - startTime).intdiv(1_000_000), success)
         }
     }
 }
 ```
 
 ### Rules
-- `didClose()` automatically cancels all pending requests for that URI — already wired.
-- `shutdown()` cancels all pending requests before JVM exit — already wired.
+- Close/shutdown must cancel owned pending work and invalidate active output; verify lifecycle tests before claiming this for a changed path.
 - Do NOT create `CancellationToken` instances manually. Always use `createCancellationToken(uri)`.
 - `checkCancellation()` throws `CancellationException` — let it propagate; the executor handles it.
 - `CancellationToken` is created BEFORE `supplyAsync`, checked INSIDE the lambda.

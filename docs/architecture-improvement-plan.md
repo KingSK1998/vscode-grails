@@ -5,6 +5,8 @@
 **Status:** Active
 **Execution Mode:** ARCHITECTURE DESIGN MODE
 
+> **Product planning update (2026-09-08):** Use the [product roadmap](product-roadmap.md) for delivery priorities and the [implementation handoff](implementation-handoff.md) for current test evidence. This document retains technical history; historical completion labels do not establish release readiness. Product releases R0–R6 are distinct from the architecture phase numbers below.
+
 ## Overview
 
 This document outlines the strategic roadmap for improving the `vscode-gng-support` architecture. The plan shifts focus away from superficial structural changes (like folder organization) and concentrates heavily on **state management, cache correctness, compiler lifecycle discipline, and architectural decoupling**.

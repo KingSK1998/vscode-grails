@@ -1,152 +1,107 @@
-# State & Lifecycle Architecture Specification
+# State, revision and lifecycle contract
 
-**Date:** 2026-06-03
-**Status:** Core Architectural Standard
+**Updated:** 2026-09-08. **Status:** required behavior for R0/R1/R2, with implementation gaps recorded below. This replaces the old Phase 3 target text; it does not assert that snapshot safety has been achieved. [Invariants](invariants.md) define stable rule IDs, [ADR-009](adr/decisions.md#adr-009-project-ownership-and-executable-contracts-2026-09-08) explains corrected ownership, and the [task queue](execution/task-queue.json) controls acceptance.
 
-## 1. Core Philosophy & Ultimate Goal
+## 1. Ownership and current evidence
 
-*   **Correctness over availability:** No result is better than a wrong result. Developers can tolerate missing features temporarily; they cannot trust an IDE that confidently provides incorrect answers.
-*   **Trust is the primary product:** Completion, navigation, diagnostics, references, and refactoring must be consistently correct or explicitly degraded.
-*   **The LSP must be authoritative:** Every answer must be derived from committed, verifiable state.
-*   **Degrade gracefully:** When correctness cannot be guaranteed, the server should explicitly degrade rather than speculate.
-*   **Priorities:** Trustworthiness is more important than feature count, latency, or convenience.
+`GrailsService` remains the server composition root. `WorkspaceManager` owns registered project contexts and routing. Each `ProjectContextImpl` owns its compiler, visitor, project index/IndexManager, lifecycle state and publication coordination; its `SnapshotManager` owns lineage. `GrailsTextDocumentService` owns document-work admission and delegates buffer state to `FileContentTracker`. Providers are readers through context interfaces, never substitute writers.
 
-> **Phase applicability:** This specification describes the Phase 3+ target architecture.
-> In Phase 1–2, `server/RULES.md` governs implementation and `GrailsService` mutable
-> state is authoritative. The Architecture Improvement Plan defines the transition sequence.
-> Sections 2–3 (VersionedSnapshot) are Phase 3 targets. Section 4 (state machines) informs
-> Phase 1 stabilisation. Section 11 (semantic model) is Phase 5.
+Current source contains `VersionedSnapshot`, a document scheduler, per-project contexts and lineage. Saved targeted tests still fail; see [implementation handoff](implementation-handoff.md). A record holding an AST accessor, an atomic pointer or a shallow map copy does not prove transitive immutability. Current classpath aggregation, provider lock coverage, getter-triggered activation and retained classloaders require validation/repair. No documentation label closes those tasks.
 
-## 2. State & Lifecycle Architecture
+## 2. Revision identities
 
-### Explicit State Ownership Hierarchy
-Ownership must be explicit, strict, and enforceable. No component may hold a reference to state it does not own.
+An analysis input must identify all state capable of invalidating its output:
 
-*   **WorkspaceManager:** Owns 1..N `ProjectContext`s. Handles workspace lifecycle, multi-root routing, and cross-project visibility boundaries.
-*   **ProjectContext:** Owns a `ProjectStateMachine` and is the factory for `VersionedSnapshot`s.
-*   **VersionedSnapshot:** An immutable, point-in-time representation of the project. It atomically bundles:
-    *   `GradleModel` & `DependencyGraph` (Immutable build metadata and module relationships)
-    *   `ASTs` (Immutable compiler output)
-    *   `Indexes` (Immutable symbol/reference output)
-    *   `SemanticModel` (Framework-aware semantic entities and relationships)
-*   **Providers (Hover, Completion, etc.):** Own **nothing**. They are strictly stateless consumers of a specific `VersionedSnapshot`.
+| Identity | Required scope/lifetime |
+|---|---|
+| Root/build identity | Canonical URI plus registered root generation; remove/re-add changes the generation |
+| Document identity | Canonical URI plus open generation; a reopened file can restart its LSP version |
+| Document version | Monotonic within one open generation; not a globally durable ID |
+| Dependency revision | Resolved model, source sets and ordered classpath fingerprints |
+| Analysis configuration revision | Relevant compiler/adapter/mapping settings captured with the candidate; changes invalidate affected derived facts |
+| Analysis revision | Committed project generation; includes document inputs and dependency revision used |
+| Symbol identity | Project/source-set scope, declaration locator/signature and analysis revision as needed; index IDs are snapshot-local |
 
-### Consistency Model: Versioned Snapshot Consistency
-All requests execute against a specific, immutable `VersionedSnapshot` to eliminate race conditions and guarantee reproducible results. 
-*   **Single-Snapshot Principle:** Everything visible to a provider MUST originate from a single snapshot version. A request must never mix ASTs from v42, Indexes from v43, and a GradleModel from v41.
-*   **Snapshot Immutability:** Once a snapshot is committed, it NEVER changes. New state always produces a new snapshot version (e.g., v1 -> v2).
-*   **Snapshot Binding & Retention:** Every LSP request explicitly captures a snapshot reference when it starts. The `ProjectContext` retains only the active snapshot and any historical snapshots currently pinned by running requests. Unreferenced snapshots are aggressively garbage collected to prevent memory leaks.
-*   **Atomic Commits:** AST and Index state must always belong to the same committed snapshot. They are committed as a single unit to prevent feature inconsistencies.
-*   **No Partial Visibility:** Requests must NEVER observe half-built ASTs or partially updated indexes.
-*   **Reader-Writer Isolation:** While the compiler builds the next candidate snapshot (Writer), all incoming LSP requests (Readers) continue to query the *last-known-good* versioned snapshot.
-*   **Cross-Feature Consistency:** All language features (completion, hover, references) must resolve symbols using the identical, authoritative snapshot instance for a given request.
+A candidate captures immutable input values. Never queue a mutable `TextFile` that later edits overwrite. If several documents form a compilation unit, record/check their input revisions as a set or an equivalent project input generation. A single file version cannot certify a whole-project result.
 
-## 3. The Compilation Commit Protocol
+URI normalization must preserve filesystem semantics: path segments, encoding, Windows drive/UNC behavior and platform case sensitivity. Do not lowercase every URI or compare bare string prefixes. Define symlink identity consistently within a workspace and test it before claiming support. Paths and URIs are different input forms; convert deliberately at boundaries.
 
-Compiler output must move from candidate state to a new `VersionedSnapshot` via a strict protocol:
+## 3. Document synchronization
 
-1.  **Edit:** A `didChange` event is received.
-2.  **Compile Candidate:** The compiler generates a new *candidate* AST in isolation.
-3.  **Build Indexes:** The indexer generates *candidate* index updates from the candidate AST.
-4.  **Validate:** The system verifies the candidate state's integrity (no orphaned symbols, valid AST).
-5.  **Commit:** The system creates a new `VersionedSnapshot` bundling the ASTs, Indexes, and Gradle Model, and atomically swaps the active pointer to this new version.
-6.  **Publish:** Diagnostic notifications are pushed to the client based on the newly committed snapshot.
+Apply every `contentChanges` entry in received order to the text produced by the preceding entry. Do not sort change ranges against the original text. Range-less replacement replaces the full current buffer. Empty text is a valid open document. Reject/ignore obsolete versions within the same open generation and record the diagnostic reason without inventing missing content. This follows the incremental synchronization contract in the [LSP 3.17 document synchronization specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange).
 
-*Failed compilations MUST NOT overwrite the committed state. The system retains the last-known-good state.*
+After applying changes, capture the latest input and enqueue bounded background work. Queue coalescing may discard obsolete compile jobs, never the text transformations needed to construct the final buffer. Position conversion must use the negotiated encoding; test UTF-16 explicitly for the first supported client/server path.
 
-**Dependency & Build Consistency:** A change to the Gradle model (e.g., refreshing dependencies) triggers a full pipeline run, culminating in a new `VersionedSnapshot`. ASTs compiled against one dependency graph are never queried using another.
-**Syntax-Error Behavior:** Partially valid code is the normal state of an editor. Syntax errors during typing DO NOT constitute a "failed compilation". The compiler will produce a valid `VersionedSnapshot` containing a partial AST and error diagnostics. Normal editing must never force the server into a failure state.
+`didClose` ends the overlay generation, cancels pending overlay work and prevents active old work from publishing. Closing is not deleting a file from the project: discard unsaved overlay facts and restore/reindex disk-backed facts when appropriate. Clear obsolete diagnostics without synchronously activating a hibernated compiler. A deleted file must disappear from the committed index after deletion is processed. Closing a never-saved file removes its overlay-only symbols.
 
-## 4. Lifecycle State Machines
+Documents opened before project discovery remain in the tracked-buffer store with bounded replay bookkeeping. When a root is registered, enqueue the latest still-open inputs belonging to that root generation. Do not retain an unbounded separate copy of every pre-discovery buffer, replay closed inputs or use the default project for unrelated files.
 
-Projects and Compilers operate as strict state machines to prevent illegal transitions.
+## 4. Candidate, commit and read protocol
 
-### Project State Machine
-Projects have their own lifecycle independent of compiler state:
-*   **INITIALIZING:** Loading Gradle model and resolving dependencies.
-*   **INDEXING:** Performing initial full workspace compilation and index build.
-*   **READY:** Project is fully loaded and accepting LSP requests.
-*   **FAILED:** Project initialization failed (e.g., completely broken `build.gradle`). Emits error, waits for file changes.
-*   **RECOVERING:** Attempting to restore project state after a failure (e.g., user corrected the build file). The `ProjectContext` is responsible for its own recovery actions.
+```text
+receive -> apply text -> capture input identity -> admit/coalesce background work
+  -> build private candidate -> validate coherent output + all input identities
+  -> publish one committed generation -> send still-current diagnostics/events
+read -> capture committed generation once -> query it -> return scoped result
+```
 
-### Compiler State Machine
+The publication unit comprises every component consumed together: symbol/index facts, relevant AST access, dependency model and derived framework/cache facts. Revisions may share immutable values; they must not expose mutable objects that a later compile changes. Cache invalidation is part of the transition, before new readers can see a generation with old derived facts.
 
-*   **IDLE:** Waiting for file events.
-*   **COMPILING:** Currently executing the compilation protocol (generating candidate state).
-*   **READY:** Compilation successful, new snapshot committed. Transitions back to IDLE.
-*   **FAILED:** Compilation or validation failed. Emits error, discards candidate state, keeps last-known-good state, transitions to RECOVERING or IDLE.
-*   **RECOVERING:** Attempting to restore a valid state from disk cache or a full clean rebuild.
+Check root generation, document/open versions, dependency revision, cancellation and disposal immediately before publication. The check and pointer/index publication must be ordered with input changes so an edit cannot slip between them unnoticed. Checking a flag once before a lengthy compiler operation is insufficient. Publishing dependent indexes separately from the project snapshot also requires an explicit coherent-read design.
 
-## 5. Index Architecture & Integrity
+Capture the request's committed view once. Do not alternate between that view and live compiler/visitor getters. Track unsaved current buffers separately; range-sensitive answers from an older version must be mapped/revalidated or withheld as unavailable. Across projects, capture a revision vector and label dependent dirty/stale facts; never pretend independently committed projects form one simultaneous workspace snapshot.
 
-Indexes are treated as independent architectural components, owned strictly by the `IndexManager`.
+### Choosing an isolation mechanism
 
-*   **Index Types:** 
-    *   `SymbolIndex` (Definitions, structure)
-    *   `ReferenceIndex` (Usages, invocations)
-    *   `CompletionIndex` (Optimized lookups for intellisense)
-    *   `NavigationIndex` (Workspace symbol search)
-*   **Integrity Rules:** Indexes are completely immutable once committed to a `VersionedSnapshot`. Every indexed entry MUST hold a definitive link to its originating AST node. No orphaned symbols are permitted.
-*   **Index Version Alignment:** Every index must reference the exact snapshot version it belongs to. Mixed-version reads are strictly prohibited.
-*   **Stable Symbol Identities:** Symbols must have durable identities (e.g., unique IDs) independent of ephemeral AST node instances. Definition, References, Hover, and Rename must operate on this stable identity to ensure refactoring correctness.
-*   **Rebuild Strategy:** File-level edits trigger *incremental* index updates (evict file X's symbols -> index file X's new symbols). `build.gradle` edits trigger a *full* index rebuild.
+R1-04 must first reproduce the race and audit every reader/writer path. Prefer compact immutable extracted facts for common reads and existing index boundaries. AST-dependent reads require proof that their generation cannot be mutated while retained, or a narrowly scoped, bounded alternative that returns unavailable instead of waiting behind compilation. A lock held only until a future is created does not protect that future's work; a different writer lock does not protect it either.
 
-## 6. Backpressure & Scalability
+Do not deep-clone the entire Groovy AST, create a compiler per keystroke or migrate every provider to a speculative semantic database by default. Record alternatives and measured costs in an ADR for a substantial ownership/publication change. Whatever mechanism is chosen must pass the same observable consistency and responsiveness tests.
 
-The server must protect its responsiveness under heavy load, rapid typing bursts, or massive workspaces.
+An index's origin link is a value locator (URI, source/signature, revision), **not an AST object reference**. `ProjectIndex`, `SymbolInfo` and `MethodScopeCache` retain no ASTNode references after construction, per INV-OWN-005 and ADR-006.
 
-*   **Coalescing Rapid Edits:** `didChange` events must be debounced (e.g., 200ms). Typing bursts result in a single compilation pipeline run, not sequential redundant runs.
-*   **Cancel Obsolete Work:** Every LSP request is bound to a `CompletableFuture` and a `CancellationToken`. If the client cancels a request, or if a newer state commit renders a queued read-request obsolete, the work MUST be aborted immediately.
-*   **Overload Behavior:** If request queues exceed bounds, the server will drop read-requests (e.g., hover, completion) with a standard LSP cancellation response rather than destabilizing core memory.
+## 5. Failure, partial syntax and cancellation
 
-## 7. Failure Recovery
+Ordinary syntax errors are expected while typing. A validated partial analysis may commit diagnostics and the facts whose validity is known, with partial/current status. Remove facts invalidated by the edit rather than silently presenting old symbols as current. Last-known-good (LKG) data can remain available as explicitly stale evidence.
 
-Failed components must disable themselves rather than return questionable results.
+A fatal compiler/model failure discards the incoherent candidate and preserves the prior committed usable state. Do not publish a failed candidate merely because `SnapshotManager.commit(snapshot, false)` can store it. The writer determines whether output is a valid partial analysis or unusable failure. Cancellation/timeout/shutdown cannot turn either into a success.
 
-*   **Degraded Operating Modes:** If AST compilation fails fundamentally, the system falls back to regex/text-based structural search for standard Groovy symbols, entirely disabling Grails-specific "magic" features until compilation recovers.
-*   **Formalized Recovery Workflows:**
-    *   **OOM / High Memory:** Evict all in-memory caches, drop to disk-backed indexes, trigger garbage collection.
-    *   **Compiler Crash:** Discard candidate state, retain last-known-good state, log diagnostic failure.
-    *   **Invalid Gradle Model:** Lock workspace state, prompt user to fix `build.gradle`, suspend AST updates.
-*   **Preserve Recoverable State:** Full LSP restarts are a last resort. Subsystems must encapsulate their failures.
+Providers convert missing state to protocol-appropriate empty/null/error results and expose unavailable/degraded capability status where the protocol permits. Never report an unavailable index as an authoritative 'no references' for rename or impact. Expected cancellation remains cancellation, not an internal crash or successful empty result. Diagnostics must be tied to the input document version when supported and suppressed once superseded.
 
-## 8. Architectural Invariants (Verification)
+## 6. Lifecycle transitions and resource ownership
 
-These rules are non-negotiable and MUST be continuously verified by automated tests in CI.
+The current `ProjectState` enum is INITIALIZING, READY, HIBERNATED, REACTIVATING, FAILED, DISPOSING. Dirty dependency state is separate; do not introduce alternate enum names from an old diagram without a justified migration.
 
-1.  **State Consistency Test:** Providers reading from a snapshot during a concurrent write MUST NEVER see mutated data.
-2.  **Index Integrity Test:** Querying the index for symbols of a deleted file MUST return 0 results immediately after commit.
-3.  **Partial-Validity Test:** A syntax error injected into a source file MUST produce a valid `VersionedSnapshot` containing error diagnostics, and MUST NOT transition the server to a `FAILED` state.
-4.  **Failure-Path Test:** A simulated fatal exception (e.g., OOM) MUST transition the system to a `FAILED`/`RECOVERING` state but MUST NOT crash the Language Server process.
-5.  **No Provider Mutation Test:** Providers attempting to mutate an AST node or Index MUST throw an `UnsupportedOperationException`.
-6.  **Semantic Consistency Test:** Definition, References, Hover, Completion, and Rename MUST resolve the exact same stable symbol identity for a given AST node.
-7.  **Refactoring Transaction Test:** Refactoring operations (Rename, Move) MUST execute transactionally and validate against the semantic model before committing.
+| Event | Required behavior |
+|---|---|
+| Register root | INITIALIZING; return capabilities promptly, resolve asynchronously after initialized |
+| Initial usable model/analysis | READY; replay current buffered inputs and publish scoped status |
+| Initial/fatal recovery failure | FAILED with reason and retry trigger; no spinning retries |
+| Hibernation | Owner coordinates quiescence/release; reads use retained safe facts or unavailable, never trigger blocking activation |
+| Edit/explicit refresh requiring compiler | HIBERNATED/FAILED -> one REACTIVATING attempt; other jobs share its result through admission |
+| Activation succeeds/fails | READY/FAILED; only that attempt may complete/clear its activation ownership |
+| Dependency dirty | Mark freshness, propagate over explicit graph once per project, schedule work without blocking readers |
+| Root remove/shutdown | DISPOSING terminal for that context; invalidate generations first, stop admission, cancel and release owned work/resources |
+| Root re-add | New context/root generation; no resurrection of a disposed instance |
 
-## 9. Multi-Root Architecture & Isolation
+Do not wait for activation/Gradle on notification or provider threads. Do not perform synchronous LRU hibernation while routing a request. Avoid acquiring another project's write lock while holding one project's write lock; publish dirty propagation outside the writer critical section. Define a lock order for any remaining multi-lock operation and test it.
 
-Workspace isolation must be enforced by architecture, not convention. 
+### Retention and hibernation
 
-*   **Formalize Workspace Isolation:** Multi-root projects must never leak state across boundaries. Each project maintains its own `ProjectContext` and `VersionedSnapshot` lineage.
-*   **Dependency Graph as First-Class Architecture:** Multi-module Gradle projects and plugins require explicit dependency graph modeling rather than treating Gradle metadata as passive configuration. Cross-project navigation relies on this graph.
-*   **Prevent Cross-Project Contamination:** Symbols, caches, indexes, and compiler state must NEVER leak across projects unless explicit module dependencies exist in the Gradle model.
-*   **Dependency Visibility Rules:** Multi-root workspaces with inter-project dependencies require clear ownership and visibility contracts.
+`SnapshotManager` remains the single lineage owner. Active/LKG facts are strongly reachable while usable; optional history is capped (current policy: at most three historical entries). Soft references are optional cache retention, never correctness or a memory budget.
 
-## 10. Large Workspace Readiness & Observability
+A retained snapshot may not keep a hibernated compiler/classloader alive indefinitely. Existing AST-bearing snapshots therefore require an explicit release strategy: detach safe value facts/metadata, invalidate AST access for new reads, let bounded in-flight request leases finish/cancel, then release compiler/scan/classloader references. Keep active/LKG **usable facts**, not a promise to preserve every heavy AST forever. Do not mutate a snapshot under an existing reader to clear it. R1-04 must document the chosen representation and lease/disposal behavior before claiming INV-STATE-010 compliance.
 
-Architecture must scale to massive workspaces and provide measurable verification.
+Transient in-flight leases may retain an old generation until they drain; after hibernation completion no owned retention path may keep the released generation alive. Root removal and shutdown must also clean discovery maps, executor tasks, connections, virtual documents and observers. Tests inspect reachability/owned handles; setting two fields to null is not sufficient evidence. Real JVM exhaustion may defeat recovery; test controlled resource-limit rejection and cleanup without promising every OutOfMemoryError is recoverable.
 
-*   **Memory Budgets & Scaling:** Establish explicit global and per-project memory limits. Long-term architecture must plan for disk-backed snapshot persistence when indexing IntelliJ-scale workspaces.
-*   **Warm Startup Architecture & Persistence:** Persist snapshots and indexes to disk to avoid full workspace reindexing on every launch. Define a clear snapshot persistence strategy and recovery mechanisms for large workspaces.
-*   **Restore Observability:** Metrics and telemetry must be collected to identify regressions and prove cache/index correctness. Include metrics for semantic model construction and symbol resolution accuracy.
-*   **Measurable SLOs:** Establish concrete performance targets for Completion (<100ms), Navigation (<50ms), Incremental Compilation (<250ms), Startup time, and Max Memory Heap.
-*   **Track Correctness Indicators:** The server must log and monitor cache invalidations, index rebuilds, recovery events, compilation failures, and any stale-state detections.
+## 7. Required race and lifecycle tests
 
-## 11. Semantic Model & Refactoring Architecture (IntelliJ-Class Direction)
+1. Block compilation after capturing input, edit again, finish the old job: old state/diagnostics cannot publish; final input eventually commits.
+2. Repeat with close/reopen and reset document version, root removal/re-add, dependency refresh and shutdown: generation checks distinguish all cases.
+3. Block a writer mid-index update: a read either sees the complete prior generation promptly or explicit unavailable status, never partial/mixed state.
+4. Recompile/remove a file while retaining an older request view: old results remain stable during its permitted lease; new results contain no removed symbols.
+5. Open an empty buffer and send a multi-change notification whose second range depends on the first change: final content and locations match protocol order.
+6. Close an unsaved overlay for a disk-backed file: old overlay facts vanish and disk state remains recoverable without reactivating on the callback thread.
+7. Simulate discovery timeout/removal and activation races: one owner completes; no late resurrection or discarded still-open input.
+8. Repeatedly refresh/hibernate/dispose roots: owned work drains and old classloaders/AST generations are no longer retained after leases end.
 
-We are building toward refactoring-grade correctness (Rename, Move, Safe Delete). This requires moving away from direct compiler internals.
-
-*   **Semantic Layer Target Architecture:** `AST -> Indexes -> Semantic Model -> Providers`
-*   **Define Semantic Model Ownership & Lifecycle:** Prevent the semantic model from becoming a monolithic object. Establish how semantic entities are built, validated, versioned, and committed alongside snapshots.
-*   Providers will eventually consume a high-level `Semantic Model` interface instead of raw Groovy AST nodes.
-*   **Grails as First-Class Entities:** Grails concepts (Controllers, Services, GORM entities, UrlMappings) will exist in the semantic layer as explicit types, completely eliminating the need for `if (isController) { ... }` magic scattered throughout the codebase.
-*   **Refactoring Transaction Framework:** Rename, Move, Safe Delete, and future refactorings require transactional validation and commit semantics to avoid corrupting user code.
+Use deterministic barriers and assert externally visible behavior. Map each test to the affected INV-OWN/INV-ID/INV-KEY/INV-STATE rules and the task card; the presence of a lock or snapshot class is not a substitute for these observations.

@@ -1,5 +1,5 @@
 # CODING STANDARDS
-> Version: 1.0.0 | Status: MANDATORY
+> Version: 1.1.0 | Status: MANDATORY | Updated: 2026-09-08
 > These rules apply to all AI agents and human contributors. ZERO EXCEPTIONS.
 
 ## Architecture
@@ -40,7 +40,7 @@ Command → UseCase → Service(s)
 
 ### O — Open/Closed
 
-**Extend to add behaviour. Never modify existing core classes to add a feature.**
+**Prefer existing extension points for new features.** Correctness, lifecycle and ownership repairs may change the owning core when supported by a reproducer, invariant review and required validation. Do not work around a core bug inside a provider. Substantial architecture changes require an ADR; routine authorized fixes do not require another permission request.
 
 ```ts
 // Client ✅ — add a new service, not modify ServiceContainer internals
@@ -53,7 +53,7 @@ class GrailsNewFeatureProvider extends BaseProvider { ... }
 ```
 
 ```ts
-// ❌ — modifying GrailsService write path to add a feature
+// ❌ — unrelated feature logic inserted into the compilation write path
 GrailsService.compileAndVisitAST() {
     // ... adding new logic here ...   ← wrong, creates regression risk
 }
@@ -98,8 +98,8 @@ constructor(private readonly container: ServiceContainer) {}
 ```
 
 ```groovy
-// Server ✅ — ProviderContext / CompilationContext / ProjectContext (interface segregation)
-GrailsHoverProvider(ProviderContext pc, CompilationContext cc, ProjectContext prj)
+// Server ✅ — ProviderContext and WorkspaceManager; capture project state per request
+GrailsHoverProvider(ProviderContext pc, WorkspaceManager workspaceManager)
 
 // ❌ — passing full GrailsService when provider only needs visitor + config
 GrailsHoverProvider(GrailsService service)   // old pattern — ISP violation
@@ -121,7 +121,7 @@ class RunGrailsAppUseCase {
 
 ```groovy
 // Server ✅ — BaseProvider receives contexts via constructor injection
-//             (GrailsService implements all three — ProviderRegistry wires it)
+//             (ProviderRegistry wires service-level and project-level contexts)
 
 // ❌ — provider reaching into a global or calling GrailsService.getInstance()
 class GrailsHoverProvider {
@@ -136,7 +136,7 @@ class GrailsHoverProvider {
 ```
 Compiler → AST → Project Metadata → Dependencies
 ```
-Avoid hardcoded lists, regexes, and heuristics. Real project state wins.
+This chain describes language binding, not global precedence over visibility: project/build metadata determines the source set and classpath in which a compiler result is valid. Follow [library discovery](docs/specs/library-discovery.md). Framework API/config inventories require resolved-artifact evidence. Grammar keywords, syntax patterns, protocol constants and curated authoring snippets are allowed. Narrow capability rules must declare evidence and uncertainty; regex/text heuristics cannot certify dynamic bindings or destructive refactors.
 
 ---
 
@@ -156,9 +156,9 @@ Avoid hardcoded lists, regexes, and heuristics. Real project state wins.
 ## Performance
 
 - Incremental updates over full rescans.
-- Shared state and caches belong in `GrailsService`.
+- Shared state/caches have designated owners and project scope in `docs/invariants.md`; GrailsService wires them.
 - Every cache requires an invalidation strategy.
-- Never duplicate compiler, AST, or index data.
+- Avoid redundant compiler/AST/index copies. Immutable extracted facts and bounded retained generations are permitted where needed for coherent reads; document their cost and lifecycle rather than deep-copying ASTs by default.
 - Release resources when no longer needed.
 
 ---
@@ -166,8 +166,9 @@ Avoid hardcoded lists, regexes, and heuristics. Real project state wins.
 ## Concurrency
 
 - LSP handlers run concurrently.
-- Shared mutable state lives only in `GrailsService`.
+- Shared mutable state is written only by its designated owner. Per-project compiler/publication ownership belongs to ProjectContextImpl; see ADR-009.
 - Prefer immutable data. Return new collections over mutating in place.
+- Interactive reads/notifications never wait for compilation, Gradle, scans or compiler activation. Owned background work must have admission limits, cancellation and disposal; use the state/performance contracts.
 
 ---
 
@@ -431,7 +432,7 @@ const msg = '[HOVER] Node at ' + uri + ':' + position.line;
 ```groovy
 // Groovy — every long-running LSP handler MUST use:
 // 1. createCancellationToken(uri) at entry
-// 2. CompletableFuture.supplyAsync { ... } with explicit return
+// 2. Bounded asynchronous execution with explicit return where work is required
 // 3. checkCancellation(token) at yield points
 // 4. recordHealth(...) in finally
 // See: server/RULES.md §16
@@ -469,8 +470,10 @@ const msg = '[HOVER] Node at ' + uri + ':' + position.line;
 // Groovy ✅ — Groovy property syntax
 config.codeLensMode    node.name    method.parameters
 
-// Groovy ❌ — explicit getter calls
-config.getCodeLensMode()    node.getName()    method.getParameters()
+// Ordinary value getters prefer property syntax; this is a style preference.
+// Use explicit access/direct fields when semantics differ (e.g. lifecycle fields,
+// getState() versus an AtomicReference field, Map.isEmpty() versus an 'empty' key).
+// Document and test that distinction; never make a correctness-changing style fix.
 ```
 
 ```ts

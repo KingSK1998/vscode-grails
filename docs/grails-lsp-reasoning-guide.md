@@ -1,5 +1,7 @@
 # LSP Reasoning Guide & Constraint-Based Planner (Grails LSP) — v3 (Final)
 
+> **Historical / superseded, 2026-09-08.** The entire guide below is retained as design history, not active agent instructions. Use [agent execution](agent-execution.md), [invariants](invariants.md), the [state contract](state-and-lifecycle-specification.md) and task acceptance cards. In particular, the former bans on discovering evidence/changing an approach during execution and the old phase-specific authority order no longer govern work. Update an evidence brief when new facts invalidate its assumptions.
+
 > Non-negotiable: This is a compiled constraint system. Rules are selected before reasoning begins. No step may introduce new active constraints.
 
 ---

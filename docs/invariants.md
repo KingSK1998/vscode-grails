@@ -1,10 +1,10 @@
 # Invariants — Field Ownership & Stable Identity Contracts
 
-> **Status:** ENFORCED — agents MUST check this before modifying state, identity, or cross-system code.
+> **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-06-23
+> **Last updated:** 2026-09-08
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
-> **Related ADRs:** ADR-004, ADR-005, ADR-006
+> **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009
 > **Related Failure Modes:** SM-001, CI-001, PC-001
 
 ---
@@ -17,19 +17,24 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 
 | Field / State | Owner | Source of Truth | Readers | Write Methods |
 |---|---|---|---|---|
-| `compiler` (GrailsCompiler) | `GrailsService` | Groovy CompilationUnit | All T1 providers (read-only) | `compileAndVisitAST()`, `setupWorkspace()` |
-| `visitor` (GrailsASTVisitor) | `GrailsService` | AST traversal output | All T1 providers (read-only) | `visitAST()`, `compileAndVisitAST()` |
-| `fileTracker` (FileContentTracker) | `GrailsService` | In-memory document buffers | All T1 providers (read-only) | `didOpen()`, `didChange()`, `didClose()` |
-| `astService` (ASTService) | `GrailsService` | Artifact classification caches | Discovery, completion | `clearUri()` via visitor pipeline |
-| `projectIndex` (ProjectIndex) | IndexManager | Derived from AST | Hover, Definition, References | Index rebuild on AST change |
-| `methodScopeCache` (MethodScopeCache) | Per-file scope | Local variable/param resolution | Completion, signature help | Evicted on document change |
-| `groovydocCache` (GroovydocCache) | GroovydocCache (LRU) | Lazy extraction from AST | Hover, completion | LRU eviction + AST change |
+| `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl` | Groovy CompilationUnit for selected project inputs | Compiler-dependent readers through context; coherent access still under R1-04 audit | Project compile/activation/disposal write paths |
+| `visitor` (GrailsASTVisitor) | Per-project `ProjectContextImpl` | AST traversal output | Captured request AST accessor, read-only | `visitAST()`, `compileAndVisitAST()`, commit/close lifecycle |
+| `fileTracker` (FileContentTracker) | FileContentTracker, wired by GrailsService | In-memory document buffers | Context/provider read access | Document service delegates open/change/close; never providers |
+| Legacy `astService` access | Context boundary; verify backing implementation before use | Legacy classification/cache API | Legacy consumers | Do not assume a live independently owned ASTService from an old diagram |
+| `projectIndex` (ProjectIndex) | Per-project IndexManager / ProjectContextImpl publication coordinator | Derived value facts from AST | Hover, Definition, References | Candidate index build and project commit |
+| Project lifecycle, locks, dependency dirty flag | `ProjectContextImpl` | Registered project and work lifecycle | WorkspaceManager, request contexts | Activation, compile, sync, hibernate/dispose |
+| Active/LKG/history lineage | Per-project `SnapshotManager` | Validated committed generations | Request capture, recovery | Project writer delegates commit; lifecycle release per state contract |
+| Project registration/routing/LRU | `WorkspaceManager` | Registered root/build identities | Document/workspace dispatch and contexts | Add/remove, access metadata, coordinated eviction |
+| Pending document work/executor | `GrailsTextDocumentService` | Captured document inputs | Scheduler/test observations | Admission, coalescing, completion, close/shutdown |
+| Gradle connection/model work | Gradle synchronization owner | Resolved project build model | Project writer after completion | Bounded sync, cancellation, connection close |
+| `methodScopeCache` (MethodScopeCache) | Per-project context; entries scoped to file/revision | Local variable/param resolution | Completion, signature help | Evicted on affected document/generation change |
+| `groovydocCache` (GroovydocCache) | Per-project context/cache owner | Lazy documentation extraction | Hover, completion | Bounded LRU + input/dependency revision invalidation |
 | `config` (GrailsLspConfig) | `GrailsService` | VS Code settings via LSP | All providers (read-only) | `didChangeConfiguration()` |
 | `cancellationService` | `GrailsService` | Request lifecycle | All T1 providers | `createCancellationToken()`, `didClose()` auto-cancel |
 | `healthService` | `GrailsService` | Provider latency/success metrics | Observability | `recordHealth()` in provider finally blocks |
 | `providerRegistry` | `GrailsService` | Lazy provider instances | `GrailsTextDocumentService` | `getProvider()` (lazy init) |
-| `discoveryService` | `GrailsService` | ClassGraph workspace scan | Completion strategies | `clearSymbolCaches()` on AST cycle end |
-| Cross-file caches | `GrailsService` | Derived from visitor + compiler | All providers | `clearCrossFileCaches()` at end of incremental cycle |
+| `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with separate project membership | Completion/resolution | Scan/refresh and scoped release; existing static loader maps require R1/R2 repair |
+| Cross-file caches | Registered cache owner coordinated by project writer | Derived from scoped visitor/compiler inputs | Providers | Coherent invalidation at commit; no unrelated-root clearing as default |
 
 ### Client — State Ownership
 
@@ -47,10 +52,14 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | ID | Severity | Rule | Related ADR | Related Failure Mode |
 |---|---|---|---|---|
 | `INV-OWN-001` | 🔴 CRITICAL | **Single writer.** Only owner writes. Providers NEVER write to `visitor`, `compiler`, `fileTracker`. EVER. | ADR-004 | PC-001 |
-| `INV-OWN-002` | 🔴 CRITICAL | **No shared mutable state outside GrailsService.** Server shared state lives in GrailsService only. | ADR-004 | — |
+| `INV-OWN-002` | 🔴 CRITICAL | **Registered ownership.** GrailsService wires server services; each mutable state item has one explicit owner in this table. ProjectContextImpl owns per-project compilation state. No unowned/global mutable analysis state. | ADR-009 | — |
 | `INV-OWN-003` | 🟡 HIGH | **No ServiceContainer inside services.** Client services receive deps via constructor injection only. | ADR-001 | — |
 | `INV-OWN-004` | 🔴 CRITICAL | **Derived state must have invalidation trigger.** Every cache documents: what invalidates it, who, what scope. | ADR-002 | SM-001, CI-001 |
-| `INV-OWN-005` | 🔴 CRITICAL | **No ASTNode references in ProjectIndex.** All data extracted to primitive/LSP types at index-build time. | ADR-006 | — |
+| `INV-OWN-005` | 🔴 CRITICAL | **AST boundary.** ProjectIndex, SymbolInfo and MethodScopeCache retain no ASTNode references after construction. Origins are value locators, not node links. | ADR-006 | — |
+| `INV-OWN-006` | 🔴 CRITICAL | **Snapshot lineage ownership.** SnapshotManager exclusively owns lineage. Current cap is 3 historical entries; LKG preserves last successful usable facts. Retention must also satisfy INV-STATE-010. | ADR-009 | — |
+| `INV-OWN-007` | 🔴 CRITICAL | **ProjectConnection Ownership.** Gradle sync exclusively owns `ProjectConnection`. Never shared concurrently. | Phase 3 | — |
+| `INV-OWN-008` | 🔴 CRITICAL | **Cross-Project Visibility.** Dependent project reads never block. Always read the last committed snapshot. | Phase 3 | — |
+| `INV-OWN-009` | 🟡 HIGH | **Hibernation Ownership.** `WorkspaceManager` exclusively controls LRU hibernation. | Phase 3 | — |
 
 ---
 
@@ -63,12 +72,13 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `INV-ID-001` | File URI (`file:///...`) | ✅ Durable | LSP protocol | Canonical key for all document state. Normalized before use. |
 | `INV-ID-002` | Class fully-qualified name | ✅ Durable (within compile) | Groovy compiler | Stable within a compilation unit. Changes if user renames class. |
 | `INV-ID-003` | `SymbolInfo.id` | ✅ Durable (within snapshot) | ProjectIndex | Unique within index version. Regenerated on rebuild. |
-| `INV-ID-004` | AST node identity (`ClassNode`, `MethodNode`) | ❌ Mutable | Groovy compiler | Destroyed and recreated on every recompilation. NEVER cache. |
-| `INV-ID-005` | Line/column positions | ❌ Mutable | Editor content | Shift with every keystroke. Always resolve fresh from AST. |
-| `INV-ID-006` | `GrailsService` field references | ❌ Mutable | Runtime | Providers read live via getters. Never cache reference. |
-| `INV-ID-007` | Config values (`codeLensMode`, etc.) | ❌ Mutable | User settings | Can change anytime via `didChangeConfiguration`. Always read live. |
-| `INV-ID-008` | Gradle dependency coordinates | ✅ Durable (within sync) | build.gradle | Stable until next Gradle sync. |
-| `INV-ID-009` | Workspace folder URI | ✅ Durable (within session) | VS Code API | Stable for extension lifetime. Changes on folder add/remove. |
+| `INV-ID-004` | AST node identity (`ClassNode`, `MethodNode`) | ❌ Mutable across compilations | Groovy compiler | Valid only within a proven retained generation/request lease; never a durable key or cached across generations. INV-OWN-005 forbids it in value indexes/caches. |
+| `INV-ID-005` | Line/column positions | ❌ Mutable | Editor content | Bind to document/analysis revision. Map or revalidate when current text differs; never reuse unqualified old ranges. |
+| `INV-ID-006` | Live compiler/visitor/context field references | ❌ Mutable | Runtime | Never retain across requests. Capture one committed request view; do not mix it with later live getters. |
+| `INV-ID-007` | Config values (`codeLensMode`, etc.) | ❌ Mutable | User settings | Capture consistent relevant settings per operation; changes invalidate affected derived facts. Do not cache indefinitely or mix settings mid-operation. |
+| `INV-ID-008` | Gradle dependency coordinates | Scoped identifier, not content identity | Resolved build model | Changing/snapshot artifacts may change bytes at the same coordinates; include fingerprint/revision. |
+| `INV-ID-009` | Workspace folder URI | Durable location, not lifetime | VS Code API | Removal/re-add creates a new root generation; a late callback for the old generation is invalid. |
+| `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Version can reset on reopen. URI/version alone cannot distinguish old and new overlays. |
 
 ### Cross-System Key Rules
 
@@ -77,20 +87,20 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `INV-KEY-001` | 🔴 CRITICAL | **URI is canonical cross-system key.** All document state keys on normalized URI. | — |
 | `INV-KEY-002` | 🔴 CRITICAL | **Never use mutable state as lookup key.** Line numbers, AST node identity — all mutable. Resolve fresh. | ADR-006 |
 | `INV-KEY-003` | 🟡 HIGH | **SymbolInfo IDs are snapshot-scoped.** Valid only within one index version. Do not persist across rebuilds. | ADR-006 |
-| `INV-KEY-004` | 🟠 MEDIUM | **Gradle coordinates are sync-scoped.** Valid only until next `build.gradle` change triggers re-sync. | — |
+| `INV-KEY-004` | 🟡 HIGH | **Dependency keys include content and scope.** Coordinates alone cannot key changing artifacts or project visibility. Track dependency revision and artifact fingerprints. | ADR-009 |
 | `INV-KEY-005` | 🟡 HIGH | **Provider state is request-scoped.** Providers hold no state between requests. Each request starts fresh. | ADR-005 |
 
 ### Identity Resolution Chain
 
 ```
-User action → URI + Position
-  → FileContentTracker.getContent(uri) → fresh buffer
-  → GrailsASTVisitor.getClassNodes(uri) → fresh AST nodes
-  → ProjectIndex.getSymbol(fqcn) → SymbolInfo (immutable value)
-  → Provider transforms SymbolInfo → LSP response
+User action → canonical URI + position + current document identity
+  → resolve project and capture one committed analysis view
+  → resolve symbol/range against that view and its input revisions
+  → map/revalidate against current buffer or return unavailable/stale status
+  → transform scoped value facts into LSP/tool response
 ```
 
-Every step re-resolves from source. No stale references carried forward.
+A request never mixes generations by repeatedly reading live mutable fields. Snapshot-local handles cannot outlive their revision/lease. See the [state contract](state-and-lifecycle-specification.md) for required publication and retention behavior.
 
 ---
 
@@ -100,31 +110,63 @@ These are non-negotiable. Violation = bug.
 
 | ID | Severity | Rule | Related Failure Mode |
 |---|---|---|---|
-| `INV-STATE-001` | 🔴 CRITICAL | **Single-writer principle.** Only GrailsService write-path methods mutate shared state. | PC-001 |
+| `INV-STATE-001` | 🔴 CRITICAL | **Single-writer principle.** Only designated owners mutate their state through auditable write paths; project publication is coordinated by ProjectContextImpl. | PC-001 |
 | `INV-STATE-002` | 🔴 CRITICAL | **Read-never-write.** Providers read via BaseProvider getters. Never call mutating methods. | PC-001 |
-| `INV-STATE-003` | 🔴 CRITICAL | **Atomic invalidation.** `clearCrossFileCaches()` at END of every incremental AST cycle, not middle. | CI-001 |
+| `INV-STATE-003` | 🔴 CRITICAL | **Coherent invalidation.** Derived facts/caches visible with a committed generation match its inputs. Complete affected-scope invalidation before publishing that generation; legacy clearCrossFileCaches calls alone are not proof. | CI-001 |
 | `INV-STATE-004` | 🟡 HIGH | **No partial visibility.** Providers never observe half-built ASTs or partially updated indexes. | — |
 | `INV-STATE-005` | 🟡 HIGH | **Cancellation-safe.** `CancellationException` propagates cleanly. No partial results committed. | — |
-| `INV-STATE-006` | 🟡 HIGH | **Fail-safe defaults.** Missing data → empty list / null. Never throw from provider. | — |
+| `INV-STATE-006` | 🟡 HIGH | **Explicit failure/degradation.** Use protocol-appropriate empty/null/error results without raw exceptions. Missing analysis is not authoritative absence; retain cancellation/error/freshness meaning, especially for tools/refactors. | — |
 | `INV-STATE-007` | 🟠 MEDIUM | **URI normalization.** All URI comparisons use normalized form. Raw string comparison = bug. | — |
+| `INV-STATE-008` | 🔴 CRITICAL | **Reactivation Lock.** `REACTIVATING` state exclusively owns `activationFuture`. FAILED goes to REACTIVATING on edit. | Phase 3 |
+| `INV-STATE-009` | 🔴 CRITICAL | **Dirty Propagation.** Propagation visits exactly once per project (no loops). DIRTY state never blocks readers. | Phase 3 |
+| `INV-STATE-010` | 🔴 CRITICAL | **Release compiler generations.** Completed hibernation/disposal leaves no owned path retaining released compiler/classloader/CompilationUnit state after bounded in-flight leases drain. Retained active/LKG facts must be detached safe values or an explicitly proven equivalent. Nulling live fields alone is insufficient. | ADR-009 |
+| `INV-STATE-011` | 🔴 CRITICAL | **Retention correctness.** Active/LKG usable facts are strongly referenced; optional history alone may use SoftReference. No correctness guarantee or resource budget depends on GC clearing soft references. | ADR-009 |
+
+### Discovery, performance and tool boundaries
+
+| ID | Required contract | Specification |
+|---|---|---|
+| `INV-DISC-001` | Visible framework/library facts follow resolved project/source-set membership and explicit build edges; no default-project leakage or manual API inventory fallback. | [Discovery](specs/library-discovery.md) |
+| `INV-DISC-002` | Artifact facts use content/extractor identity; project membership and dependency revision are separate. Refresh/removal updates all dependent facts coherently. | [Discovery](specs/library-discovery.md) |
+| `INV-DISC-003` | Results retain origin, derivation, scope and limitations. Runtime/heuristic behavior is never promoted to an unconditional declaration fact. | [Discovery](specs/library-discovery.md) |
+| `INV-PERF-001` | Interactive callbacks/reads do not synchronously compile, resolve Gradle, scan libraries, or activate/hibernate a compiler. | [Performance](specs/performance.md) |
+| `INV-PERF-002` | Work admission, retained inputs, results and caches have documented count/byte limits and cancellation/disposal behavior. Latest input remains recoverable under overload. | [Performance](specs/performance.md) |
+| `INV-PERF-003` | Optimization and supported resource claims require reproducible measurements with fixture/environment metadata; preserve correctness. | [Performance](specs/performance.md) |
+| `INV-TOOL-001` | Editor and agent adapters use the same typed analysis operations and scoped revisions; no independent competing index. | [Agent operations](specs/agent-tools.md) |
+| `INV-TOOL-002` | Previews/checks/application have explicit input identities and authorization boundaries; stale edits are rejected/recomputed and partial execution is reported honestly. | [Agent operations](specs/agent-tools.md) |
+| `INV-TOOL-003` | Inputs, paths, pagination, result size and execution permissions are validated at the operation boundary, independent of transport annotations. | [Agent operations](specs/agent-tools.md) |
+| `INV-EDIT-001` | Text changes preserve protocol order/encoding; virtual/source mappings and edits are bound to the correct document generation. Unmappable edits are not applied. | [State](state-and-lifecycle-specification.md), [IDE](specs/ide-workflows.md) |
+
+### Current evidence gaps, not exceptions
+
+| Gap observed in September source/records | Owning acceptance task |
+|---|---|
+| Interrupted scheduler/runtime cast failure and incomplete lifecycle verification | R0-01, R1-02 |
+| Snapshot accessor shallow copies and incomplete reader/writer isolation proof | R1-04 |
+| Getter/routing activation or LRU may block; retained snapshots/static discovery loaders may keep heavy state alive | R1-04, R1-05 |
+| Compiler combines workspace dependencies; guessed project edges and incomplete dependency refresh | R2-01, R2-02, R2-03 |
+| Library fallback inventories and unsupported origin/confidence claims | R2-04, R2-05 |
+| Typed agent operation boundary/embedded-language completeness not yet established | R3, R4 |
+
+These gaps must be reproduced/verified against the current tree before repair. A task may preserve an unrelated tracked gap; it may not introduce a new violation or mark its own required invariant passed without evidence. [Task cards](execution/task-specifications.md) provide the acceptance cases.
 
 ---
 
 ## 4. Invariant Review Checklist
 
 > Agents MUST run this checklist when reviewing code that touches state, caches, identifiers, or providers.
-> Reference: `docs/skills/review.md §3`
+> Reference: [Code Review](skills/code-review.md) and [execution guide](agent-execution.md).
 
 ```text
 State Change?
 □ INV-OWN-001 — Single writer preserved
-□ INV-OWN-002 — No new shared mutable state outside GrailsService
+□ INV-OWN-002 — Registered owner and correct project/workspace scope
 □ INV-STATE-001 — Write-path methods unchanged or justified
 
 New Cache?
 □ INV-OWN-004 — Invalidation trigger documented (what, who, scope)
 □ INV-OWN-005 — No ASTNode references stored
-□ INV-STATE-003 — clearCrossFileCaches() updated if cross-file
+□ INV-STATE-003 — Invalidation and publication preserve one coherent generation
 
 New Identifier?
 □ INV-ID-* — Durable/mutable classification added to §2 table
@@ -132,7 +174,7 @@ New Identifier?
 
 New Shared State?
 □ INV-OWN-001 — Ownership assigned in §1 table
-□ INV-OWN-002 — Lives in GrailsService (server) or ServiceContainer (client)
+□ INV-OWN-002 — Owner appears in the server/client ownership map
 
 New Architecture?
 □ ADR required — document in docs/adr/decisions.md

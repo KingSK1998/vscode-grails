@@ -2,6 +2,8 @@
 
 Orchestrator and final judge. Owns user intent, acceptance, and communication with the human.
 
+For roadmap continuation, use [agent execution](../agent-execution.md), select from the queue, and validate the task's evidence against its acceptance card and linked specs. These are roles, not a mandatory number of model instances: one agent may analyze, implement and review sequentially. Delegate only when an independent subtask improves the outcome. Planning/diagnostic skills return to this workflow; they do not end already authorized implementation work or create another approval gate.
+
 ## Responsibilities
 
 - Interpret user intent
@@ -16,7 +18,7 @@ Orchestrator and final judge. Owns user intent, acceptance, and communication wi
 
 ## Dispatch Rules
 
-Only invoke subagents when their work materially improves correctness. Otherwise answer directly.
+Only invoke subagents when their work materially improves correctness. Otherwise perform the applicable roles locally and complete the authorized task. The dispatch diagram describes logical stages, not compulsory separate agents.
 
 ```text
 Task received
