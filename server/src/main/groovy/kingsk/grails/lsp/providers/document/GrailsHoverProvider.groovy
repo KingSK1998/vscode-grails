@@ -37,7 +37,7 @@ class GrailsHoverProvider extends BaseProvider {
                 checkCancellation(token)
                 def ctx = createRequestContext(textDocument.uri)
 
-                if (getConfig().hoverUsesIndex) {
+                if (getConfig().hoverUsesIndex || providerContext.isTier2()) {
                     def uri = textDocument.uri
                     def local = ctx.compilationContext().methodScopeCache.getLocalAt(uri, position)
                     if (local) {
@@ -54,12 +54,17 @@ class GrailsHoverProvider extends BaseProvider {
                     }
                 }
 
+                if (providerContext.isTier2()) {
+                    log.warn("[HOVER] AST fallback bypassed in Tier 2")
+                    return null
+                }
+
                 checkCancellation(token)
                 log.info("[HOVER] path=ast tier=3 kind=fallback")
                 def offsetNode = getNodeAtPosition(ctx, position)
                 if (!offsetNode) {
                     log.debug("[HOVER] No ASTNode found at the specified position.")
-                    return new Hover(new MarkupContent(org.eclipse.lsp4j.MarkupKind.MARKDOWN, ""))
+                    return null
                 }
 
                 def definitionNode = getDefinitionNode(offsetNode, ctx, false) ?: offsetNode
@@ -74,7 +79,7 @@ class GrailsHoverProvider extends BaseProvider {
 
                 if (!documentation || !documentation.value) {
                     log.debug("[HOVER] No hover content found for node type: ${definitionNode.class.simpleName}")
-                    return new Hover(new MarkupContent(org.eclipse.lsp4j.MarkupKind.MARKDOWN, ""))
+                    return null
                 }
 
                 return new Hover(documentation)

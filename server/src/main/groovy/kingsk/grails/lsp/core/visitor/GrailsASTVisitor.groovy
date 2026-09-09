@@ -27,7 +27,7 @@ import java.util.stream.Collectors
 class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
     private SourceUnit sourceUnit
     private final Stack<ASTNode> stack = new Stack<>()
-    
+
     // Core AST Data Stores
     final Map<String, Set<ASTNode>> nodesByURI = new ConcurrentHashMap<>()
     final Map<String, Set<ClassNode>> classNodesByURI = new ConcurrentHashMap<>()
@@ -53,7 +53,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
             if (this.is(o)) return true
             if (!(o instanceof ASTLookupKey)) return false
             ASTLookupKey that = (ASTLookupKey) o
-            return node == that.node 
+            return node == that.node
         }
         int hashCode() { return System.identityHashCode(node) }
     }
@@ -78,10 +78,11 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
     GrailsASTVisitor(GrailsService service) { this.service = service }
 
     private void pushASTNode(ASTNode node) {
+        if (node == null) return
         String uri = TextFile.normalizePath(sourceUnit.name)
         boolean isSynthetic = (node instanceof AnnotatedNode && node.synthetic) ?: false
         ASTNode parent = (stack.size() > 0) ? stack.lastElement() : null
-        
+
         lookup.put(new ASTLookupKey(node: node), new ASTNodeLookupData(uri: uri, parent: parent))
 
         if (!isSynthetic) {
@@ -182,7 +183,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
         String uri = TextFile.normalizePath(unit.name)
         nodesByURI.remove(uri); classNodesByURI.remove(uri); nodesByLineIndex.remove(uri)
         lookup.entrySet().removeIf { it.value.uri == uri }
-        
+
         nodesByURI[uri] = [] as Set
         classNodesByURI[uri] = [] as Set
         sourceUnit = unit
@@ -197,6 +198,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
     }
 
     void visitClass(ClassNode node) {
+        if (!node) return
         classNodesByURI[TextFile.normalizePath(sourceUnit.name)].add(node)
         pushASTNode(node); try { super.visitClass(node) } finally { popASTNode() }
     }
@@ -206,17 +208,17 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
         if (!node) return
         node.imports?.each { n -> pushASTNode(n); visitAnnotations(n); n.visit(this); popASTNode() }
     }
-    void visitPackage(PackageNode node) { pushASTNode(node); try { super.visitPackage(node) } finally { popASTNode() } }
-    void visitMethod(MethodNode node) { pushASTNode(node); try { super.visitMethod(node); node.parameters.each { visitParameter(it) } } finally { popASTNode() } }
-    protected void visitParameter(Parameter node) { pushASTNode(node); try { super.visitAnnotations(node) } finally { popASTNode() } }
-    void visitField(FieldNode node) { pushASTNode(node); try { super.visitField(node) } finally { popASTNode() } }
-    void visitProperty(PropertyNode node) { pushASTNode(node); try { super.visitProperty(node) } finally { popASTNode() } }
-    void visitBlockStatement(BlockStatement node) { pushASTNode(node); try { super.visitBlockStatement(node) } finally { popASTNode() } }
-    void visitReturnStatement(ReturnStatement node) { pushASTNode(node); try { super.visitReturnStatement(node) } finally { popASTNode() } }
-    void visitExpressionStatement(ExpressionStatement node) { pushASTNode(node); try { super.visitExpressionStatement(node) } finally { popASTNode() } }
-    void visitMethodCallExpression(MethodCallExpression node) { pushASTNode(node); try { super.visitMethodCallExpression(node) } finally { popASTNode() } }
-    void visitConstructorCallExpression(ConstructorCallExpression node) { pushASTNode(node); try { super.visitConstructorCallExpression(node) } finally { popASTNode() } }
-    void visitVariableExpression(VariableExpression node) { pushASTNode(node); try { super.visitVariableExpression(node) } finally { popASTNode() } }
-    void visitPropertyExpression(PropertyExpression node) { pushASTNode(node); try { super.visitPropertyExpression(node) } finally { popASTNode() } }
-    void visitClosureExpression(ClosureExpression node) { pushASTNode(node); try { super.visitClosureExpression(node) } finally { popASTNode() } }
+    void visitPackage(PackageNode node) { if (!node) return; pushASTNode(node); try { super.visitPackage(node) } finally { popASTNode() } }
+    void visitMethod(MethodNode node) { if (!node) return; pushASTNode(node); try { super.visitMethod(node); node.parameters.each { visitParameter(it) } } finally { popASTNode() } }
+    protected void visitParameter(Parameter node) { if (!node) return; pushASTNode(node); try { super.visitAnnotations(node) } finally { popASTNode() } }
+    void visitField(FieldNode node) { if (!node) return; pushASTNode(node); try { super.visitField(node) } finally { popASTNode() } }
+    void visitProperty(PropertyNode node) { if (!node) return; pushASTNode(node); try { super.visitProperty(node) } finally { popASTNode() } }
+    void visitBlockStatement(BlockStatement node) { if (!node) return; pushASTNode(node); try { super.visitBlockStatement(node) } finally { popASTNode() } }
+    void visitReturnStatement(ReturnStatement node) { if (!node) return; pushASTNode(node); try { super.visitReturnStatement(node) } finally { popASTNode() } }
+    void visitExpressionStatement(ExpressionStatement node) { if (!node) return; pushASTNode(node); try { super.visitExpressionStatement(node) } finally { popASTNode() } }
+    void visitMethodCallExpression(MethodCallExpression node) { if (!node) return; pushASTNode(node); try { super.visitMethodCallExpression(node) } finally { popASTNode() } }
+    void visitConstructorCallExpression(ConstructorCallExpression node) { if (!node) return; pushASTNode(node); try { super.visitConstructorCallExpression(node) } finally { popASTNode() } }
+    void visitVariableExpression(VariableExpression node) { if (!node) return; pushASTNode(node); try { super.visitVariableExpression(node) } finally { popASTNode() } }
+    void visitPropertyExpression(PropertyExpression node) { if (!node) return; pushASTNode(node); try { super.visitPropertyExpression(node) } finally { popASTNode() } }
+    void visitClosureExpression(ClosureExpression node) { if (!node) return; pushASTNode(node); try { super.visitClosureExpression(node) } finally { popASTNode() } }
 }

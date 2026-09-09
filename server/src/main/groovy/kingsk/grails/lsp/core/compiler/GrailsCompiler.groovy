@@ -157,8 +157,14 @@ class GrailsCompiler {
         }
         lastClasspathHash = paths.hashCode()
 
-        List<String> merged = (compilerConfig.classpath ?: []) + paths
-        compilerConfig.setClasspathList(merged.unique())
+        // Close old classloader to release file handles
+        if (classLoader != null) {
+            try {
+                classLoader.close()
+            } catch (Exception e) {
+                log.warn("[COMPILER] Error closing old GroovyClassLoader: ${e.message}")
+            }
+        }
 
         def urlCl = new URLClassLoader(urls as URL[], this.class.classLoader)
         classLoader = new GroovyClassLoader(urlCl, compilerConfig, true)
@@ -258,16 +264,28 @@ class GrailsCompiler {
             previousContext = null
             dirtySources.clear()
 
-            // Clear compilation unit errors before refresh
-            compilationUnit?.clearErrors()
+            // Clear compilation unit errors
+            if (compilationUnit != null) {
+                try {
+                    compilationUnit.clearErrors()
+                } catch (Exception ignored) {}
+                compilationUnit = null
+            }
 
-            // Create fresh compilation unit
-            refreshCompilationUnit()
+            // Close and release classLoader
+            if (classLoader != null) {
+                try {
+                    classLoader.close()
+                } catch (Exception e) {
+                    log.warn("[COMPILER] Error closing GroovyClassLoader: ${e.message}")
+                }
+                classLoader = null
+            }
 
             // Reset classpath hash to force classloader refresh if needed
             lastClasspathHash = 0
 
-            log.info("[COMPILER] Compiler state invalidated and reset")
+            log.info("[COMPILER] Compiler state invalidated and released")
         } finally {
             compileLock.unlock()
         }

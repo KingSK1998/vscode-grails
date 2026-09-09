@@ -1,9 +1,6 @@
 import type { ExtensionContext, Uri } from "vscode";
 
-export function createWebviewStateManager<T>(
-  context: ExtensionContext,
-  stateKey: string
-) {
+export function createWebviewStateManager<T>(context: ExtensionContext, stateKey: string) {
   const key = `webview.${stateKey}`;
 
   return {

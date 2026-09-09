@@ -51,6 +51,11 @@ export class ConfigurationService implements Disposable {
     return this.get<number>("server.port", 8080);
   }
 
+  /** Port of the manually started language server, separate from the Grails app. */
+  get languageServerDevelopmentPort(): number {
+    return this.get<number>("languageServer.developmentPort", 5007);
+  }
+
   /** Completion detail level. */
   get completionDetail(): CompletionDetail {
     return this.get<CompletionDetail>("completion.detail", CompletionDetail.Advanced);

@@ -53,26 +53,30 @@ class GrailsService implements LanguageClientAware, ProviderContext {
         this.client = client as GrailsLanguageClient
     }
 
-    final GrailsWorkspaceService workspace
-    final GrailsTextDocumentService document
+    GrailsWorkspaceService workspace
+    GrailsTextDocumentService document
 
-    final GradleService gradle
-    final FileContentTracker fileTracker
-    final GrailsDiagnosticService diagnostics
-    final ProgressService progressService
-    final ErrorService errorService
-    final DiscoveryService discoveryService
-    final GrailsDependencyProvider dependencyProvider
-    final GrailsGormSqlProvider gormSqlProvider
-    final GrailsTestDiscoveryProvider testDiscoveryProvider
-    final CancellationService cancellationService
-    final ProviderHealthService healthService
-    final ProviderRegistry providerRegistry
+    GradleService gradle
+    FileContentTracker fileTracker
+    GrailsDiagnosticService diagnostics
+    ProgressService progressService
+    ErrorService errorService
+    DiscoveryService discoveryService
+    GrailsDependencyProvider dependencyProvider
+    GrailsGormSqlProvider gormSqlProvider
+    GrailsTestDiscoveryProvider testDiscoveryProvider
+    CancellationService cancellationService
+    ProviderHealthService healthService
+    ProviderRegistry providerRegistry
 
-    final GrailsLspConfig config
+    GrailsLspConfig config
 
     final Executor backgroundExecutor = Executors.newFixedThreadPool(4)
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
+
+    private SearchTier currentTier = SearchTier.TIER_0
+    private long tier2StartTime = 0L
+    private int oomCount = 0
 
     public <T> T withReadLock(groovy.lang.Closure<T> closure) {
         def lock = astLock.readLock()
@@ -94,7 +98,7 @@ class GrailsService implements LanguageClientAware, ProviderContext {
         }
     }
 
-    final WorkspaceManager workspaceManager
+    WorkspaceManager workspaceManager
 
     GrailsService() {
         this.errorService = new ErrorService(this)
@@ -179,7 +183,7 @@ class GrailsService implements LanguageClientAware, ProviderContext {
     GrailsASTVisitor getVisitor() {
         def project = workspaceManager.getDefaultProject()
         if (project == null) return null
-        return (GrailsASTVisitor) (project.activeSnapshot.get()?.ast ?: project.visitor)
+        return (GrailsASTVisitor) (project.snapshotManager.active?.ast ?: project.visitor)
     }
 
     void compileAndVisitAST(TextFile textFile) {
@@ -222,18 +226,78 @@ class GrailsService implements LanguageClientAware, ProviderContext {
         return null
     }
 
+    @Override
+    boolean isTier2() {
+        // REJECT_OPS is considered a super-tier of Tier 2 — all Tier 2 restrictions apply, plus complete operation rejection
+        if (currentTier == SearchTier.REJECT_OPS) {
+            return true
+        }
+
+        if (currentTier != SearchTier.TIER_2) {
+            return false
+        }
+
+        long duration = System.currentTimeMillis() - tier2StartTime
+        if (duration > 60000) {
+            Runtime runtime = Runtime.getRuntime()
+            long usedMemory = runtime.totalMemory() - runtime.freeMemory()
+            double percentUsed = (double) usedMemory / runtime.maxMemory()
+            if (percentUsed < 0.75) {
+                currentTier = SearchTier.TIER_0
+                oomCount = 0
+                log.info("[GrailsService] Tier-2 Exit Criteria passed (cooldown > 60s, heap usage < 75%). Recovered to Tier 0.")
+                return false
+            }
+        }
+
+        return true
+    }
+
     /**
      * Emergency Exit Protocol for OutOfMemoryError.
+     * 3-tier escalation: Tier 2 -> Global Hibernation -> Reject Ops (keeps process alive for client recovery).
      */
     void handleOOM(OutOfMemoryError e) {
-        log.error("[GrailsService] FATAL: OutOfMemoryError detected! Executing Emergency Exit Protocol.", e)
-        
-        // Fatal exit to trigger external process restart
-        System.exit(1)
+        log.error("[GrailsService] OOM detected! Running OOM recovery escalation path. Current tier: ${currentTier}, oomCount: ${oomCount}", e)
+
+        // Evict all caches first
+        try {
+            clearCrossFileCaches()
+        } catch (Exception ex) {
+            log.error("[GrailsService] Failed to clear caches during OOM recovery", ex)
+        }
+        System.gc()
+
+        oomCount++
+
+        if (oomCount == 1) {
+            currentTier = SearchTier.TIER_2
+            tier2StartTime = System.currentTimeMillis()
+            log.warn("[GrailsService] OOM Escalation #1: Entering Tier 2 (index-only/regex search). AST and compilation are disabled.")
+        } else if (oomCount == 2) {
+            log.warn("[GrailsService] OOM Escalation #2: Global hibernation. Hibernating all non-active project contexts.")
+            try {
+                workspaceManager?.getAllContexts()?.each { ctx ->
+                    if (ctx != workspaceManager.getDefaultProject()) {
+                        ctx.hibernate()
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("[GrailsService] Failed to hibernate projects during OOM recovery", ex)
+            }
+            System.gc()
+        } else {
+            log.error("[GrailsService] OOM Escalation #3: Fatal memory limit reached. Rejecting all expensive operations. Server remains alive for client recovery.")
+            currentTier = SearchTier.REJECT_OPS
+            try {
+                client?.telemetryEvent([type: "error", message: "Language Server hit fatal memory limit. All expensive operations rejected. Reload workspace to recover."] as Map)
+            } catch (Exception ignored) {}
+        }
     }
 
     void shutdown() {
         log.info("[GrailsService] Shutting down executors...")
+        document?.shutdown()
 
         if (backgroundExecutor instanceof java.util.concurrent.ExecutorService) {
             ((java.util.concurrent.ExecutorService) backgroundExecutor).shutdown()
@@ -248,10 +312,18 @@ class GrailsService implements LanguageClientAware, ProviderContext {
         }
 
         fileTracker?.shutdown()
-        document?.shutdown()
+        workspace?.shutdown()
+        workspaceManager?.shutdown()
         cancellationService?.cancelAll()
         ThreadSafeLruCache.shutdown()
 
         log.info("[GrailsService] Shutdown complete")
     }
+}
+
+enum SearchTier {
+    TIER_0,
+    TIER_1,
+    TIER_2,
+    REJECT_OPS
 }

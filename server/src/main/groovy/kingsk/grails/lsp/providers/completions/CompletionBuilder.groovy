@@ -51,12 +51,20 @@ class CompletionBuilder {
         List<CompletionItem> allItems = []
         Set<String> seen = new HashSet<>()
 
+        List<CompletionStrategy> activeStrategies = STRATEGIES
+        if (request.providerContext()?.isTier2()) {
+            log.info("[COMPLETION] Restricting completion strategies in Tier 2 mode")
+            activeStrategies = STRATEGIES.findAll { strategy ->
+                strategy.class.simpleName in ["ScopeStrategy", "GrailsSnippetStrategy", "GspTagStrategy", "ImportStrategy"]
+            }
+        }
+
         // Phase 1: OFFSET
-        applyPhase(STRATEGIES, CompletionTarget.OFFSET, request, ctx, allItems, seen)
+        applyPhase(activeStrategies, CompletionTarget.OFFSET, request, ctx, allItems, seen)
 
         // Phase 2: PARENT fallback if empty
         if (allItems.isEmpty() && request.parentNode) {
-            applyPhase(STRATEGIES, CompletionTarget.PARENT, request, ctx, allItems, seen)
+            applyPhase(activeStrategies, CompletionTarget.PARENT, request, ctx, allItems, seen)
         }
 
         return allItems

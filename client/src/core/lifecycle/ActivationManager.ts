@@ -98,9 +98,10 @@ export class ActivationManager implements Disposable {
 
       backgroundInitPromise.catch(error => {
         console.error(`[ActivationManager] Background initialization failed: ${error}`);
-        const message = error instanceof Error && error.message.includes("timed out")
-          ? "Grails extension: Background initialization timed out. Some features may be limited."
-          : "Grails extension: Startup delayed. Some features may be limited.";
+        const message =
+          error instanceof Error && error.message.includes("timed out")
+            ? "Grails extension: Background initialization timed out. Some features may be limited."
+            : "Grails extension: Startup delayed. Some features may be limited.";
         this.container.statusBarService.error(message);
         void window.showErrorMessage(message);
       });
@@ -330,10 +331,14 @@ export class ActivationManager implements Disposable {
 
     // Build file changes
     this.disposables.push(
-      workspace.createFileSystemWatcher("**/build.gradle").onDidChange(async () => {
-        this.container.statusBarService.info("Build file changed, refreshing projects...");
-        await this.container.projectService.discoverProjects();
-      })
+      workspace
+        .createFileSystemWatcher(
+          "**/{build.gradle,build.gradle.kts,settings.gradle,settings.gradle.kts,gradle.properties,gradle/libs.versions.toml,*.versions.toml}"
+        )
+        .onDidChange(async () => {
+          this.container.statusBarService.info("Build file changed, refreshing projects...");
+          await this.container.projectService.discoverProjects();
+        })
     );
 
     // Internal event subscriptions

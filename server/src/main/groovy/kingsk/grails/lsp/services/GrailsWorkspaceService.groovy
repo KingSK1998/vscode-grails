@@ -4,18 +4,40 @@ import com.google.gson.JsonObject
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
+import kingsk.grails.lsp.context.ProjectContextImpl
 import kingsk.grails.lsp.model.enums.ErrorSeverity
 import kingsk.grails.lsp.model.enums.ErrorSource
+import kingsk.grails.lsp.model.state.ProjectState
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.WorkspaceService
 
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import java.util.HashSet
+import java.util.Set
 
 @Slf4j
 @CompileStatic
 class GrailsWorkspaceService implements WorkspaceService {
     private final GrailsService grailsService
+    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()
+    private ScheduledFuture<?> debounceFuture
+    private final Object lock = new Object()
+
+    private ScheduledExecutorService getOrCreateScheduler() {
+        synchronized (lock) {
+            if (scheduler == null || scheduler.isShutdown() || scheduler.isTerminated()) {
+                scheduler = Executors.newSingleThreadScheduledExecutor()
+            }
+            return scheduler
+        }
+    }
+
+    private final Set<String> pendingBuildChangeUris = Collections.synchronizedSet(new HashSet<String>())
 
     GrailsWorkspaceService(GrailsService grailsService) {
         this.grailsService = grailsService
@@ -45,25 +67,84 @@ class GrailsWorkspaceService implements WorkspaceService {
 
     @Override
     void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-        boolean rebuild = false
-        params.changes.each { FileEvent event ->
-            if (isBuildConfigurationFile(event.uri)) {
-                rebuild = true
+        if (params?.changes == null) return
+
+        Set<String> buildChanges = new HashSet<>()
+        for (FileEvent event : params.changes) {
+            if (event?.uri && isBuildConfigurationFile(event.uri)) {
+                buildChanges.add(event.uri)
             }
         }
 
-        if (!rebuild) return
+        if (buildChanges.isEmpty()) return
 
-        log.info "[WORKSPACE] Build configuration files changed - invalidating cache and rebuilding workspace"
-        grailsService.gradle.invalidateCache()
+        synchronized (lock) {
+            pendingBuildChangeUris.addAll(buildChanges)
+            if (debounceFuture != null && !debounceFuture.isDone()) {
+                debounceFuture.cancel(false)
+            }
+            debounceFuture = getOrCreateScheduler().schedule({ ->
+                processBuildConfigurationChanges()
+            } as Runnable, 2, TimeUnit.SECONDS)
+        }
+    }
+
+    void processBuildConfigurationChanges() {
+        Set<String> urisToProcess
+        synchronized (lock) {
+            urisToProcess = new HashSet<>(pendingBuildChangeUris)
+            pendingBuildChangeUris.clear()
+        }
+        if (urisToProcess.isEmpty()) return
+
+        log.info "[WORKSPACE] Build configuration files changed (debounced ${urisToProcess.size()} file(s)) - invalidating cache and syncing affected projects"
+        grailsService.gradle?.invalidateCache()
+
+        def workspaceManager = grailsService.workspaceManager
+        if (workspaceManager != null) {
+            Set<ProjectContextImpl> affected = new HashSet<>()
+            for (String uri : urisToProcess) {
+                def ctx = workspaceManager.getProjectForUri(uri)
+                if (ctx != null) {
+                    affected.add(ctx)
+                } else {
+                    String lower = uri.toLowerCase()
+                    if (lower.contains("settings.gradle") || lower.contains(".versions.toml")) {
+                        affected.addAll(workspaceManager.allContexts)
+                    }
+                }
+            }
+
+            for (ProjectContextImpl ctx : affected) {
+                if (ctx.state == ProjectState.FAILED) {
+                    ctx.resetFailedState()
+                }
+                ctx.triggerGradleSync()
+            }
+        }
     }
 
     @Override
     void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
-        params.event.added.each { folder ->
-            String uri = folder.uri
-            if (grailsService.getProject()?.rootDirectory?.toURI()?.toString() != uri) {
-                // Trigger project discovery and setup
+        if (params?.event == null) return
+        def workspaceManager = grailsService.workspaceManager
+        if (workspaceManager == null) return
+
+        if (params.event.removed != null) {
+            for (WorkspaceFolder folder : params.event.removed) {
+                if (folder?.uri) {
+                    log.info "[WORKSPACE] Workspace folder removed: ${folder.uri}"
+                    workspaceManager.removeRoot(folder.uri)
+                }
+            }
+        }
+
+        if (params.event.added != null) {
+            for (WorkspaceFolder folder : params.event.added) {
+                if (folder?.uri) {
+                    log.info "[WORKSPACE] Workspace folder added: ${folder.uri}"
+                    workspaceManager.startRootDiscovery(folder.uri)
+                }
             }
         }
     }
@@ -86,12 +167,41 @@ class GrailsWorkspaceService implements WorkspaceService {
         return CompletableFuture.completedFuture(null)
     }
 
-    private static boolean isBuildConfigurationFile(String uri) {
+    static boolean isBuildConfigurationFile(String uri) {
         if (!uri) return false
-        uri = uri.toLowerCase()
-        return uri.endsWith("build.gradle") ||
-               uri.endsWith("build.gradle.kts") ||
-               uri.endsWith("settings.gradle") ||
-               uri.endsWith("gradle.properties")
+        String cleanUri = uri.toLowerCase()
+        if (cleanUri.endsWith("build.gradle") ||
+            cleanUri.endsWith("build.gradle.kts") ||
+            cleanUri.endsWith("settings.gradle") ||
+            cleanUri.endsWith("settings.gradle.kts") ||
+            cleanUri.endsWith("gradle.properties") ||
+            cleanUri.endsWith(".versions.toml") ||
+            cleanUri.endsWith("libs.versions.toml")) {
+            return true
+        }
+        if (cleanUri.contains("/gradle/") && cleanUri.endsWith(".toml")) {
+            return true
+        }
+        return false
+    }
+
+    void shutdown() {
+        log.info("[WORKSPACE] Shutting down workspace service scheduler...")
+        ScheduledExecutorService toShutdown = null
+        synchronized (lock) {
+            toShutdown = scheduler
+            scheduler = null
+        }
+        if (toShutdown != null && !toShutdown.isShutdown()) {
+            toShutdown.shutdown()
+            try {
+                if (!toShutdown.awaitTermination(3, TimeUnit.SECONDS)) {
+                    toShutdown.shutdownNow()
+                }
+            } catch (InterruptedException e) {
+                toShutdown.shutdownNow()
+                Thread.currentThread().interrupt()
+            }
+        }
     }
 }

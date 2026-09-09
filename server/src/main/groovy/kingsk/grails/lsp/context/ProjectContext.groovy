@@ -1,7 +1,10 @@
 package kingsk.grails.lsp.context
 
 import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.state.ProjectState
+import kingsk.grails.lsp.model.state.SnapshotManager
 import kingsk.grails.lsp.protocol.dto.ProjectDTO
+import java.util.concurrent.CompletableFuture
 
 interface ProjectContext {
     GrailsProject getProject()
@@ -14,4 +17,22 @@ interface ProjectContext {
     void removeProject(String projectDir)
     void updateProject(GrailsProject project, String projectDir)
     GrailsProject getProjectForUri(String uri)
+    
+    // Lifecycle Management (Phase 3b)
+    SnapshotManager getSnapshotManager()
+    void markAccessed()
+    long getLastAccessedTime()
+    ProjectState getState()
+    CompletableFuture<Void> getActivationFuture()
+    void reactivate(Closure<Void> activationTask)
+    void ready()
+    void hibernate()
+    void dispose()
+    
+    // Dependency & Sync Status (Phase 3)
+    boolean isDependencyDirty()
+    void setDependencyDirty(boolean dirty)
+    void resetFailedState()
+    void triggerGradleSync()
+    void recompileAsync()
 }

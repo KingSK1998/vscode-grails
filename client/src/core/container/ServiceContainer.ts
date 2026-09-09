@@ -63,7 +63,9 @@ export class ServiceContainer {
 
   public static getInstance(): ServiceContainer {
     if (!ServiceContainer._instance) {
-      throw new Error("ServiceContainer must be initialized first. Call ServiceContainer.initialize() first.");
+      throw new Error(
+        "ServiceContainer must be initialized first. Call ServiceContainer.initialize() first."
+      );
     }
     return ServiceContainer._instance;
   }
@@ -214,46 +216,63 @@ export class ServiceContainer {
     this._initializedServices.add("StatusBarService");
     this._initializedServices.add("ConfigurationService");
 
-    this._lazyInitializers.set("GradleService", () => new GradleService(
-      this._services.StatusBarService!,
-      this._services.ErrorService!
-    ));
+    this._lazyInitializers.set(
+      "GradleService",
+      () => new GradleService(this._services.StatusBarService!, this._services.ErrorService!)
+    );
 
-    this._lazyInitializers.set("LogStreamingService", () => new LogStreamingService(
-      this.gradleService,
-      this._services.StatusBarService!,
-      this._services.ErrorService!
-    ));
+    this._lazyInitializers.set(
+      "LogStreamingService",
+      () =>
+        new LogStreamingService(
+          this.gradleService,
+          this._services.StatusBarService!,
+          this._services.ErrorService!
+        )
+    );
 
-    this._lazyInitializers.set("ProjectService", () => new ProjectService(
-      this._services.StatusBarService!,
-      this._services.ErrorService!,
-      this._services.ConfigurationService!,
-      EventBus.getInstance()
-    ));
+    this._lazyInitializers.set(
+      "ProjectService",
+      () =>
+        new ProjectService(
+          this._services.StatusBarService!,
+          this._services.ErrorService!,
+          this._services.ConfigurationService!,
+          EventBus.getInstance()
+        )
+    );
 
-    this._lazyInitializers.set("LanguageServerManager", () => new LanguageServerManager(
-      this.context,
-      this._services.StatusBarService!,
-      this._services.ErrorService!,
-      this._services.ConfigurationService!
-    ));
+    this._lazyInitializers.set(
+      "LanguageServerManager",
+      () =>
+        new LanguageServerManager(
+          this.context,
+          this._services.StatusBarService!,
+          this._services.ErrorService!,
+          this._services.ConfigurationService!
+        )
+    );
 
-    this._lazyInitializers.set("ArtifactService", () => new ArtifactService(
-      this._services.ErrorService!
-    ));
+    this._lazyInitializers.set(
+      "ArtifactService",
+      () => new ArtifactService(this._services.ErrorService!)
+    );
 
-    this._lazyInitializers.set("DebugService", () => new DebugService(
-      this.gradleService,
-      this._services.ErrorService!
-    ));
+    this._lazyInitializers.set(
+      "DebugService",
+      () => new DebugService(this.gradleService, this._services.ErrorService!)
+    );
 
-    this._lazyInitializers.set("GrailsTestService", () => new GrailsTestService(
-      this.context,
-      this._services.ErrorService!,
-      this.languageServerManager,
-      this.projectService
-    ));
+    this._lazyInitializers.set(
+      "GrailsTestService",
+      () =>
+        new GrailsTestService(
+          this.context,
+          this._services.ErrorService!,
+          this.languageServerManager,
+          this.projectService
+        )
+    );
   }
 
   /* ================= HEALTH CHECK ==================================== */
@@ -277,7 +296,10 @@ export class ServiceContainer {
     if (this._initializedServices.has("ProjectService") && !this._services.ProjectService) {
       issues.push("ProjectService marked as initialized but not found");
     }
-    if (this._initializedServices.has("LanguageServerManager") && !this._services.LanguageServerManager) {
+    if (
+      this._initializedServices.has("LanguageServerManager") &&
+      !this._services.LanguageServerManager
+    ) {
       issues.push("LanguageServerManager marked as initialized but not found");
     }
 

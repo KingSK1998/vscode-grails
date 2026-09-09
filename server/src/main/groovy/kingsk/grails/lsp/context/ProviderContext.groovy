@@ -19,4 +19,5 @@ interface ProviderContext {
     ProviderRegistry getProviderRegistry()
     GrailsLanguageClient getClient()
     kingsk.grails.lsp.services.FileContentTracker getFileTracker()
+    boolean isTier2()
 }

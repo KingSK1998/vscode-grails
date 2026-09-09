@@ -1,13 +1,13 @@
 # Client Status
 
 > **AI AGENTS: Update this file on EVERY task that touches client code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-06-13
+> Last updated: 2026-09-09
 
 ---
 
 ## Extension Info
 
-- **Version**: 0.0.2
+- **Version**: 0.2.0
 - **Language**: TypeScript (strict mode)
 - **VS Code Engine**: ^1.103.0
 - **Node**: 20.x
@@ -28,6 +28,10 @@
 | Comment toggling | Both languages |
 | LSP client integration | `vscode-languageclient`, connects to Grails Language Server |
 | Language Server lifecycle | `LanguageServerManager` handles start/stop/restart |
+| Bundled server startup | ✅ Default production launch; configured Java path; separate app/development LSP ports; deterministic runtime JAR |
+| Initial project notifications | ✅ Handlers registered before client startup; regression test verifies early discovery delivery |
+| Build configuration watchers | ✅ Kotlin/Groovy build and settings files, Gradle properties and version catalogs (*.versions.toml) |
+| Headless startup and packaging tests | ✅ Five tests executed via `npm run test:client`; includes platform mocks for startup event ordering |
 | Project Explorer (tree view) | Shows Controllers, Services, Domains |
 | Status bar indicator | Extension state display |
 | `grails.run` command | Runs Grails app via terminal |
@@ -43,7 +47,7 @@
 | Grails project detection | Checks for `grails-app/` directory |
 | Configuration settings | `grails.path`, `grails.javaHome`, `grailsLsp.*` |
 | Dev mode LSP connection | Connects to remote server on port 5007 |
-| Production mode LSP connection | Uses local JAR `server/grails-language-server-1.0-all.jar` |
+| Production mode LSP connection | Uses `client/server/grails-language-server-current-all.jar` |
 | Core Architecture & Performance | Optimizations (ISSUE-001 through ISSUE-021). See history section below. |
 
 ### 🟡 In Progress
@@ -56,13 +60,13 @@
 
 | Issue | Notes |
 |---|---|
-| Multi-root workspace | Only first workspace folder used by LSP — documented limitation |
+| Multi-root workspace | Server project contexts exist, but classpath isolation and end-to-end multi-project acceptance remain incomplete |
 
 ### ⬜ Planned / Future
 
 | Feature | Notes |
 |---|---|
-| Multi-root workspace support | Needs server-side multi-root first |
+| Multi-root workspace support | Finish server isolation, dependency refresh and packaged-editor acceptance tests |
 | Grails plugin marketplace listing | Extension not yet published |
 | Enhanced project explorer | More artifact types (Jobs, TagLibs, etc.) |
 
@@ -74,7 +78,8 @@
 |---|---|
 | TypeScript compile | ✅ Clean |
 | ESLint | ✅ Clean |
-| Tests | ✅ Passing |
+| Headless tests | ✅ Five startup/packaging tests passing (2026-09-07) |
+| Packaged-editor integration tests | ⬜ Not run in this session |
 | esbuild bundle | ✅ OK |
 
 ---

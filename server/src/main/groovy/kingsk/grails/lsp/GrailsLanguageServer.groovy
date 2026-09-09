@@ -20,6 +20,7 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
     private final CompletableFuture<ClientCapabilities> clientCapabilities
     private GrailsService grailsService
     private CompletableFuture<Void> shutdownFuture
+    private final List<String> initialWorkspaceUris = Collections.synchronizedList(new ArrayList<String>())
 
     GrailsLanguageServer() {
         this.clientCapabilities = new CompletableFuture<ClientCapabilities>()
@@ -31,15 +32,17 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
     CompletableFuture<InitializeResult> initialize(InitializeParams params) {
         log.info "[GrailsLanguageServer] Initializing Grails Language Server..."
 
-        if (!params.workspaceFolders || params.workspaceFolders.isEmpty()) {
-            def errorMessage = "[GrailsLanguageServer] Grails Language Server requires a workspace folder to function."
-            grailsService.progressService.error(errorMessage)
-            throw new ResponseErrorException(new ResponseError(ResponseErrorCode.InvalidParams, errorMessage, null))
-        }
-
-        // Setup initial workspace folders
-        params.workspaceFolders?.each { folder ->
-            // grailsService.workspaceManager.getProjectForUri(folder.uri)?.setupWorkspace(true) // TODO
+        initialWorkspaceUris.clear()
+        if (params.workspaceFolders != null && !params.workspaceFolders.isEmpty()) {
+            params.workspaceFolders.each { folder ->
+                if (folder?.uri) {
+                    initialWorkspaceUris.add(folder.uri)
+                }
+            }
+        } else if (params.rootUri) {
+            initialWorkspaceUris.add(params.rootUri)
+        } else if (params.rootPath) {
+            initialWorkspaceUris.add(new File(params.rootPath).toURI().toString())
         }
 
         // Store client capabilities for later use
@@ -90,6 +93,12 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
         }
 
         return CompletableFuture.completedFuture(new InitializeResult(capabilities))
+    }
+
+    @Override
+    void initialized(org.eclipse.lsp4j.InitializedParams params) {
+        log.info "[GrailsLanguageServer] Client initialized; starting discovery for ${initialWorkspaceUris.size()} workspace root(s)"
+        grailsService.workspaceManager.initializeRoots(initialWorkspaceUris)
     }
 
     @Override

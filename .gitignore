@@ -38,3 +38,7 @@ Thumbs.db
 
 # Graphify output
 graphify-out/
+
+# Local Python virtual environments
+.venv/
+venv/

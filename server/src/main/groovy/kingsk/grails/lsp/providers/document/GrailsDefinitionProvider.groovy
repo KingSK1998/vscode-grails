@@ -36,7 +36,7 @@ class GrailsDefinitionProvider extends BaseProvider {
                 checkCancellation(token)
                 def ctx = createRequestContext(textDocument.uri)
                 
-                if (getConfig().definitionUsesIndex) {
+                if (getConfig().definitionUsesIndex || providerContext.isTier2()) {
                     def uri = textDocument.uri
                     
                     def local = ctx.compilationContext().methodScopeCache.getLocalAt(uri, position)
@@ -51,6 +51,11 @@ class GrailsDefinitionProvider extends BaseProvider {
                         log.info("[DEFINITION] path=index tier=1 kind=symbol")
                         return Either.forLeft([new Location(symbol.fileUri, symbol.selectionRange ?: symbol.range)] as List<? extends Location>)
                     }
+                }
+
+                if (providerContext.isTier2()) {
+                    log.warn("[DEFINITION] AST fallback bypassed in Tier 2")
+                    return Either.forLeft([] as List<? extends Location>)
                 }
 
                 checkCancellation(token)

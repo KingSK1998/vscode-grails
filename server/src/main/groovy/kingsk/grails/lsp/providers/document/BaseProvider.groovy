@@ -46,7 +46,7 @@ abstract class BaseProvider {
             // Fallback empty snapshot
             return new RequestContext(uri, new VersionedSnapshot(0, new kingsk.grails.lsp.index.ProjectIndex("empty").snapshot, null, null, [:], 0), providerContext, null)
         }
-        return new RequestContext(uri, projectCtx.activeSnapshot.get(), providerContext, (CompilationContext) projectCtx)
+        return new RequestContext(uri, projectCtx.snapshotManager.active, providerContext, (CompilationContext) projectCtx)
     }
 
     protected CancellationService.CancellationToken createCancellationToken(String uri) {

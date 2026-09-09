@@ -95,8 +95,8 @@ class FileContentTracker {
     //==========================================================//
 
     // Handles file open events from LSP client
-    TextFile didOpenFile(DidOpenTextDocumentParams params) {
-        if (!params?.textDocument?.uri || !params?.textDocument?.text) {
+    TextFile didOpenFile(DidOpenTextDocumentParams params, boolean resolveDependencies = true) {
+        if (!params?.textDocument?.uri || params.textDocument.text == null) {
             log.debug("[FILE_TRACKER] Invalid open file parameters")
             return null
         }
@@ -106,13 +106,13 @@ class FileContentTracker {
         tracked.version = params.textDocument.version
         trackedFiles[tracked.uri] = tracked
 
-        updateFileDependenciesForSourceFile(tracked)
+        if (resolveDependencies) updateFileDependenciesForSourceFile(tracked)
 
         tracked
     }
 
     // Handles file change events from LSP client
-    TextFile didChangeFile(DidChangeTextDocumentParams params) {
+    TextFile didChangeFile(DidChangeTextDocumentParams params, boolean resolveDependencies = true) {
         if (!params?.textDocument?.uri || !params?.contentChanges) {
             log.debug("[FILE_TRACKER] Invalid change file parameters")
             return null
@@ -156,7 +156,7 @@ class FileContentTracker {
         tracked.text = stringBuilder.toString()
         tracked.markChanged()
         tracked.version = params.textDocument.version
-        updateFileDependenciesForSourceFile(tracked)
+        if (resolveDependencies) updateFileDependenciesForSourceFile(tracked)
         trackFileModification(tracked.uri)
 
         tracked
@@ -190,6 +190,25 @@ class FileContentTracker {
         tracked
     }
 
+    /** Removes dependency entries produced by work that was already running at close time. */
+    void clearClosedFileDependencies(String uri) {
+        String normalizedUri = TextFile.normalizePath(uri)
+        if (trackedFiles.containsKey(normalizedUri)) return
+        fileDependencies.remove(normalizedUri)
+        tempFiles.remove(normalizedUri)
+        removeFQCNEntriesForUri(normalizedUri)
+
+        File diskFile = new File(normalizedUri)
+        if (diskFile.isFile()) {
+            try {
+                Map<String, TextFile> diskEntry = ServiceUtils.generateFQCNFromSourceFiles([diskFile])
+                fQCNToTextFile.putAll(diskEntry)
+            } catch (Exception e) {
+                log.debug("[FILE_TRACKER] Failed to restore disk-backed FQCN for ${normalizedUri}", e)
+            }
+        }
+    }
+
     /**
      * Handles file deletion events.
      * Unlike closing a file, deletion removes the file from both tracking and the FQCN map.
@@ -202,15 +221,15 @@ class FileContentTracker {
 			log.debug("[FILE_TRACKER] Invalid delete file parameter")
 			return false
 		}
-		
+
 		String normalizedUri = TextFile.normalizePath(uri)
-		
+
 		// Remove from tracked files if still open
 		trackedFiles.remove(normalizedUri)
 		fileDependencies.remove(normalizedUri)
 		tempFiles.remove(normalizedUri)
 		removeFQCNEntriesForUri(normalizedUri)
-		
+
 		false
 	}
 
@@ -418,6 +437,10 @@ class FileContentTracker {
 
     Map<String, TextFile> getFQCNIndex() {
         fQCNToTextFile
+    }
+
+    Collection<TextFile> getOpenFiles() {
+        return Collections.unmodifiableCollection(trackedFiles.values())
     }
 
     /**

@@ -9,8 +9,9 @@
   <conversionRule conversionWord="wex"
     converterClass="ch.qos.logback.classic.pattern.ThrowableProxyConverter" />
 
-  <!-- Console appender -->
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  <!-- stdout is reserved exclusively for framed LSP messages. -->
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
     <withJansi>false</withJansi>
     <encoder>
       <charset>UTF-8</charset>
@@ -42,14 +43,14 @@
 
   <!-- Enable LSP package at DEBUG -->
   <logger name="kingsk.grails.lsp" level="DEBUG" additivity="false">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="STDERR" />
     <appender-ref ref="FILE" />
   </logger>
 
 
   <!-- Root logger -->
   <root level="INFO">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="STDERR" />
     <appender-ref ref="FILE" />
   </root>
 </configuration>

@@ -1,42 +1,31 @@
-const fs = require("fs");
-const path = require("path");
+const { copyFileSync, mkdirSync, readdirSync } = require("node:fs");
+const { join } = require("node:path");
 
-function copyServer() {
-  const serverDir = path.join(__dirname, "..", "server", "build", "libs");
-  const targetDir = path.join(__dirname, "..", "client", "server");
-
-  try {
-    if (!fs.existsSync(serverDir)) {
-      console.error("❌ Server build directory not found. Run `npm run build-server` first.");
-      process.exit(1);
-    }
-
-    const files = fs.readdirSync(serverDir).filter(f => f.endsWith(".jar"));
-
-    if (files.length === 0) {
-      console.error("❌ No JAR files found in", serverDir);
-      process.exit(1);
-    }
-
-    // Pick the largest jar (usually shadow/fat jar)
-    const jarFile = files
-      .map(f => ({
-        name: f,
-        size: fs.statSync(path.join(serverDir, f)).size,
-      }))
-      .sort((a, b) => b.size - a.size)[0];
-
-    const sourcePath = path.join(serverDir, jarFile.name);
-    const targetPath = path.join(targetDir, jarFile.name);
-
-    fs.mkdirSync(targetDir, { recursive: true });
-    fs.copyFileSync(sourcePath, targetPath);
-
-    console.log(`✅ Copied ${jarFile.name} (${jarFile.size} bytes) to client/server/`);
-  } catch (error) {
-    console.error("❌ Error copying server JAR file:", error);
-    process.exit(1);
+// A stable destination prevents directory order from selecting an older build.
+function copyServer(
+  sourceDirectory = join(__dirname, "..", "server", "build", "libs"),
+  destinationDirectory = join(__dirname, "..", "client", "server")
+) {
+  const jars = readdirSync(sourceDirectory).filter(name =>
+    /^grails-language-server-.+-all\.jar$/.test(name)
+  );
+  if (jars.length !== 1) {
+    throw new Error(`Expected exactly one language server fat JAR in ${sourceDirectory}; found ${jars.length}. Remove obsolete build outputs and run npm run build:server.`);
   }
+
+  mkdirSync(destinationDirectory, { recursive: true });
+  const destination = join(destinationDirectory, "grails-language-server-current-all.jar");
+  copyFileSync(join(sourceDirectory, jars[0]), destination);
+  return destination;
 }
 
-copyServer();
+module.exports = { copyServer };
+
+if (require.main === module) {
+  try {
+    console.log(`[BUILD] Language server copied to ${copyServer()}`);
+  } catch (error) {
+    console.error(`[BUILD] ${error.message}`);
+    process.exitCode = 1;
+  }
+}

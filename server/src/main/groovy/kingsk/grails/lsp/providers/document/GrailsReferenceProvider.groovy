@@ -26,6 +26,14 @@ class GrailsReferenceProvider extends BaseProvider {
         super(providerContext, workspaceManager)
     }
 
+    CompletableFuture<List<? extends Location>> provideReferences(
+        org.eclipse.lsp4j.TextDocumentIdentifier textDocument,
+        Position position,
+        org.eclipse.lsp4j.ReferenceContext context
+    ) {
+        provideReferences(new ReferenceParams(textDocument, position, context))
+    }
+
     CompletableFuture<List<? extends Location>> provideReferences(ReferenceParams params) {
         def textDocument = params.textDocument
         def position = params.position
@@ -38,7 +46,7 @@ class GrailsReferenceProvider extends BaseProvider {
                 checkCancellation(token)
                 def ctx = createRequestContext(textDocument.uri)
                 
-                if (getConfig().referenceUsesIndex) {
+                if (getConfig().referenceUsesIndex || providerContext.isTier2()) {
                     def offsetNode = getNodeAtPosition(ctx, position)
                     if (offsetNode) {
                         String targetName = offsetNode.text
@@ -49,6 +57,11 @@ class GrailsReferenceProvider extends BaseProvider {
                             return refs.collect { new Location(it.fileUri, it.range) }
                         }
                     }
+                }
+
+                if (providerContext.isTier2()) {
+                    log.warn("[REFERENCES] AST fallback bypassed in Tier 2")
+                    return [] as List<Location>
                 }
 
                 checkCancellation(token)

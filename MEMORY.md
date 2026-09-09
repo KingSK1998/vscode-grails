@@ -75,3 +75,24 @@
 - Query freshness and completeness are separate. Project/source-set/document/open/dependency/config revisions constrain results; unknown dynamic behavior never becomes certain refactor evidence. New agent adapters reuse typed operations rather than another index.
 - Reconciled system map, architecture overview, invariants, rules, review/performance/planning/recovery skills and old reasoning-guide status. Planning/diagnostic stages return to authorized implementation; routine fixes do not require repetitive permission requests.
 - Verification: selector focused tests **12/12 passed**, actual queue validates **38 tasks**, and `next` selects R0-01. Direct Node test invocation worked after `node --test` child-worker spawn EPERM. Link/anchor and independent contract review evidence is in [docs/execution/documentation-baseline.md](docs/execution/documentation-baseline.md). No commit, push, publish or new product build/test was performed for this documentation session.
+
+## R0-01 and R0-02 Execution Milestone (2026-09-09)
+
+- **R0-01 Completed & Accepted**:
+  - Repaired document compilation scheduler: nonblocking open, rapid edit coalescing, copied buffer immutability, blocked worker ordering.
+  - Resolved `ProjectState` to `AtomicReference` runtime cast error under `@CompileStatic` by using direct field accessor `this.@state.get()`.
+  - All 9/9 tests in `DocumentCompilationSpec` and 7/7 tests in `GrailsIncrementalCompilerSpec` passed.
+  - Documented in `docs/execution/records/R0-01.md`.
+
+- **R0-02 Completed & Accepted**:
+  - Implemented prompt capability return on `initialize` supporting 0 and multiple workspace roots without blocking on Gradle.
+  - Implemented asynchronous discovery triggering on `initialized` LSP notification via `WorkspaceManager.initializeRoots()`.
+  - Implemented root generations in `WorkspaceManager` with in-flight discovery tracking to discard late results from removed or re-added roots.
+  - Enhanced path normalization (`TextFile.normalizePath`) to handle Windows backslashes, percent-encoded URIs, and root boundary containment (`isSameOrChildPath`).
+  - Enforced strict project routing in `WorkspaceManager.getProjectForUri`: returns `null` for unmatched external URIs without falling back to a default project.
+  - Implemented `replayStillOpenBuffers` on newly registered roots, safely filtering to only still-open buffers belonging to that root.
+  - Updated build-watch debounce in `GrailsWorkspaceService` and `ActivationManager.ts` to cover Kotlin scripts (`build.gradle.kts`, `settings.gradle.kts`), properties (`gradle.properties`), and version catalogs (`*.versions.toml`), unioning all changed URIs across debounce windows.
+  - Designed resilient single-threaded scheduler lifecycle in `GrailsWorkspaceService` with `getOrCreateScheduler()` to prevent `RejectedExecutionException` across test/restart cycles.
+  - All 6/6 tests in `WorkspaceLifecycleSpec` and full server regression suite (48/48 tests across 7 specs) passed with exit code 0.
+  - Client checks (`npm run compile`, `npm run check-types`, `npm run lint`) passed with exit code 0.
+  - Documented in `docs/execution/records/R0-02.md`, updated `task-queue.json` and `STATUS.md` files. Validated with `node scripts/roadmap.js validate`. Next task: **R0-03**.

@@ -55,13 +55,17 @@ allprojects {
 	private static final String VERSION_REGEX = /version\s*=\s*(['"])([0-9]+(?:\.[0-9]+)*(?:-[A-Za-z0-9]+)?)\1/
 	private static final String DESCRIPTION_REGEX = /description\s*=\s*(['"])(.+?)\1/
 
-	static GrailsProject build(File projectDir) {
+	static GrailsProject build(File projectDir, org.gradle.tooling.CancellationTokenSource cancellationSource = null) {
 		try (ProjectConnection connection = GradleConnector.newConnector()
 				.useBuildDistribution()
 				.forProjectDirectory(projectDir)
 				.connect()) {
 
-			IdeaProject ideaProject = connection.getModel(IdeaProject)
+			org.gradle.tooling.ModelBuilder<IdeaProject> modelBuilder = connection.model(IdeaProject)
+			if (cancellationSource != null) {
+				modelBuilder.withCancellationToken(cancellationSource.token())
+			}
+			IdeaProject ideaProject = modelBuilder.get()
 			GrailsProject project = fromIdeaProject(ideaProject)
 			log.info("[GRADLE] Successfully built project: ${project.name} (${project.dependencies.size()} dependencies)")
 			return project

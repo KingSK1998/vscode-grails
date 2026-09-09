@@ -111,7 +111,7 @@ export class GradleService implements Disposable {
       return; // Already initializing
     }
 
-this.intializationPromise ??= this.doSync().catch(error => {
+    this.intializationPromise ??= this.doSync().catch(error => {
       this.errorService.handleError(
         "Gradle sync failed",
         error,

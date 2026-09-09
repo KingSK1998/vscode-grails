@@ -14,7 +14,10 @@ export class EventBus implements Disposable {
     [K in keyof GrailsEventMap]?: ((event: GrailsEventMap[K]) => void)[];
   } = {};
 
-  private readonly handlerStats = new Map<string, { count: number; errors: number; totalTime: number }>();
+  private readonly handlerStats = new Map<
+    string,
+    { count: number; errors: number; totalTime: number }
+  >();
   private readonly STATS_ENABLED = false;
   private readonly MAX_LISTENERS_PER_EVENT = 100;
 
@@ -44,14 +47,18 @@ export class EventBus implements Disposable {
     const handlers = this.listeners[eventType]!;
 
     if (handlers.length >= this.MAX_LISTENERS_PER_EVENT) {
-      console.warn(`[EventBus] Listener limit reached for ${String(eventType)} (${handlers.length}). Auto-removing oldest listener.`);
+      console.warn(
+        `[EventBus] Listener limit reached for ${String(eventType)} (${handlers.length}). Auto-removing oldest listener.`
+      );
       handlers.shift();
     }
 
     handlers.push(handler);
 
     if (this.listeners[eventType]!.length > this.MAX_LISTENERS_PER_EVENT * 0.8) {
-      console.warn(`[EventBus] Listener accumulation warning for ${String(eventType)}: ${handlers.length}/${this.MAX_LISTENERS_PER_EVENT}`);
+      console.warn(
+        `[EventBus] Listener accumulation warning for ${String(eventType)}: ${handlers.length}/${this.MAX_LISTENERS_PER_EVENT}`
+      );
     }
 
     // Return disposable for cleanup
@@ -148,10 +155,16 @@ export class EventBus implements Disposable {
           ErrorSeverity.Warning
         );
       } else {
-        console.error(`[EventBus] Error in event handler for ${String(eventType)} (${handlerName}):`, error);
+        console.error(
+          `[EventBus] Error in event handler for ${String(eventType)} (${handlerName}):`,
+          error
+        );
       }
     } catch {
-      console.error(`[EventBus] Error in event handler for ${String(eventType)} (${handlerName}):`, error);
+      console.error(
+        `[EventBus] Error in event handler for ${String(eventType)} (${handlerName}):`,
+        error
+      );
     }
   }
 

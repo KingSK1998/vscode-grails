@@ -65,12 +65,10 @@ export class LanguageServerManager implements Disposable {
           // Register handlers BEFORE starting the client
           this.registerProgressHandler(progress);
           this.registerMessageHandler();
+          this.registerProjectsSyncHandlers();
 
           // Now start the client - progress events will be captured!
           await this.client.start();
-
-          // ✅ Register Grails custom notifications AFTER start
-          this.registerProjectsSyncHandlers();
 
           this.statusBar.success(Messages.SERVER_STARTED);
 

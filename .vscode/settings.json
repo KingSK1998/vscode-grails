@@ -22,5 +22,6 @@
 
   "editor.rulers": [100],
   "java.compile.nullAnalysis.mode": "automatic",
-  "java.configuration.updateBuildConfiguration": "automatic"
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "geminicodeassist.contextExclusionGitignore": false
 }

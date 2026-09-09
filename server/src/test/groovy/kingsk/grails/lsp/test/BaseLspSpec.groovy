@@ -134,6 +134,7 @@ abstract class BaseLspSpec extends Specification {
                 new TextDocumentItem(uri, "groovy", version, content)
             )
         )
+        waitForFuture(grailsService.document.compilationFinished(uri))
         return TextFile.normalizePath(uri)
     }
 
@@ -164,6 +165,7 @@ abstract class BaseLspSpec extends Specification {
                 new TextDocumentItem(uri, "groovy", version, content)
             )
         )
+        waitForFuture(grailsService.document.compilationFinished(uri))
         return uri
     }
 
@@ -177,6 +179,7 @@ abstract class BaseLspSpec extends Specification {
                 new TextDocumentIdentifier(uri)
             )
         )
+        waitForFuture(grailsService.document.compilationFinished(uri))
     }
 
     /**
@@ -193,6 +196,7 @@ abstract class BaseLspSpec extends Specification {
                 [new TextDocumentContentChangeEvent(range, newText)]
             )
         )
+        waitForFuture(grailsService.document.compilationFinished(uri))
     }
 
     /**
@@ -208,6 +212,7 @@ abstract class BaseLspSpec extends Specification {
                 [new TextDocumentContentChangeEvent(null, newText)]
             )
         )
+        waitForFuture(grailsService.document.compilationFinished(uri))
     }
 
 

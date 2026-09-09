@@ -11,6 +11,9 @@ import kingsk.grails.lsp.model.dto.GrailsProject
 import kingsk.grails.lsp.protocol.mapper.ProjectMapper
 
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import org.gradle.tooling.CancellationTokenSource
+import org.gradle.tooling.GradleConnector
 
 @Slf4j
 @CompileStatic
@@ -23,13 +26,64 @@ class GradleService {
         this.service = service
     }
 
-    CompletableFuture<GrailsProject> getGrailsProjectAsync(String projectDir) {
-        return CompletableFuture.supplyAsync({
+    static File resolveProjectDir(String projectDir) {
+        if (!projectDir) return null
+        if (projectDir.startsWith("file:")) {
             try {
-                return getGrailsProjectSync(projectDir)
+                return new File(new URI(projectDir))
             } catch (Exception e) {
-                log.error("[GRADLE] Failed to get project: ${projectDir}", e)
+                try {
+                    return new File(URI.create(projectDir.replace(" ", "%20")))
+                } catch (Exception ignored) {
+                    return new File(kingsk.grails.lsp.model.types.TextFile.normalizePath(projectDir))
+                }
+            }
+        }
+        return new File(projectDir)
+    }
+
+    /**
+     * Asynchronously builds a GrailsProject via the Gradle Tooling API.
+     * Features: 30-second timeout, explicit cancellation, and per-call connection ownership.
+     * The CancellationTokenSource is always cancelled on failure to prevent daemon leaks.
+     */
+    CompletableFuture<GrailsProject> getGrailsProjectAsync(String projectDir) {
+        CancellationTokenSource cancellationSource = GradleConnector.newCancellationTokenSource()
+
+        CompletableFuture<GrailsProject> future = CompletableFuture.supplyAsync({ ->
+            try {
+                File rootDir = resolveProjectDir(projectDir)
+                if (rootDir == null || !rootDir.exists()) {
+                    throw new FileNotFoundException("[GRADLE] Project directory does not exist: ${projectDir}")
+                }
+
+                if (!cache.isStale(rootDir)) {
+                    GrailsProject cached = cache.load(rootDir)
+                    if (cached) {
+                        return cached
+                    }
+                }
+
+                log.info("[GRADLE] Building GrailsProject via Tooling API with 30s timeout: ${rootDir.name}")
+                GrailsProject project = builder.build(rootDir, cancellationSource)
+                cache.save(rootDir, project)
+
+                service.client?.projectUpdated(ProjectMapper.toDTO(project))
+                return project
+            } catch (Exception e) {
+                log.error("[GRADLE] Gradle sync failed: ${projectDir}", e)
                 throw e
+            }
+        } as java.util.function.Supplier<GrailsProject>)
+
+        return future.orTimeout(30, TimeUnit.SECONDS).whenComplete({ GrailsProject res, Throwable ex ->
+            if (ex != null) {
+                if (ex instanceof java.util.concurrent.TimeoutException || ex?.cause instanceof java.util.concurrent.TimeoutException) {
+                    log.warn("[GRADLE] Gradle sync timed out after 30 seconds for: ${projectDir}. Triggering cancellation.")
+                } else {
+                    log.warn("[GRADLE] Gradle sync failed for: ${projectDir}. Triggering cancellation to prevent daemon leak.")
+                }
+                cancellationSource.cancel()
             }
         })
     }
@@ -39,8 +93,8 @@ class GradleService {
     }
 
     private GrailsProject getGrailsProjectSync(String projectDir) {
-        File rootDir = new File(projectDir.toURI())
-        if (!rootDir.exists()) {
+        File rootDir = resolveProjectDir(projectDir)
+        if (rootDir == null || !rootDir.exists()) {
             throw new FileNotFoundException("[GRADLE] Project directory does not exist: ${projectDir}")
         }
 
@@ -85,9 +139,11 @@ class GradleService {
      * Force invalidate cache for a specific project
      */
     void invalidateProjectCache(String projectDir) {
-        File rootDir = new File(projectDir.toURI())
-        cache.forceInvalidation(rootDir)
-        log.info("[GRADLE] Force invalidated cache for project: ${rootDir.name}")
+        File rootDir = resolveProjectDir(projectDir)
+        if (rootDir != null) {
+            cache.forceInvalidation(rootDir)
+            log.info("[GRADLE] Force invalidated cache for project: ${rootDir.name}")
+        }
     }
 
     // ===== Download Javadoc or Sources =====

@@ -65,9 +65,8 @@ jobs:
           npm run bundle
           echo "Client build completed"
 
-      # Run tests if available
-      # - name: 🧪 Run tests
-      #   run: npm test --if-present
+      - name: Test client startup and packaging
+        run: npm run test:client
 
       # Enhanced artifact validation
       - name: 🔍 Validate build artifacts
@@ -101,18 +100,17 @@ jobs:
           mkdir -p server/
           mkdir -p dist/
 
-          # Copy server JAR to root server directory (matching your package.json main path)
-          cp server/build/libs/*.jar server/
-          echo "✅ Server JAR copied to server/"
+          npm run copy-server
 
           # List packaging contents
           echo "📦 Packaging contents:"
-          echo "Server JAR: $(ls server/*.jar)"
+          echo "Server JAR: $(ls client/server/*.jar)"
           echo "Client files: $(ls client/out/)"
           echo "Package.json main: $(grep '"main"' package.json)"
 
           # Package using root directory
           npm run package
+          mv vscode-gng-support.vsix dist/
           echo "✅ VSIX created successfully"
 
       # Upload artifacts with better organization
@@ -123,7 +121,7 @@ jobs:
           name: vscode-grails-${{ github.run_number }}
           path: |
             dist/*.vsix
-            server/*.jar
+            client/server/grails-language-server-current-all.jar
             client/out/
           retention-days: 30
 

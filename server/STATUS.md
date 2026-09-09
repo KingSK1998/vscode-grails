@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-09-08
+> Last updated: 2026-09-09
 
 ---
 
@@ -9,15 +9,15 @@
 
 **See:** [implementation handoff](../docs/implementation-handoff.md) and [product roadmap](../docs/product-roadmap.md).
 
-### Current verification status (2026-09-08)
+### Current verification status (2026-09-09)
 
 | Feature / check | Status | Evidence |
 |---|---|---|
-| Background document compilation | 🔴 Incomplete | Latest saved `DocumentCompilationSpec`: 6 tests, 3 failures; map assertion failures need correction |
-| Incremental compiler regression suite | 🔴 Failing | Latest saved suite: 7 tests, 7 failures; `ProjectState` to `AtomicReference` cast error |
-| Workspace startup and folder lifecycle | ⬜ Incomplete | Initial discovery TODO and folder-change no-op remain |
-| Stdio logging | 🟡 Source fix present | Console changed to stderr; rebuilt JAR smoke test not yet passed |
-| Packaged release | ⬜ Unverified | No final VSIX/editor acceptance run |
+| Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 9/9 tests pass; nonblocking open, rapid edit coalescing, copied buffer immutability, blocked worker ordering |
+| Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
+| Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 6/6 tests pass; zero/multi-root capability response, root generations discard late results, longest prefix boundary matching, still-open buffer replay, build-watch debounce |
+| Stdio logging | 🟡 Source fix present | Console changed to stderr; rebuilt JAR smoke test queued in R0-03 |
+| Packaged release | ⬜ Unverified | No final VSIX/editor acceptance run (R0-04) |
 
 Reports were inspected on 2026-09-08; their timestamps are 2026-09-07. No tests were rerun during the roadmap-only update. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
 

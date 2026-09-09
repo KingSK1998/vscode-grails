@@ -2,7 +2,7 @@
 
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-08
+> **Last updated:** 2026-09-09
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
 > **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009
 > **Related Failure Modes:** SM-001, CI-001, PC-001

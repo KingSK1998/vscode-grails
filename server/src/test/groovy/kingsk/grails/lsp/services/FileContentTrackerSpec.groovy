@@ -11,17 +11,66 @@ import spock.lang.Specification
  */
 class FileContentTrackerSpec extends Specification {
 	
+	private GrailsService grailsService
 	private FileContentTracker tracker
+	private File projectRoot
 	
 	def setup() {
-		def grailsService = new GrailsService()
-		GrailsProject mockProject = new GrailsProject(name: "test", rootDirectory: new File(System.getProperty("user.dir"), "build/test"))
+		grailsService = new GrailsService()
+		projectRoot = new File(System.getProperty("user.dir"), "build/test")
+		GrailsProject mockProject = new GrailsProject(name: "test", rootDirectory: projectRoot)
 		grailsService.workspaceManager.addProject(mockProject)
-		tracker = new FileContentTracker(grailsService)
+		tracker = grailsService.fileTracker
 	}
 	
 	def cleanup() {
-		tracker = null
+		grailsService?.shutdown()
+	}
+
+	def "should track an empty opened document"() {
+		given: "An empty editor buffer"
+		String uri = "file:///test/Empty.groovy"
+
+		when: "Opening the empty document"
+		def file = tracker.didOpenFile(createOpenParam(uri, ""), false)
+
+		then: "The empty buffer remains an active tracked overlay"
+		file != null
+		file.text == ""
+		file.open
+		tracker.getTextFile(uri).is(file)
+	}
+
+	def "should restore the disk-backed FQCN after an editor overlay closes"() {
+		given: "A disk source indexed by the current project"
+		File sourceDirectory = new File(projectRoot, "src/main/groovy")
+		File diskFile = new File(sourceDirectory, "DiskBacked.groovy")
+		diskFile.parentFile.mkdirs()
+		diskFile.text = "package sample\nclass DiskBacked {}"
+		grailsService.workspaceManager.addProject(new GrailsProject(
+			name: "test",
+			rootDirectory: projectRoot,
+			sourceDirectories: [sourceDirectory] as Set
+		))
+		tracker.resetFQCNDependencies()
+		tracker.getAllProjectFiles()
+		assert tracker.getFileFromFQCN("sample.DiskBacked").text.contains("class DiskBacked")
+
+		and: "An unsaved overlay has replaced that URI in the dependency index"
+		String uri = diskFile.toURI().toString()
+		TextFile overlay = tracker.didOpenFile(
+			createOpenParam(uri, "package sample\nclass UnsavedOverlay {}"), false
+		)
+		tracker.updateFileDependenciesForSourceFile(overlay)
+		assert tracker.getFileFromFQCN("sample.DiskBacked").text.contains("UnsavedOverlay")
+
+		when: "The editor overlay closes and background cleanup runs"
+		tracker.didCloseFile(createCloseParam(uri))
+		tracker.clearClosedFileDependencies(uri)
+
+		then: "The index resolves the source that still exists on disk"
+		tracker.getFileFromFQCN("sample.DiskBacked").text.contains("class DiskBacked")
+		!tracker.getFileFromFQCN("sample.DiskBacked").text.contains("UnsavedOverlay")
 	}
 	
 	def "should track file opening and closing"() {

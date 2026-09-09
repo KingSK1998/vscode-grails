@@ -84,18 +84,20 @@ class GrailsDiagnosticService {
      * @return A DocumentDiagnosticReport containing updated or unchanged diagnostic reports.
      */
     CompletableFuture<DocumentDiagnosticReport> provideDocumentDiagnostics(TextDocumentIdentifier textDocument, String identifier, String previousResultId) {
-        if (!service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull) {
+        String uri = TextFile.normalizePath(textDocument.uri)
+        def projectContext = service.workspaceManager.getProjectForUri(uri)
+        ErrorCollector errorCollector = projectContext?.compiler?.errorCollectorOrNull
+        if (errorCollector == null) {
             return CompletableFuture.completedFuture(new DocumentDiagnosticReport(
                 new RelatedFullDocumentDiagnosticReport(resultId: "empty", items: [])
             ))
         }
 
-        String uri = TextFile.normalizePath(textDocument.uri)
         log.debug "[DIAGNOSTICS] Running diagnostics for document: $uri"
 
         // Extract fresh diagnostics
         log.debug("[DIAGNOSTICS] Generating diagnostics for $uri")
-        Set<Diagnostic> newDiagnostics = extractDiagnostics(service.workspaceManager.getDefaultProject()?.compiler.errorCollectorOrNull).getOrDefault(uri, [] as Set)
+        Set<Diagnostic> newDiagnostics = extractDiagnostics(errorCollector).getOrDefault(uri, [] as Set)
         String newResultId = DiagnosticUtils.computeResultId(newDiagnostics) ?: "empty"
         String oldResultId = DiagnosticUtils.computeResultId(currentDiagnostics[uri] ?: [] as Set) ?: "empty"
 

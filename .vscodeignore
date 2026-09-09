@@ -21,9 +21,33 @@ eslint.config.*
 node_modules/**
 out/**
 src/out/**
+dist/**
+*.vsix
+client/server/*.jar
+!client/server/grails-language-server-current-all.jar
+client/out/**/*.js
+!client/out/extension.js
 
 # Documentation and development
 docs/**
+graphify-out/**
+.agents/**
+.claude/**
+.codex/**
+.serena/**
+.venv/**
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+MEMORY.md
+CODING_STANDARDS.md
+ARCHITECTURE_REVIEW.md
+client/*.md
+client/.gitignore
+logs/**
+.prettierignore
+client/RULES.md
+client/STATUS.md
 CONTRIBUTING.md
 vsc-extension-quickstart.md
 .github/**
@@ -34,6 +58,7 @@ vsc-extension-quickstart.md
 
 # Logs and temp files
 *.log
+**/*.log
 .DS_Store
 Thumbs.db
 

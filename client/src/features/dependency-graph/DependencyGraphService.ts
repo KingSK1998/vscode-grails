@@ -17,14 +17,11 @@ export class DependencyGraphService implements vscode.Disposable {
   private stateManager: ReturnType<typeof createWebviewStateManager<GraphState>>;
   private cancellationTokenSource: vscode.CancellationTokenSource | null = null;
 
-  private readonly debouncedRefresh = debounce(
-    (project: ProjectInfo) => {
-      if (!this.disposed) {
-        void this.doRefreshGraph(project);
-      }
-    },
-    300
-  );
+  private readonly debouncedRefresh = debounce((project: ProjectInfo) => {
+    if (!this.disposed) {
+      void this.doRefreshGraph(project);
+    }
+  }, 300);
 
   constructor(
     private readonly context: vscode.ExtensionContext,

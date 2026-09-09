@@ -1,14 +1,17 @@
-import * as fs from "fs";
-import * as net from "net";
-import * as path from "path";
+import { existsSync, readdirSync } from "node:fs";
+import { connect } from "node:net";
+import { join } from "node:path";
 import type { ExtensionContext } from "vscode";
-import { TransportKind, type ServerOptions, type StreamInfo } from "vscode-languageclient/node";
+import type { ServerOptions, StreamInfo } from "vscode-languageclient/node";
 import type { ConfigurationService } from "../workspace/ConfigurationService";
 
 interface DebugOptions {
   port: number;
   suspend: boolean;
 }
+
+const CONNECTION_TIMEOUT_MS = 10_000;
+const BUNDLED_SERVER_JAR = "grails-language-server-current-all.jar";
 
 /**
  * Creates server options for local development
@@ -35,22 +38,21 @@ function getLocalServerOptions(
   config: ConfigurationService
 ): ServerOptions {
   const serverJar = getServerJarPath(context);
+  const javaCommand = getJavaCommand(config);
   const jvmArgs = config.serverJvmArgs;
   const debugOptions = getDebugConfiguration();
 
   return {
     run: {
-      command: "java",
+      command: javaCommand,
       args: [...jvmArgs, "-jar", serverJar],
-      transport: TransportKind.stdio,
       options: {
         env: process.env,
       },
     },
     debug: {
-      command: "java",
+      command: javaCommand,
       args: [...jvmArgs, ...getJavaDebugArgs(debugOptions), "-jar", serverJar],
-      transport: TransportKind.stdio,
       options: {
         env: process.env,
       },
@@ -62,26 +64,38 @@ function getLocalServerOptions(
  * Gets the path to the language server JAR file
  */
 function getServerJarPath(context: ExtensionContext): string {
-  const serverDir = context.asAbsolutePath(path.join("client", "server"));
+  const serverDir = context.asAbsolutePath(join("client", "server"));
 
-  if (!fs.existsSync(serverDir)) {
+  if (!existsSync(serverDir)) {
     throw new Error(`Server directory not found: ${serverDir}`);
   }
 
-  const files = fs.readdirSync(serverDir);
-  const jarFile = files.find(
+  const bundledJar = join(serverDir, BUNDLED_SERVER_JAR);
+  if (existsSync(bundledJar)) return bundledJar;
+
+  const files = readdirSync(serverDir);
+  const jars = files.filter(
     file => file.startsWith("grails-language-server-") && file.endsWith("-all.jar")
   );
 
-  if (!jarFile) {
+  if (jars.length !== 1) {
     throw new Error(
-      `No JAR file found matching "grails-language-server-*-all.jar" in ${serverDir}`
+      `Expected one bundled language server in ${serverDir}, found ${jars.length}. Rebuild with npm run copy-server or reinstall the extension.`
     );
   }
 
-  const jarPath = path.join(serverDir, jarFile);
-  console.log(`[ServerConfig] Found language server JAR: ${jarPath}`);
-  return jarPath;
+  return join(serverDir, jars[0]);
+}
+
+function getJavaCommand(config: ConfigurationService): string {
+  const javaHome = config.javaHome.trim() || process.env.JAVA_HOME?.trim();
+  if (!javaHome) return "java";
+
+  const command = join(javaHome, "bin", process.platform === "win32" ? "java.exe" : "java");
+  if (!existsSync(command)) {
+    throw new Error(`Java executable not found at ${command}. Check grails.javaHome or JAVA_HOME.`);
+  }
+  return command;
 }
 
 /**
@@ -108,37 +122,30 @@ function getJavaDebugArgs(options: DebugOptions): string[] {
  * Establishes connection to remote server
  */
 function connectToRemoteServer(config: ConfigurationService): Promise<StreamInfo> {
-  const port = config.serverPort;
+  const port = config.languageServerDevelopmentPort;
   const host = "localhost";
 
-  console.log(`[ServerConfig] Attempting to connect to remote server at ${host}:${port}`);
-
   return new Promise((resolve, reject) => {
-    const serverConnection = net.connect({ port, host }, () => {
-      console.log(`[ServerConfig] Successfully connected to remote Grails Language Server`);
+    const serverConnection = connect({ port, host }, () => {
+      // The timeout only bounds connection establishment, not an idle LSP session.
+      serverConnection.setTimeout(0);
       resolve({
         writer: serverConnection,
         reader: serverConnection,
       });
     });
 
-    // Disable timeout (or increase it)
-    serverConnection.setTimeout(0);
+    serverConnection.setTimeout(CONNECTION_TIMEOUT_MS);
 
     serverConnection.once("timeout", () => {
-      console.warn(`[ServerConfig] Connection timeout`);
-      // Let error handler deal with retry if desired
+      serverConnection.destroy(
+        new Error(`Language server connection timed out at ${host}:${port}`)
+      );
     });
 
     serverConnection.once("error", (err: Error) => {
-      console.warn(`[ServerConfig] Connection error: ${err.message}`);
-      // Let caller handle errors or add retry logic here
+      serverConnection.destroy();
       reject(err);
-    });
-
-    serverConnection.once("close", () => {
-      console.log("[ServerConfig] Remote server connection closed");
-      // Handle cleanup or reconnect as appropriate
     });
   });
 }

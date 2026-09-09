@@ -262,10 +262,10 @@
             "default": false,
             "description": "Automatically start Grails development server when opening a project"
           },
-          "grails.server.port": {
+          "grails.languageServer.developmentPort": {
             "type": "number",
             "default": 5007,
-            "description": "Deafult port for Grails development server",
+            "description": "Port of a manually started language server when development mode is enabled.",
             "minimum": 1024,
             "maximum": 65535
           },
@@ -356,8 +356,8 @@
           },
           "grails.server.developmentMode": {
             "type": "boolean",
-            "default": true,
-            "description": "Enable development mode for Language Server"
+            "default": false,
+            "description": "Connect to a manually started language server instead of launching the bundled server. Intended for extension development."
           },
           "grails.icons.suggestMaterialTheme": {
             "type": "boolean",
@@ -618,10 +618,10 @@
   "scripts": {
     "setup": "npm install && node scripts/install-hooks.js",
     "guard": "node scripts/pre-commit-guard.js",
-    "copy-server": "npm run build:server && node scripts/copy-server.js",
-    "build": "bash scripts/build.sh",
-    "build:client": "bash scripts/build-client.sh",
-    "build:server": "bash scripts/build-server.sh",
+    "copy-server": "node scripts/copy-server.js",
+    "build": "npm run build:server && npm run copy-server && npm run build:client",
+    "build:client": "npm run compile && npm run bundle",
+    "build:server": "node scripts/gradle.js shadowJar",
     "compile": "tsc -p ./tsconfig.json",
     "bundle": "esbuild client/src/extension.ts --bundle --platform=node --external:vscode --outfile=client/out/extension.js --sourcemap",
     "watch": "npm-run-all --parallel watch:*",
@@ -633,10 +633,12 @@
     "format": "prettier --write client/src/**/*.{ts,json}",
     "check": "npm run lint && npm run format && npm run check-types",
     "clean": "bash scripts/clean.sh",
-    "test": "bash scripts/test.sh",
-    "package": "bash scripts/package.sh",
-    "vscode:prepublish": "npm run clean && npm run build",
-    "pretest": "npm run build",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "npm run compile && node scripts/test-client.js",
+    "test:server": "node scripts/gradle.js test",
+    "test:smoke": "node scripts/smoke-server.js",
+    "package": "vsce package --out vscode-gng-support.vsix",
+    "vscode:prepublish": "npm run build",
     "graphify": "graphify .",
     "graphify:update": "graphify . --update",
     "graphify:watch": "graphify . --watch",

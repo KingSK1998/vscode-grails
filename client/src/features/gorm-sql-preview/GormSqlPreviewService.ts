@@ -15,14 +15,11 @@ export class GormSqlPreviewService implements vscode.Disposable {
   private stateManager: ReturnType<typeof createWebviewStateManager<SqlPreviewState>>;
   private cancellationTokenSource: vscode.CancellationTokenSource | null = null;
 
-  private readonly debouncedRefresh = debounce(
-    (uri: vscode.Uri) => {
-      if (!this.disposed) {
-        void this.doRefreshPreview(uri);
-      }
-    },
-    300
-  );
+  private readonly debouncedRefresh = debounce((uri: vscode.Uri) => {
+    if (!this.disposed) {
+      void this.doRefreshPreview(uri);
+    }
+  }, 300);
 
   constructor(
     private readonly context: vscode.ExtensionContext,

@@ -19,7 +19,9 @@ export function getClientOptions(config: ConfigurationService): LanguageClientOp
     synchronize: {
       fileEvents: [
         workspace.createFileSystemWatcher("**/*.{groovy,gsp,properties}"),
-        workspace.createFileSystemWatcher("**/build.gradle"),
+        workspace.createFileSystemWatcher(
+          "**/{build.gradle,build.gradle.kts,settings.gradle,settings.gradle.kts,gradle.properties,gradle/libs.versions.toml}"
+        ),
         workspace.createFileSystemWatcher("**/application.{yml,yaml,properties}"),
       ],
     },
