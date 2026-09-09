@@ -9,3 +9,4 @@ if (tests.length === 0) throw new Error("No compiled client unit tests. Run npm 
 for (const file of tests) require(join(testDirectory, file));
 require("./copy-server.test");
 require("./language-server-manager.test");
+require("./package.test");

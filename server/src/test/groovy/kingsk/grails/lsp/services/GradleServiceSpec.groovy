@@ -64,7 +64,6 @@ class GradleServiceSpec extends BaseLspSpec {
         gradleService.getGrailsProject(invalidPath)
 
         then: "Should throw FileNotFoundException"
-        thrown(IllegalArgumentException)
         thrown(FileNotFoundException)
     }
 

@@ -68,6 +68,9 @@ jobs:
       - name: Test client startup and packaging
         run: npm run test:client
 
+      - name: Test server smoke
+        run: npm run test:smoke
+
       # Enhanced artifact validation
       - name: 🔍 Validate build artifacts
         run: |
@@ -215,4 +218,5 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Release v${{ github.run_number }}
           files: "*.vsix"
+          files: "**/*.vsix"
           generate_release_notes: true

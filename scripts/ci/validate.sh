@@ -26,3 +26,8 @@ echo "🔨 Building..."
 ./scripts/build.sh
 
 echo "✅ Validation completed!"
+cd "$(dirname "$0")/../.."
+npm run check
+npm run test
+npm run test:smoke
+npm run build

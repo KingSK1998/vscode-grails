@@ -61,6 +61,43 @@ void test("bundled launch uses the configured Java installation and preserves JV
       join(serverDirectory, "grails-language-server-current-all.jar"),
     ]);
 
+    const getRunCommand = (opts: ReturnType<typeof getServerOptions>): string => {
+      ok(typeof opts === "object" && "run" in opts && "command" in opts.run);
+      return String(opts.run.command);
+    };
+
+    // Quoted javaHome path with spaces
+    const quotedOptions = getServerOptions(context, {
+      ...config,
+      javaHome: `"${javaHome}"`,
+    } as ConfigurationService);
+    equal(getRunCommand(quotedOptions), javaCommand);
+
+    // Fallback to process.env.JAVA_HOME with quotes when config.javaHome is empty
+    const previousEnvJavaHome = process.env.JAVA_HOME;
+    try {
+      process.env.JAVA_HOME = `"${javaHome}"`;
+      const fallbackOptions = getServerOptions(context, {
+        ...config,
+        javaHome: "   ",
+      } as ConfigurationService);
+      equal(getRunCommand(fallbackOptions), javaCommand);
+
+      // When neither config.javaHome nor JAVA_HOME is set, defaults to "java"
+      delete process.env.JAVA_HOME;
+      const defaultJavaOptions = getServerOptions(context, {
+        ...config,
+        javaHome: "",
+      } as ConfigurationService);
+      equal(getRunCommand(defaultJavaOptions), "java");
+    } finally {
+      if (previousEnvJavaHome !== undefined) {
+        process.env.JAVA_HOME = previousEnvJavaHome;
+      } else {
+        delete process.env.JAVA_HOME;
+      }
+    }
+
     throws(
       () =>
         getServerOptions(context, {

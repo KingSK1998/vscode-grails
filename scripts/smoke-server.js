@@ -11,8 +11,9 @@ const jar = resolve(process.argv[3] || "client/server/grails-language-server-cur
 if (!existsSync(jar)) throw new Error(`Missing ${jar}. Run npm run build first.`);
 if (!existsSync(workspace)) throw new Error(`Workspace does not exist: ${workspace}`);
 
-const java = process.env.JAVA_HOME
-  ? join(process.env.JAVA_HOME, "bin", process.platform === "win32" ? "java.exe" : "java")
+const rawJavaHome = (process.env.JAVA_HOME || "").trim().replace(/^"(.*)"$/, "$1").trim();
+const java = rawJavaHome
+  ? join(rawJavaHome, "bin", process.platform === "win32" ? "java.exe" : "java")
   : "java";
 const server = spawn(java, ["-Xmx1g", "-jar", jar], { cwd: resolve("."), windowsHide: true });
 const pending = new Map();

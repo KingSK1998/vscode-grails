@@ -28,10 +28,10 @@
 | Comment toggling | Both languages |
 | LSP client integration | `vscode-languageclient`, connects to Grails Language Server |
 | Language Server lifecycle | `LanguageServerManager` handles start/stop/restart |
-| Bundled server startup | ✅ Default production launch; configured Java path; separate app/development LSP ports; deterministic runtime JAR |
+| Bundled server startup | ✅ Default production launch; configured Java path, JAVA_HOME fallback, quote stripping, paths with spaces; separate app/development LSP ports; deterministic runtime JAR |
 | Initial project notifications | ✅ Handlers registered before client startup; regression test verifies early discovery delivery |
 | Build configuration watchers | ✅ Kotlin/Groovy build and settings files, Gradle properties and version catalogs (*.versions.toml) |
-| Headless startup and packaging tests | ✅ Five tests executed via `npm run test:client`; includes platform mocks for startup event ordering |
+| Headless startup, packaging, and bundle tests | ✅ Seven tests executed via `npm run test:client`; includes vsce package asset verification, sourcemap exclusion, and entry point checks |
 | Project Explorer (tree view) | Shows Controllers, Services, Domains |
 | Status bar indicator | Extension state display |
 | `grails.run` command | Runs Grails app via terminal |

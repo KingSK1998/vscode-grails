@@ -19,3 +19,4 @@ echo "📦 Creating distribution..."
 echo "✅ Server build completed!"
 echo "📁 JAR: build/libs/"
 echo "📁 Distribution: build/install/Grails Language Server/"
+npm run build:server

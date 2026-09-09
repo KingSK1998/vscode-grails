@@ -41,3 +41,4 @@ cd ..
 echo -e "${GREEN}✅ Build completed successfully!${NC}"
 echo "📦 Server JAR: server/build/libs/"
 echo "📦 Client: client/out/"
+npm run build

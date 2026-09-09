@@ -37,13 +37,13 @@
     {
       "id": "R0-04",
       "title": "Validate deterministic build and package",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R0-03"
       ],
       "spec": "docs/execution/task-specifications.md#r0-04",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R0-04.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R0-05",

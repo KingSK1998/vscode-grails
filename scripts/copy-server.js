@@ -1,4 +1,4 @@
-const { copyFileSync, mkdirSync, readdirSync } = require("node:fs");
+const { copyFileSync, mkdirSync, readdirSync, unlinkSync } = require("node:fs");
 const { join } = require("node:path");
 
 // A stable destination prevents directory order from selecting an older build.
@@ -16,6 +16,14 @@ function copyServer(
   mkdirSync(destinationDirectory, { recursive: true });
   const destination = join(destinationDirectory, "grails-language-server-current-all.jar");
   copyFileSync(join(sourceDirectory, jars[0]), destination);
+
+  // Prune obsolete JARs from destination to eliminate selection ambiguity
+  for (const name of readdirSync(destinationDirectory)) {
+    if (name.startsWith("grails-language-server-") && name.endsWith(".jar") && name !== "grails-language-server-current-all.jar") {
+      unlinkSync(join(destinationDirectory, name));
+    }
+  }
+
   return destination;
 }
 

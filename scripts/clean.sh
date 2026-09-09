@@ -24,3 +24,4 @@ echo "🧹 Cleaning root..."
 rm -rf dist/
 
 echo "✅ Clean completed!"
+node scripts/clean.js

@@ -26,3 +26,4 @@ npm run lint
 
 echo "✅ Client build completed!"
 echo "📁 Output: client/out/"
+npm run build:client

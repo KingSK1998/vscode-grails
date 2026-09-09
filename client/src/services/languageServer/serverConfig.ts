@@ -88,8 +88,11 @@ function getServerJarPath(context: ExtensionContext): string {
 }
 
 function getJavaCommand(config: ConfigurationService): string {
-  const javaHome = config.javaHome.trim() || process.env.JAVA_HOME?.trim();
+  const configuredJavaHome = (config.javaHome ?? "").trim();
+  const envJavaHome = (process.env.JAVA_HOME ?? "").trim();
+  let javaHome = configuredJavaHome.length > 0 ? configuredJavaHome : envJavaHome;
   if (!javaHome) return "java";
+  javaHome = javaHome.replace(/^"(.*)"$/, "$1").trim();
 
   const command = join(javaHome, "bin", process.platform === "win32" ? "java.exe" : "java");
   if (!existsSync(command)) {

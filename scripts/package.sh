@@ -28,3 +28,4 @@ cp "server/build/libs/Grails Language Server-0.5.0-SNAPSHOT-all.jar" dist/
 echo "✅ Packaging completed!"
 echo "📦 Extension VSIX: dist/*.vsix"
 echo "📦 Server JAR: dist/*.jar"
+npm run package
