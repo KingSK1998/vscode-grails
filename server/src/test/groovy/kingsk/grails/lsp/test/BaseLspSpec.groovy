@@ -64,7 +64,7 @@ abstract class BaseLspSpec extends Specification {
                 ctx?.compiler?.compileProject()
             }
         } else {
-            GrailsProject emptyProject = new GrailsProject(name: "empty", rootDirectory: new File(""))
+            GrailsProject emptyProject = new GrailsProject(name: "empty", rootDirectory: new File("").canonicalFile)
             grailsService.workspaceManager.addProject(emptyProject)
         }
         return grailsService
@@ -251,17 +251,19 @@ abstract class BaseLspSpec extends Specification {
 
         // If it contains path separators, resolve relative to project root
         if (grailsService.project?.rootDirectory && (fileName.contains("/") || fileName.contains("\\"))) {
-            File projectFile = new File(grailsService.project.rootDirectory, fileName)
+            File root = grailsService.project.rootDirectory.canonicalFile
+            File projectFile = new File(root, fileName).canonicalFile
             return projectFile.toURI().toString()
         }
 
         // Fallback: create in project root or current directory
         if (grailsService.project?.rootDirectory) {
-            File projectFile = new File(grailsService.project.rootDirectory, fileName)
+            File root = grailsService.project.rootDirectory.canonicalFile
+            File projectFile = new File(root, fileName).canonicalFile
             return projectFile.toURI().toString()
         } else {
             // No project, use current directory
-            File currentDirFile = new File(fileName)
+            File currentDirFile = new File(fileName).canonicalFile
             return currentDirFile.toURI().toString()
         }
     }

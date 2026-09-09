@@ -145,8 +145,10 @@ class GrailsService implements LanguageClientAware, ProviderContext {
     }
 
     void notifyAllProjects() {
-        List<ProjectDTO> dtos = workspaceManager.allProjects
-            .collect { ProjectMapper.toDTO(it) }
+        if (client == null) return
+        List<ProjectDTO> dtos = workspaceManager?.allProjects
+            ?.findAll { it != null }
+            ?.collect { ProjectMapper.toDTO(it) } ?: []
 
         client.notifyAllProjects(dtos)
     }

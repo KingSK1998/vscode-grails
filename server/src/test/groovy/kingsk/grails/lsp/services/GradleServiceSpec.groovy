@@ -65,6 +65,7 @@ class GradleServiceSpec extends BaseLspSpec {
 
         then: "Should throw FileNotFoundException"
         thrown(IllegalArgumentException)
+        thrown(FileNotFoundException)
     }
 
     def "should use cache on subsequent calls"() {

@@ -9,6 +9,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.*
+import kingsk.grails.lsp.protocol.GrailsLanguageClient
 
 import java.net.ServerSocket
 import java.net.Socket
@@ -152,16 +153,23 @@ class GrailsLanguageServer implements LanguageServer, LanguageClientAware {
             log.info "[GrailsLanguageServer] Server shutdown gracefully"
         } else {
             try {
-                startGrailsLanguageServer(System.in, System.out)
+                boolean cleanExit = startGrailsLanguageServer(System.in, System.out)
+                System.exit(cleanExit ? 0 : 1)
             } catch (Exception e) {
                 log.error("[GrailsLanguageServer] Failed to start Grails Language Server: ${e.message}", e)
+                System.exit(1)
             }
         }
     }
 
     private static boolean startGrailsLanguageServer(InputStream inputStream, OutputStream outputStream) throws Exception {
         GrailsLanguageServer server = new GrailsLanguageServer()
-        Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, inputStream, outputStream)
+        Launcher<GrailsLanguageClient> launcher = new LSPLauncher.Builder<GrailsLanguageClient>()
+                .setLocalService(server)
+                .setRemoteInterface(GrailsLanguageClient)
+                .setInput(inputStream)
+                .setOutput(outputStream)
+                .create()
         server.connect(launcher.remoteProxy)
 
         // Start listening and wait until done

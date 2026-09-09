@@ -36,12 +36,22 @@ class WorkspaceManager {
         if (stopped) return
         if (rootUris == null || rootUris.isEmpty()) {
             log.info("[WORKSPACE] Initialized with 0 workspace roots")
+            grailsService.notifyAllProjects()
             return
         }
         log.info("[WORKSPACE] Initializing ${rootUris.size()} workspace root(s)")
+        List<CompletableFuture<?>> futures = []
         for (String rootUri : rootUris) {
-            startRootDiscovery(rootUri)
+            CompletableFuture<GrailsProject> future = startRootDiscovery(rootUri)
+            if (future != null) {
+                futures.add(future.handle({ GrailsProject p, Throwable t -> p }))
+            }
         }
+        CompletableFuture.allOf(futures as CompletableFuture<?>[]).whenComplete({ Void v, Throwable t ->
+            if (!stopped) {
+                grailsService.notifyAllProjects()
+            }
+        })
     }
 
     CompletableFuture<GrailsProject> startRootDiscovery(String rootUri) {
@@ -85,6 +95,7 @@ class WorkspaceManager {
                 log.info("[WORKSPACE] Root discovery succeeded for ${normUri} -> ${project.name}")
                 addProject(project)
                 grailsService.client?.projectUpdated(kingsk.grails.lsp.protocol.mapper.ProjectMapper.toDTO(project))
+                grailsService.notifyAllProjects()
                 replayStillOpenBuffers(normUri)
             }
         })
@@ -105,6 +116,7 @@ class WorkspaceManager {
         }
 
         removeProject(normUri)
+        grailsService.notifyAllProjects()
     }
 
     private void replayStillOpenBuffers(String normRootUri) {
@@ -216,6 +228,7 @@ class WorkspaceManager {
 
     List<GrailsProject> getAllProjects() {
         return contexts.values().collect { it.project }
+        return contexts.values().collect { it.project }.findAll { it != null }
     }
 
     /**

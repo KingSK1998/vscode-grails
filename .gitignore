@@ -16,6 +16,7 @@ dist/
 # Gradle
 .gradle/
 build/
+bin/
 
 # Logs
 *.log

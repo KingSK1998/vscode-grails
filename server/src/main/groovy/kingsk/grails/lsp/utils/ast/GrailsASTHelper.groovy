@@ -62,6 +62,8 @@ class GrailsASTHelper {
             case ConstructorNode: return node.declaringClass
             case DeclarationExpression: return (!node.multipleAssignmentDeclaration) ? tryToResolveOriginalClassNode(node.variableExpression.originType, strict, visitor) : null
             case ConstantExpression: return resolveFromConstantExpression(node, visitor)
+            case MethodCallExpression: return getMethodFromCallExpression(node, visitor)
+            case PropertyExpression: return getPropertyFromExpression(node, visitor) ?: getFieldFromExpression(node, visitor)
             case VariableExpression:
                 if (node.accessedVariable instanceof ASTNode) {
                     node.accessedVariable as ASTNode
@@ -211,9 +213,11 @@ class GrailsASTHelper {
 
     static ArgumentListExpression getArgumentListExpression(MethodCall node) {
         if (!node?.arguments) return null
+        if (node == null || node.arguments == null) return null
         def args = node.arguments
         if (!(args instanceof ArgumentListExpression)) return null
         return args
+        return (ArgumentListExpression) args
     }
 
     /**
@@ -229,6 +233,15 @@ class GrailsASTHelper {
     static List<MethodNode> getMethodOverloadsFromCallExpression(MethodCall node, GrailsASTVisitor visitor) {
         if (node instanceof MethodCallExpression) {
             return getTypeOfNode(node.objectExpression, visitor)?.getMethods(node.method.text)
+            ClassNode targetType = null
+            if (node.implicitThis || (node.objectExpression instanceof VariableExpression && ((VariableExpression) node.objectExpression).thisExpression)) {
+                targetType = getEnclosingClassNode(node, visitor)
+            } else if (node.objectExpression instanceof VariableExpression && ((VariableExpression) node.objectExpression).superExpression) {
+                targetType = getEnclosingClassNode(node, visitor)?.superClass
+            } else {
+                targetType = getTypeOfNode(node.objectExpression, visitor)
+            }
+            return targetType?.getMethods(node.method.text) ?: []
         } else if (node instanceof ConstructorCallExpression) {
             return node.type?.declaredConstructors?.toList() as List<MethodNode>
         }
@@ -287,11 +300,42 @@ class GrailsASTHelper {
 
     static ClassNode resolveVariableType(Variable variable, GrailsASTVisitor visitor) {
         if (variable instanceof VariableExpression) {
-            if (variable.thisExpression) {
-                return getEnclosingClassNode(variable as ASTNode, visitor)
+            VariableExpression varExpr = (VariableExpression) variable
+            if (varExpr.thisExpression) {
+                return getEnclosingClassNode(varExpr, visitor)
             }
-            if (variable.superExpression) {
-                return getEnclosingClassNode(variable as ASTNode, visitor)?.superClass
+            if (varExpr.superExpression) {
+                return getEnclosingClassNode(varExpr, visitor)?.superClass
+            }
+            if (varExpr.accessedVariable != null && varExpr.accessedVariable != varExpr) {
+                return resolveVariableType(varExpr.accessedVariable, visitor)
+            }
+            // If accessedVariable is null, look up in enclosing method
+            MethodNode enclosingMethod = getEnclosingMethodNode(varExpr, visitor)
+            if (enclosingMethod != null) {
+                Parameter param = enclosingMethod.parameters?.find { it.name == varExpr.name }
+                if (param != null) return param.type ?: param.originType
+            }
+            // Check enclosing class fields and properties
+            ClassNode enclosingClass = getEnclosingClassNode(varExpr, visitor)
+            if (enclosingClass != null) {
+                PropertyNode prop = enclosingClass.getProperty(varExpr.name)
+                if (prop != null) return prop.type ?: prop.originType
+                FieldNode field = enclosingClass.getField(varExpr.name)
+                if (field != null) return field.type ?: field.originType
+            }
+            // Look for declaration in visitor nodes for this file
+            String uri = visitor.getURI(varExpr)
+            def fileNodes = visitor.getNodes(uri)
+            if (fileNodes) {
+                for (ASTNode candidate : fileNodes) {
+                    if (candidate instanceof DeclarationExpression) {
+                        DeclarationExpression decl = (DeclarationExpression) candidate
+                        if (decl.variableExpression?.name == varExpr.name) {
+                            return decl.variableExpression.originType ?: decl.variableExpression.type
+                        }
+                    }
+                }
             }
         }
         if (variable.dynamicTyped) {
@@ -306,7 +350,7 @@ class GrailsASTHelper {
                 }
             }
         }
-        return variable.originType
+        return variable.originType ?: variable.type
     }
 
     private static ClassNode tryToResolveOriginalClassNode(ClassNode node, boolean strict, GrailsASTVisitor visitor) {

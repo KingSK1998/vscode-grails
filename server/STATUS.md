@@ -16,7 +16,7 @@
 | Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 9/9 tests pass; nonblocking open, rapid edit coalescing, copied buffer immutability, blocked worker ordering |
 | Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
 | Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 6/6 tests pass; zero/multi-root capability response, root generations discard late results, longest prefix boundary matching, still-open buffer replay, build-watch debounce |
-| Stdio logging | 🟡 Source fix present | Console changed to stderr; rebuilt JAR smoke test queued in R0-03 |
+| Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 1403 ms (exit 0) |
 | Packaged release | ⬜ Unverified | No final VSIX/editor acceptance run (R0-04) |
 
 Reports were inspected on 2026-09-08; their timestamps are 2026-09-07. No tests were rerun during the roadmap-only update. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.

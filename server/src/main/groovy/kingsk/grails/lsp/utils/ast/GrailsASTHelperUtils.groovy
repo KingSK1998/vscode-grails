@@ -20,14 +20,14 @@ class GrailsASTHelperUtils {
 	 */
 	static int calculateArgumentsScore(Parameter[] parameters, ArgumentListExpression arguments, int argIndex) {
 		int score = 0
-		int paramCount = parameters.size()
-		int expressionsCount = arguments.expressions.size()
+		int paramCount = parameters ? parameters.size() : 0
+		int expressionsCount = arguments?.expressions ? arguments.expressions.size() : 0
 		int argsCount = (argIndex >= expressionsCount) ? argIndex + 1 : expressionsCount
 		int minCount = Math.min(paramCount, argsCount)
 		if (minCount == 0 && paramCount == argsCount) score++
 		
 		for (i in 0..<minCount) {
-			ClassNode argType = (i < expressionsCount) ? arguments.expressions[i].type : null
+			ClassNode argType = (arguments?.expressions && i < expressionsCount) ? arguments.expressions[i].type : null
 			ClassNode paramType = (i < paramCount) ? parameters[i].type : null
 			if (argType && paramType) {
 				// equal types are preferred
@@ -51,9 +51,12 @@ class GrailsASTHelperUtils {
 	 * @return {@link org.codehaus.groovy.ast.MethodNode} - The best matching method node or {@code null}
 	 */
 	static MethodNode findBestMatchingMethodNode(List<MethodNode> methodNodes, ArgumentListExpression arguments, int argIndex = -1) {
-		if (!(methodNodes || arguments)) {
-			log.info "methodNodes and arguments should not be null"
+		if (!methodNodes) {
+			log.info "methodNodes should not be null or empty"
 			return null
+		}
+		if (methodNodes.size() == 1) {
+			return methodNodes[0]
 		}
 		
 		return methodNodes.max { m1, m2 ->

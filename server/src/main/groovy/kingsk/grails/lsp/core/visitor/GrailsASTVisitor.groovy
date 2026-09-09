@@ -123,12 +123,27 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
         moduleNodesByURI.remove(uri)
         nodesByLineIndex.remove(uri)
         lookup.entrySet().removeIf { it.value.uri == uri }
+        String norm = TextFile.normalizePath(uri)
+        if (norm && norm != uri) {
+            nodesByURI.remove(norm)
+            classNodesByURI.remove(norm)
+            moduleNodesByURI.remove(norm)
+            nodesByLineIndex.remove(norm)
+            lookup.entrySet().removeIf { it.value.uri == norm }
+        }
     }
 
     @Override
     Set<ClassNode> getClassNodes(String uri) {
-        if (uri) return classNodesByURI.getOrDefault(uri, [] as Set)
-        return classNodesByURI.values().flatten() as Set<ClassNode>
+        if (!uri) return classNodesByURI.values().flatten() as Set<ClassNode>
+        Set<ClassNode> direct = classNodesByURI.get(uri)
+        if (direct != null) return direct
+        String norm = TextFile.normalizePath(uri)
+        if (norm && norm != uri) {
+            Set<ClassNode> normalized = classNodesByURI.get(norm)
+            if (normalized != null) return normalized
+        }
+        return Collections.emptySet()
     }
 
     @Override
@@ -136,8 +151,15 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
 
     @Override
     Set<ASTNode> getNodes(String uri) {
-        if (uri) return nodesByURI.getOrDefault(uri, [] as Set)
-        return nodesByURI.values().stream().flatMap(Set::stream).collect(Collectors.toSet())
+        if (!uri) return nodesByURI.values().stream().flatMap(Set::stream).collect(Collectors.toSet())
+        Set<ASTNode> direct = nodesByURI.get(uri)
+        if (direct != null) return direct
+        String norm = TextFile.normalizePath(uri)
+        if (norm && norm != uri) {
+            Set<ASTNode> normalized = nodesByURI.get(norm)
+            if (normalized != null) return normalized
+        }
+        return Collections.emptySet()
     }
 
     @Override
@@ -146,6 +168,12 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
     @Override
     ASTNode getNodeAtPosition(String uri, Position position) {
         def lineIndex = nodesByLineIndex.get(uri)
+        if (!lineIndex && uri) {
+            String norm = TextFile.normalizePath(uri)
+            if (norm && norm != uri) {
+                lineIndex = nodesByLineIndex.get(norm)
+            }
+        }
         if (!lineIndex) return null
         Set<ASTNode> candidates = lineIndex.getOrDefault(position.line + 1, Collections.emptySet())
         def matches = candidates.findAll { RangeHelper.isPositionWithinNode(it, position) }
@@ -174,7 +202,7 @@ class GrailsASTVisitor extends ClassCodeVisitorSupport implements ASTAccessor {
             if (c != 0) return c
             c = PositionHelper.compareEndPositions(n1, n2)
             if (c != 0) return c
-            return getParent(n2) == n1 ? -1 : getParent(n1) == n2 ? 1 : 0
+            return getParent(n2) == n1 ? 1 : getParent(n1) == n2 ? -1 : 0
         }.first()
     }
 
