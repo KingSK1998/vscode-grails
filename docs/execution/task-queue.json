@@ -59,13 +59,13 @@
     {
       "id": "R1-01",
       "title": "Bound document scheduling and establish fairness",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R0-05"
       ],
       "spec": "docs/execution/task-specifications.md#r1-01",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R1-01.md",
+      "owner": "Codex /root"
     },
     {
       "id": "R1-02",

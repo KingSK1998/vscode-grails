@@ -1,12 +1,12 @@
 # State, revision and lifecycle contract
 
-**Updated:** 2026-09-08. **Status:** required behavior for R0/R1/R2, with implementation gaps recorded below. This replaces the old Phase 3 target text; it does not assert that snapshot safety has been achieved. [Invariants](invariants.md) define stable rule IDs, [ADR-009](adr/decisions.md#adr-009-project-ownership-and-executable-contracts-2026-09-08) explains corrected ownership, and the [task queue](execution/task-queue.json) controls acceptance.
+**Updated:** 2026-09-09. **Status:** required behavior for R0/R1/R2, with implementation gaps recorded below. This replaces the old Phase 3 target text; it does not assert that snapshot safety has been achieved. [Invariants](invariants.md) define stable rule IDs, [ADR-009](adr/decisions.md#adr-009-project-ownership-and-executable-contracts-2026-09-08) explains corrected ownership, and the [task queue](execution/task-queue.json) controls acceptance.
 
 ## 1. Ownership and current evidence
 
 `GrailsService` remains the server composition root. `WorkspaceManager` owns registered project contexts and routing. Each `ProjectContextImpl` owns its compiler, visitor, project index/IndexManager, lifecycle state and publication coordination; its `SnapshotManager` owns lineage. `GrailsTextDocumentService` owns document-work admission and delegates buffer state to `FileContentTracker`. Providers are readers through context interfaces, never substitute writers.
 
-Current source contains `VersionedSnapshot`, a document scheduler, per-project contexts and lineage. Saved targeted tests still fail; see [implementation handoff](implementation-handoff.md). A record holding an AST accessor, an atomic pointer or a shallow map copy does not prove transitive immutability. Current classpath aggregation, provider lock coverage, getter-triggered activation and retained classloaders require validation/repair. No documentation label closes those tasks.
+Current source contains `VersionedSnapshot`, a bounded document scheduler, per-project contexts and lineage. R1-01 targeted scheduler/lifecycle tests pass; its [execution record](execution/records/R1-01.md) contains the commands and limits. A record holding an AST accessor, an atomic pointer or a shallow map copy does not prove transitive immutability. Current classpath aggregation, provider lock coverage, getter-triggered activation and retained classloaders require validation/repair. No documentation label closes those tasks.
 
 ## 2. Revision identities
 
@@ -32,7 +32,11 @@ Apply every `contentChanges` entry in received order to the text produced by the
 
 After applying changes, capture the latest input and enqueue bounded background work. Queue coalescing may discard obsolete compile jobs, never the text transformations needed to construct the final buffer. Position conversion must use the negotiated encoding; test UTF-16 explicitly for the first supported client/server path.
 
+The current provisional admission policy allows one active document candidate, 256 pending tickets, 32 ordinary pending tickets per root, 256 KiB of conservatively estimated ticket metadata and a 4 MiB automatic source input. Pending tickets contain URI/version metadata; only the active candidate copies source text. Ready roots alternate. Overflow retains one process-level recovery marker and re-reads current buffers on the compiler worker in fair batches capped at 256 candidates. Successfully handled URI/version pairs prevent recovery from recompiling unchanged open buffers. R1-05 owns workload measurement and tuning of these numeric values.
+
 `didClose` ends the overlay generation, cancels pending overlay work and prevents active old work from publishing. Closing is not deleting a file from the project: discard unsaved overlay facts and restore/reindex disk-backed facts when appropriate. Clear obsolete diagnostics without synchronously activating a hibernated compiler. A deleted file must disappear from the committed index after deletion is processed. Closing a never-saved file removes its overlay-only symbols.
+
+Close tickets can use the global queue beyond the ordinary per-root limit. If the global count or byte limit is exhausted, repeated closes collapse to one close-reconciliation marker. The worker compares each project's committed overlay URI set with the current tracker view and removes stale overlays before clearing that marker. This keeps close recovery reconstructable without retaining an unbounded tombstone list.
 
 Documents opened before project discovery remain in the tracked-buffer store with bounded replay bookkeeping. When a root is registered, enqueue the latest still-open inputs belonging to that root generation. Do not retain an unbounded separate copy of every pre-discovery buffer, replay closed inputs or use the default project for unrelated files.
 
@@ -80,7 +84,7 @@ The current `ProjectState` enum is INITIALIZING, READY, HIBERNATED, REACTIVATING
 | Edit/explicit refresh requiring compiler | HIBERNATED/FAILED -> one REACTIVATING attempt; other jobs share its result through admission |
 | Activation succeeds/fails | READY/FAILED; only that attempt may complete/clear its activation ownership |
 | Dependency dirty | Mark freshness, propagate over explicit graph once per project, schedule work without blocking readers |
-| Root remove/shutdown | DISPOSING terminal for that context; invalidate generations first, stop admission, cancel and release owned work/resources |
+| Root remove/shutdown | DISPOSING becomes terminal before returning from removal; queued work is cancelled, the active candidate is invalidated, and resource release runs after its drain barrier without holding the notification path |
 | Root re-add | New context/root generation; no resurrection of a disposed instance |
 
 Do not wait for activation/Gradle on notification or provider threads. Do not perform synchronous LRU hibernation while routing a request. Avoid acquiring another project's write lock while holding one project's write lock; publish dirty propagation outside the writer critical section. Define a lock order for any remaining multi-lock operation and test it.

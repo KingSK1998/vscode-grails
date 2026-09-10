@@ -151,12 +151,32 @@ class WorkspaceManager {
     void removeProject(String uri) {
         String normalizedUri = TextFile.normalizePath(uri)
         def ctx = contexts.remove(normalizedUri)
+        // Remove routing first so overload recovery cannot re-admit buffers for
+        // this root, then invalidate document work before disposing the context.
+        CompletableFuture<Void> drained = grailsService.document?.cancelProjectWork(normalizedUri) ?:
+            CompletableFuture.completedFuture(null)
         if (ctx) {
             log.info("[WORKSPACE] Removing project context: ${normalizedUri}")
-            ctx.dispose()
+            ctx.beginDispose()
+            drained.whenCompleteAsync({ Void ignored, Throwable failure ->
+                try {
+                    ctx.dispose()
+                } catch (Exception e) {
+                    log.error("[WORKSPACE] Failed to release removed project context: ${normalizedUri}", e)
+                }
+            }, grailsService.backgroundExecutor)
         }
         if (activeProjectUri == normalizedUri) {
             activeProjectUri = contexts.keySet().findResult { it }
+        }
+    }
+
+    /** Repairs collapsed close notifications on the document compiler worker. */
+    void reconcileClosedDocuments(Map<String, Set<String>> openByRoot) {
+        List<Map.Entry<String, ProjectContextImpl>> contextSnapshot =
+            new ArrayList<Map.Entry<String, ProjectContextImpl>>(contexts.entrySet())
+        for (Map.Entry<String, ProjectContextImpl> entry : contextSnapshot) {
+            entry.value.reconcileClosedDocuments(openByRoot.getOrDefault(entry.key, Collections.<String>emptySet()))
         }
     }
 
@@ -172,22 +192,26 @@ class WorkspaceManager {
     }
 
     ProjectContextImpl getProjectForUri(String uri) {
+        String registeredRoot = getRegisteredRootUri(uri)
+        if (registeredRoot == null) return null
+        ProjectContextImpl match = contexts.get(registeredRoot)
+        if (match != null) {
+            match.markAccessed()
+            enforceMemoryBudget()
+        }
+        return match
+    }
+
+    /** Pure route lookup for notification admission; it never activates or hibernates a context. */
+    String getRegisteredRootUri(String uri) {
         if (!uri) return null
         String normalizedUri = TextFile.normalizePath(uri)
         if (!normalizedUri) return null
 
-        // Find the longest matching root
-        ProjectContextImpl match = contexts.values()
-            .findAll { isSameOrChildPath(normalizedUri, TextFile.normalizePath(it.project.rootDirectory.toURI().toString())) }
-            .sort { -TextFile.normalizePath(it.project.rootDirectory.toURI().toString()).length() }
-            .find { it }
-
-        if (match != null) {
-            match.markAccessed()
-            enforceMemoryBudget()
-            return match
-        }
-        return null
+        return contexts.keySet()
+            .findAll { String root -> isSameOrChildPath(normalizedUri, root) }
+            .sort { String left, String right -> right.length() <=> left.length() }
+            .find { String root -> true }
     }
 
     void enforceMemoryBudget() {

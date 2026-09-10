@@ -39,6 +39,7 @@
 | `INV-STATE-004` | CC-001, CC-003 |
 | `INV-STATE-005` | CC-002 |
 | `INV-PERF-001` | CC-002 |
+| `INV-PERF-002` | CC-002 |
 | `INV-DISC-001` | DP-001 |
 
 ---
@@ -200,12 +201,12 @@
 - **Date:** 2026-09-09.
 
 ### CC-002: Unbounded Document Queue and Fairness Starvation
-- **Status:** Open (owned by R1-01)
+- **Status:** Resolved (R1-01)
 - **Bug:** Large edit storms can flood worker queues with unbounded compilation jobs; lack of byte limits and multi-root fairness.
-- **Invariant violated:** `INV-PERF-001`, `INV-STATE-005`
+- **Invariant violated:** `INV-PERF-001`, `INV-PERF-002`, `INV-STATE-005`
 - **Root cause:** Pre-R1 scheduler coalesces by URI but does not bound aggregate queue memory or guarantee cross-root fairness.
-- **Fix:** Pending R1-01: bound queue bytes, apply all text edits even when jobs coalesce, establish cross-root fair admission.
-- **Test:** To be implemented in R1-01.
+- **Fix:** The document service now stores bounded URI/version tickets, uses per-root lanes and round-robin dispatch, reads source only for the active candidate, and performs bounded fair overload recovery on the worker. Close tickets have priority; overflowed closes collapse to a reconstructable reconciliation marker. Root removal marks the context terminal immediately and releases it after active document work drains.
+- **Test:** `DocumentCompilationSpec` covers blocked multi-root storms, count and byte bounds, latest-revision recovery, superseded completion barriers, oversized inputs, close storms and root cancellation. `WorkspaceLifecycleSpec` covers prompt removal during blocked work and prevents late publication.
 - **Detected by:** Architecture audit.
 - **Date:** 2026-09-09.
 

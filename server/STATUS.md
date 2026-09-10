@@ -5,7 +5,7 @@
 
 ---
 
-## Current Priority: R0 — Recover Interrupted Implementation
+## Current Priority: R1 — Concurrency & Lifecycle Correctness
 
 **See:** [implementation handoff](../docs/implementation-handoff.md) and [product roadmap](../docs/product-roadmap.md).
 
@@ -13,13 +13,15 @@
 
 | Feature / check | Status | Evidence |
 |---|---|---|
-| Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 9/9 tests pass; nonblocking open, rapid edit coalescing, copied buffer immutability, blocked worker ordering |
+| Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 15/15 tests pass; bounded count/bytes, multi-root fairness, overload and newest-revision recovery, close storms, oversized input policy, root cancellation and shutdown |
 | Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
-| Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 6/6 tests pass; zero/multi-root capability response, root generations discard late results, longest prefix boundary matching, still-open buffer replay, build-watch debounce |
+| Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 8/8 tests pass; prior startup/root cases plus prompt terminal removal and blocked-candidate publication rejection |
 | Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 1403 ms (exit 0) |
 | Packaged release | ✅ Passing | Deterministic build/copy verified; package asset audit passed; local VSIX installed and verified with smoke test in 921 ms (R0-04) |
 
 Reports were inspected on 2026-09-08; their timestamps are 2026-09-07. No tests were rerun during the roadmap-only update. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
+
+R1-01 focused validation also passes `ReactivationAndLruSpec` 4/4. A 2026-09-09 full `test` run completed 290 tests with 23 failures confined to pre-existing provider expectation suites (completion, object-expression completion, inlay, rename and signature help); these remain outside R1-01 and prevent claiming a green full server suite.
 
 ### Completed Work (2026-06-24)
 - **Phase 3: Multi-Project & Lifecycle Mastery**:

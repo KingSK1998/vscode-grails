@@ -125,3 +125,12 @@
   - Strictly enforced invariant boundaries: documented that AST copies are not deep immutable ASTs and project contexts do not yet isolate classpaths.
   - Queue validation confirmed passing (38 tasks). Phase 0 is complete. Next milestone: **Phase 1: Concurrency & Lifecycle Correctness** starting with **R1-01**.
 
+## R1-01 Document Scheduling Milestone (2026-09-09)
+
+- `GrailsTextDocumentService` owns one active candidate, bounded URI/version tickets and one scheduled dispatcher task. Provisional limits are 256 pending tickets, 32 ordinary tickets per root, 256 KiB conservatively estimated ticket metadata and 4 MiB automatic source input; R1-05 owns measurement and tuning.
+- Pending work retains no source text. The worker copies the latest `FileContentTracker` buffer only when a ticket becomes active. Same-URI notifications coalesce, active work is cooperatively superseded and completion during overload waits on the global recovery barrier.
+- Ready roots alternate. Overflow recovery scans outside notification locks, partitions current inputs by root, interleaves them, and admits at most 256 candidates per pass. Handled URI/version pairs prevent unchanged buffers from being recompiled.
+- Close work may exceed the ordinary per-root cap while remaining within global bounds. Global close overflow collapses to one marker; `WorkspaceManager` reconciles current buffers with `ProjectContextImpl`'s committed overlay URI set on the worker, avoiding an unbounded tombstone collection.
+- Root removal removes routing and enters DISPOSING immediately. It cancels queued work, invalidates active publication and releases context resources asynchronously after the active document future drains.
+- Focused evidence passes: `DocumentCompilationSpec` 15/15, `WorkspaceLifecycleSpec` 8/8 and `ReactivationAndLruSpec` 4/4. The full 290-test run has 23 provider expectation failures in completion/inlay/rename/signature suites; do not describe the full server suite as green until those are resolved or rebaselined.
+- R1-02 remains next: received-order incremental edits, UTF-16, obsolete versions, open generations and stale diagnostics/publication.

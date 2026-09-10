@@ -49,6 +49,7 @@ class DocumentCompilationSpec extends Specification {
         when(service.getDiagnostics()).thenReturn(mock(GrailsDiagnosticService))
         when(workspace.getProjectForUri(any(String))).thenReturn(project)
         when(project.getCompiler()).thenReturn(compiler)
+        when(tracker.getTextFile(any(String))).thenReturn(tracked)
         doAnswer({ call -> onCompile(call.getArgument(0)); null } as Answer).when(project).compileAndVisitAST(any(TextFile))
         doAnswer({ call ->
             BooleanSupplier current = call.getArgument(1)
@@ -102,7 +103,8 @@ class DocumentCompilationSpec extends Specification {
         then:
         compiled.empty
         document.@pendingChanges.size() == 1
-        document.@compilationExecutor.queue.size() == 1
+        document.compilationQueueStats.pendingCount == 1
+        document.compilationQueueStats.executorQueueCount <= 1
 
         when:
         config.debounceDelayMs = 0
@@ -116,19 +118,31 @@ class DocumentCompilationSpec extends Specification {
         document.@pendingChanges.isEmpty()
     }
 
-    def 'a queued revision does not retain the mutable editor buffer'() {
+    def 'an active revision does not retain the mutable editor buffer'() {
         given:
-        config.debounceDelayMs = 50
+        config.debounceDelayMs = 0
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        onCompile = { TextFile file ->
+            compiled.add(file)
+            entered.countDown()
+            release.await(5, TimeUnit.SECONDS)
+        }
 
         when:
         document.didChange(changeParams(1))
+        assert entered.await(3, TimeUnit.SECONDS)
         tracked.text = 'class Mutated {}'
+        release.countDown()
         document.compilationFinished(uri).get(3, TimeUnit.SECONDS)
 
         then:
         compiled.size() == 1
         !compiled.first().is(tracked)
         compiled.first().text == 'class Example {}'
+
+        cleanup:
+        release.countDown()
     }
 
     def 'closing a document removes its pending compilation'() {
@@ -189,7 +203,8 @@ class DocumentCompilationSpec extends Specification {
         then:
         compiled*.version == [0]
         compiled.first().text == 'class Example {}'
-        document.@compilationExecutor.queue.size() == 1
+        document.compilationQueueStats.pendingCount == 1
+        document.compilationQueueStats.executorQueueCount <= 1
 
         when:
         release.countDown()
@@ -277,8 +292,330 @@ class DocumentCompilationSpec extends Specification {
         document.@pendingChanges.isEmpty()
     }
 
+    def 'a blocked compiler keeps storm admission bounded and recovers roots fairly'() {
+        given:
+        config.debounceDelayMs = 0
+        File rootA = new File('build/document-queue/root-a').canonicalFile
+        File rootB = new File('build/document-queue/root-b').canonicalFile
+        Map<String, TextFile> openFiles = installTrackedOpenAnswer()
+        when(workspace.getRegisteredRootUri(any(String))).thenAnswer({ call ->
+            String path = TextFile.normalizePath(call.getArgument(0))
+            return WorkspaceManager.isSameOrChildPath(path, rootB.canonicalPath)
+                ? rootB.canonicalPath
+                : rootA.canonicalPath
+        } as Answer)
+        when(tracker.getOpenFiles()).thenAnswer({ openFiles.values() } as Answer)
+
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        String blockerUri = new File(rootA, 'Blocker.groovy').toURI().toString()
+        onCompile = { TextFile file ->
+            compiled.add(file)
+            if (file.uri == TextFile.normalizePath(blockerUri)) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+            }
+        }
+        document.didOpen(openParams(blockerUri, 0, 'class Blocker {}'))
+        assert entered.await(3, TimeUnit.SECONDS)
+
+        when:
+        int stormSize = GrailsTextDocumentService.MAX_PENDING_PER_ROOT * 2
+        String lastRootAUri = null
+        String firstOverflowRootAUri = null
+        (1..stormSize).each { index ->
+            String stormUri = new File(rootA, "Storm${index}.groovy").toURI().toString()
+            document.didOpen(openParams(stormUri, 1, "class Storm${index} {}"))
+            if (index == GrailsTextDocumentService.MAX_PENDING_PER_ROOT + 1) firstOverflowRootAUri = stormUri
+            lastRootAUri = stormUri
+        }
+        String lastRootBUri = null
+        String firstOverflowRootBUri = null
+        (1..stormSize).each { index ->
+            String stormUri = new File(rootB, "Storm${index}.groovy").toURI().toString()
+            document.didOpen(openParams(stormUri, 1, "class Storm${index} {}"))
+            if (index == GrailsTextDocumentService.MAX_PENDING_PER_ROOT + 1) firstOverflowRootBUri = stormUri
+            lastRootBUri = stormUri
+        }
+        CompletableFuture<Void> overloadRecovery = document.compilationFinished(lastRootBUri)
+        Map<String, Object> blockedStats = document.compilationQueueStats
+
+        then:
+        blockedStats.pendingCount <= GrailsTextDocumentService.MAX_PENDING_DOCUMENTS
+        blockedStats.pendingBytes <= GrailsTextDocumentService.MAX_PENDING_BYTES
+        blockedStats.executorQueueCount <= 1
+        blockedStats.recoveryRequired
+        blockedStats.overflowDeferrals > 0
+
+        when:
+        release.countDown()
+        overloadRecovery.get(15, TimeUnit.SECONDS)
+
+        then: 'both roots receive fair recovery turns and reach their latest inputs'
+        compiled.size() >= 2
+        compiled[1].uri.startsWith(rootB.canonicalPath)
+        int firstOverflowBIndex = compiled*.uri.indexOf(TextFile.normalizePath(firstOverflowRootBUri))
+        int lastRootAIndex = compiled*.uri.indexOf(TextFile.normalizePath(lastRootAUri))
+        firstOverflowBIndex > 0
+        lastRootAIndex > 0
+        firstOverflowBIndex < lastRootAIndex
+        compiled.any { it.uri == TextFile.normalizePath(lastRootBUri) && it.text == "class Storm${stormSize} {}" }
+
+        cleanup:
+        release.countDown()
+    }
+
+    def 'an overflowed superseding revision keeps its completion barrier until recovery'() {
+        given:
+        config.debounceDelayMs = 0
+        File root = new File('build/document-queue/superseded-overflow').canonicalFile
+        Map<String, TextFile> openFiles = installTrackedOpenAnswer()
+        when(workspace.getRegisteredRootUri(any(String))).thenReturn(root.canonicalPath)
+        when(tracker.getOpenFiles()).thenAnswer({ openFiles.values() } as Answer)
+        String activeUri = new File(root, 'Active.groovy').toURI().toString()
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        def newestEntered = new CountDownLatch(1)
+        def releaseNewest = new CountDownLatch(1)
+        onCompile = { TextFile file ->
+            compiled.add(file)
+            if (file.uri == TextFile.normalizePath(activeUri) && file.version == 1) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+            } else if (file.uri == TextFile.normalizePath(activeUri) && file.version == 2) {
+                newestEntered.countDown()
+                releaseNewest.await(5, TimeUnit.SECONDS)
+            }
+        }
+        document.didOpen(openParams(activeUri, 1, 'class Active { int oldValue }'))
+        assert entered.await(3, TimeUnit.SECONDS)
+        (1..GrailsTextDocumentService.MAX_PENDING_PER_ROOT).each { index ->
+            String queuedUri = new File(root, "Queued${index}.groovy").toURI().toString()
+            document.didOpen(openParams(queuedUri, 1, "class Queued${index} {}"))
+        }
+
+        when:
+        document.didOpen(openParams(activeUri, 2, 'class Active { int newestValue }'))
+        CompletableFuture<Void> newestCompletion = document.compilationFinished(activeUri)
+        release.countDown()
+        assert newestEntered.await(5, TimeUnit.SECONDS)
+
+        then: 'the obsolete active future cannot satisfy the newer revision barrier'
+        !newestCompletion.isDone()
+
+        when:
+        releaseNewest.countDown()
+        newestCompletion.get(10, TimeUnit.SECONDS)
+
+        then:
+        compiled.any { it.uri == TextFile.normalizePath(activeUri) && it.version == 2 && it.text.contains('newestValue') }
+
+        cleanup:
+        release.countDown()
+        releaseNewest.countDown()
+    }
+
+    def 'ticket byte admission remains bounded independently of item count'() {
+        given:
+        config.debounceDelayMs = 0
+        File root = new File('build/document-queue/byte-bound').canonicalFile
+        Map<String, TextFile> openFiles = installTrackedOpenAnswer()
+        when(workspace.getRegisteredRootUri(any(String))).thenReturn(root.canonicalPath)
+        when(tracker.getOpenFiles()).thenAnswer({ openFiles.values() } as Answer)
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        String blockerUri = new File(root, 'Blocker.groovy').toURI().toString()
+        onCompile = { TextFile file ->
+            if (file.uri == TextFile.normalizePath(blockerUri)) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+            }
+        }
+        document.didOpen(openParams(blockerUri, 1, 'class Blocker {}'))
+        assert entered.await(3, TimeUnit.SECONDS)
+        when(workspace.getRegisteredRootUri(any(String))).thenAnswer({ call ->
+            new File(TextFile.normalizePath(call.getArgument(0))).parentFile.canonicalPath
+        } as Answer)
+
+        when:
+        (1..GrailsTextDocumentService.MAX_PENDING_DOCUMENTS).each { index ->
+            String candidate = new File(root, "root-${index % 8}/Example${index}.groovy").toURI().toString()
+            document.didOpen(openParams(candidate, 1, "class Example${index} {}"))
+        }
+        Map<String, Object> stats = document.compilationQueueStats
+
+        then:
+        stats.pendingBytes <= GrailsTextDocumentService.MAX_PENDING_BYTES
+        stats.pendingCount < GrailsTextDocumentService.MAX_PENDING_DOCUMENTS
+        stats.overflowDeferrals > 0
+
+        cleanup:
+        release.countDown()
+    }
+
+    def 'a close storm beyond the per-root limit cleans every document'() {
+        given:
+        config.debounceDelayMs = 0
+        File rootA = new File('build/document-queue/close-blocker').canonicalFile
+        File rootB = new File('build/document-queue/close-storm').canonicalFile
+        Map<String, TextFile> openFiles = installTrackedOpenAnswer()
+        when(workspace.getRegisteredRootUri(any(String))).thenAnswer({ call ->
+            String path = TextFile.normalizePath(call.getArgument(0))
+            WorkspaceManager.isSameOrChildPath(path, rootA.canonicalPath) ? rootA.canonicalPath : rootB.canonicalPath
+        } as Answer)
+        when(tracker.getOpenFiles()).thenAnswer({ openFiles.values() } as Answer)
+        Set<String> closed = java.util.concurrent.ConcurrentHashMap.newKeySet()
+        doAnswer({ call -> closed.add(TextFile.normalizePath(call.getArgument(0))); null } as Answer)
+            .when(project).closeDocument(any(String))
+
+        int closeCount = GrailsTextDocumentService.MAX_PENDING_PER_ROOT + 8
+        List<String> closeUris = (1..closeCount).collect { index ->
+            String closeUri = new File(rootB, "Close${index}.groovy").toURI().toString()
+            document.didOpen(openParams(closeUri, 1, "class Close${index} {}"))
+            document.compilationFinished(closeUri).get(3, TimeUnit.SECONDS)
+            closeUri
+        }
+        compiled.clear()
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        String blockerUri = new File(rootA, 'Blocker.groovy').toURI().toString()
+        onCompile = { TextFile file ->
+            if (file.uri == TextFile.normalizePath(blockerUri)) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+            }
+        }
+        document.didOpen(openParams(blockerUri, 1, 'class Blocker {}'))
+        assert entered.await(3, TimeUnit.SECONDS)
+
+        when:
+        closeUris.each { closeUri ->
+            document.didClose(new DidCloseTextDocumentParams(new TextDocumentIdentifier(closeUri)))
+        }
+        CompletableFuture<Void> cleanupBarrier = document.compilationFinished(closeUris.last())
+        release.countDown()
+        cleanupBarrier.get(10, TimeUnit.SECONDS)
+
+        then:
+        closed == closeUris.collect { TextFile.normalizePath(it) } as Set
+        document.compilationQueueStats.pendingCount == 0
+
+        cleanup:
+        release.countDown()
+    }
+
+    def 'oversized automatic compilation is deferred without retaining its source text'() {
+        given:
+        config.debounceDelayMs = 0
+        String largeText = 'x' * (GrailsTextDocumentService.MAX_AUTOMATIC_DOCUMENT_BYTES + 1)
+        tracked.text = largeText
+        when(tracker.getTextFile(any(String))).thenReturn(tracked)
+
+        when:
+        document.didOpen(openParams(uri, 1, largeText))
+        document.compilationFinished(uri).get(3, TimeUnit.SECONDS)
+        Map<String, Object> largeStats = document.compilationQueueStats
+
+        then:
+        compiled.isEmpty()
+        largeStats.pendingBytes == 0L
+        largeStats.activeBytes == 0L
+        largeStats.oversizedDeferrals == 1L
+
+        when: 'the next smaller revision becomes eligible normally'
+        tracked.text = 'class Example { int recovered = 1 }'
+        tracked.version = 2
+        document.didChange(changeParams(2))
+        document.compilationFinished(uri).get(3, TimeUnit.SECONDS)
+
+        then:
+        compiled.size() == 1
+        compiled.first().version == 2
+        compiled.first().text == tracked.text
+    }
+
+    def 'cancelling a root drains its delayed work without affecting another root'() {
+        given:
+        config.debounceDelayMs = 0
+        File rootA = new File('build/document-queue/cancel-a').canonicalFile
+        File rootB = new File('build/document-queue/cancel-b').canonicalFile
+        Map<String, TextFile> openFiles = installTrackedOpenAnswer()
+        when(workspace.getRegisteredRootUri(any(String))).thenAnswer({ call ->
+            String path = TextFile.normalizePath(call.getArgument(0))
+            return WorkspaceManager.isSameOrChildPath(path, rootA.canonicalPath)
+                ? rootA.canonicalPath
+                : rootB.canonicalPath
+        } as Answer)
+        when(tracker.getOpenFiles()).thenAnswer({ openFiles.values() } as Answer)
+        String uriA = new File(rootA, 'A.groovy').toURI().toString()
+        String uriB = new File(rootB, 'B.groovy').toURI().toString()
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        doAnswer({ call ->
+            TextFile file = call.getArgument(0)
+            BooleanSupplier current = call.getArgument(1)
+            if (file.uri == TextFile.normalizePath(uriA)) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+            }
+            if (current.asBoolean) compiled.add(file)
+            null
+        } as Answer).when(project).compileAndVisitAST(any(TextFile), any(BooleanSupplier))
+        document.didOpen(openParams(uriA, 1, 'class A {}'))
+        assert entered.await(3, TimeUnit.SECONDS)
+        document.didOpen(openParams(uriB, 1, 'class B {}'))
+        CompletableFuture<Void> rootACompletion = document.compilationFinished(uriA)
+        Map<String, Object> beforeCancel = document.compilationQueueStats
+
+        assert !WorkspaceManager.isSameOrChildPath(TextFile.normalizePath(uriB), rootA.canonicalPath)
+        assert beforeCancel.activeCount == 1
+        assert beforeCancel.pendingCount == 1
+
+        when:
+        document.cancelProjectWork(rootA.toURI().toString())
+        Map<String, Object> stats = document.compilationQueueStats
+        release.countDown()
+        document.compilationFinished(uriB).get(3, TimeUnit.SECONDS)
+
+        then:
+        rootACompletion.get(3, TimeUnit.SECONDS) == null
+        stats.pendingCount == 1
+        !stats.pendingByRoot.containsKey(rootA.canonicalPath)
+        stats.pendingByRoot[rootB.canonicalPath] == 1
+        compiled*.uri == [TextFile.normalizePath(uriB)]
+
+        cleanup:
+        release.countDown()
+    }
+
+    private Map<String, TextFile> installTrackedOpenAnswer() {
+        Map<String, TextFile> openFiles = new java.util.concurrent.ConcurrentHashMap<>()
+        doAnswer({ call ->
+            DidOpenTextDocumentParams params = call.getArgument(0)
+            TextFile file = TextFile.create(params.textDocument.uri, params.textDocument.text)
+            file.version = params.textDocument.version
+            file.markOpened()
+            openFiles.put(file.uri, file)
+            return file
+        } as Answer).when(tracker).didOpenFile(any(DidOpenTextDocumentParams), eq(false))
+        when(tracker.getTextFile(any(String))).thenAnswer({ call ->
+            openFiles.get(TextFile.normalizePath(call.getArgument(0)))
+        } as Answer)
+        doAnswer({ call ->
+            DidCloseTextDocumentParams params = call.getArgument(0)
+            TextFile file = openFiles.remove(TextFile.normalizePath(params.textDocument.uri))
+            file?.markClosed()
+            return file
+        } as Answer).when(tracker).didCloseFile(any(DidCloseTextDocumentParams))
+        return openFiles
+    }
+
     private DidOpenTextDocumentParams openParams() {
         new DidOpenTextDocumentParams(new TextDocumentItem(uri, 'groovy', 0, tracked.text))
+    }
+
+    private static DidOpenTextDocumentParams openParams(String targetUri, int version, String text) {
+        new DidOpenTextDocumentParams(new TextDocumentItem(targetUri, 'groovy', version, text))
     }
 
     private DidChangeTextDocumentParams changeParams(int version) {

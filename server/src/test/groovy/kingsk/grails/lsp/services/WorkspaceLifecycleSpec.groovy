@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.BooleanSupplier
 
 class WorkspaceLifecycleSpec extends Specification {
 
@@ -183,6 +184,83 @@ class WorkspaceLifecycleSpec extends Specification {
         service.shutdown()
     }
 
+    def "root removal drains document work before disposing its project context"() {
+        given:
+        def service = new GrailsService()
+        def workspaceManager = service.workspaceManager
+        File root = new File('build/lifecycle_cancel_test').canonicalFile
+        root.mkdirs()
+        String rootUri = root.toURI().toString()
+        workspaceManager.addProject(new GrailsProject(name: 'CancelRoot', rootDirectory: root))
+        def documentService = Mock(GrailsTextDocumentService)
+        service.document = documentService
+
+        when:
+        workspaceManager.removeRoot(rootUri)
+
+        then:
+        1 * documentService.cancelProjectWork(TextFile.normalizePath(rootUri))
+        workspaceManager.getProjectForUri(rootUri) == null
+
+        cleanup:
+        service.shutdown()
+    }
+
+    def "root removal is prompt and prevents blocked document work from publishing"() {
+        given:
+        def service = new GrailsService()
+        def workspaceManager = service.workspaceManager
+        File root = new File('build/lifecycle_blocked_removal').canonicalFile
+        root.mkdirs()
+        String normalizedRoot = TextFile.normalizePath(root.toURI().toString())
+        String documentUri = new File(root, 'Blocked.groovy').toURI().toString()
+        def entered = new CountDownLatch(1)
+        def release = new CountDownLatch(1)
+        def disposed = new CountDownLatch(1)
+        def published = new AtomicBoolean(false)
+        def context = new ProjectContextImpl(
+            new GrailsProject(name: 'BlockedRoot', rootDirectory: root), service) {
+            @Override
+            void compileAndVisitAST(TextFile file, BooleanSupplier current) {
+                entered.countDown()
+                release.await(5, TimeUnit.SECONDS)
+                if (current.asBoolean) published.set(true)
+            }
+
+            @Override
+            void dispose() {
+                try {
+                    super.dispose()
+                } finally {
+                    disposed.countDown()
+                }
+            }
+        }
+        workspaceManager.@contexts.put(normalizedRoot, context)
+        service.document.didOpen(new DidOpenTextDocumentParams(
+            new TextDocumentItem(documentUri, 'groovy', 1, 'class Blocked {}')))
+        assert entered.await(3, TimeUnit.SECONDS)
+
+        when:
+        CompletableFuture<Void> removal = CompletableFuture.runAsync { workspaceManager.removeRoot(root.toURI().toString()) }
+
+        then: 'the workspace notification path does not wait for the compiler lock'
+        removal.get(300, TimeUnit.MILLISECONDS) == null
+        context.state == ProjectState.DISPOSING
+        workspaceManager.getProjectForUri(documentUri) == null
+
+        when:
+        release.countDown()
+
+        then: 'drain completes before resource release and obsolete work cannot publish'
+        disposed.await(3, TimeUnit.SECONDS)
+        !published.get()
+
+        cleanup:
+        release.countDown()
+        service.shutdown()
+    }
+
     def "replays only latest still-open buffers belonging to the newly registered root"() {
         given:
         def service = new GrailsService()
@@ -296,4 +374,3 @@ class WorkspaceLifecycleSpec extends Specification {
         service.shutdown()
     }
 }
-

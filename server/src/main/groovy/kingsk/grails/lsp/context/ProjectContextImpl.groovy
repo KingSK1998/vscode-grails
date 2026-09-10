@@ -57,6 +57,8 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
     private final AtomicLong versionCounter = new AtomicLong(0)
+    // Accessed only under astLock. These are committed editor overlays, not project source inventory.
+    private final Set<String> openDocumentUris = new HashSet<>()
     
     // Atomic source of truth for the entire project (Lineage & LKG)
     final SnapshotManager snapshotManager
@@ -120,6 +122,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
                 if (classNodes != null) indexManager.rebuildFile(textFile.uri, classNodes)
             }
             if (currentRevision != null && !currentRevision.asBoolean) return
+            if (currentRevision != null) openDocumentUris.add(textFile.uri)
             commitSnapshotLocked()
             grailsService.clearCrossFileCaches()
             committed = true
@@ -203,9 +206,32 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             }
             this.@visitor.removeFileWithDependencies(uri)
             indexManager.evictFile(uri)
+            openDocumentUris.remove(TextFile.normalizePath(uri))
             commitSnapshotLocked()
             if (this.@state.get() == ProjectState.HIBERNATED) this.@visitor = null
             grailsService.clearCrossFileCaches()
+        }
+    }
+
+    /**
+     * Repairs close notifications collapsed by scheduler overload. The scheduler
+     * supplies the current tracker view; only previously committed overlays are
+     * candidates, so ordinary project sources are never evicted.
+     */
+    void reconcileClosedDocuments(Set<String> currentOpenUris) {
+        Set<String> normalizedOpen = (currentOpenUris ?: Collections.<String>emptySet())
+            .collect { String uri -> TextFile.normalizePath(uri) } as Set<String>
+        List<String> stale
+        astLock.readLock().lock()
+        try {
+            stale = openDocumentUris.findAll { String uri -> !normalizedOpen.contains(uri) } as List<String>
+        } finally {
+            astLock.readLock().unlock()
+        }
+        for (String uri : stale) {
+            closeDocument(uri)
+            grailsService.fileTracker.clearClosedFileDependencies(uri)
+            grailsService.diagnostics.clearDiagnosticsForFile(uri)
         }
     }
 
@@ -304,19 +330,26 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
      */
     @Override
     void dispose() {
-        log.info("[ProjectContext] Disposing project ${this.@project.name}")
-        this.@state.set(ProjectState.DISPOSING)
-        def future = this.@activationFuture.getAndSet(null)
-        if (future != null && !future.isDone()) {
-            future.cancel(true)
-        }
+        beginDispose()
+        log.info("[ProjectContext] Releasing project ${this.@project.name}")
         withWriteLock {
             if (this.@compiler != null) this.@compiler.invalidateCompiler()
             if (this.@visitor != null) this.@visitor.invalidateVisitor()
             this.@compiler = null
             this.@visitor = null
+            openDocumentUris.clear()
         }
         snapshotManager.clear()
+    }
+
+    /** Makes removal terminal immediately without waiting for the compiler writer lock. */
+    void beginDispose() {
+        if (this.@state.getAndSet(ProjectState.DISPOSING) == ProjectState.DISPOSING) return
+        log.info("[ProjectContext] Disposing project ${this.@project.name}")
+        def future = this.@activationFuture.getAndSet(null)
+        if (future != null && !future.isDone()) {
+            future.cancel(true)
+        }
     }
 
     /**
