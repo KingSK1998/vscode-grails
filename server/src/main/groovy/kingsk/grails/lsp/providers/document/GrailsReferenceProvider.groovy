@@ -42,16 +42,17 @@ class GrailsReferenceProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 
                 if (getConfig().referenceUsesIndex || providerContext.isTier2()) {
                     def offsetNode = getNodeAtPosition(ctx, position)
                     if (offsetNode) {
                         String targetName = offsetNode.text
                         checkCancellation(token)
-                        def refs = ctx.compilationContext().projectIndex.snapshot.getReferencesFor(targetName)
+                        def refs = ctx.snapshot().index().getReferencesFor(targetName)
                         if (refs) {
                             log.info("[REFERENCES] path=index tier=1 count=${refs.size()}")
                             return refs.collect { new Location(it.fileUri, it.range) }
@@ -82,6 +83,7 @@ class GrailsReferenceProvider extends BaseProvider {
                 log.debug("[REFERENCES] found ${results.size()} references for ${offsetNode.text}")
                 return results as List<Location>
             } finally {
+                ctx?.close()
                 recordHealth("references", System.currentTimeMillis() - startTime, true)
             }
         }

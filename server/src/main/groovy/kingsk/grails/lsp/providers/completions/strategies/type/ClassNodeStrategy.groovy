@@ -83,7 +83,7 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	}
 	
 	private void addClassNamesFromDependencies(CompletionRequest request, RequestContext ctx, List<CompletionItem> completions) {
-		def scanResult = ctx.compilationContext().grailsService.discoveryService.getClassGraphScanResult(ctx.uri())
+		def scanResult = ctx.grailsService()?.discoveryService?.getClassGraphScanResult(ctx.uri())
 		if (scanResult) {
 			int count = 0
 			String prefixLower = request.prefix.toLowerCase()

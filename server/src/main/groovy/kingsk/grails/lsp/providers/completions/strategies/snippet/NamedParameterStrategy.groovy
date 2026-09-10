@@ -14,6 +14,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 
 /**
  * Provides named parameter completions for Grails DSL methods like render, redirect, etc.
@@ -39,7 +40,7 @@ class NamedParameterStrategy extends BaseCompletionStrategy {
         MethodCallExpression methodCall = getEnclosingMethodCall(request.offsetNode, ctx)
         if (!methodCall) return completions
 
-        def visitor = ctx.compilationContext().visitor
+        def visitor = ctx.ast() as GrailsASTVisitor
         List<MethodNode> methods = GrailsASTHelper.getMethodOverloadsFromCallExpression(methodCall, visitor)
         
         if (!methods && request.isGrailsProject) {

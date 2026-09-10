@@ -3,6 +3,7 @@ package kingsk.grails.lsp.index
 import groovy.transform.CompileStatic
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
+import kingsk.grails.lsp.model.types.TextFile
 import java.util.Collections
 
 @CompileStatic
@@ -25,7 +26,7 @@ class IndexSnapshot {
     }
     
     SymbolInfo getSymbolAt(String uri, Position pos) {
-        List<SymbolInfo> symbols = byUri[uri]
+        List<SymbolInfo> symbols = getSymbolsForFile(uri)
         if (!symbols) return null
         
         SymbolInfo bestMatch = null
@@ -46,7 +47,15 @@ class IndexSnapshot {
     }
     
     List<SymbolInfo> getSymbolsForFile(String uri) {
-        return byUri[uri] ?: []
+        if (!uri) return []
+        List<SymbolInfo> direct = byUri[uri]
+        if (direct != null) return direct
+        String norm = TextFile.normalizePath(uri)
+        if (norm && norm != uri) {
+            List<SymbolInfo> normalized = byUri[norm]
+            if (normalized != null) return normalized
+        }
+        return []
     }
 
     List<ReferenceInfo> getReferencesFor(String name) {

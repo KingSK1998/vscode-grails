@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.context.ASTAccessor
 import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.ast.MemberExtractor
@@ -40,14 +41,14 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 	
 	protected ClassNode getTypeOf(ASTNode node, RequestContext ctx) {
 		if (!node) return null
-		return GrailsASTHelper.getTypeOfNode(node, ctx.compilationContext().visitor)
+		return GrailsASTHelper.getTypeOfNode(node, ctx.ast() as GrailsASTVisitor)
 	}
 	
 	// ===== Member Completion Methods =====
 	
 	protected void addMemberCompletions(Expression expression, RequestContext ctx, List<CompletionItem> items) {
 		if (!expression) return
-		def visitor = ctx.compilationContext().visitor
+		def visitor = ctx.ast() as GrailsASTVisitor
 		def members = MemberExtractor.collectMembers(expression, visitor)
 		
 		members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
@@ -56,7 +57,7 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 		
 		ClassNode expressionType = GrailsASTHelper.getTypeOfNode(expression, visitor)
 		if (expressionType) {
-			ctx.compilationContext().grailsService.discoveryService.getMethodsForType(expressionType).each { String dgmMethod ->
+			ctx.grailsService()?.discoveryService?.getMethodsForType(expressionType)?.each { String dgmMethod ->
 				if (!members.methods.any { it.name == dgmMethod }) {
 					CompletionItem item = new CompletionItem(dgmMethod)
 					item.kind = org.eclipse.lsp4j.CompletionItemKind.Method
@@ -69,7 +70,7 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 	
 	protected void addStaticMemberCompletions(ClassNode classType, RequestContext ctx, List<CompletionItem> items) {
 		if (!classType) return
-		def visitor = ctx.compilationContext().visitor
+		def visitor = ctx.ast() as GrailsASTVisitor
 		def members = MemberExtractor.collectMembers(classType, true, null)
 		
 		members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
@@ -91,7 +92,7 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 
 	protected void addScopeCompletions(ASTNode offsetNode, RequestContext ctx, List<CompletionItem> items) {
 		if (!offsetNode) return
-		def visitor = ctx.compilationContext().visitor
+		def visitor = ctx.ast() as GrailsASTVisitor
 		def scopeItems = ScopeHelper.collectScopeItems(offsetNode, visitor, ScopeHelper.CollectionType.ALL)
 		
 		scopeItems.variables.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it as ASTNode)) }

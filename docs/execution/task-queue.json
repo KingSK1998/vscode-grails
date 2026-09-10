@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-09-09",
+  "updated": "2026-09-10",
   "scope": "R0-R5: 1.0 acceptance; R6: deferred candidates",
   "tasks": [
     {
@@ -92,13 +92,13 @@
     {
       "id": "R1-04",
       "title": "Prove publication and lifecycle ownership",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R1-03"
       ],
       "spec": "docs/execution/task-specifications.md#r1-04",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R1-04.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R1-05",

@@ -14,7 +14,7 @@ trait GrailsAware {
 	
 	boolean isArtifactType(CompletionRequest request, RequestContext ctx, GrailsArtifactType type) {
 		if (!request.isGrailsProject) return false
-		def currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+		def currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
 		if (!currentClass) return false
 		return GrailsArtefactUtils.getGrailsArtifactType(currentClass, request.uri) == type
 	}

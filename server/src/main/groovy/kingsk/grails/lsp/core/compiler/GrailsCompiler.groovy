@@ -341,14 +341,21 @@ class GrailsCompiler {
      * @return true if a SourceUnit exists in the cache
      */
     boolean compilationExistsFor(String uri) {
-        uri ? sourceUnitsCache.containsKey(uri) : false
+        if (!uri) return false
+        if (sourceUnitsCache.containsKey(uri)) return true
+        String norm = TextFile.normalizePath(uri)
+        return (norm && norm != uri) ? sourceUnitsCache.containsKey(norm) : false
     }
 
     /**
      * Returns the SourceUnit for a given TextFile, or null.
      */
     SourceUnit getSourceUnit(TextFile textFile) {
-        return sourceUnitsCache.get(textFile?.uri)
+        if (!textFile?.uri) return null
+        SourceUnit direct = sourceUnitsCache.get(textFile.uri)
+        if (direct != null) return direct
+        String norm = TextFile.normalizePath(textFile.uri)
+        return (norm && norm != textFile.uri) ? sourceUnitsCache.get(norm) : null
     }
 
     String getPatchedSourceUnitText(TextFile textFile) {
@@ -519,11 +526,16 @@ class GrailsCompiler {
     }
 
     void removeSourceFile(String uri) {
-        sourceUnitsCache.remove(uri)
-        log.info("[COMPILER] Removed ${uri} from cache")
         if (!uri) return
         dirtySources.remove(uri)
+        String norm = TextFile.normalizePath(uri)
+        if (norm && norm != uri) {
+            dirtySources.remove(norm)
+        }
         SourceUnit old = sourceUnitsCache.remove(uri)
+        if (old == null && norm && norm != uri) {
+            old = sourceUnitsCache.remove(norm)
+        }
         if (old != null && compilationUnit != null) {
             compilationUnit.removeSourceUnit(old)
         }

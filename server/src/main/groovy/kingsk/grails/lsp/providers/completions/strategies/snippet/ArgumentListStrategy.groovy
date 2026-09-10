@@ -12,6 +12,7 @@ import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.eclipse.lsp4j.CompletionItem
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 
 @CompileStatic
 class ArgumentListStrategy extends BaseCompletionStrategy {
@@ -42,7 +43,7 @@ class ArgumentListStrategy extends BaseCompletionStrategy {
 	}
 	
 	private void addMethodParameterCompletions(MethodCallExpression methodCall, RequestContext ctx, List<CompletionItem> completions) {
-		def visitor = ctx.compilationContext().visitor
+		def visitor = ctx.ast() as GrailsASTVisitor
 		def method = GrailsASTHelper.getMethodFromCallExpression(methodCall, visitor)
 		if (method instanceof MethodNode && method.parameters) {
 			method.parameters.each { Parameter param ->

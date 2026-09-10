@@ -27,11 +27,12 @@ class GrailsGormSqlProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
-                def ctx = createRequestContext(uri)
+                ctx = createRequestContext(uri)
                 String normalizedUri = TextFile.normalizePath(uri)
                 
-                def nodes = ctx.ast().getNodes(normalizedUri)
+                def nodes = ctx.ast()?.getNodes(normalizedUri)
                 if (!nodes) return ""
                 
                 def classNode = nodes.find { it instanceof ClassNode } as ClassNode
@@ -62,6 +63,7 @@ class GrailsGormSqlProvider extends BaseProvider {
 
                 return sb.toString()
             } finally {
+                ctx?.close()
                 recordHealth("gormSql", System.currentTimeMillis() - startTime, true)
             }
         } as Supplier<String>)

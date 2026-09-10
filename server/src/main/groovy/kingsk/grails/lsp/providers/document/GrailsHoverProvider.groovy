@@ -33,13 +33,14 @@ class GrailsHoverProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
 
                 if (getConfig().hoverUsesIndex || providerContext.isTier2()) {
                     def uri = textDocument.uri
-                    def local = ctx.compilationContext().methodScopeCache.getLocalAt(uri, position)
+                    def local = ctx.methodScopeCache()?.getLocalAt(uri, position)
                     if (local) {
                         log.info("[HOVER] path=index tier=0 kind=local")
                         return new Hover(buildLocalHover(local))
@@ -48,7 +49,7 @@ class GrailsHoverProvider extends BaseProvider {
                     checkCancellation(token)
                     SymbolInfo symbol = ctx.snapshot().index().getSymbolAt(uri, position)
                     if (symbol) {
-                        def docs = ctx.compilationContext().groovydocCache.getGroovydoc(symbol.descriptor, uri) { (String) null }
+                        def docs = ctx.groovydocCache()?.getGroovydoc(symbol.descriptor, uri) { (String) null }
                         log.info("[HOVER] path=index tier=${docs ? 0 : 1} kind=symbol")
                         return new Hover(buildSymbolHover(symbol, docs))
                     }
@@ -84,6 +85,7 @@ class GrailsHoverProvider extends BaseProvider {
 
                 return new Hover(documentation)
             } finally {
+                ctx?.close()
                 recordHealth("hover", System.currentTimeMillis() - startTime, true)
             }
         }

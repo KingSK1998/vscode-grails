@@ -23,13 +23,14 @@ class GrailsCodeActionProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(params.textDocument.uri)
+                ctx = createRequestContext(params.textDocument.uri)
                 String uri = params.textDocument.uri
                 
                 List<CodeAction> actions = []
-                def classNodes = ctx.ast().getNodes(uri)
+                def classNodes = ctx.ast()?.getNodes(uri)
                 if (!classNodes) return actions
 
                 classNodes.each { node ->
@@ -40,6 +41,7 @@ class GrailsCodeActionProvider extends BaseProvider {
 
                 return actions
             } finally {
+                ctx?.close()
                 recordHealth("codeAction", System.currentTimeMillis() - startTime, true)
             }
         } as Supplier<List<CodeAction>>)

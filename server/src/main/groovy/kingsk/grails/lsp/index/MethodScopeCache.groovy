@@ -16,6 +16,10 @@ class MethodScopeCache {
     void evict(String uri) {
         cache.remove(uri)
     }
+
+    void clear() {
+        cache.clear()
+    }
     
     LocalSymbolInfo getLocalAt(String uri, Position pos) {
         List<LocalSymbolInfo> locals = cache[uri]

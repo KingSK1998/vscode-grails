@@ -49,7 +49,7 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 		}
 		
 		// 2. Artifact-specific
-		ClassNode currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+		ClassNode currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
 		if (currentClass) {
 			if (GrailsUtils.isControllerClass(currentClass, request.uri)) {
 				addArtifactCompletions(completions, kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getControllerProperties(), 'Controller')

@@ -32,9 +32,10 @@ class GrailsSignatureHelpProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 def offset = getNodeAtPosition(ctx, position)
                 
                 if (!offset) {
@@ -50,7 +51,7 @@ class GrailsSignatureHelpProvider extends BaseProvider {
                         methodCall = current as MethodCall
                         break
                     }
-                    current = ctx.ast().getParent(current)
+                    current = ctx.ast()?.getParent(current)
                     depth++
                 }
 
@@ -77,6 +78,7 @@ class GrailsSignatureHelpProvider extends BaseProvider {
 
                 return new SignatureHelp(information, (Integer) methods.indexOf(bestMethod), activeParamIndex)
             } finally {
+                ctx?.close()
                 recordHealth("signatureHelp", System.currentTimeMillis() - startTime, true)
             }
         }

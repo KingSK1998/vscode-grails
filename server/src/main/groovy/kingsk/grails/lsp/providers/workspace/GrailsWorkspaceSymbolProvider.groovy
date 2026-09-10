@@ -32,8 +32,20 @@ class GrailsWorkspaceSymbolProvider extends BaseProvider {
                 String query = params.query.toLowerCase()
 
                 workspaceManager.getAllContexts().each { projectCtx ->
-                    projectCtx.withReadLock {
-                        projectCtx.visitor.allClassNodes.each { uri, nodes ->
+                    def snapshot = projectCtx.snapshotManager?.active
+                    if (snapshot?.index()?.byDescriptor != null && !snapshot.index().byDescriptor.isEmpty()) {
+                        snapshot.index().byDescriptor.values().each { sym ->
+                            if (sym.name.toLowerCase().contains(query)) {
+                                WorkspaceSymbol symbol = new WorkspaceSymbol()
+                                symbol.name = sym.name
+                                symbol.kind = sym.kind
+                                symbol.location = Either.forLeft(new Location(sym.fileUri, sym.selectionRange ?: sym.range))
+                                results << symbol
+                            }
+                        }
+                    } else if (snapshot?.ast() instanceof kingsk.grails.lsp.core.visitor.GrailsASTVisitor) {
+                        def astVisitor = (kingsk.grails.lsp.core.visitor.GrailsASTVisitor) snapshot.ast()
+                        astVisitor.classNodesByURI.each { uri, nodes ->
                             nodes.each { ClassNode classNode ->
                                 if (classNode.name.toLowerCase().contains(query)) {
                                     WorkspaceSymbol symbol = new WorkspaceSymbol()

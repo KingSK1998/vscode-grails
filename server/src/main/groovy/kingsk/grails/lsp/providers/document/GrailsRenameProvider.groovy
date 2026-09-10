@@ -39,11 +39,12 @@ class GrailsRenameProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(documentURI)
+                ctx = createRequestContext(documentURI)
                 
-                def offsetNode = ctx.ast().getNodeAtPosition(documentURI, params.position)
+                def offsetNode = ctx.ast()?.getNodeAtPosition(documentURI, params.position)
                 if (!offsetNode) {
                     return null
                 }
@@ -53,7 +54,7 @@ class GrailsRenameProvider extends BaseProvider {
                 
                 WorkspaceEdit workspaceEdit = new WorkspaceEdit()
                 references.each { node ->
-                    def uri = ctx.ast().getURI(node) ?: documentURI.toString()
+                    def uri = ctx.ast()?.getURI(node) ?: documentURI.toString()
                     def contents = getPartialNodeText(uri, node)
                     
                     def range = ASTUtils.astNodeToRange(node)
@@ -88,6 +89,7 @@ class GrailsRenameProvider extends BaseProvider {
                 
                 return workspaceEdit
             } finally {
+                ctx?.close()
                 recordHealth("rename", System.currentTimeMillis() - startTime, true)
             }
         }

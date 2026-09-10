@@ -24,13 +24,14 @@ class GrailsDocumentSymbolProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(params.textDocument.uri)
+                ctx = createRequestContext(params.textDocument.uri)
                 String uri = params.textDocument.uri
                 
                 List<Either<SymbolInformation, DocumentSymbol>> symbols = []
-                def nodes = ctx.ast().getNodes(uri)
+                def nodes = ctx.ast()?.getNodes(uri)
                 if (!nodes) return symbols
 
                 nodes.each { node ->
@@ -44,6 +45,7 @@ class GrailsDocumentSymbolProvider extends BaseProvider {
 
                 return symbols
             } finally {
+                ctx?.close()
                 recordHealth("documentSymbols", System.currentTimeMillis() - startTime, true)
             }
         } as Supplier<List<Either<SymbolInformation, DocumentSymbol>>>)

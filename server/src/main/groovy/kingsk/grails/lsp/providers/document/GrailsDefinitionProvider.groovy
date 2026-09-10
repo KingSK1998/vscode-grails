@@ -32,14 +32,15 @@ class GrailsDefinitionProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 
                 if (getConfig().definitionUsesIndex || providerContext.isTier2()) {
                     def uri = textDocument.uri
                     
-                    def local = ctx.compilationContext().methodScopeCache.getLocalAt(uri, position)
+                    def local = ctx.methodScopeCache()?.getLocalAt(uri, position)
                     if (local) {
                         log.info("[DEFINITION] path=index tier=0 kind=local")
                         return Either.forLeft([new Location(local.fileUri, local.range)] as List<? extends Location>)
@@ -84,6 +85,7 @@ class GrailsDefinitionProvider extends BaseProvider {
 
                 return Either.forLeft([location] as List<? extends Location>)
             } finally {
+                ctx?.close()
                 recordHealth("definition", System.currentTimeMillis() - startTime, true)
             }
         }

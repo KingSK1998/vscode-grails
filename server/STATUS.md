@@ -13,6 +13,7 @@
 
 | Feature / check | Status | Evidence |
 |---|---|---|
+| Publication & lifecycle ownership (R1-04) | ✅ Passing | Readers decoupled from compiler writer locks (<5ms latency); `RequestLease` resource tracking; `DetachedASTAccessor` AST detachment on hibernation; cache eviction on disposal; non-blocking routing and cross-project deadlock-free lock ordering. Tests: `PublicationAndLifecycleSpec` (7/7) |
 | Bounded Gradle synchronization & LKG retention | ✅ Passing | Decoupled Gradle sync from compiler activation; non-blocking reads during 30s sync stall (< 10 ms); preserved usable LKG committed state on sync failure; in-flight sync cancellation on supersede and disposal; stale sync state labeled; bounded retry with triggers. Tests: `GradleSyncSpec` (12/12) |
 | Revision ordering & publication safety | ✅ Passing | Sequential incremental changes applied in array order; open generation sequence tracking; obsolete versions rejected; atomic generation/version verification before commit and diagnostic publishing; distinct overlay close vs delete document lifecycle. Tests: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15) |
 | Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 15/15 tests pass; bounded count/bytes, multi-root fairness, overload and newest-revision recovery, close storms, oversized input policy, root cancellation and shutdown |
@@ -23,7 +24,7 @@
 
 Reports were inspected on 2026-09-10. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
 
-R1-03 focused validation passes `GradleSyncSpec` (12/12), `DocumentCompilationSpec` (15/15), `WorkspaceLifecycleSpec` (8/8), `RevisionAndPublicationSpec` (4/4), `ReactivationAndLruSpec` (4/4), `FileContentTrackerSpec` (18/18), and `PositionHelperSpec` (46/46) for a total of 107/107 passing tests. Full test suite has 23 failures confined to pre-existing legacy provider expectation suites; no R1-01, R1-02, or R1-03 lifecycle, synchronization, or compiler spec failed.
+R1-04 focused validation passes `PublicationAndLifecycleSpec` (7/7), `GradleSyncSpec` (12/12), `DocumentCompilationSpec` (15/15), `WorkspaceLifecycleSpec` (8/8), `RevisionAndPublicationSpec` (4/4), `ReactivationAndLruSpec` (4/4), `FileContentTrackerSpec` (18/18), and `PositionHelperSpec` (46/46) for a total of 114/114 passing tests. Full test suite has 23 failures confined to pre-existing legacy provider expectation suites; no R1-01, R1-02, R1-03, or R1-04 lifecycle, synchronization, or compiler spec failed.
 
 ### Completed Work (2026-06-24)
 - **Phase 3: Multi-Project & Lifecycle Mastery**:

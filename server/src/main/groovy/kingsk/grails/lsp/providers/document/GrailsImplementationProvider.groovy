@@ -26,9 +26,10 @@ class GrailsImplementationProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 def offsetNode = getNodeAtPosition(ctx, position)
                 
                 if (!offsetNode) return [] as List<Location>
@@ -39,17 +40,18 @@ class GrailsImplementationProvider extends BaseProvider {
                 List<Location> implementationLocations = []
                 
                 // Very basic implementation search
-                ctx.ast().getNodes(ctx.uri()).each { potentialImpl ->
+                ctx.ast()?.getNodes(ctx.uri())?.each { potentialImpl ->
                     // Implementation logic here
                 }
 
                 if (implementationLocations.isEmpty() && defNode) {
-                    String uri = ctx.ast().getURI(defNode) ?: textDocument.uri
+                    String uri = ctx.ast()?.getURI(defNode) ?: textDocument.uri
                     implementationLocations << ASTUtils.astNodeToLocation(defNode, uri)
                 }
 
                 return implementationLocations
             } finally {
+                ctx?.close()
                 recordHealth("implementation", System.currentTimeMillis() - startTime, true)
             }
         }

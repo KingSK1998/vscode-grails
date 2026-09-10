@@ -21,6 +21,8 @@ import org.eclipse.lsp4j.TextDocumentIdentifier
 import kingsk.grails.lsp.model.state.VersionedSnapshot
 import kingsk.grails.lsp.context.ProjectContextImpl
 import kingsk.grails.lsp.context.CompilationContext
+import kingsk.grails.lsp.context.DetachedASTAccessor
+import kingsk.grails.lsp.context.RequestLease
 
 import java.util.concurrent.CompletableFuture
 
@@ -44,9 +46,28 @@ abstract class BaseProvider {
         ProjectContextImpl projectCtx = workspaceManager.getProjectForUri(uri)
         if (!projectCtx) {
             // Fallback empty snapshot
-            return new RequestContext(uri, new VersionedSnapshot(0, new kingsk.grails.lsp.index.ProjectIndex("empty").snapshot, null, null, [:], 0), providerContext, null)
+            return new RequestContext(
+                uri,
+                new VersionedSnapshot(0, new kingsk.grails.lsp.index.ProjectIndex("empty").snapshot, null, DetachedASTAccessor.INSTANCE, [:], 0),
+                providerContext,
+                null,
+                null,
+                null,
+                null,
+                null
+            )
         }
-        return new RequestContext(uri, projectCtx.snapshotManager.active, providerContext, (CompilationContext) projectCtx)
+        RequestLease lease = projectCtx.acquireLease()
+        return new RequestContext(
+            uri,
+            lease.snapshot,
+            providerContext,
+            (CompilationContext) projectCtx,
+            lease,
+            projectCtx.methodScopeCache,
+            projectCtx.groovydocCache,
+            projectCtx.classLoaderUnsafeOrNull
+        )
     }
 
     protected CancellationService.CancellationToken createCancellationToken(String uri) {

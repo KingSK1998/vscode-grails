@@ -197,7 +197,6 @@ class WorkspaceManager {
         ProjectContextImpl match = contexts.get(registeredRoot)
         if (match != null) {
             match.markAccessed()
-            enforceMemoryBudget()
         }
         return match
     }

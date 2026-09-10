@@ -47,7 +47,7 @@ class ClosureDelegateStrategy extends BaseCompletionStrategy {
         if (fieldClosure) {
             String fieldName = fieldClosure.name
             // Domain class can be derived from visitor
-            ClassNode domainClass = ctx.compilationContext().visitor.allClassNodes.values().flatten().find { it instanceof ClassNode && ((ClassNode)it).name == ctx.uri() } as ClassNode
+            ClassNode domainClass = ctx.ast()?.getClassNodes()?.find { it.name == ctx.uri() } as ClassNode
             
             if (domainClass) {
                 if (fieldName == 'constraints') {

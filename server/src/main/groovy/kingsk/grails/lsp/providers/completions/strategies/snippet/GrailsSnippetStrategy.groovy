@@ -25,7 +25,7 @@ class GrailsSnippetStrategy extends BaseCompletionStrategy {
         List<CompletionItem> completions = []
         
         // Derive artifact type from snapshot metadata if possible
-        def currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+        def currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
         GrailsArtifactType type = currentClass ? GrailsArtefactUtils.getGrailsArtifactType(currentClass, request.uri) : GrailsArtifactType.UNKNOWN
         
         if (type == GrailsArtifactType.CONTROLLER) {

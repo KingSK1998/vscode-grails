@@ -27,13 +27,14 @@ class GrailsCodeLensProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(params.textDocument.uri)
+                ctx = createRequestContext(params.textDocument.uri)
                 String uri = params.textDocument.uri
                 
                 List<CodeLens> codeLenses = []
-                def classNodes = ctx.ast().getNodes(uri)
+                def classNodes = ctx.ast()?.getNodes(uri)
                 if (!classNodes) return codeLenses as List<? extends CodeLens>
 
                 CodeLensMode mode = getConfig().codeLensMode
@@ -57,6 +58,7 @@ class GrailsCodeLensProvider extends BaseProvider {
 
                 return codeLenses as List<? extends CodeLens>
             } finally {
+                ctx?.close()
                 recordHealth("codeLens", System.currentTimeMillis() - startTime, true)
             }
         } as Supplier<List<? extends CodeLens>>)

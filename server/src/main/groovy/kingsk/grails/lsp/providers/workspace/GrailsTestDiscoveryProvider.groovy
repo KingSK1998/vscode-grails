@@ -6,6 +6,7 @@ import kingsk.grails.lsp.services.WorkspaceManager
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.utils.grails.GrailsUtils
+import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 
@@ -26,9 +27,11 @@ class GrailsTestDiscoveryProvider {
 
         List<Map<String, Object>> tests = []
 
-        // Search in src/test/groovy
-        projectCtx.withReadLock {
-            projectCtx.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+        // Search in src/test/groovy from committed snapshot AST
+        def snapshot = projectCtx.snapshotManager?.active
+        if (snapshot?.ast() instanceof GrailsASTVisitor) {
+            GrailsASTVisitor astVisitor = (GrailsASTVisitor) snapshot.ast()
+            astVisitor.classNodesByURI.each { String uri, Set<ClassNode> classNodes ->
                 if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {
                     classNodes.each { ClassNode classNode ->
                         Map<String, Object> testMap = new HashMap<>()
@@ -51,9 +54,11 @@ class GrailsTestDiscoveryProvider {
             def projectCtx = workspaceManager.getProjectForUri(projectUri)
             if (!projectCtx) continue
 
-            // Search in src/test/groovy for this project
-            projectCtx.withReadLock {
-                projectCtx.visitor.allClassNodes.each { String uri, Set<ClassNode> classNodes ->
+            // Search in src/test/groovy for this project from committed snapshot AST
+            def snapshot = projectCtx.snapshotManager?.active
+            if (snapshot?.ast() instanceof GrailsASTVisitor) {
+                GrailsASTVisitor astVisitor = (GrailsASTVisitor) snapshot.ast()
+                astVisitor.classNodesByURI.each { String uri, Set<ClassNode> classNodes ->
                     // Only include tests that belong to this project
                     if (!uri.startsWith(projectCtx.project.rootDirectory.absolutePath)) return
                     if (GrailsUtils.isTestSpec(uri) || GrailsUtils.isTestClass(uri)) {

@@ -2,7 +2,7 @@
 
 > **Convention:** One section per decision. Newest first.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-08
+> **Last updated:** 2026-09-10
 > **Rule:** Document WHAT was decided, WHY, and WHAT was rejected.
 
 ### ADR Lifecycle States
@@ -18,6 +18,29 @@
 
 > **Note:** Future architecture ideas without evidence live in `docs/architecture/backlog.md`, not here.
 > Promote to ADR only when a reproduced issue or benchmark justifies the decision.
+
+---
+
+## ADR-010: Request Lease and Detached AST Retention for Lifecycle Safety (2026-09-10)
+
+**Status:** Accepted
+**Evidence:** Verified in `kingsk.grails.lsp.context.PublicationAndLifecycleSpec` across concurrent compilation, snapshot publication, hibernation AST detachment, and project disposal.
+**Context:** When a project hibernates (`INV-STATE-010`) or is disposed (`INV-OWN-009`), live compiler and visitor references were cleared, but `SnapshotManager` history retained visitor instances which referenced Groovy `ClassNode`s, `GroovyClassLoader`s, and `CompilationUnit`s in heap memory. Readers actively executing queries during hibernation or disposal could either crash or prevent memory reclamation. Furthermore, document providers previously accessed live compiler/visitor instances interchangeably with snapshots, risking tearing under concurrent compilation (`INV-STATE-004`).
+
+**Decision:**
+- Introduce `RequestLease` implementing `AutoCloseable`, tracking active readers via an atomic counter (`activeLeases`) on `ProjectContextImpl`. All document providers acquire `RequestContext` with `try-finally` blocks that ensure deterministic lease release.
+- Introduce `DetachedASTAccessor` (singleton `INSTANCE` returning null/empty collections with zero retained AST or ClassLoader state).
+- When a project hibernates, `SnapshotManager.detachAst()` atomically points active and LKG snapshots to `DetachedASTAccessor.INSTANCE`, dropping AST references while preserving usable `IndexSnapshot` and `GradleModel` facts. If active reader leases exist at the moment of hibernation, detachment is deferred until the last lease closes (`releaseLease`).
+- When a project is disposed, snapshots and auxiliary caches (`MethodScopeCache`, `GroovydocCache`) are fully cleared once active reader leases drain.
+- Provider completion strategies access AST and type information exclusively through `RequestContext.ast()` and `RequestContext.classLoader()`, never through unmanaged live compiler getters.
+- Cross-project dirty propagation (`propagateInvalidation`) operates strictly via project status flags without nested project write locks, preventing deadlocks (`INV-STATE-011`).
+
+**Rejected:**
+- Deep-cloning the entire Groovy AST tree on every compilation snapshot (prohibitive CPU and memory overhead; violates `docs/specs/performance.md`).
+- Retaining full AST structures across hibernated projects (leads to OutOfMemoryError under workspace LRU with multiple projects).
+- Blocking readers during compilation with coarse-grained reader-writer locks (increases latency >100ms; violates responsive read SLA).
+
+**Related invariants:** `INV-OWN-001`, `INV-OWN-005`, `INV-OWN-006`, `INV-OWN-009`, `INV-STATE-001`, `INV-STATE-002`, `INV-STATE-004`, `INV-STATE-010`, `INV-STATE-011`.
 
 ---
 

@@ -57,6 +57,11 @@ class GroovydocCache {
         }
     }
 
+    void clear() {
+        lruCache.clear()
+        uriToDescriptors.clear()
+    }
+
     int size() {
         return lruCache.size()
     }

@@ -2,10 +2,9 @@
 
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-09
 > **Last updated:** 2026-09-10
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
-> **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009
+> **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009, ADR-010
 > **Related Failure Modes:** SM-001, CI-001, PC-001
 
 ---
@@ -18,7 +17,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 
 | Field / State | Owner | Source of Truth | Readers | Write Methods |
 |---|---|---|---|---|
-| `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl` | Groovy CompilationUnit for selected project inputs | Compiler-dependent readers through context; coherent access still under R1-04 audit | Project compile/activation/disposal write paths |
+| `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl` | Groovy CompilationUnit for selected project inputs | Compiler-dependent readers through context; verified non-blocking via RequestContext and PublicationAndLifecycleSpec | Project compile/activation/disposal write paths |
 | `visitor` (GrailsASTVisitor) | Per-project `ProjectContextImpl` | AST traversal output | Captured request AST accessor, read-only | `visitAST()`, `compileAndVisitAST()`, commit/close lifecycle |
 | `fileTracker` (FileContentTracker) | FileContentTracker, wired by GrailsService | In-memory document buffers, monotonic open generation sequence, active generation mappings | Context/provider read access | Document service delegates open/change/close; workspace service delegates file deletion; never providers |
 | Legacy `astService` access | Context boundary; verify backing implementation before use | Legacy classification/cache API | Legacy consumers | Do not assume a live independently owned ASTService from an old diagram |
@@ -140,12 +139,12 @@ These are non-negotiable. Violation = bug.
 | `INV-EDIT-001` | Text changes preserve protocol order/encoding; virtual/source mappings and edits are bound to the correct document generation. Unmappable edits are not applied. | [State](state-and-lifecycle-specification.md), [IDE](specs/ide-workflows.md) |
 
 ### Current evidence gaps, not exceptions
-
+ 
 | Gap observed in September source/records | Owning acceptance task |
 |---|---|
-| Interrupted scheduler/runtime cast failure and incomplete lifecycle verification | R0-01, R1-02 |
-| Snapshot accessor shallow copies and incomplete reader/writer isolation proof | R1-04 |
-| Getter/routing activation or LRU may block; retained snapshots/static discovery loaders may keep heavy state alive | R1-04, R1-05 |
+| Interrupted scheduler/runtime cast failure and incomplete lifecycle verification | R0-01, R1-02 (Resolved) |
+| Snapshot accessor shallow copies and reader/writer isolation proof | R1-04 (Resolved; see ADR-010) |
+| Static discovery loaders and legacy global caches may keep heavy state alive | R1-05 |
 | Compiler combines workspace dependencies; guessed project edges and incomplete dependency refresh | R2-01, R2-02, R2-03 |
 | Library fallback inventories and unsupported origin/confidence claims | R2-04, R2-05 |
 | Typed agent operation boundary/embedded-language completeness not yet established | R3, R4 |

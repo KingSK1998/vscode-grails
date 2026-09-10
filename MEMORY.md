@@ -160,4 +160,20 @@
 - Focused tests passing: 107/107 tests across 7 suites (`GradleSyncSpec` 12/12, `DocumentCompilationSpec` 15/15, `WorkspaceLifecycleSpec` 8/8, `RevisionAndPublicationSpec` 4/4, `ReactivationAndLruSpec` 4/4, `FileContentTrackerSpec` 18/18, `PositionHelperSpec` 46/46). Client suite (7/7) and smoke tests (869 ms) passed.
 - Next roadmap task: **R1-04** (Prove publication and lifecycle ownership).
 
+## R1-04 Publication and Lifecycle Ownership Milestone (2026-09-10)
+
+- Decoupled reader and writer execution paths across all document providers and completion strategies. Providers acquire `RequestContext` with `try-finally` blocks ensuring deterministic release of `RequestLease`. Completion strategies now read AST facts exclusively via `RequestContext.ast()` and `RequestContext.classLoader()` rather than live mutable compiler/visitor getters (`INV-OWN-001`, `INV-STATE-002`, `INV-STATE-004`).
+- Proven concurrent-read safety under continuous compilation load: `PublicationAndLifecycleSpec` ran 20 concurrent readers across 50 continuous compilation commits with 0 exceptions, 0 torn reads, and average latency <5ms (well within the <100ms SLA).
+- Guaranteed stable generation facts for retained readers: a reader holding an older snapshot generation observes consistent facts even while subsequent compilations commit or source files are deleted.
+- Verified `INV-OWN-005` AST boundary via reflection: confirmed that all fields of `SymbolInfo`, `LocalSymbolInfo`, `ReferenceInfo`, `ProjectIndex`, `IndexSnapshot`, `MethodScopeCache`, and `GroovydocCache` retain zero `ASTNode` references.
+- Implemented `RequestLease` tracking via atomic counter (`activeLeases`) on `ProjectContextImpl`. Bounded drain mechanism (`drainLeases`) coordinates clean resource release.
+- Implemented `DetachedASTAccessor.INSTANCE` (empty/null AST accessor retaining zero ASTNodes, ClassLoaders, or CompilationUnits).
+- Hibernation memory release (`INV-STATE-010`, `INV-STATE-011`): `SnapshotManager.detachAst()` atomically points active and LKG snapshots to `DetachedASTAccessor.INSTANCE`, dropping heavy compiler/visitor/classloader state while preserving usable `IndexSnapshot` and `GradleModel` facts. If active reader leases exist at hibernation, AST detachment is cleanly deferred until the last lease closes (`releaseLease`).
+- Disposal memory release: transitions to `DISPOSING`, releases compiler, visitor, and caches. Clears snapshots once active leases drain.
+- Non-blocking routing and read getters: `getCompiler()`, `getVisitor()`, `getClassLoaderUnsafeOrNull()` return immediately without activating or blocking behind compilation.
+- Cross-project deadlock freedom: `WorkspaceManager.propagateInvalidation` operates strictly on project status flags without nested project write locks (`INV-STATE-011`).
+- Documented ADR-010 in `docs/adr/decisions.md`.
+- Focused tests passing: `PublicationAndLifecycleSpec` (7/7 tests passed in 12s). Full focused suite (114/114 tests) passed. Full client checks (`compile`, `check-types`, `lint`, `test:client`, `test:smoke`) passed 100%.
+- Next roadmap task: **R1-05** (Publish performance and resource baselines).
+
 

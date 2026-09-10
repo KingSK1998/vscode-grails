@@ -27,9 +27,10 @@ class GrailsTypeDefinitionProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 def offsetNode = getNodeAtPosition(ctx, position)
                 
                 if (!offsetNode) {
@@ -45,11 +46,12 @@ class GrailsTypeDefinitionProvider extends BaseProvider {
                 }
 
                 checkCancellation(token)
-                String definitionURI = ctx.ast().getURI(definitionNode) ?: textDocument.uri
+                String definitionURI = ctx.ast()?.getURI(definitionNode) ?: textDocument.uri
                 
                 def location = ASTUtils.astNodeToLocation(definitionNode, definitionURI)
                 return (location ? [location] : []) as List<Location>
             } finally {
+                ctx?.close()
                 recordHealth("typeDefinition", System.currentTimeMillis() - startTime, true)
             }
         }

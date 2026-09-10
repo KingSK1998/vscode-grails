@@ -30,7 +30,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
     @Override
     boolean canHandle(CompletionRequest request, RequestContext ctx) {
         if (!request.isGrailsProject) return false
-        def currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+        def currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
         return currentClass != null
     }
 
@@ -38,7 +38,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
     List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
         List<CompletionItem> completions = []
         
-        ClassNode currentClass = ctx.compilationContext().visitor.allClassNodes.get(request.uri)?.find { it }
+        ClassNode currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
         if (!currentClass) return completions
 
         GrailsArtifactType artifactType = kingsk.grails.lsp.utils.grails.GrailsArtefactUtils.getGrailsArtifactType(currentClass, request.uri)
@@ -64,7 +64,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
     }
 
     private void addControllerCompletions(RequestContext ctx, List<CompletionItem> completions) {
-        ClassLoader loader = ctx.compilationContext().compiler.classLoader
+        ClassLoader loader = ctx.classLoader()
         GrailsHelperIntegration.getControllerMethods(loader).each { method ->
             CompletionItem item = new CompletionItem(method)
             item.kind = CompletionItemKind.Method
@@ -80,7 +80,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
     }
 
     private void addDomainCompletions(RequestContext ctx, ClassNode currentClass, List<CompletionItem> completions) {
-        ClassLoader loader = ctx.compilationContext().compiler.classLoader
+        ClassLoader loader = ctx.classLoader()
         GrailsHelperIntegration.getGormInstanceMethods(loader).each { method ->
             CompletionItem item = new CompletionItem(method)
             item.kind = CompletionItemKind.Method

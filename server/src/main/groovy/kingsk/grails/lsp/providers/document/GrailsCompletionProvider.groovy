@@ -1,6 +1,7 @@
 package kingsk.grails.lsp.providers.document
 
 import kingsk.grails.lsp.context.ProviderContext
+import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.services.WorkspaceManager
 
 import groovy.transform.CompileStatic
@@ -34,9 +35,10 @@ class GrailsCompletionProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(textDocument.uri)
+                ctx = createRequestContext(textDocument.uri)
                 
                 String uri = textDocument.uri
                 def textFile = providerContext.fileTracker.getTextFile(uri)
@@ -46,7 +48,7 @@ class GrailsCompletionProvider extends BaseProvider {
                 String prefix = CompletionProcessor.extractPrefix(textFile.text, position)
                 
                 def offsetNode = getNodeAtPosition(ctx, position)
-                def parentNode = offsetNode ? ctx.ast().getParent(offsetNode) : null
+                def parentNode = offsetNode ? ctx.ast()?.getParent(offsetNode) : null
                 
                 // 2. Build Request
                 def request = new CompletionRequest(
@@ -71,6 +73,7 @@ class GrailsCompletionProvider extends BaseProvider {
                     (Either<List<CompletionItem>, CompletionList>) Either.forRight(new CompletionList(isIncomplete, processedItems)) : 
                     (Either<List<CompletionItem>, CompletionList>) Either.forLeft(processedItems)
             } finally {
+                ctx?.close()
                 recordHealth("completion", System.currentTimeMillis() - startTime, true)
             }
         } as java.util.function.Supplier<Either<List<CompletionItem>, CompletionList>>)

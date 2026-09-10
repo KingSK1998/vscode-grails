@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 import java.lang.ref.SoftReference
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
+import kingsk.grails.lsp.context.DetachedASTAccessor
 
 /**
  * Manages the versioned snapshot lineage for a project.
@@ -73,6 +74,38 @@ class SnapshotManager {
         activeSnapshot.set(null)
         lkgSnapshot.set(null)
         historicalLineage.clear()
+    }
+
+    /**
+     * Replaces active and LKG snapshots with detached versions where AST is released.
+     * Retains safe index and model facts while releasing heavy Groovy AST and classloader memory.
+     */
+    void detachAst() {
+        VersionedSnapshot active = activeSnapshot.get()
+        if (active != null && active.ast() != null && !(active.ast() instanceof DetachedASTAccessor)) {
+            activeSnapshot.set(new VersionedSnapshot(
+                active.version(),
+                active.index(),
+                active.gradleModel(),
+                DetachedASTAccessor.INSTANCE,
+                active.fileHashes(),
+                active.timestamp()
+            ))
+            log.debug("[SNAPSHOT] Detached AST for active snapshot v{}", active.version())
+        }
+
+        VersionedSnapshot lkg = lkgSnapshot.get()
+        if (lkg != null && lkg.ast() != null && !(lkg.ast() instanceof DetachedASTAccessor)) {
+            lkgSnapshot.set(new VersionedSnapshot(
+                lkg.version(),
+                lkg.index(),
+                lkg.gradleModel(),
+                DetachedASTAccessor.INSTANCE,
+                lkg.fileHashes(),
+                lkg.timestamp()
+            ))
+            log.debug("[SNAPSHOT] Detached AST for LKG snapshot v{}", lkg.version())
+        }
     }
 
     /**

@@ -23,12 +23,13 @@ class GrailsSemanticTokensProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync {
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(params.textDocument.uri)
+                ctx = createRequestContext(params.textDocument.uri)
                 String uri = params.textDocument.uri
                 
-                def nodes = ctx.ast().getNodes(TextFile.normalizePath(uri))
+                def nodes = ctx.ast()?.getNodes(TextFile.normalizePath(uri))
                 if (!nodes) {
                     return new SemanticTokens([] as List<Integer>)
                 }
@@ -36,6 +37,7 @@ class GrailsSemanticTokensProvider extends BaseProvider {
                 // Implementation of token extraction logic
                 return new SemanticTokens([] as List<Integer>)
             } finally {
+                ctx?.close()
                 recordHealth("semanticTokens", System.currentTimeMillis() - startTime, true)
             }
         }

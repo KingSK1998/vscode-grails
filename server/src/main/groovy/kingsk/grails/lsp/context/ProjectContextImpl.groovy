@@ -72,6 +72,10 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     // Accessed only under astLock. These are committed editor overlays, not project source inventory.
     private final Set<String> openDocumentUris = new HashSet<>()
 
+    // Request Lease & Retention Tracking (R1-04)
+    private final AtomicInteger activeLeases = new AtomicInteger(0)
+    private final List<Runnable> drainListeners = new java.util.concurrent.CopyOnWriteArrayList<>()
+
     // Atomic source of truth for the entire project (Lineage & LKG)
     final SnapshotManager snapshotManager
 
@@ -84,9 +88,9 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         this.groovydocCache = new GroovydocCache(100)
         this.indexManager = new IndexManager(projectIndex, methodScopeCache, groovydocCache)
 
-        // Initialize SnapshotManager
+        // Initialize SnapshotManager with safe detached ASTAccessor
         this.snapshotManager = new SnapshotManager(
-            new VersionedSnapshot(0, projectIndex.snapshot, null, null, [:], System.currentTimeMillis())
+            new VersionedSnapshot(0, projectIndex.snapshot, null, DetachedASTAccessor.INSTANCE, [:], System.currentTimeMillis())
         )
 
         // Initialize the first generation
@@ -362,6 +366,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
      * Releases expensive AST and compiler memory to prevent OOM errors in large workspaces.
      * Nullifies the compiler, visitor, and classloader ties so the GC can reclaim the
      * heavy Groovy ClassNode trees, while preserving the project metadata and snapshot lineage.
+     * If active reader leases are zero, detaches snapshot AST immediately.
      */
     @Override
     void hibernate() {
@@ -373,6 +378,10 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             if (this.@visitor != null) this.@visitor.invalidateVisitor()
             this.@compiler = null
             this.@visitor = null
+        }
+        snapshotManager.clearHistory()
+        if (activeLeases.get() <= 0) {
+            snapshotManager.detachAst()
         }
     }
 
@@ -392,7 +401,66 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             this.@visitor = null
             openDocumentUris.clear()
         }
-        snapshotManager.clear()
+        methodScopeCache.clear()
+        groovydocCache.clear()
+        if (activeLeases.get() <= 0) {
+            snapshotManager.clear()
+        }
+    }
+
+    // --- Request Lease Management (R1-04) ---
+
+    RequestLease acquireLease() {
+        activeLeases.incrementAndGet()
+        VersionedSnapshot snap = snapshotManager.active
+        return new RequestLease(this, snap)
+    }
+
+    void releaseLease(RequestLease lease) {
+        int remaining = activeLeases.decrementAndGet()
+        if (remaining <= 0) {
+            checkAndDrain()
+        }
+    }
+
+    int getActiveLeaseCount() {
+        activeLeases.get()
+    }
+
+    CompletableFuture<Void> drainLeases(long timeoutMs) {
+        CompletableFuture<Void> future = new CompletableFuture<>()
+        if (activeLeases.get() <= 0) {
+            checkAndDrain()
+            future.complete(null)
+            return future
+        }
+        drainListeners.add({ -> future.complete(null) } as Runnable)
+        def scheduler = grailsService.workspace?.getOrCreateScheduler()
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.schedule({ ->
+                if (!future.isDone()) {
+                    checkAndDrain()
+                    future.complete(null)
+                }
+            } as Runnable, timeoutMs, TimeUnit.MILLISECONDS)
+        }
+        return future
+    }
+
+    private void checkAndDrain() {
+        ProjectState currentState = this.@state.get()
+        if (currentState == ProjectState.HIBERNATED) {
+            snapshotManager.detachAst()
+        } else if (currentState == ProjectState.DISPOSING) {
+            snapshotManager.clear()
+        }
+        if (activeLeases.get() <= 0) {
+            List<Runnable> listeners = new ArrayList<>(drainListeners)
+            drainListeners.clear()
+            for (Runnable r : listeners) {
+                try { r.run() } catch (Exception e) { log.warn("[ProjectContext] Drain listener error", e) }
+            }
+        }
     }
 
     /** Makes removal terminal immediately without waiting for the compiler writer lock. */
@@ -659,6 +727,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     void recompileAsync() {
         CompletableFuture.runAsync({ ->
             try {
+                if (this.@state.get() == ProjectState.DISPOSING) return
                 log.info("[ProjectContext] Asynchronously recompiling project ${this.@project.name} due to dependency changes")
                 ensureActivated()
 
@@ -684,8 +753,8 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
                         grailsService.clearCrossFileCaches()
                     }
                     grailsService.workspaceManager?.propagateInvalidation(this)
+                    setDependencyDirty(false)
                 }
-                setDependencyDirty(false)
             } catch (Exception e) {
                 log.error("[ProjectContext] Async recompilation failed for project ${this.@project.name}", e)
             }
@@ -695,12 +764,13 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     // --- CompilationContext Interface ---
 
     @Override GrailsCompiler getCompiler() {
-        ensureActivated()
         this.@compiler
     }
     @Override GrailsASTVisitor getVisitor() {
-        ensureActivated()
         this.@visitor
+    }
+    ClassLoader getClassLoaderUnsafeOrNull() {
+        this.@compiler?.classLoader
     }
     @Override FileContentTracker getFileTracker() { grailsService.fileTracker }
     @Override kingsk.grails.lsp.services.ASTService getAstService() { null }

@@ -23,13 +23,14 @@ class GrailsFoldingRangeProvider extends BaseProvider {
         long startTime = System.currentTimeMillis()
 
         return CompletableFuture.supplyAsync({ ->
+            RequestContext ctx = null
             try {
                 checkCancellation(token)
-                def ctx = createRequestContext(params.textDocument.uri)
+                ctx = createRequestContext(params.textDocument.uri)
                 String uri = params.textDocument.uri
                 
                 List<FoldingRange> ranges = []
-                def nodes = ctx.ast().getNodes(uri)
+                def nodes = ctx.ast()?.getNodes(uri)
                 if (!nodes) return ranges
 
                 nodes.each { node ->
@@ -45,6 +46,7 @@ class GrailsFoldingRangeProvider extends BaseProvider {
 
                 return ranges
             } finally {
+                ctx?.close()
                 recordHealth("foldingRanges", System.currentTimeMillis() - startTime, true)
             }
         } as Supplier<List<FoldingRange>>)
