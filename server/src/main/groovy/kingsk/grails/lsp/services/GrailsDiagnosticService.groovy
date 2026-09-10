@@ -122,11 +122,28 @@ class GrailsDiagnosticService {
 
     /**
      * Publishes diagnostics for a specific file immediately
+     * Publishes diagnostics for a specific file immediately, rejecting stale reports
+     * if the document has advanced to a newer version or open generation.
+     *
      * @param uri The URI of the file to publish diagnostics for
+     * @param expectedVersion Optional version expected for this diagnostic run
+     * @param expectedGeneration Optional open generation expected for this diagnostic run
      */
-    void publishDiagnosticsForFile(String uri) {
+    void publishDiagnosticsForFile(String uri, Integer expectedVersion = null, Long expectedGeneration = null) {
         if (!client) {
             log.debug "[DIAGNOSTICS] No client connected, skipping diagnostic publishing for ${uri}"
+            return
+        }
+
+        TextFile live = service.fileTracker.getTextFile(uri)
+        if (expectedGeneration != null && live != null && !live.closed && live.openGeneration != expectedGeneration) {
+            log.debug "[DIAGNOSTICS] Skipping stale diagnostic report for {} (expected gen {} != live {})",
+                uri, expectedGeneration, live.openGeneration
+            return
+        }
+        if (expectedVersion != null && live != null && !live.closed && live.version != expectedVersion) {
+            log.debug "[DIAGNOSTICS] Skipping stale diagnostic report for {} (expected ver {} != live {})",
+                uri, expectedVersion, live.version
             return
         }
 
@@ -135,13 +152,26 @@ class GrailsDiagnosticService {
                 new TextDocumentIdentifier(uri), null, null
             ).get()
 
-            if (diagnosticReport.getLeft()?.items) {
-                client.publishDiagnostics(new PublishDiagnosticsParams(uri, diagnosticReport.getLeft().items))
-                log.debug "[DIAGNOSTICS] Published ${diagnosticReport.getLeft().items.size()} diagnostics for ${uri}"
+            TextFile liveAfter = service.fileTracker.getTextFile(uri)
+            if (expectedGeneration != null && liveAfter != null && !liveAfter.closed && liveAfter.openGeneration != expectedGeneration) {
+                log.debug "[DIAGNOSTICS] Discarding stale diagnostics for {} after calculation (gen changed)", uri
+                return
+            }
+            if (expectedVersion != null && liveAfter != null && !liveAfter.closed && liveAfter.version != expectedVersion) {
+                log.debug "[DIAGNOSTICS] Discarding stale diagnostics for {} after calculation (version changed)", uri
+                return
+            }
+
+            List<Diagnostic> items = diagnosticReport?.getLeft()?.items ?: []
+            PublishDiagnosticsParams params = new PublishDiagnosticsParams(uri, items)
+            if (expectedVersion != null) {
+                params.setVersion(expectedVersion)
+            }
+            client.publishDiagnostics(params)
+            if (items.isEmpty()) {
+                log.debug "[DIAGNOSTICS] Cleared diagnostics for {} (v={})", uri, expectedVersion
             } else {
-                // Clear diagnostics if no issues found
-                client.publishDiagnostics(new PublishDiagnosticsParams(uri, []))
-                log.debug "[DIAGNOSTICS] Cleared diagnostics for ${uri}"
+                log.debug "[DIAGNOSTICS] Published {} diagnostics for {} (v={})", items.size(), uri, expectedVersion
             }
         } catch (Exception e) {
             log.warn "[DIAGNOSTICS] Failed to publish diagnostics for ${uri}: ${e.message}"

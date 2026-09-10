@@ -54,6 +54,7 @@ class GrailsTextDocumentService implements TextDocumentService {
     private long recoveryGeneration = 0L
     private long closeRecoveryGeneration = 0L
     private final Map<String, Integer> handledVersions = new ConcurrentHashMap<>()
+    private final Map<String, HandledRevision> handledRevisions = new ConcurrentHashMap<>()
     private String lastServedRoot
     private CompletableFuture<Void> idleFuture = CompletableFuture.completedFuture(null)
     private volatile boolean stopped = false
@@ -137,7 +138,7 @@ class GrailsTextDocumentService implements TextDocumentService {
     void didOpen(DidOpenTextDocumentParams params) {
         try {
             log.debug("[DOCUMENT] - Opened: ${params.textDocument.uri}")
-            
+
             synchronized (admissionLock) {
                 def textFile = service.fileTracker.didOpenFile(params, false)
                 if (textFile) {
@@ -184,6 +185,7 @@ class GrailsTextDocumentService implements TextDocumentService {
             PendingChange pending = previous ?: new PendingChange(uri, rootKey)
             pending.rootKey = rootKey
             pending.version = tracked.version
+            pending.openGeneration = tracked.openGeneration
             pending.closed = tracked.closed
             pending.dueNanos = dueNanos
             pending.superseded = false
@@ -213,15 +215,18 @@ class GrailsTextDocumentService implements TextDocumentService {
             if (pending.closed) {
                 revision = TextFile.create(pending.uri, null)
                 revision.version = pending.version
+                revision.openGeneration = pending.openGeneration
                 revision.markClosed()
             } else {
                 TextFile tracked = service.fileTracker.getTextFile(pending.uri)
                 if (tracked == null || tracked.closed) return
+                if (tracked == null || tracked.closed || tracked.openGeneration != pending.openGeneration || tracked.version != pending.version) return
                 long textBytes = estimateTextBytes(tracked.text)
                 if (textBytes > MAX_AUTOMATIC_DOCUMENT_BYTES) {
                     synchronized (pendingChanges) {
                         oversizedDeferrals++
                         handledVersions.put(pending.uri, pending.version)
+                        handledRevisions.put(pending.uri, new HandledRevision(pending.openGeneration, pending.version))
                     }
                     log.warn('[DOCUMENT] Automatic compilation deferred for oversized document {} ({} bytes, limit {})',
                         pending.uri, textBytes, MAX_AUTOMATIC_DOCUMENT_BYTES)
@@ -229,6 +234,7 @@ class GrailsTextDocumentService implements TextDocumentService {
                 }
                 revision = TextFile.create(tracked.uri, tracked.text)
                 revision.version = tracked.version
+                revision.openGeneration = tracked.openGeneration
                 revision.fileState = tracked.fileState
                 synchronized (pendingChanges) {
                     if (!isCurrentLocked(pending)) return
@@ -244,6 +250,7 @@ class GrailsTextDocumentService implements TextDocumentService {
                 service.diagnostics.clearDiagnosticsForFile(revision.uri)
                 synchronized (pendingChanges) {
                     handledVersions.remove(revision.uri)
+                    handledRevisions.remove(revision.uri)
                 }
                 return
             }
@@ -252,6 +259,7 @@ class GrailsTextDocumentService implements TextDocumentService {
             context.compileAndVisitAST(revision, { -> isCurrent(pending) } as BooleanSupplier)
             synchronized (pendingChanges) {
                 if (isCurrentLocked(pending)) handledVersions.put(pending.uri, revision.version)
+                if (isCurrentLocked(pending)) handledRevisions.put(pending.uri, new HandledRevision(revision.openGeneration, revision.version))
             }
         } catch (CancellationException e) {
             pending.finished.completeExceptionally(e)
@@ -336,6 +344,7 @@ class GrailsTextDocumentService implements TextDocumentService {
                 drained = activeChange.finished
             }
             handledVersions.keySet().removeIf { String uri -> WorkspaceManager.isSameOrChildPath(uri, normalizedRoot) }
+            handledRevisions.keySet().removeIf { String uri -> WorkspaceManager.isSameOrChildPath(uri, normalizedRoot) }
             requestDispatchLocked()
             completeIdleIfDrainedLocked()
             return drained
@@ -543,8 +552,8 @@ class GrailsTextDocumentService implements TextDocumentService {
                 if (rootKey == null) continue
                 openUris.add(file.uri)
                 openUrisByRoot.computeIfAbsent(rootKey, { String ignored -> new HashSet<String>() }).add(file.uri)
-                Integer handledVersion = handledVersions.get(file.uri)
-                if ((handledVersion != null && handledVersion == file.version) ||
+                HandledRevision handled = handledRevisions.get(file.uri)
+                if ((handled != null && handled.matches(file.openGeneration, file.version)) ||
                     alreadyQueued.contains(file.uri) || file.uri == activeUri) continue
                 filesByRoot.computeIfAbsent(rootKey, { String ignored -> new ArrayList<RecoveryCandidate>() })
                     .add(new RecoveryCandidate(file, rootKey))
@@ -559,7 +568,7 @@ class GrailsTextDocumentService implements TextDocumentService {
                 if (stopped) return
                 if (reconcileCloses && observedCloseGeneration == closeRecoveryGeneration) {
                     closeRecoveryRequired = false
-                    handledVersions.keySet().retainAll(openUris)
+                    handledRevisions.keySet().retainAll(openUris)
                 }
                 boolean allRecovered = fairOrder.size() <= MAX_PENDING_DOCUMENTS
                 long now = System.nanoTime()
@@ -567,12 +576,13 @@ class GrailsTextDocumentService implements TextDocumentService {
                 for (int index = 0; index < attempts; index++) {
                     RecoveryCandidate candidate = fairOrder.get(index)
                     TextFile file = candidate.file
-                    Integer handledVersion = handledVersions.get(file.uri)
-                    if ((handledVersion != null && handledVersion == file.version) ||
+                    HandledRevision handled = handledRevisions.get(file.uri)
+                    if ((handled != null && handled.matches(file.openGeneration, file.version)) ||
                         pendingChanges.containsKey(file.uri) ||
                         (activeChange != null && activeChange.uri == file.uri)) continue
                     PendingChange ticket = new PendingChange(file.uri, candidate.rootKey)
                     ticket.version = file.version
+                    ticket.openGeneration = file.openGeneration
                     ticket.dueNanos = now
                     if (!admitPendingLocked(ticket)) allRecovered = false
                 }
@@ -823,6 +833,7 @@ class GrailsTextDocumentService implements TextDocumentService {
             recoveryRequired = false
             closeRecoveryRequired = false
             handledVersions.clear()
+            handledRevisions.clear()
             if (activeChange != null) {
                 activeChange.superseded = true
                 activeChange.finished.complete(null)
@@ -847,6 +858,7 @@ class GrailsTextDocumentService implements TextDocumentService {
         final CompletableFuture<Void> finished = new CompletableFuture<>()
         String rootKey
         int version
+        long openGeneration
         boolean closed
         boolean superseded
         long dueNanos
@@ -855,6 +867,21 @@ class GrailsTextDocumentService implements TextDocumentService {
         PendingChange(String uri, String rootKey) {
             this.uri = uri
             this.rootKey = rootKey
+        }
+    }
+
+    @CompileStatic
+    private static class HandledRevision {
+        final long openGeneration
+        final int version
+
+        HandledRevision(long openGeneration, int version) {
+            this.openGeneration = openGeneration
+            this.version = version
+        }
+
+        boolean matches(long gen, int ver) {
+            return this.openGeneration == gen && this.version == ver
         }
     }
 

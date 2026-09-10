@@ -39,44 +39,44 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     private final GrailsService grailsService
     private GrailsProject project
-    
+
     final ProjectIndex projectIndex
     final IndexManager indexManager
     final MethodScopeCache methodScopeCache
     final GroovydocCache groovydocCache
-    
+
     // Live compilation state (Current Generation)
     private GrailsCompiler compiler
     private GrailsASTVisitor visitor
-    
+
     // Lifecycle Tracking (Phase 3)
     private final AtomicReference<ProjectState> state = new AtomicReference<>(ProjectState.INITIALIZING)
     private final AtomicReference<CompletableFuture<Void>> activationFuture = new AtomicReference<>(null)
     private volatile long lastAccessedTime = System.currentTimeMillis()
     private volatile boolean dependencyDirty = false
-    
+
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
     private final AtomicLong versionCounter = new AtomicLong(0)
     // Accessed only under astLock. These are committed editor overlays, not project source inventory.
     private final Set<String> openDocumentUris = new HashSet<>()
-    
+
     // Atomic source of truth for the entire project (Lineage & LKG)
     final SnapshotManager snapshotManager
 
     ProjectContextImpl(GrailsProject project, GrailsService grailsService) {
         this.@project = project
         this.grailsService = grailsService
-        
+
         this.projectIndex = new ProjectIndex(project.name ?: "root")
         this.methodScopeCache = new MethodScopeCache()
         this.groovydocCache = new GroovydocCache(100)
         this.indexManager = new IndexManager(projectIndex, methodScopeCache, groovydocCache)
-        
+
         // Initialize SnapshotManager
         this.snapshotManager = new SnapshotManager(
             new VersionedSnapshot(0, projectIndex.snapshot, null, null, [:], System.currentTimeMillis())
         )
-        
+
         // Initialize the first generation
         this.@compiler = new GrailsCompiler(grailsService)
         this.@visitor = new GrailsASTVisitor(grailsService)
@@ -104,6 +104,11 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             if (this.@state.get() == ProjectState.DISPOSING || this.@compiler == null) return
             if (currentRevision != null) {
                 if (!currentRevision.asBoolean) return
+                TextFile live = grailsService.fileTracker.getTextFile(textFile.uri)
+                if (live != null && (live.closed || (live.open && live.openGeneration != textFile.openGeneration) || live.version != textFile.version)) {
+                    log.debug("[ProjectContext] Stale compilation candidate rejected for {}", textFile.uri)
+                    return
+                }
                 this.@compiler.markDirty(textFile.uri)
             }
             if (!this.@compiler.isDirty(textFile.uri) && this.@compiler.compilationExistsFor(textFile.uri)) {
@@ -114,6 +119,14 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             this.@compiler.compileSourceFile(textFile)
 
             if (this.@state.get() == ProjectState.DISPOSING || (currentRevision != null && !currentRevision.asBoolean)) return
+            if (currentRevision != null) {
+                TextFile liveMid = grailsService.fileTracker.getTextFile(textFile.uri)
+                if (liveMid != null && (liveMid.closed || (liveMid.open && liveMid.openGeneration != textFile.openGeneration) || liveMid.version != textFile.version)) {
+                    log.debug("[ProjectContext] Stale candidate rejected before visit for {}", textFile.uri)
+                    return
+                }
+            }
+
             def sourceUnit = this.@compiler.getSourceUnit(textFile)
             if (sourceUnit) {
                 this.@visitor.visitSourceUnit(sourceUnit)
@@ -122,7 +135,14 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
                 if (classNodes != null) indexManager.rebuildFile(textFile.uri, classNodes)
             }
             if (currentRevision != null && !currentRevision.asBoolean) return
-            if (currentRevision != null) openDocumentUris.add(textFile.uri)
+            if (currentRevision != null || grailsService.fileTracker.getOpenGeneration(textFile.uri) != null) {
+                TextFile liveFinal = grailsService.fileTracker.getTextFile(textFile.uri)
+                if (liveFinal != null && (liveFinal.closed || (liveFinal.openGeneration != 0L && liveFinal.openGeneration != textFile.openGeneration) || liveFinal.version != textFile.version)) {
+                    log.debug("[ProjectContext] Stale candidate rejected before commit for {}", textFile.uri)
+                    return
+                }
+                openDocumentUris.add(TextFile.normalizePath(textFile.uri))
+            }
             commitSnapshotLocked()
             grailsService.clearCrossFileCaches()
             committed = true
@@ -131,7 +151,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         grailsService.workspaceManager?.propagateInvalidation(this)
         if (currentRevision != null && !currentRevision.asBoolean) return
         try {
-            grailsService.diagnostics.publishDiagnosticsForFile(textFile.uri)
+            grailsService.diagnostics.publishDiagnosticsForFile(textFile.uri, textFile.version, textFile.openGeneration)
         } catch (Exception e) {
             log.error("[ProjectContext] Failed to publish diagnostics for {}: {}", textFile.uri, e.message)
         }
@@ -166,7 +186,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     private void commitSnapshotLocked() {
         if (this.@state.get() == ProjectState.DISPOSING) return
         long ver = versionCounter.incrementAndGet()
-        
+
         // CAPTURE: The current visitor as a stable ASTAccessor for this snapshot
         ASTAccessor snapshotAccessor = (ASTAccessor) this.@visitor
 
@@ -178,11 +198,11 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             [:],
             System.currentTimeMillis()
         )
-        
+
         // ATOMIC SWAP: Delegate to SnapshotManager to track lineage and LKG state
         boolean isSuccess = this.@compiler != null && !this.@compiler.errorCollectorOrNull?.hasErrors()
         snapshotManager.commit(newSnapshot, isSuccess)
-        
+
         // GENERATION SWAP: Create a fresh visitor for the next compilation cycle.
         // We copy the visitor maps so that files not compiled in the current cycle
         // are retained, while ensuring the committed snapshot's visitor maps remain frozen/untouched.
@@ -191,7 +211,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             nextVisitor.copyFrom((GrailsASTVisitor) snapshotAccessor)
         }
         this.@visitor = nextVisitor
-        
+
         log.debug("[ProjectContext] Committed snapshot v${ver}")
     }
 
@@ -199,6 +219,27 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     void closeDocument(String uri) {
         withWriteLock {
             if (this.@state.get() == ProjectState.DISPOSING) return
+            if (this.@visitor == null) {
+                this.@visitor = new GrailsASTVisitor(grailsService)
+                def previous = snapshotManager.active?.ast
+                if (previous instanceof GrailsASTVisitor) this.@visitor.copyFrom((GrailsASTVisitor) previous)
+            }
+            this.@visitor.removeFileWithDependencies(uri)
+            indexManager.evictFile(uri)
+            openDocumentUris.remove(TextFile.normalizePath(uri))
+            commitSnapshotLocked()
+            if (this.@state.get() == ProjectState.HIBERNATED) this.@visitor = null
+            grailsService.clearCrossFileCaches()
+        }
+    }
+
+    /** Permanently removes a deleted document from the project, compiler, visitor, index and snapshots. */
+    void deleteDocument(String uri) {
+        withWriteLock {
+            if (this.@state.get() == ProjectState.DISPOSING) return
+            if (this.@compiler != null) {
+                this.@compiler.removeSourceFile(uri)
+            }
             if (this.@visitor == null) {
                 this.@visitor = new GrailsASTVisitor(grailsService)
                 def previous = snapshotManager.active?.ast
@@ -266,15 +307,15 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     /**
      * Wakes the project from hibernation or failure.
-     * Uses atomic compare-and-set on the activationFuture to prevent race conditions 
+     * Uses atomic compare-and-set on the activationFuture to prevent race conditions
      * causing duplicate GroovyCompiler instances to spawn when multiple concurrent LSP requests arrive.
-     * 
+     *
      * @param activationTask The closure containing the asynchronous compilation logic.
      */
     @Override
     void reactivate(Closure<Void> activationTask) {
         if (this.@state.get() == ProjectState.DISPOSING) return
-        
+
         CompletableFuture<Void> newFuture = new CompletableFuture<Void>()
         if (this.@activationFuture.compareAndSet(null, newFuture)) {
             this.@state.set(ProjectState.REACTIVATING)
@@ -290,7 +331,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     /**
      * Signals the project has successfully finished loading or reactivating.
-     * Completing the activation future releases any concurrent LSP threads that were 
+     * Completing the activation future releases any concurrent LSP threads that were
      * safely blocked waiting for the compiler to become available.
      */
     @Override
@@ -307,7 +348,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     /**
      * Releases expensive AST and compiler memory to prevent OOM errors in large workspaces.
-     * Nullifies the compiler, visitor, and classloader ties so the GC can reclaim the 
+     * Nullifies the compiler, visitor, and classloader ties so the GC can reclaim the
      * heavy Groovy ClassNode trees, while preserving the project metadata and snapshot lineage.
      */
     @Override
@@ -325,7 +366,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     /**
      * Terminal state triggered when a workspace folder is removed.
-     * Cancels any pending activation futures and clears all references to ensure no 
+     * Cancels any pending activation futures and clears all references to ensure no
      * background sync or compilation operations leak and run against a deleted project.
      */
     @Override
@@ -421,7 +462,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     @Override void notifyAllProjects() { }
     @Override void addProject(GrailsProject project) { this.@project = project }
     @Override void removeProject(String projectDir) { }
-    @Override void updateProject(GrailsProject p, String projectDir) { 
+    @Override void updateProject(GrailsProject p, String projectDir) {
         this.@project = p
         resetFailedState()
     }
@@ -445,12 +486,12 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     @Override
     void triggerGradleSync() {
         if (this.@state.get() == ProjectState.DISPOSING) return
-        
+
         CompletableFuture<Void> newFuture = new CompletableFuture<Void>()
         if (this.@activationFuture.compareAndSet(null, newFuture)) {
             this.@state.set(ProjectState.REACTIVATING)
             log.info("[ProjectContext] Triggering asynchronous Gradle sync for project: ${this.@project.name}")
-            
+
             grailsService.gradle.getGrailsProjectAsync(this.@project.rootDirectory.absolutePath).whenComplete({ GrailsProject newProject, Throwable ex ->
                 if (ex != null) {
                     this.@state.set(ProjectState.FAILED)
@@ -472,7 +513,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             try {
                 log.info("[ProjectContext] Asynchronously recompiling project ${this.@project.name} due to dependency changes")
                 ensureActivated()
-                
+
                 def allSources = kingsk.grails.lsp.utils.services.ServiceUtils.getAllGroovySourceFilesFromProject(this.project)
                 if (allSources) {
                     withWriteLock {

@@ -127,7 +127,7 @@ class GrailsCompiler {
             ?.find { it.name == "build" }
         if (buildDir?.exists()) compilerConfig.targetDirectory = buildDir
         else compilerConfig.targetDirectory = option.TARGET_DIRECTORY
-        
+
         compilerConfig.optimizationOptions.put(CompilerConfiguration.GROOVYDOC, true)
 
         if (option.SOURCE_ENCODING) compilerConfig.sourceEncoding = option.SOURCE_ENCODING
@@ -521,6 +521,13 @@ class GrailsCompiler {
     void removeSourceFile(String uri) {
         sourceUnitsCache.remove(uri)
         log.info("[COMPILER] Removed ${uri} from cache")
+        if (!uri) return
+        dirtySources.remove(uri)
+        SourceUnit old = sourceUnitsCache.remove(uri)
+        if (old != null && compilationUnit != null) {
+            compilationUnit.removeSourceUnit(old)
+        }
+        log.info("[COMPILER] Removed ${uri} from cache and compilation unit")
     }
 
     GroovyClassLoader getClassLoader() {

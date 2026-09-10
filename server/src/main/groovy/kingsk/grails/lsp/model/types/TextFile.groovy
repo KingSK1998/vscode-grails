@@ -12,6 +12,7 @@ class TextFile {
 	String nameWithoutExtension
 	FileState fileState
 	int version = 0
+	long openGeneration = 0L
 	// text document version (open, change, delete)
 
 	private TextFile(String uri, String text) {

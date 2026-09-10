@@ -73,6 +73,13 @@ class GrailsWorkspaceService implements WorkspaceService {
         for (FileEvent event : params.changes) {
             if (event?.uri && isBuildConfigurationFile(event.uri)) {
                 buildChanges.add(event.uri)
+            } else if (event?.type == FileChangeType.Deleted && event?.uri) {
+                grailsService.fileTracker.didDeleteFile(event.uri)
+                def ctx = grailsService.workspaceManager?.getProjectForUri(event.uri)
+                if (ctx != null) {
+                    ctx.deleteDocument(event.uri)
+                }
+                grailsService.diagnostics?.clearDiagnosticsForFile(event.uri)
             }
         }
 

@@ -134,3 +134,16 @@
 - Root removal removes routing and enters DISPOSING immediately. It cancels queued work, invalidates active publication and releases context resources asynchronously after the active document future drains.
 - Focused evidence passes: `DocumentCompilationSpec` 15/15, `WorkspaceLifecycleSpec` 8/8 and `ReactivationAndLruSpec` 4/4. The full 290-test run has 23 provider expectation failures in completion/inlay/rename/signature suites; do not describe the full server suite as green until those are resolved or rebaselined.
 - R1-02 remains next: received-order incremental edits, UTF-16, obsolete versions, open generations and stale diagnostics/publication.
+
+## R1-02 Revision Ordering and Publication Safety Milestone (2026-09-10)
+
+- `FileContentTracker.didChangeFile` applies sequential `contentChanges` in array order without sorting, strictly adhering to LSP 3.17 specification.
+- `PositionHelper.getOffset` and `PositionHelper.getPosition` fixed to correctly handle empty files `""` at position `(0, 0)` -> offset 0. Verified CRLF (`\r\n`), standalone `\r`, and UTF-16 surrogate pairs (2 code units for astral plane characters/emojis).
+- Monotonic `AtomicLong generationSequence` in `FileContentTracker` generates `openGeneration` per `didOpenFile`. Obsolete versions (`version <= currentVersion` within the same open generation) and obsolete open generations are rejected.
+- `GrailsTextDocumentService` tracks `HandledRevision` (both `openGeneration` and `version`), checking revision validity during scheduling, execution, and work recovery.
+- `ProjectContextImpl` enforces atomic validation of live open generation and version before compiling, before AST visiting, and immediately before `commitSnapshotLocked()`. Stale candidate snapshots are discarded.
+- `GrailsDiagnosticService` checks open generation and version before and after diagnostics generation, and attaches LSP 3.15+ `version` parameter in `PublishDiagnosticsParams` so clients reject out-of-order diagnostic publications.
+- Distinct lifecycles established for closing an overlay vs deleting a file: closing restores disk-backed facts while `didDeleteFile` / `deleteDocument` permanently purges tracked buffers, compilation units, AST visitors, and project index state.
+- Focused tests passing: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15), and `ReactivationAndLruSpec` (4/4). Full test suite completed 309 tests with 23 pre-existing provider expectation failures unchanged. Client checks (`check-types`, `lint`, `test:client`, `test:smoke`) passed 100%.
+- Next roadmap task: **R1-03** (Bound Gradle synchronization and retain usable state).
+

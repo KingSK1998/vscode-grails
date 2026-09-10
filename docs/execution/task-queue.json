@@ -65,18 +65,18 @@
       ],
       "spec": "docs/execution/task-specifications.md#r1-01",
       "record": "docs/execution/records/R1-01.md",
-      "owner": "Codex /root"
+      "owner": "Antigravity"
     },
     {
       "id": "R1-02",
       "title": "Preserve revision order and reject stale publication",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R1-01"
       ],
       "spec": "docs/execution/task-specifications.md#r1-02",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R1-02.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R1-03",

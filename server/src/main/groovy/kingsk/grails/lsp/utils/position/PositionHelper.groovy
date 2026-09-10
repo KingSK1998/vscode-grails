@@ -8,36 +8,36 @@ import org.eclipse.lsp4j.Position
 
 @CompileStatic
 class PositionHelper {
-	
+
 	static final Comparator<Position> COMPARATOR = Comparator
 			.comparingInt { Position p -> p.line }
 			.thenComparingInt { Position p -> p.character }
-	
+
 	static int compareStartPositions(ASTNode a, ASTNode b) {
 		def aStart = ASTUtils.astNodeToRange(a)?.start ?: zeroPosition()
 		def bStart = ASTUtils.astNodeToRange(b)?.start ?: zeroPosition()
 		return COMPARATOR.reversed().compare(aStart, bStart)
 	}
-	
+
 	static int compareEndPositions(ASTNode a, ASTNode b) {
 		def aEnd = ASTUtils.astNodeToRange(a)?.end ?: zeroPosition()
 		def bEnd = ASTUtils.astNodeToRange(b)?.end ?: zeroPosition()
 		return COMPARATOR.compare(aEnd, bEnd)
 	}
-	
+
 	static boolean isValidPosition(Position p) {
 		return p?.line >= 0 && p?.character >= 0
 	}
-	
+
 	static Position zeroPosition() {
 		return new Position(0, 0)
 	}
-	
+
 	static Position warningToPosition(WarningMessage warning) {
 		if (!warning?.context) return null
 		return fromGroovyPosition(warning.context.startLine, warning.context.startColumn)
 	}
-	
+
 	/**
 	 * Converts a Groovy position to a LSP position.
 	 * Groovy uses 1-based line/column numbers, LSP uses 0-based.
@@ -47,18 +47,18 @@ class PositionHelper {
 	 */
 	static Position fromGroovyPosition(int groovyLine, int groovyColumn) {
 		if (groovyLine < 0) return null
-		
+
 		// Handle Groovy position conversion:
 		// - Groovy line 0 stays as LSP line 0
 		// - Groovy line 1+ becomes LSP line (groovyLine - 1)
-		// - Groovy column 0 stays as LSP column 0  
+		// - Groovy column 0 stays as LSP column 0
 		// - Groovy column 1+ becomes LSP column (groovyColumn - 1)
 		int lspLine = (groovyLine == 0) ? 0 : groovyLine - 1
 		int lspColumn = (groovyColumn == 0) ? 0 : groovyColumn - 1
-		
+
 		return new Position(lspLine, lspColumn)
 	}
-	
+
 	/**
 	 * Calculates the character offset in the content for the given position.
 	 * Handles different line ending types: \n, \r, \r\n
@@ -68,16 +68,21 @@ class PositionHelper {
 	 * @return The character offset, or -1 if the position is invalid or out of bounds
 	 */
 	static int getOffset(String content, Position position) {
-		if (!content || !position || position.line < 0 || position.character < 0) {
+		if (content == null || position == null || position.line < 0 || position.character < 0) {
 			return -1
 		}
-		
+
 		int targetLine = position.line
 		int targetCharacter = position.character
 		int length = content.length()
+
+		if (length == 0) {
+			return targetLine == 0 && targetCharacter == 0 ? 0 : -1
+		}
+
 		int currentLine = 0
 		int offset = 0
-		
+
 		// Find the start of the target line
 		while (offset < length && currentLine < targetLine) {
 			char c = content.charAt(offset)
@@ -96,12 +101,12 @@ class PositionHelper {
 				offset++
 			}
 		}
-		
+
 		// Check if target line exists
 		if (currentLine != targetLine) {
 			return -1
 		}
-		
+
 		// Find the end of the current line to determine line length
 		int lineStart = offset
 		int lineEnd = offset
@@ -110,14 +115,14 @@ class PositionHelper {
 			if (c == '\n' || c == '\r') break
 			lineEnd++
 		}
-		
+
 		// Clamp character position to line length
 		int lineLength = lineEnd - lineStart
 		int charIndex = Math.min(targetCharacter, lineLength)
-		
+
 		return lineStart + charIndex
 	}
-	
+
 	/**
 	 * Calculates the Position (line, character) for a given character offset in the string.
 	 * Handles different line ending types: \n, \r, \r\n
@@ -127,19 +132,19 @@ class PositionHelper {
 	 * @return The Position, or null if the offset is invalid or out of bounds
 	 */
 	static Position getPosition(String content, int offset) {
-		if (!content || offset < 0 || offset > content.length()) {
+		if (content == null || offset < 0 || offset > content.length()) {
 			return null
 		}
-		
+
 		// Handle empty string
 		if (content.isEmpty()) {
-			return null
+			return offset == 0 ? new Position(0, 0) : null
 		}
-		
+
 		int line = 0
 		int lineStart = 0
 		int i = 0
-		
+
 		while (i < offset) {
 			char c = content.charAt(i)
 			if (c == '\r') {
@@ -166,11 +171,11 @@ class PositionHelper {
 				i++
 			}
 		}
-		
+
 		int character = offset - lineStart
 		return new Position(line, Math.max(0, character))
 	}
-	
+
 	/**
 	 * Gets the text content of a specific line.
 	 * @param sourceText The source text
@@ -179,13 +184,13 @@ class PositionHelper {
 	 */
 	static String getLineText(String sourceText, int lineNumber) {
 		if (!sourceText || lineNumber < 0) return ''
-		
+
 		String[] lines = sourceText.split('\r?\n', -1)
 		if (lineNumber >= lines.length) return ''
-		
+
 		return lines[lineNumber]
 	}
-	
+
 	/**
 	 * Gets the character offset of the start of a specific line.
 	 * @param source The source text
@@ -194,13 +199,13 @@ class PositionHelper {
 	 */
 	static int getLineStartOffset(String source, int lineNumber) {
 		if (!source || lineNumber < 0) return -1
-		
+
 		if (lineNumber == 0) return 0
-		
+
 		int currentLine = 0
 		int offset = 0
 		int length = source.length()
-		
+
 		while (offset < length && currentLine < lineNumber) {
 			char c = source.charAt(offset)
 			if (c == '\n') {
@@ -217,7 +222,7 @@ class PositionHelper {
 				offset++
 			}
 		}
-		
+
 		return currentLine == lineNumber ? offset : -1
 	}
 }

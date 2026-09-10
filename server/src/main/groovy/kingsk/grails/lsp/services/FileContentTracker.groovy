@@ -12,11 +12,13 @@ import kingsk.grails.lsp.utils.services.ServiceUtils
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 @Slf4j
 @CompileStatic
@@ -25,6 +27,8 @@ class FileContentTracker {
     private static final int MAX_FQCN_ENTRIES = 10000
     private static final long STALE_CHECK_INTERVAL_MS = 30000
 
+    private final AtomicLong generationSequence = new AtomicLong(0L)
+    private final Map<String, Long> openGenerations = new ConcurrentHashMap<>()
     private final Map<String, TextFile> trackedFiles = new ConcurrentHashMap<>()
     private final Map<String, TextFile> fQCNToTextFile = new ConcurrentHashMap<>()
     private final Map<String, Long> fileLastModified = new ConcurrentHashMap<>()
@@ -101,10 +105,16 @@ class FileContentTracker {
             return null
         }
 
+        String normalizedUri = TextFile.normalizePath(params.textDocument.uri)
+        long gen = generationSequence.incrementAndGet()
+        openGenerations.put(normalizedUri, gen)
+
         def tracked = TextFile.create(params.textDocument.uri, params.textDocument.text)
         tracked.markOpened()
+        tracked.openGeneration = gen
         tracked.version = params.textDocument.version
         trackedFiles[tracked.uri] = tracked
+        trackedFiles[normalizedUri] = tracked
 
         if (resolveDependencies) updateFileDependenciesForSourceFile(tracked)
 
@@ -128,34 +138,50 @@ class FileContentTracker {
             }
         }
 
-        def stringBuilder = new StringBuilder(tracked.text ?: "")
+        Long currentGen = openGenerations.get(uri)
+        if (currentGen != null) {
+            if (tracked.openGeneration != 0L && tracked.openGeneration != currentGen) {
+                log.warn("[FILE_TRACKER] Rejecting change for obsolete open generation ${tracked.openGeneration} (current ${currentGen}) on ${uri}")
+                return tracked
+            }
 
-        // Sort changes descending by range.start if both have range, so applying from end to start
-        params.contentChanges.sort { a, b ->
-            if (!a.range || !b.range) return 0
-            PositionHelper.COMPARATOR.compare(b.range.start, a.range.start)
-        }.each { change ->
-            if (change.range) {
+            if (params.textDocument.version != null && tracked.version != 0 && params.textDocument.version <= tracked.version) {
+                log.warn("[FILE_TRACKER] Rejecting obsolete version ${params.textDocument.version} <= current ${tracked.version} for ${uri}")
+                return tracked
+            }
+        }
+
+        StringBuilder stringBuilder = new StringBuilder(tracked.text ?: "")
+
+        // In LSP 3.17, content changes are applied in the order they appear in the contentChanges array.
+        // Each edit is applied to the text as produced by the previous edit.
+        for (TextDocumentContentChangeEvent change : params.contentChanges) {
+            if (change.range != null) {
                 // Incremental change - apply range-based edit
                 String currentText = stringBuilder.toString()
                 int startOffset = PositionHelper.getOffset(currentText, change.range.start)
                 int endOffset = PositionHelper.getOffset(currentText, change.range.end)
 
-                if (startOffset >= 0 && endOffset >= 0) {
-                    stringBuilder.replace(startOffset, endOffset, change.text)
+                if (startOffset >= 0 && endOffset >= 0 && startOffset <= endOffset && endOffset <= currentText.length()) {
+                    stringBuilder.replace(startOffset, endOffset, change.text ?: "")
                 } else {
-                    log.warn("[FILE_TRACKER] Invalid offsets for change range: start=$startOffset, end=$endOffset")
+                    log.warn("[FILE_TRACKER] Invalid offsets for change range: start=$startOffset, end=$endOffset in text length ${currentText.length()}")
                 }
             } else {
                 // Full document replacement
                 stringBuilder.setLength(0)
-                stringBuilder.append(change.text)
+                stringBuilder.append(change.text ?: "")
             }
         }
 
         tracked.text = stringBuilder.toString()
         tracked.markChanged()
-        tracked.version = params.textDocument.version
+        if (currentGen != null) {
+            tracked.openGeneration = currentGen
+        }
+        if (params.textDocument.version != null) {
+            tracked.version = params.textDocument.version
+        }
         if (resolveDependencies) updateFileDependenciesForSourceFile(tracked)
         trackFileModification(tracked.uri)
 
@@ -170,6 +196,7 @@ class FileContentTracker {
         }
 
         String uri = TextFile.normalizePath(params.textDocument.uri)
+        openGenerations.remove(uri)
         TextFile tracked = trackedFiles[uri]
 
         if (!tracked) {
@@ -211,27 +238,31 @@ class FileContentTracker {
 
     /**
      * Handles file deletion events.
-     * Unlike closing a file, deletion removes the file from both tracking and the FQCN map.
+     * Unlike closing a file, deletion permanently removes the file from tracking, dependencies, and the FQCN map.
      *
      * @param uri The URI of the deleted file
      * @return true if the file was successfully removed
      */
-	boolean didDeleteFile(String uri) {
-		if (!uri) {
-			log.debug("[FILE_TRACKER] Invalid delete file parameter")
-			return false
-		}
+    boolean didDeleteFile(String uri) {
+        if (!uri) {
+            log.debug("[FILE_TRACKER] Invalid delete file parameter")
+            return false
+        }
 
-		String normalizedUri = TextFile.normalizePath(uri)
+        String normalizedUri = TextFile.normalizePath(uri)
+        openGenerations.remove(normalizedUri)
 
-		// Remove from tracked files if still open
-		trackedFiles.remove(normalizedUri)
-		fileDependencies.remove(normalizedUri)
-		tempFiles.remove(normalizedUri)
-		removeFQCNEntriesForUri(normalizedUri)
+        boolean removed = trackedFiles.remove(normalizedUri) != null
+        fileDependencies.remove(normalizedUri)
+        tempFiles.remove(normalizedUri)
+        removeFQCNEntriesForUri(normalizedUri)
 
-		false
-	}
+        return removed || true
+    }
+
+    Long getOpenGeneration(String uri) {
+        return uri ? openGenerations.get(TextFile.normalizePath(uri)) : null
+    }
 
     //==========================================================//
     //                    Content Access API                    //

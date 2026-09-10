@@ -2,7 +2,7 @@
 
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-09
+> **Last updated:** 2026-09-10
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
 > **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009
 > **Related Failure Modes:** SM-001, CI-001, PC-001
@@ -19,7 +19,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 |---|---|---|---|---|
 | `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl` | Groovy CompilationUnit for selected project inputs | Compiler-dependent readers through context; coherent access still under R1-04 audit | Project compile/activation/disposal write paths |
 | `visitor` (GrailsASTVisitor) | Per-project `ProjectContextImpl` | AST traversal output | Captured request AST accessor, read-only | `visitAST()`, `compileAndVisitAST()`, commit/close lifecycle |
-| `fileTracker` (FileContentTracker) | FileContentTracker, wired by GrailsService | In-memory document buffers | Context/provider read access | Document service delegates open/change/close; never providers |
+| `fileTracker` (FileContentTracker) | FileContentTracker, wired by GrailsService | In-memory document buffers, monotonic open generation sequence, active generation mappings | Context/provider read access | Document service delegates open/change/close; workspace service delegates file deletion; never providers |
 | Legacy `astService` access | Context boundary; verify backing implementation before use | Legacy classification/cache API | Legacy consumers | Do not assume a live independently owned ASTService from an old diagram |
 | `projectIndex` (ProjectIndex) | Per-project IndexManager / ProjectContextImpl publication coordinator | Derived value facts from AST | Hover, Definition, References | Candidate index build and project commit |
 | Project lifecycle, locks, dependency dirty flag, committed overlay URI set | `ProjectContextImpl` | Registered project, work lifecycle and successfully published editor overlays | WorkspaceManager, request contexts, close-overload reconciliation | Activation, compile, sync, close reconciliation, hibernate/dispose |
@@ -78,7 +78,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `INV-ID-007` | Config values (`codeLensMode`, etc.) | ❌ Mutable | User settings | Capture consistent relevant settings per operation; changes invalidate affected derived facts. Do not cache indefinitely or mix settings mid-operation. |
 | `INV-ID-008` | Gradle dependency coordinates | Scoped identifier, not content identity | Resolved build model | Changing/snapshot artifacts may change bytes at the same coordinates; include fingerprint/revision. |
 | `INV-ID-009` | Workspace folder URI | Durable location, not lifetime | VS Code API | Removal/re-add creates a new root generation; a late callback for the old generation is invalid. |
-| `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Version can reset on reopen. URI/version alone cannot distinguish old and new overlays. |
+| `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Monotonic openGeneration assigned per didOpenFile. Version resets on reopen are distinguished by openGeneration. Edits with obsolete open generation or obsolete version are rejected. |
 
 ### Cross-System Key Rules
 
