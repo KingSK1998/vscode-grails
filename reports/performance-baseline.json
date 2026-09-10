@@ -1,0 +1,155 @@
+{
+    "timestamp": "2026-09-10T16:34:58.827181700Z",
+    "schemaVersion": 1,
+    "taskId": "R1-05",
+    "hardware": {
+        "osName": "Windows 11",
+        "osVersion": "10.0",
+        "osArch": "amd64",
+        "availableProcessors": 12,
+        "jvmName": "Java HotSpot(TM) 64-Bit Server VM",
+        "jvmVersion": "17.0.16+12-LTS-247",
+        "jvmInputArguments": [
+            "-Dgrails.lsp.test.classgraph.disabled=true",
+            "-Dgrails.lsp.test.resources=D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\server\\build\\test-workspaces",
+            "-Dorg.gradle.internal.worker.tmpdir=D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\server\\build\\tmp\\test\\work",
+            "-XX:+UseG1GC",
+            "-javaagent:D:\\Grails_Framework_Support_Extension\\vscode-gng-support\\server\\build\\tmp\\.cache\\expanded\\zip_cde35f471dab581134460fc9a50e2c59\\jacocoagent.jar=destfile=build/jacoco/test.exec,append=true,inclnolocationclasses=false,dumponexit=true,output=file,jmx=false",
+            "-Xms256m",
+            "-Xmx2g",
+            "-Dfile.encoding=windows-1252",
+            "-Duser.country=IN",
+            "-Duser.language=en",
+            "-Duser.variant",
+            "-ea"
+        ],
+        "totalMemoryMiB": 256,
+        "maxMemoryMiB": 2048
+    },
+    "benchmarks": {
+        "warmDocumentNotification": {
+            "sampleCount": 100,
+            "minMs": 0.99,
+            "maxMs": 4.46,
+            "meanMs": 1.71,
+            "p50Ms": 1.51,
+            "p95Ms": 2.89,
+            "p99Ms": 3.76,
+            "variance": 0.362
+        },
+        "editStorm": {
+            "sampleCount": 100,
+            "minMs": 1.57,
+            "maxMs": 10.8,
+            "meanMs": 4.92,
+            "p50Ms": 4.55,
+            "p95Ms": 9.32,
+            "p99Ms": 10.06,
+            "variance": 6.378
+        },
+        "coldDocumentNotification": {
+            "sampleCount": 50,
+            "minMs": 1.53,
+            "maxMs": 56,
+            "meanMs": 4.42,
+            "p50Ms": 2.76,
+            "p95Ms": 6.96,
+            "p99Ms": 56,
+            "variance": 58.718
+        },
+        "warmHover": {
+            "sampleCount": 100,
+            "minMs": 1.7,
+            "maxMs": 9.75,
+            "meanMs": 2.96,
+            "p50Ms": 2.65,
+            "p95Ms": 4.8,
+            "p99Ms": 5.62,
+            "variance": 1.189
+        },
+        "memoryStats": {
+            "initialHeapBytes": 31355712,
+            "peakHeapBytes": 63337280,
+            "settledHeapBytes": 31758648,
+            "settledHeapMiB": 30.3,
+            "heapGrowthRatio": 1.01,
+            "classloaderDetached": true
+        },
+        "warmCompletion": {
+            "sampleCount": 100,
+            "minMs": 0.76,
+            "maxMs": 8.41,
+            "meanMs": 1.74,
+            "p50Ms": 1.57,
+            "p95Ms": 2.59,
+            "p99Ms": 3.69,
+            "variance": 0.671
+        },
+        "blockedBuildReads": {
+            "sampleCount": 50,
+            "minMs": 0.01,
+            "maxMs": 0.58,
+            "meanMs": 0.02,
+            "p50Ms": 0.01,
+            "p95Ms": 0.03,
+            "p99Ms": 0.58,
+            "variance": 0.006
+        },
+        "numericLimits": {
+            "maxAutomaticDocumentBytes": 4194304,
+            "maxPendingBytes": 262144,
+            "maxPendingDocuments": 256,
+            "maxTrackedFiles": 500,
+            "maxFqcnEntries": 10000,
+            "maxSyncRetries": 2,
+            "largeFileOpenLatencyMs": 2.56,
+            "largeFileAutomaticCompileSkipped": true,
+            "queueLimitsEnforced": true
+        },
+        "lifecycleTransitions": {
+            "sampleCount": 25,
+            "minMs": 13.57,
+            "maxMs": 44.38,
+            "meanMs": 20.3,
+            "p50Ms": 19.43,
+            "p95Ms": 25.49,
+            "p99Ms": 44.38,
+            "variance": 34.005
+        }
+    },
+    "scorecardComparisons": {
+        "ordinaryDocumentNotification": {
+            "target": "p95 <= 15.0 ms (target <10ms)",
+            "observedP95Ms": 2.89,
+            "status": "PASS"
+        },
+        "warmCompletion": {
+            "target": "p95 < 100.0 ms",
+            "observedP95Ms": 2.59,
+            "status": "PASS"
+        },
+        "warmHover": {
+            "target": "p95 < 100.0 ms",
+            "observedP95Ms": 4.8,
+            "status": "PASS"
+        },
+        "blockedBuildReads": {
+            "target": "read latency < 10.0 ms during 30s stall",
+            "observedP95Ms": 0.03,
+            "status": "PASS"
+        },
+        "editStormBounds": {
+            "target": "bounded queue and newest revision processed",
+            "status": "PASS"
+        },
+        "memorySettling": {
+            "target": "settled heap stabilized, classloaders detached",
+            "observedSettledMiB": 30.3,
+            "status": "PASS"
+        },
+        "largeFilePolicy": {
+            "target": "> 4 MiB skips heavy automatic compilation",
+            "status": "PASS"
+        }
+    }
+}

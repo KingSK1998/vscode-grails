@@ -176,4 +176,26 @@
 - Focused tests passing: `PublicationAndLifecycleSpec` (7/7 tests passed in 12s). Full focused suite (114/114 tests) passed. Full client checks (`compile`, `check-types`, `lint`, `test:client`, `test:smoke`) passed 100%.
 - Next roadmap task: **R1-05** (Publish performance and resource baselines).
 
+## R1-05 Performance and Resource Baselines Milestone (2026-09-10) — Phase 1 Complete
+
+- Implemented comprehensive benchmark test suite `PerformanceBaselineSpec.groovy` (`server/src/test/groovy/kingsk/grails/lsp/perf/PerformanceBaselineSpec.groovy`) covering all 7 performance and resource dimensions specified in `docs/specs/performance.md` and roadmap scorecard:
+  1. **warmDocumentNotification** (100 samples): p50 = 1.51 ms, p95 = 2.89 ms (Roadmap target: <10 ms) -> PASS
+  2. **coldDocumentNotification** (50 samples): p50 = 2.76 ms, p95 = 6.96 ms (mean: 4.42 ms) -> PASS
+  3. **warmCompletion** (100 samples): p50 = 1.57 ms, p95 = 2.59 ms (Roadmap target: <100 ms) -> PASS (38x faster than SLA)
+  4. **warmHover** (100 samples): p50 = 2.65 ms, p95 = 4.80 ms (Roadmap target: <100 ms) -> PASS (20x faster than SLA)
+  5. **blockedBuildReads** (50 samples during simulated 30s Gradle stall): p50 = 0.01 ms, p95 = 0.03 ms (Roadmap target: <10 ms) -> PASS (reads never block on build locks)
+  6. **editStorm** (100 concurrent edits across 4 parallel threads): p50 = 4.55 ms, p95 = 9.32 ms, newest revision processed -> PASS (queue bounded and fair)
+  7. **lifecycleTransitions** (25 complete cycles of project open/compile/hibernate/dispose): p50 = 19.43 ms, p95 = 25.49 ms -> PASS
+- Verified resource limits and memory settling (`INV-STATE-010`, `INV-PERF-001`, `INV-PERF-002`):
+  - **Memory Settling**: Initial heap = 29.9 MiB, Peak heap = 60.4 MiB, Settled heap = 30.3 MiB (1.01x growth ratio across 25 full lifecycle transitions; zero monotonic leak).
+  - **ClassLoader Detachment**: Verified complete detachment of `GroovyClassLoader` and `CompilationUnit` references via `DetachedASTAccessor.INSTANCE` on project release.
+  - **Large File Policy**: Files > 4 MiB (`MAX_AUTOMATIC_DOCUMENT_BYTES`) tracked in buffers while heavy automatic background compilation is skipped.
+  - **Queue & Cache Bounds**: `MAX_PENDING_BYTES = 256 KiB`, `MAX_PENDING_DOCUMENTS = 256`, `MAX_TRACKED_FILES = 500`, `MAX_FQCN_ENTRIES = 10000`, `MAX_SYNC_RETRIES = 2`.
+- Created benchmark runner `scripts/run-benchmarks.js` and added `"benchmark:perf": "node scripts/run-benchmarks.js"` to `package.json`.
+- Generated and validated machine-readable baseline report in `reports/performance-baseline.json` including full OS, CPU, JVM, and latency/resource metrics.
+- Updated `docs/specs/performance.md`, `docs/execution/records/R1-05.md`, `docs/execution/task-queue.json`, and `server/STATUS.md`.
+- **Milestone Phase 1: Concurrency & Lifecycle Correctness** is officially COMPLETE with R1-01, R1-02, R1-03, R1-04, and R1-05 all accepted.
+- Next roadmap task: **R2-01** (Isolate classpaths and source-set membership) starting **Phase 2: Dependency Resolution & Cross-Project Correctness**.
+
+
 

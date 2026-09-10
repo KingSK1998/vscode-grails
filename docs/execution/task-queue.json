@@ -103,13 +103,13 @@
     {
       "id": "R1-05",
       "title": "Publish performance and resource baselines",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R1-04"
       ],
       "spec": "docs/execution/task-specifications.md#r1-05",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R1-05.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R2-01",
