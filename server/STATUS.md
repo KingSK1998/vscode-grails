@@ -13,16 +13,17 @@
 
 | Feature / check | Status | Evidence |
 |---|---|---|
+| Bounded Gradle synchronization & LKG retention | ✅ Passing | Decoupled Gradle sync from compiler activation; non-blocking reads during 30s sync stall (< 10 ms); preserved usable LKG committed state on sync failure; in-flight sync cancellation on supersede and disposal; stale sync state labeled; bounded retry with triggers. Tests: `GradleSyncSpec` (12/12) |
 | Revision ordering & publication safety | ✅ Passing | Sequential incremental changes applied in array order; open generation sequence tracking; obsolete versions rejected; atomic generation/version verification before commit and diagnostic publishing; distinct overlay close vs delete document lifecycle. Tests: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15) |
 | Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 15/15 tests pass; bounded count/bytes, multi-root fairness, overload and newest-revision recovery, close storms, oversized input policy, root cancellation and shutdown |
 | Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
 | Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 8/8 tests pass; prior startup/root cases plus prompt terminal removal and blocked-candidate publication rejection |
-| Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 1059 ms (exit 0) |
+| Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 869 ms (exit 0) |
 | Packaged release | ✅ Passing | Deterministic build/copy verified; package asset audit passed; local VSIX installed and verified with smoke test in 921 ms (R0-04) |
 
 Reports were inspected on 2026-09-10. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
 
-R1-02 focused validation passes `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15), and `ReactivationAndLruSpec` (4/4). A 2026-09-10 full `test` run completed 309 tests with 23 failures confined to pre-existing provider expectation suites (completion, object-expression completion, inlay, rename and signature help); these remain outside R1-02 and prevent claiming a green full server suite.
+R1-03 focused validation passes `GradleSyncSpec` (12/12), `DocumentCompilationSpec` (15/15), `WorkspaceLifecycleSpec` (8/8), `RevisionAndPublicationSpec` (4/4), `ReactivationAndLruSpec` (4/4), `FileContentTrackerSpec` (18/18), and `PositionHelperSpec` (46/46) for a total of 107/107 passing tests. Full test suite has 23 failures confined to pre-existing legacy provider expectation suites; no R1-01, R1-02, or R1-03 lifecycle, synchronization, or compiler spec failed.
 
 ### Completed Work (2026-06-24)
 - **Phase 3: Multi-Project & Lifecycle Mastery**:

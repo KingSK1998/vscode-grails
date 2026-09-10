@@ -17,7 +17,7 @@ interface ProjectContext {
     void removeProject(String projectDir)
     void updateProject(GrailsProject project, String projectDir)
     GrailsProject getProjectForUri(String uri)
-    
+
     // Lifecycle Management (Phase 3b)
     SnapshotManager getSnapshotManager()
     void markAccessed()
@@ -28,11 +28,18 @@ interface ProjectContext {
     void ready()
     void hibernate()
     void dispose()
-    
+
     // Dependency & Sync Status (Phase 3)
+    // Dependency & Sync Status (Phase 3 & R1-03)
     boolean isDependencyDirty()
     void setDependencyDirty(boolean dirty)
     void resetFailedState()
     void triggerGradleSync()
+    void retryGradleSync()
+    boolean isGradleSyncInProgress()
+    boolean isGradleSyncStale()
+    String getLastSyncError()
+    int getSyncRetryCount()
+    CompletableFuture<GrailsProject> getCurrentGradleSyncFuture()
     void recompileAsync()
 }

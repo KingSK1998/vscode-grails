@@ -23,10 +23,13 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.eclipse.lsp4j.Position
 
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import java.util.function.BooleanSupplier
 
 /**
@@ -54,6 +57,15 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     private final AtomicReference<CompletableFuture<Void>> activationFuture = new AtomicReference<>(null)
     private volatile long lastAccessedTime = System.currentTimeMillis()
     private volatile boolean dependencyDirty = false
+
+    // Gradle Sync Lifecycle & Freshness (R1-03)
+    private final AtomicReference<CompletableFuture<GrailsProject>> currentGradleSyncFuture = new AtomicReference<>(null)
+    private final AtomicLong gradleSyncSequence = new AtomicLong(0L)
+    private final AtomicBoolean gradleSyncInProgress = new AtomicBoolean(false)
+    private final AtomicBoolean gradleSyncStale = new AtomicBoolean(false)
+    private final AtomicInteger gradleSyncRetryCount = new AtomicInteger(0)
+    private final AtomicReference<String> lastSyncError = new AtomicReference<>(null)
+    public static final int MAX_SYNC_RETRIES = 2
 
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
     private final AtomicLong versionCounter = new AtomicLong(0)
@@ -391,6 +403,11 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         if (future != null && !future.isDone()) {
             future.cancel(true)
         }
+        def syncFuture = this.@currentGradleSyncFuture.getAndSet(null)
+        if (syncFuture != null && !syncFuture.isDone()) {
+            syncFuture.cancel(true)
+        }
+        this.@gradleSyncInProgress.set(false)
     }
 
     /**
@@ -479,32 +496,163 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         if (this.@state.get() == ProjectState.FAILED) {
             this.@state.set(ProjectState.HIBERNATED)
             this.@activationFuture.set(null)
+            this.@gradleSyncRetryCount.set(0)
+            this.@lastSyncError.set(null)
             log.info("[ProjectContext] Project ${this.@project.name} reset from FAILED to HIBERNATED")
         }
     }
 
     @Override
     void triggerGradleSync() {
+        triggerGradleSyncInternal(false)
+    }
+
+    @Override
+    void retryGradleSync() {
+        triggerGradleSyncInternal(true)
+    }
+
+    @Override
+    boolean isGradleSyncInProgress() {
+        this.@gradleSyncInProgress.get()
+    }
+
+    @Override
+    boolean isGradleSyncStale() {
+        this.@gradleSyncStale.get()
+    }
+
+    @Override
+    String getLastSyncError() {
+        this.@lastSyncError.get()
+    }
+
+    @Override
+    int getSyncRetryCount() {
+        this.@gradleSyncRetryCount.get()
+    }
+
+    @Override
+    CompletableFuture<GrailsProject> getCurrentGradleSyncFuture() {
+        this.@currentGradleSyncFuture.get()
+    }
+
+    private void triggerGradleSyncInternal(boolean isExplicitRetry) {
         if (this.@state.get() == ProjectState.DISPOSING) return
 
-        CompletableFuture<Void> newFuture = new CompletableFuture<Void>()
-        if (this.@activationFuture.compareAndSet(null, newFuture)) {
-            this.@state.set(ProjectState.REACTIVATING)
-            log.info("[ProjectContext] Triggering asynchronous Gradle sync for project: ${this.@project.name}")
-
-            grailsService.gradle.getGrailsProjectAsync(this.@project.rootDirectory.absolutePath).whenComplete({ GrailsProject newProject, Throwable ex ->
-                if (ex != null) {
-                    this.@state.set(ProjectState.FAILED)
-                    newFuture.completeExceptionally(ex)
-                    this.@activationFuture.set(null)
-                    log.error("[ProjectContext] Gradle sync failed for project: ${this.@project.name}", ex)
-                    grailsService.errorService.handleError("Gradle sync failed for project ${this.@project.name}: ${ex.message}", ex, ErrorSource.GRADLE_SERVICE)
-                } else if (newProject != null) {
-                    this.@project = newProject
-                    ready()
-                }
-            })
+        if (isExplicitRetry) {
+            this.@gradleSyncRetryCount.set(0)
         }
+
+        long syncSeq = this.@gradleSyncSequence.incrementAndGet()
+        log.info("[ProjectContext] Triggering asynchronous Gradle sync (seq ${syncSeq}) for project: ${this.@project.name}")
+
+        // Cancel any in-flight sync from a superseded generation
+        CompletableFuture<GrailsProject> oldFuture = this.@currentGradleSyncFuture.getAndSet(null)
+        if (oldFuture != null && !oldFuture.isDone()) {
+            log.info("[ProjectContext] Cancelling superseded Gradle sync for project: ${this.@project.name}")
+            oldFuture.cancel(true)
+        }
+
+        this.@gradleSyncInProgress.set(true)
+        this.@gradleSyncStale.set(true)
+
+        // Only block activation if the project has NO usable compiler / snapshot
+        // If the project was already READY or HIBERNATED with an LKG snapshot, DO NOT block readers or activation!
+        VersionedSnapshot lkg = this.@snapshotManager.getLKG()
+        boolean hasUsableState = (this.@state.get() == ProjectState.READY || (lkg != null && lkg.version() > 0))
+        boolean isInitialActivation = !hasUsableState && (this.@state.get() == ProjectState.INITIALIZING || this.@state.get() == ProjectState.FAILED)
+        CompletableFuture<Void> activationBlocker = null
+        if (isInitialActivation) {
+            activationBlocker = new CompletableFuture<Void>()
+            if (this.@activationFuture.compareAndSet(null, activationBlocker)) {
+                this.@state.set(ProjectState.REACTIVATING)
+            } else {
+                activationBlocker = null
+            }
+        }
+
+        CompletableFuture<GrailsProject> syncFuture = grailsService.gradle.getGrailsProjectAsync(this.@project.rootDirectory.absolutePath)
+        this.@currentGradleSyncFuture.set(syncFuture)
+
+        final CompletableFuture<Void> finalBlocker = activationBlocker
+
+        syncFuture.whenComplete({ GrailsProject newProject, Throwable ex ->
+            // If project is disposed, reject late completion
+            if (this.@state.get() == ProjectState.DISPOSING) {
+                log.info("[ProjectContext] Project ${this.@project?.name} disposed; discarding late Gradle sync (seq ${syncSeq})")
+                this.@gradleSyncInProgress.set(false)
+                return
+            }
+
+            // Check if superseded by a newer sync generation
+            if (this.@gradleSyncSequence.get() != syncSeq) {
+                log.info("[ProjectContext] Discarding superseded Gradle sync result (seq ${syncSeq}, current is ${this.@gradleSyncSequence.get()}) for project: ${this.@project.name}")
+                return
+            }
+
+            this.@gradleSyncInProgress.set(false)
+
+            if (ex != null) {
+                this.@lastSyncError.set(ex.message ?: ex.getClass().simpleName)
+                log.warn("[ProjectContext] Gradle sync failed (seq ${syncSeq}) for project: ${this.@project.name}: ${ex.message}")
+
+                if (hasUsableState) {
+                    // Retain usable committed state! Project remains READY (or HIBERNATED).
+                    // State remains labeled as gradleSyncStale = true.
+                    log.info("[ProjectContext] Preserving usable committed state for ${this.@project.name} despite Gradle sync failure; stale state labeled.")
+                    if (finalBlocker != null) {
+                        finalBlocker.complete(null)
+                        this.@activationFuture.set(null)
+                    }
+                } else {
+                    // No usable state ever existed (initial sync failed)
+                    this.@state.set(ProjectState.FAILED)
+                    if (finalBlocker != null) {
+                        finalBlocker.completeExceptionally(ex)
+                        this.@activationFuture.set(null)
+                    }
+                }
+
+                grailsService.errorService.handleError("Gradle sync failed for project ${this.@project.name}: ${ex.message}", ex, ErrorSource.GRADLE_SERVICE)
+
+                // Bounded retry on transient failure if not explicit retry and retry bound not reached
+                int retries = this.@gradleSyncRetryCount.incrementAndGet()
+                if (!isExplicitRetry && retries <= MAX_SYNC_RETRIES && this.@state.get() != ProjectState.DISPOSING) {
+                    log.info("[ProjectContext] Scheduling bounded retry ${retries}/${MAX_SYNC_RETRIES} for project: ${this.@project.name}")
+                    def scheduler = grailsService.workspace?.getOrCreateScheduler()
+                    if (scheduler != null && !scheduler.isShutdown()) {
+                        scheduler.schedule({ ->
+                            if (this.@state.get() != ProjectState.DISPOSING && this.@gradleSyncSequence.get() == syncSeq) {
+                                triggerGradleSyncInternal(false)
+                            }
+                        } as Runnable, 1, TimeUnit.SECONDS)
+                    }
+                }
+            } else if (newProject != null) {
+                this.@gradleSyncRetryCount.set(0)
+                this.@lastSyncError.set(null)
+                this.@gradleSyncStale.set(false)
+                this.@project = newProject
+                log.info("[ProjectContext] Gradle sync succeeded (seq ${syncSeq}) for project: ${this.@project.name}")
+
+                if (finalBlocker != null) {
+                    finalBlocker.complete(null)
+                    this.@activationFuture.set(null)
+                }
+
+                if (this.@state.get() == ProjectState.INITIALIZING || this.@state.get() == ProjectState.HIBERNATED || this.@state.get() == ProjectState.REACTIVATING) {
+                    ready()
+                } else if (this.@state.get() == ProjectState.READY) {
+                    // Recommit snapshot with updated GradleModel so new dependencies are reflected in snapshot
+                    withWriteLock {
+                        commitSnapshotLocked()
+                    }
+                    grailsService.clearCrossFileCaches()
+                    grailsService.workspaceManager?.propagateInvalidation(this)
+                }
+            }
+        })
     }
 
     @Override

@@ -21,9 +21,20 @@ class GradleService {
     private final GrailsService service
     private final ProjectCache cache = new ProjectCache()
     private final GrailsProjectBuilder builder = new GrailsProjectBuilder()
+    private java.util.function.BiFunction<File, CancellationTokenSource, GrailsProject> buildFunction = { File dir, CancellationTokenSource cts ->
+        builder.build(dir, cts)
+    }
 
     GradleService(GrailsService service) {
         this.service = service
+    }
+
+    void setBuildFunction(java.util.function.BiFunction<File, CancellationTokenSource, GrailsProject> fn) {
+        this.buildFunction = fn
+    }
+
+    java.util.function.BiFunction<File, CancellationTokenSource, GrailsProject> getBuildFunction() {
+        return this.buildFunction
     }
 
     static File resolveProjectDir(String projectDir) {
@@ -46,6 +57,7 @@ class GradleService {
      * Asynchronously builds a GrailsProject via the Gradle Tooling API.
      * Features: 30-second timeout, explicit cancellation, and per-call connection ownership.
      * The CancellationTokenSource is always cancelled on failure to prevent daemon leaks.
+     * The CancellationTokenSource is always cancelled on failure or cancellation to prevent daemon leaks.
      */
     CompletableFuture<GrailsProject> getGrailsProjectAsync(String projectDir) {
         CancellationTokenSource cancellationSource = GradleConnector.newCancellationTokenSource()
@@ -65,7 +77,7 @@ class GradleService {
                 }
 
                 log.info("[GRADLE] Building GrailsProject via Tooling API with 30s timeout: ${rootDir.name}")
-                GrailsProject project = builder.build(rootDir, cancellationSource)
+                GrailsProject project = (buildFunction != null) ? buildFunction.apply(rootDir, cancellationSource) : builder.build(rootDir, cancellationSource)
                 cache.save(rootDir, project)
 
                 service.client?.projectUpdated(ProjectMapper.toDTO(project))
@@ -80,6 +92,8 @@ class GradleService {
             if (ex != null) {
                 if (ex instanceof java.util.concurrent.TimeoutException || ex?.cause instanceof java.util.concurrent.TimeoutException) {
                     log.warn("[GRADLE] Gradle sync timed out after 30 seconds for: ${projectDir}. Triggering cancellation.")
+                } else if (ex instanceof java.util.concurrent.CancellationException || ex?.cause instanceof java.util.concurrent.CancellationException) {
+                    log.info("[GRADLE] Gradle sync cancelled for: ${projectDir}.")
                 } else {
                     log.warn("[GRADLE] Gradle sync failed for: ${projectDir}. Triggering cancellation to prevent daemon leak.")
                 }

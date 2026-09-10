@@ -2,6 +2,7 @@
 
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
+> **Last updated:** 2026-09-09
 > **Last updated:** 2026-09-10
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
 > **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009
@@ -26,7 +27,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | Active/LKG/history lineage | Per-project `SnapshotManager` | Validated committed generations | Request capture, recovery | Project writer delegates commit; lifecycle release per state contract |
 | Project registration/routing/LRU | `WorkspaceManager` | Registered root/build identities | Document/workspace dispatch and contexts | Add/remove, access metadata, coordinated eviction |
 | Active document ticket, per-root lanes, handled revisions, recovery markers/executor | `GrailsTextDocumentService` | FileContentTracker's current buffers plus bounded scheduler metadata | Scheduler health/test observations; WorkspaceManager drain barrier | Admission, coalescing, worker recovery, close/root cancellation/shutdown. Provisional limits: 1 active, 256 pending, 32 ordinary tickets/root, 256 KiB estimated metadata, 4 MiB automatic document input; close tickets may consume the global capacity and overflow collapses to one reconciliation marker |
-| Gradle connection/model work | Gradle synchronization owner | Resolved project build model | Project writer after completion | Bounded sync, cancellation, connection close |
+| Gradle connection/model work, sync futures, retry sequence, and stale state | `ProjectContextImpl` + `GradleService`, wired by `GrailsService` | Resolved project build model, in-flight cancellation tokens, sync generation sequence, bounded retries | ProjectContext readers, SnapshotManager, LSP client | triggerGradleSync, retryGradleSync, cancellation on supersede/dispose, connection close |
 | `methodScopeCache` (MethodScopeCache) | Per-project context; entries scoped to file/revision | Local variable/param resolution | Completion, signature help | Evicted on affected document/generation change |
 | `groovydocCache` (GroovydocCache) | Per-project context/cache owner | Lazy documentation extraction | Hover, completion | Bounded LRU + input/dependency revision invalidation |
 | `config` (GrailsLspConfig) | `GrailsService` | VS Code settings via LSP | All providers (read-only) | `didChangeConfiguration()` |
@@ -78,6 +79,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `INV-ID-007` | Config values (`codeLensMode`, etc.) | ❌ Mutable | User settings | Capture consistent relevant settings per operation; changes invalidate affected derived facts. Do not cache indefinitely or mix settings mid-operation. |
 | `INV-ID-008` | Gradle dependency coordinates | Scoped identifier, not content identity | Resolved build model | Changing/snapshot artifacts may change bytes at the same coordinates; include fingerprint/revision. |
 | `INV-ID-009` | Workspace folder URI | Durable location, not lifetime | VS Code API | Removal/re-add creates a new root generation; a late callback for the old generation is invalid. |
+| `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Version can reset on reopen. URI/version alone cannot distinguish old and new overlays. |
 | `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Monotonic openGeneration assigned per didOpenFile. Version resets on reopen are distinguished by openGeneration. Edits with obsolete open generation or obsolete version are rejected. |
 
 ### Cross-System Key Rules

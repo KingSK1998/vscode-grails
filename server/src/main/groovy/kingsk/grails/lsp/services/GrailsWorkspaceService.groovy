@@ -28,7 +28,7 @@ class GrailsWorkspaceService implements WorkspaceService {
     private ScheduledFuture<?> debounceFuture
     private final Object lock = new Object()
 
-    private ScheduledExecutorService getOrCreateScheduler() {
+    ScheduledExecutorService getOrCreateScheduler() {
         synchronized (lock) {
             if (scheduler == null || scheduler.isShutdown() || scheduler.isTerminated()) {
                 scheduler = Executors.newSingleThreadScheduledExecutor()

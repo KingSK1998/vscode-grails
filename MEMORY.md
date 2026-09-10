@@ -147,3 +147,17 @@
 - Focused tests passing: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15), and `ReactivationAndLruSpec` (4/4). Full test suite completed 309 tests with 23 pre-existing provider expectation failures unchanged. Client checks (`check-types`, `lint`, `test:client`, `test:smoke`) passed 100%.
 - Next roadmap task: **R1-03** (Bound Gradle synchronization and retain usable state).
 
+## R1-03 Bounded Gradle Synchronization and Usable State Retention Milestone (2026-09-10)
+
+- Decoupled Gradle synchronization from compiler `activationFuture` in `ProjectContextImpl`, ensuring reader threads and compilations never block on long-running or stalled Gradle operations.
+- Verified that during a simulated 30-second Gradle sync stall, existing reads (`withReadLock`, `getCompiler()`, `snapshotManager.active`) complete in under 10 ms without waiting on Gradle or acquiring its locks. Stale state is explicitly labeled via `isGradleSyncInProgress()` and `isGradleSyncStale()`.
+- On Gradle sync failure (timeout, network offline, broken build script), if the project was previously ready or possesses an LKG snapshot (version > 0), usable committed state is preserved; project remains `READY` or `HIBERNATED`, preserving developer workflow while labeling stale dependency facts and error message.
+- Monotonic `gradleSyncSequence` tracks sync generations: superseded syncs cancel in-flight work and discard late completions.
+- Clean cancellation and connection ownership: `CancellationTokenSource.cancel()` triggered on timeout, cancellation, or error in `GradleService`, releasing Tooling API `ProjectConnection` exactly once.
+- On project disposal, in-flight Gradle sync is cancelled and late completion is rejected, preventing resurrection of disposed projects.
+- Bounded retry: transient sync failures automatically retry up to `MAX_SYNC_RETRIES` (2) and stop without spinning; explicit triggers (build file change or `retryGradleSync()`) reset the retry counter.
+- Debounce multi-root preservation verified: concurrent build file changes across multiple workspace roots are accumulated and trigger sync for all affected roots.
+- Focused tests passing: 107/107 tests across 7 suites (`GradleSyncSpec` 12/12, `DocumentCompilationSpec` 15/15, `WorkspaceLifecycleSpec` 8/8, `RevisionAndPublicationSpec` 4/4, `ReactivationAndLruSpec` 4/4, `FileContentTrackerSpec` 18/18, `PositionHelperSpec` 46/46). Client suite (7/7) and smoke tests (869 ms) passed.
+- Next roadmap task: **R1-04** (Prove publication and lifecycle ownership).
+
+
