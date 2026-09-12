@@ -17,8 +17,8 @@ class ProjectCache {
     private static final String PROJECT_CACHE_FILE = "projectInfo.cache"
     private static final String PROJECT_JSON_FILE = "projectInfo.json"
 
-    // Increment when project structure changes
-    private int currentVersion = 2
+    // Increment when project structure changes (v3: artifact content fingerprint validation)
+    private int currentVersion = 3
 
     /* -------------- public API remains unchanged -------------------- */
 
@@ -42,6 +42,29 @@ class ProjectCache {
                     log.info("[GRADLE] Cache missing source-set membership, invalidating: ${projectDir.name}")
                     return null
                 }
+
+                // Validate artifact content fingerprints (INV-DISC-002: invalidates by content)
+                try {
+                    Map<String, String> fingerprints = (Map<String, String>) ois.readObject()
+                    if (fingerprints != null) {
+                        for (Map.Entry<String, String> entry : fingerprints.entrySet()) {
+                            File jarFile = new File(entry.key)
+                            if (!jarFile.exists()) {
+                                log.info("[GRADLE] Binary cache is stale - dependency artifact file removed: ${entry.key}")
+                                return null
+                            }
+                            String currentFp = ArtifactFactCache.instance.computeFingerprint(jarFile)
+                            if (currentFp != entry.value) {
+                                log.info("[GRADLE] Binary cache is stale - artifact content changed at same coordinates: ${entry.key}")
+                                return null
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.info("[GRADLE] Failed to read or validate artifact fingerprints, invalidating cache: ${projectDir.name}")
+                    return null
+                }
+
                 log.info("[GRADLE] Loaded project from binary cache: ${project.name} (${project.dependencies.size()} dependencies, ${project.sourceSets.size()} source sets)")
                 return project
             }
@@ -55,10 +78,24 @@ class ProjectCache {
         try {
             File cacheFile = getCacheFile(projectDir)
 
+            // Compute artifact content fingerprints for dependencies
+            Map<String, String> fingerprints = new HashMap<>()
+            if (grailsProject.dependencies != null) {
+                for (kingsk.grails.lsp.model.dto.DependencyNode dep : grailsProject.dependencies) {
+                    if (dep?.jarFileClasspath != null && dep.jarFileClasspath.exists()) {
+                        String fp = ArtifactFactCache.instance.computeFingerprint(dep.jarFileClasspath)
+                        if (fp != null) {
+                            fingerprints.put(dep.jarFileClasspath.absolutePath, fp)
+                        }
+                    }
+                }
+            }
+
             // Binary Cache
             cacheFile.withObjectOutputStream { oos ->
                 oos.writeInt(currentVersion)
                 oos.writeObject(grailsProject)
+                oos.writeObject(fingerprints)
             }
 
             // JSON cache (for client / debug)
@@ -98,13 +135,17 @@ class ProjectCache {
             return true
         }
 
-        // Timestamp check: only a small set of Gradle root files (avoid broad directory walks)
+        // Timestamp check: watch build files, properties, and version catalogs
         long cacheTime = cacheFile.lastModified()
 
         List<String> watchNames = [
             'build.gradle',
+            'build.gradle.kts',
             'settings.gradle',
-            'gradle.properties'
+            'settings.gradle.kts',
+            'gradle.properties',
+            'gradle/libs.versions.toml',
+            'libs.versions.toml'
         ]
 
         for (String name : watchNames) {

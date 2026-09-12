@@ -65,6 +65,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     private final AtomicBoolean gradleSyncStale = new AtomicBoolean(false)
     private final AtomicInteger gradleSyncRetryCount = new AtomicInteger(0)
     private final AtomicReference<String> lastSyncError = new AtomicReference<>(null)
+    private final AtomicReference<CompletableFuture<?>> currentDiscoveryFuture = new AtomicReference<>(null)
     public static final int MAX_SYNC_RETRIES = 2
 
     private final ReentrantReadWriteLock astLock = new ReentrantReadWriteLock()
@@ -90,7 +91,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
         // Initialize SnapshotManager with safe detached ASTAccessor
         this.snapshotManager = new SnapshotManager(
-            new VersionedSnapshot(0, projectIndex.snapshot, null, DetachedASTAccessor.INSTANCE, [:], System.currentTimeMillis())
+            new VersionedSnapshot(0, projectIndex.snapshot, toGradleModel(project), DetachedASTAccessor.INSTANCE, [:], System.currentTimeMillis())
         )
 
         // Initialize the first generation
@@ -548,8 +549,60 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     @Override void notifyAllProjects() { }
     @Override void addProject(GrailsProject project) { this.@project = project }
     @Override void removeProject(String projectDir) { }
+    CompletableFuture<?> getCurrentDiscoveryFuture() {
+        return this.@currentDiscoveryFuture.get()
+    }
+
+    void applyDependencyUpdate(GrailsProject newProject) {
+        if (this.@state.get() == ProjectState.DISPOSING || newProject == null) return
+        withWriteLock {
+            if (this.@state.get() == ProjectState.DISPOSING) return
+            log.info("[ProjectContext] Applying coherent dependency update for: ${newProject.name}")
+            this.@project = newProject
+            this.@lastSyncError.set(null)
+            this.@gradleSyncStale.set(false)
+            this.@gradleSyncRetryCount.set(0)
+
+            if (this.@compiler != null) {
+                CompletableFuture<?> discFuture = this.@compiler.updateClassLoader()
+                this.@currentDiscoveryFuture.set(discFuture)
+
+                // Replay open documents through the updated compiler and index
+                if (grailsService.fileTracker != null) {
+                    for (String docUri : openDocumentUris) {
+                        TextFile tf = grailsService.fileTracker.getTextFile(docUri)
+                        if (tf != null && !tf.closed) {
+                            try {
+                                this.@compiler.compileSourceFile(tf)
+                                def su = this.@compiler.getSourceUnit(tf)
+                                if (su != null) {
+                                    this.@visitor?.visitSourceUnit(su)
+                                    def classNodes = su.AST?.classes
+                                    if (classNodes != null) {
+                                        indexManager.rebuildFile(tf.uri, classNodes)
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.warn("[ProjectContext] Error re-compiling open buffer ${docUri} after dependency update: ${e.message}")
+                            }
+                        }
+                    }
+                }
+            }
+
+            groovydocCache.clear()
+            methodScopeCache.clear()
+            grailsService.clearCrossFileCaches()
+
+            commitSnapshotLocked()
+        }
+        grailsService.workspaceManager?.propagateInvalidation(this)
+    }
+
     @Override void updateProject(GrailsProject p, String projectDir) {
         this.@project = p
+        if (p == null) return
+        applyDependencyUpdate(p)
         resetFailedState()
     }
     @Override GrailsProject getProjectForUri(String uri) { this.@project }
@@ -704,6 +757,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
                 this.@gradleSyncStale.set(false)
                 this.@project = newProject
                 log.info("[ProjectContext] Gradle sync succeeded (seq ${syncSeq}) for project: ${this.@project.name}")
+                log.info("[ProjectContext] Gradle sync succeeded (seq ${syncSeq}) for project: ${newProject.name}")
 
                 if (finalBlocker != null) {
                     finalBlocker.complete(null)
@@ -720,6 +774,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
                     grailsService.clearCrossFileCaches()
                     grailsService.workspaceManager?.propagateInvalidation(this)
                 }
+                applyDependencyUpdate(newProject)
             }
         })
     }

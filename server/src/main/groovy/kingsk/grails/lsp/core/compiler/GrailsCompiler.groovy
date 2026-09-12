@@ -17,6 +17,8 @@ import org.codehaus.groovy.control.io.ReaderSource
 import org.codehaus.groovy.control.io.StringReaderSource
 import org.codehaus.groovy.syntax.SyntaxException
 
+import io.github.classgraph.ScanResult
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 
@@ -183,27 +185,37 @@ class GrailsCompiler {
     /**
      * Updates the classpath with the dependencies of the Grails project. <br>
      * CONSTRAINT: Must be called when build.gradle is changed or necessary <br>
-     * NOTE: Resets the compilation unit
+     * NOTE: Resets the compilation unit and updates ClassGraph discovery.
      */
-    void updateClassLoader() {
-        GrailsProject project = getProject()
-        if (!project) return
-
-        sourceSetStates.values().each { it.invalidate() }
-        sourceSetStates.clear()
-
-        SourceSetCompilationState mainState = getOrCreateState("main")
-        if (project.testDirectories || project.sourceSets?.containsKey("test") || project.getTestClasspathUrls()) {
-            getOrCreateState("test")
-        }
-
+    CompletableFuture<ScanResult> updateClassLoader() {
+        compileLock.lock()
         try {
-            def uri = project.rootDirectory?.toURI()?.toString()
-            if (uri && mainState.getClassLoader() != null) {
-                grailsService.discoveryService.updateClassGraph(uri, mainState.getClassLoader(), grailsService.errorService)
+            GrailsProject project = getProject()
+            if (!project) return CompletableFuture.completedFuture(null)
+
+            log.info("[COMPILER] Updating compiler classloaders and source-set states for: ${project.name}")
+            sourceSetStates.values().each { it.invalidate() }
+            sourceSetStates.clear()
+            cachedErrorCollector = null
+            lastErrorCollectorUpdate = 0
+            previousContext = null
+
+            SourceSetCompilationState mainState = getOrCreateState("main")
+            if (project.testDirectories || project.sourceSets?.containsKey("test") || project.getTestClasspathUrls()) {
+                getOrCreateState("test")
             }
-        } catch (Exception e) {
-            log.warn("[COMPILER] Failed to initialize ClassGraph: ${e.message}")
+
+            try {
+                def uri = project.rootDirectory?.toURI()?.toString()
+                if (uri && mainState.getClassLoader() != null) {
+                    return grailsService.discoveryService.updateClassGraph(uri, mainState.getClassLoader(), grailsService.errorService)
+                }
+            } catch (Exception e) {
+                log.warn("[COMPILER] Failed to initialize ClassGraph: ${e.message}")
+            }
+            return CompletableFuture.completedFuture(null)
+        } finally {
+            compileLock.unlock()
         }
     }
 

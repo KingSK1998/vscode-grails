@@ -263,3 +263,33 @@
     - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
 - Next roadmap task: **R2-02** (Refresh dependency-derived state coherently).
 
+## R2-02 Acceptance and Completion Milestone (2026-09-13)
+
+- **R2-02 Completed & Accepted**:
+  - Implemented coherent dependency refresh across compiler, discovery, symbol/fact caches, groovydoc, method scope caches, and snapshot manager:
+    - `ArtifactFacts` and `ArtifactFactCache`: Thread-safe LRU cache (500 entries, 1h TTL) extracting class and package names from JARs keyed by SHA-256 fingerprint, accelerated by `(length, lastModified)` fingerprint caching. When a JAR changes content at the same coordinates, new fingerprint causes cache miss and extraction of fresh facts while unchanged artifacts are reused (`INV-DISC-002`).
+    - `ProjectCache` (schema v3): Saves and validates artifact content fingerprints in `.grails-lsp/projectInfo.cache`. If any dependency artifact changed content or was deleted, binary cache is rejected as stale. Watches `*.gradle`, `*.gradle.kts`, `gradle.properties`, and `*.toml` catalogs.
+    - `DiscoveryService`: `updateClassGraph` returns `CompletableFuture<ScanResult>`, evicts method and classnode caches upon successful scan publication, and safely closes superseded scans.
+    - `GrailsCompiler`: `updateClassLoader()` locks `compileLock`, invalidates previous source set states and classloaders, clears error collector and incremental context, creates new isolated `GroovyClassLoader`s, and invokes `DiscoveryService.updateClassGraph`.
+    - `ProjectContextImpl`: Implemented `applyDependencyUpdate(GrailsProject)` under writer lock, synchronizing compiler classloaders, replaying open buffers, clearing `groovydocCache`, `methodScopeCache`, cross-file caches, and committing atomic `VersionedSnapshot`; wired into `updateProject` and `triggerGradleSyncInternal`.
+    - `GradleService`: Added explicit cancellation check before `cache.save(rootDir, project)` to discard cancelled builds and prevent poisoning binary cache.
+  - Verification Gates:
+    - Focused tests: `DependencyRefreshSpec` (3/3 pass in 12s):
+      - `R2-02/1`: Add, change, and remove dependency; compiler, classloader, and snapshot converge on exact dependency revision without restart; removed dependency classes throw `ClassNotFoundException`.
+      - `R2-02/2`: Changed artifact at same coordinates invalidates by content fingerprint; unchanged artifacts reused; `ProjectCache` invalidates binary cache on in-place file content change.
+      - `R2-02/3`: Failed Gradle sync preserves stale last-good state (project remains READY, initial LKG snapshot retained); simultaneous project disposal cancels in-flight sync and rejects late completion (`MismatchedLateProject` discarded).
+    - Lifecycle & sync regressions:
+      - `ClasspathAndSourceSetSpec` (11/11 pass in 10s): Multi-root source-set isolation, host classpath blocking, and `ProjectCache` legacy version rejection (v1 and v2 rejected).
+      - `GradleSyncSpec` (12/12 pass in 33s): Debounce cancellation, non-build file exclusion, FAILED transition, HIBERNATED reset, LKG retention, supersede cancellation and newest config application, stall tolerance, bounded retry, and disposal cancellation.
+    - Client verification: `npm run compile && npm run check-types && npm run lint` passed (0 warnings/errors).
+    - Client tests: `npm run test:client` passed (7/7 tests in 3.8s).
+    - Server smoke: `npm run test:smoke` passed (initialize in 883 ms, project discovered, open/diagnostics/symbols OK, exit 0).
+    - Release packaging: `npm run package` produced `vscode-gng-support.vsix` (27 files, 18 MB, exit 0).
+  - Status & Knowledge Base:
+    - Updated `server/STATUS.md`: R2-02 marked `✅ Passing` (2026-09-13).
+    - Updated `docs/execution/records/R2-02.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
+    - Updated `docs/execution/task-queue.json`: R2-02 status updated to `done`.
+    - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
+- Next roadmap task: **R2-03** (Use resolved Gradle project edges).
+
+

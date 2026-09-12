@@ -33,14 +33,16 @@ class DiscoveryService {
     private static final Map<String, ClassLoader> projectClassLoaders = new ConcurrentHashMap<>()
     private static final Map<String, java.util.concurrent.atomic.AtomicLong> projectScanGenerations = new ConcurrentHashMap<>()
 
-    static void updateClassGraph(String projectUri, ClassLoader newClassLoader, ErrorService errorService) {
-        if (!projectUri || newClassLoader == null) return
-        if (newClassLoader == projectClassLoaders.get(projectUri)) return
+    static CompletableFuture<ScanResult> updateClassGraph(String projectUri, ClassLoader newClassLoader, ErrorService errorService) {
+        if (!projectUri || newClassLoader == null) return CompletableFuture.completedFuture(null)
+        if (newClassLoader == projectClassLoaders.get(projectUri)) {
+            return CompletableFuture.completedFuture(classGraphScanResults.get(projectUri))
+        }
 
         projectClassLoaders.put(projectUri, newClassLoader)
         long targetGen = projectScanGenerations.computeIfAbsent(projectUri, { new java.util.concurrent.atomic.AtomicLong(0L) }).incrementAndGet()
 
-        CompletableFuture.runAsync {
+        return CompletableFuture.supplyAsync({ ->
             try {
                 log.info("[DISCOVERY] Starting ClassGraph scan (gen=${targetGen}) on background thread for project: ${projectUri}...")
                 def cg = new ClassGraph()
@@ -59,18 +61,21 @@ class DiscoveryService {
                 if (currentGen == null || currentGen.get() != targetGen || !projectClassLoaders.containsKey(projectUri)) {
                     log.info("[DISCOVERY] Scan gen=${targetGen} for ${projectUri} superseded or project removed; discarding result.")
                     newResult?.close()
-                    return
+                    return null
                 }
 
                 ScanResult oldResult = classGraphScanResults.put(projectUri, newResult)
                 if (oldResult != null) {
                     oldResult.close()
                 }
+                clearSymbolCaches()
                 log.info("[DISCOVERY] ClassGraph scan complete (gen=${targetGen}) for ${projectUri}. Found ${newResult.allClasses.size()} classes.")
+                return newResult
             } catch (Exception e) {
-                errorService.handleError("Failed to update ClassGraph for ${projectUri}", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
+                errorService?.handleError("Failed to update ClassGraph for ${projectUri}", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
+                return null
             }
-        }
+        } as java.util.function.Supplier<ScanResult>)
     }
 
     static ScanResult getClassGraphScanResult(String projectUri) {

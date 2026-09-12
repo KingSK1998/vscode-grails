@@ -78,6 +78,10 @@ class GradleService {
 
                 log.info("[GRADLE] Building GrailsProject via Tooling API with 30s timeout: ${rootDir.name}")
                 GrailsProject project = (buildFunction != null) ? buildFunction.apply(rootDir, cancellationSource) : builder.build(rootDir, cancellationSource)
+                if (cancellationSource.token().isCancellationRequested()) {
+                    log.info("[GRADLE] Gradle sync cancelled for ${rootDir.name}; discarding result and skipping cache")
+                    throw new java.util.concurrent.CancellationException("Gradle sync cancelled")
+                }
                 cache.save(rootDir, project)
 
                 service.client?.projectUpdated(ProjectMapper.toDTO(project))

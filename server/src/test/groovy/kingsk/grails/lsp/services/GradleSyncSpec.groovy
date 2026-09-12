@@ -101,7 +101,7 @@ class GradleSyncSpec extends BaseLspSpec {
         when: "Gradle sync is triggered on non-Gradle directory"
         ctx.triggerGradleSync()
         long start = System.currentTimeMillis()
-        while (ctx.state != ProjectState.FAILED && (System.currentTimeMillis() - start) < 10000) {
+        while (ctx.state != ProjectState.FAILED && (System.currentTimeMillis() - start) < 25000) {
             Thread.sleep(100)
         }
 

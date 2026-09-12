@@ -114,7 +114,6 @@
     {
       "id": "R2-01",
       "title": "Isolate classpaths and source-set membership",
-      "status": "in_progress",
       "status": "done",
       "dependsOn": [
         "R1-05"
@@ -126,13 +125,13 @@
     {
       "id": "R2-02",
       "title": "Refresh dependency-derived state coherently",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R2-01"
       ],
       "spec": "docs/execution/task-specifications.md#r2-02",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R2-02.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R2-03",
