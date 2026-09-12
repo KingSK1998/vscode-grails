@@ -1,5 +1,6 @@
 # Responsiveness, resource limits and optimization contract
 
+**Status:** required engineering process and candidate budgets; measured compliance is pending R1-05. **Updated:** 2026-09-08.
 **Status:** measured baseline compliance established in R1-05 (`reports/performance-baseline.json`). **Updated:** 2026-09-10.
 
 Correctness is a constraint on optimization. The goal is short interactive waits with bounded background CPU, heap and disk, including during failure. A separate JVM protects the extension host from direct compiler execution but can still starve requests or consume the machine's resources.

@@ -146,4 +146,12 @@ class GrailsCU extends CompilationUnit {
 	List<SourceUnit> getSourceUnits() {
 		return sources?.values()?.toList()
 	}
+
+	/**
+	 * Look up a source unit by its registered name (URI).
+	 * Exposes the protected sources map for callers outside the CompilationUnit hierarchy.
+	 */
+	SourceUnit getSourceByName(String name) {
+		return name != null ? sources?.get(name) as SourceUnit : null
+	}
 }

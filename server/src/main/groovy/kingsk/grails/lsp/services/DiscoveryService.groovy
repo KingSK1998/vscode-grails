@@ -31,39 +31,114 @@ class DiscoveryService {
 
     private static final Map<String, ScanResult> classGraphScanResults = new ConcurrentHashMap<>()
     private static final Map<String, ClassLoader> projectClassLoaders = new ConcurrentHashMap<>()
+    private static final Map<String, java.util.concurrent.atomic.AtomicLong> projectScanGenerations = new ConcurrentHashMap<>()
 
     static void updateClassGraph(String projectUri, ClassLoader newClassLoader, ErrorService errorService) {
-        if (newClassLoader != null && newClassLoader != projectClassLoaders.get(projectUri)) {
-            projectClassLoaders.put(projectUri, newClassLoader)
-            CompletableFuture.runAsync {
-                try {
-                    log.info("[DISCOVERY] Starting ClassGraph scan on background thread for project: ${projectUri}...")
-                    def cg = new ClassGraph()
-                        .overrideClassLoaders(newClassLoader)
-                        .enableClassInfo()
-                        
-                    if (!Boolean.getBoolean('grails.lsp.test.classgraph.disabled')) {
-                        cg.enableSystemJarsAndModules()
-                    }
-                    
-                    ScanResult newResult = cg.scan()
-                    ScanResult oldResult = classGraphScanResults.put(projectUri, newResult)
-                    if (oldResult != null) {
-                        oldResult.close()
-                    }
-                    log.info("[DISCOVERY] ClassGraph scan complete for ${projectUri}. Found ${newResult.allClasses.size()} classes.")
-                } catch (Exception e) {
-                    errorService.handleError("Failed to update ClassGraph for ${projectUri}", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
+        if (!projectUri || newClassLoader == null) return
+        if (newClassLoader == projectClassLoaders.get(projectUri)) return
+
+        projectClassLoaders.put(projectUri, newClassLoader)
+        long targetGen = projectScanGenerations.computeIfAbsent(projectUri, { new java.util.concurrent.atomic.AtomicLong(0L) }).incrementAndGet()
+
+        CompletableFuture.runAsync {
+            try {
+                log.info("[DISCOVERY] Starting ClassGraph scan (gen=${targetGen}) on background thread for project: ${projectUri}...")
+                def cg = new ClassGraph()
+                    .overrideClassLoaders(newClassLoader)
+                    .enableClassInfo()
+
+                if (!Boolean.getBoolean('grails.lsp.test.classgraph.disabled')) {
+                    cg.enableSystemJarsAndModules()
                 }
+
+                ScanResult newResult = cg.scan()
+
+                // Check generation before publication:
+                // If project was removed or a newer scan was scheduled, close and discard immediately.
+                java.util.concurrent.atomic.AtomicLong currentGen = projectScanGenerations.get(projectUri)
+                if (currentGen == null || currentGen.get() != targetGen || !projectClassLoaders.containsKey(projectUri)) {
+                    log.info("[DISCOVERY] Scan gen=${targetGen} for ${projectUri} superseded or project removed; discarding result.")
+                    newResult?.close()
+                    return
+                }
+
+                ScanResult oldResult = classGraphScanResults.put(projectUri, newResult)
+                if (oldResult != null) {
+                    oldResult.close()
+                }
+                log.info("[DISCOVERY] ClassGraph scan complete (gen=${targetGen}) for ${projectUri}. Found ${newResult.allClasses.size()} classes.")
+            } catch (Exception e) {
+                errorService.handleError("Failed to update ClassGraph for ${projectUri}", e, ErrorSource.LANGUAGE_SERVER, ErrorSeverity.WARNING)
             }
         }
     }
 
     static ScanResult getClassGraphScanResult(String projectUri) {
-        if (!projectUri) return classGraphScanResults.values().find() ?: null
-        // Find best matching project URI (since we might be queried with a file URI)
-        def match = classGraphScanResults.find { uri, result -> projectUri.startsWith(uri) }
-        return match?.value
+        if (!projectUri) return null
+        // Find best matching project URI using segment-aware matching with longest-prefix wins
+        // to prevent /my-project-api from matching /my-project (INV-DISC-001)
+        String normalizedQuery = normalizeForSegmentMatch(projectUri)
+        ScanResult bestResult = null
+        int bestLen = -1
+
+        for (Map.Entry<String, ScanResult> entry : classGraphScanResults.entrySet()) {
+            String normalizedRoot = normalizeForSegmentMatch(entry.key)
+            if (isSameOrChildUri(normalizedQuery, normalizedRoot)) {
+                int len = normalizedRoot.length()
+                if (len > bestLen) {
+                    bestLen = len
+                    bestResult = entry.value
+                }
+            }
+        }
+        return bestResult
+    }
+
+    /**
+     * Remove a project's ClassGraph scan result and classloader reference.
+     * Must be called when a project root is removed from the workspace.
+     */
+    static void removeProject(String projectUri) {
+        if (!projectUri) return
+        ScanResult removed = classGraphScanResults.remove(projectUri)
+        projectScanGenerations.remove(projectUri)
+        projectClassLoaders.remove(projectUri)
+        // Also remove any CLASSNODE_CACHE entries scoped to this project
+        CLASSNODE_CACHE.entrySet().removeIf { it.key.startsWith(projectUri) }
+        if (removed != null) {
+            try {
+                removed.close()
+                log.info("[DISCOVERY] Closed ClassGraph ScanResult for removed project: ${projectUri}")
+            } catch (Exception e) {
+                log.warn("[DISCOVERY] Failed to close ScanResult for ${projectUri}", e)
+            }
+        }
+    }
+
+    /**
+     * Segment-aware URI containment check.
+     * Returns true if fileUri equals rootUri or is a child path segment of rootUri.
+     */
+    private static boolean isSameOrChildUri(String fileUri, String rootUri) {
+        if (!fileUri || !rootUri) return false
+        if (fileUri == rootUri) return true
+        // Root must be a prefix, and the next character must be a path separator
+        if (fileUri.length() > rootUri.length() && fileUri.startsWith(rootUri)) {
+            char separator = fileUri.charAt(rootUri.length())
+            return separator == '/' as char || separator == '\\' as char
+        }
+        return false
+    }
+
+    /**
+     * Normalize a URI for segment-based comparison by stripping trailing slashes.
+     */
+    private static String normalizeForSegmentMatch(String uri) {
+        if (!uri) return uri
+        while (uri.length() > 1 && (uri.endsWith('/') || uri.endsWith('\\'))) {
+            uri = uri.substring(0, uri.length() - 1)
+        }
+        return uri
     }
 
     /**
@@ -554,9 +629,11 @@ class DiscoveryService {
     static void clearCaches() {
         KEYWORD_CACHE.clear()
         METHOD_CACHE.clear()
+        CLASSNODE_CACHE.clear()
         classGraphScanResults.values().each { it?.close() }
         classGraphScanResults.clear()
         projectClassLoaders.clear()
+        projectScanGenerations.clear()
         log.debug("Cleared all dynamic discovery caches")
     }
 }

@@ -3,9 +3,12 @@
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
 > **Last updated:** 2026-09-10
+> **Last updated:** 2026-09-12
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
 > **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009, ADR-010
 > **Related Failure Modes:** SM-001, CI-001, PC-001
+> **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009, ADR-010, ADR-011
+> **Related Failure Modes:** SM-001, CI-001, PC-001, DP-001
 
 ---
 
@@ -18,6 +21,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | Field / State | Owner | Source of Truth | Readers | Write Methods |
 |---|---|---|---|---|
 | `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl` | Groovy CompilationUnit for selected project inputs | Compiler-dependent readers through context; verified non-blocking via RequestContext and PublicationAndLifecycleSpec | Project compile/activation/disposal write paths |
+| `compiler` (GrailsCompiler) | Per-project `ProjectContextImpl`, partitioned internally across `SourceSetCompilationState` per source set | Groovy CompilationUnit and classloader chain per source set (`main`, `test`, custom) | Compiler-dependent readers through context; verified non-blocking via RequestContext and PublicationAndLifecycleSpec | Project compile/activation/disposal write paths |
 | `visitor` (GrailsASTVisitor) | Per-project `ProjectContextImpl` | AST traversal output | Captured request AST accessor, read-only | `visitAST()`, `compileAndVisitAST()`, commit/close lifecycle |
 | `fileTracker` (FileContentTracker) | FileContentTracker, wired by GrailsService | In-memory document buffers, monotonic open generation sequence, active generation mappings | Context/provider read access | Document service delegates open/change/close; workspace service delegates file deletion; never providers |
 | Legacy `astService` access | Context boundary; verify backing implementation before use | Legacy classification/cache API | Legacy consumers | Do not assume a live independently owned ASTService from an old diagram |
@@ -34,6 +38,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `healthService` | `GrailsService` | Provider latency/success metrics | Observability | `recordHealth()` in provider finally blocks |
 | `providerRegistry` | `GrailsService` | Lazy provider instances | `GrailsTextDocumentService` | `getProvider()` (lazy init) |
 | `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with separate project membership | Completion/resolution | Scan/refresh and scoped release; existing static loader maps require R1/R2 repair |
+| `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with generation-tracked scan publication and scoped root release (`removeProject`, `projectScanGenerations`) | Completion/resolution | Scan/refresh, generation verification, and scoped release |
 | Cross-file caches | Registered cache owner coordinated by project writer | Derived from scoped visitor/compiler inputs | Providers | Coherent invalidation at commit; no unrelated-root clearing as default |
 
 ### Client — State Ownership

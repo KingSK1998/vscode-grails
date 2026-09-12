@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.dto.DependencyNode
 import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.SourceSetModel
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.idea.IdeaContentRoot
@@ -66,64 +67,200 @@ allprojects {
 				modelBuilder.withCancellationToken(cancellationSource.token())
 			}
 			IdeaProject ideaProject = modelBuilder.get()
-			GrailsProject project = fromIdeaProject(ideaProject)
-			log.info("[GRADLE] Successfully built project: ${project.name} (${project.dependencies.size()} dependencies)")
+			GrailsProject project = fromIdeaProject(ideaProject, projectDir)
+
+			// Enrich with real evaluated source-set membership via init-script exporter
+			try {
+				Map<String, SourceSetModel> exported = SourceSetExporter.exportSourceSets(connection, projectDir, cancellationSource)
+				if (exported != null && !exported.isEmpty()) {
+					log.info("[GRADLE] Merging ${exported.size()} evaluated source sets from init-script export into ${project.name}")
+					project.sourceSets.putAll(exported)
+				}
+			} catch (Exception e) {
+				log.warn("[GRADLE] Source-set init-script export skipped/failed: ${e.message}")
+			}
+
+			log.info("[GRADLE] Successfully built project: ${project.name} (${project.dependencies.size()} dependencies, ${project.sourceSets.size()} source sets)")
 			return project
 		}
 	}
 
-	private static GrailsProject fromIdeaProject(IdeaProject ideaProject) {
+	static GrailsProject fromIdeaProject(IdeaProject ideaProject, File targetProjectDir = null) {
+		IdeaModule targetModule = null
+		if (targetProjectDir != null && ideaProject.modules != null) {
+			String targetCanonical = targetProjectDir.canonicalPath
+			targetModule = ideaProject.modules.find { mod ->
+				mod.contentRoots?.any { cr ->
+					cr.rootDirectory != null && isSameOrChildPath(targetCanonical, cr.rootDirectory.canonicalPath)
+				}
+			}
+		}
+		if (targetModule == null && ideaProject.modules != null && !ideaProject.modules.isEmpty()) {
+			targetModule = ideaProject.modules.first()
+		}
+
+		File resolvedRoot = targetProjectDir ?: (targetModule?.contentRoots?.getAt(0)?.rootDirectory)
+		String resolvedName = targetModule?.name ?: ideaProject.name
+
 		GrailsProject project = new GrailsProject(
-				name: ideaProject.name,
+				name: resolvedName,
 				description: ideaProject.description,
-				javaHome: ideaProject.javaLanguageSettings.jdk?.javaHome,
-				targetCompatibility: ideaProject.javaLanguageSettings.targetBytecodeVersion,
-				javaVersion: ideaProject.javaLanguageSettings.languageLevel,
+				javaHome: ideaProject.javaLanguageSettings?.jdk?.javaHome,
+				targetCompatibility: ideaProject.javaLanguageSettings?.targetBytecodeVersion,
+				javaVersion: ideaProject.javaLanguageSettings?.languageLevel,
+				rootDirectory: resolvedRoot,
 				dependencies: [] as Set,
 				sourceDirectories: [] as Set,
 				resourceDirectories: [] as Set,
 				testDirectories: [] as Set,
 				testResourceDirectories: [] as Set,
+				generatedSourceDirectories: [] as Set,
 				excludeDirectories: [] as Set
 		)
 
-		ideaProject.modules.each { IdeaModule module ->
+		List<IdeaModule> modulesToProcess = targetModule != null ? [targetModule] : (ideaProject.modules as List<IdeaModule> ?: [])
+		modulesToProcess.each { IdeaModule module ->
 			module.contentRoots.each { IdeaContentRoot root ->
-				// gets all directories
-				project.rootDirectory = root.rootDirectory
-				// gets only source directories i.e. controller, services, domains, etc
-				project.sourceDirectories.addAll(root.sourceDirectories*.directory as Set<File>)
-				// gets only resource directories i.e. views, i18n, etc
-				project.resourceDirectories.addAll(root.resourceDirectories*.directory as Set<File>)
-				// gets all exclude directories
-				project.excludeDirectories.addAll(root.excludeDirectories)
-				// gets all test directories
-				project.testDirectories.addAll(root.testDirectories*.directory as Set<File>)
-				// gets all test resource directories
-				project.testResourceDirectories.addAll(root.testResourceDirectories*.directory as Set<File>)
+				if (project.rootDirectory == null) {
+					project.rootDirectory = root.rootDirectory
+				}
+				root.sourceDirectories?.each { srcDir ->
+					if (srcDir?.directory != null) {
+						project.sourceDirectories.add(srcDir.directory)
+						try {
+							if (srcDir.isGenerated()) {
+								project.generatedSourceDirectories.add(srcDir.directory)
+							}
+						} catch (Throwable ignored) {}
+					}
+				}
+				root.testDirectories?.each { testDir ->
+					if (testDir?.directory != null) {
+						project.testDirectories.add(testDir.directory)
+						try {
+							if (testDir.isGenerated()) {
+								project.generatedSourceDirectories.add(testDir.directory)
+							}
+						} catch (Throwable ignored) {}
+					}
+				}
+				try {
+					project.resourceDirectories.addAll(root.resourceDirectories*.directory as Set<File>)
+				} catch (Throwable ignored) {}
+				try {
+					project.testResourceDirectories.addAll(root.testResourceDirectories*.directory as Set<File>)
+				} catch (Throwable ignored) {}
+				project.excludeDirectories.addAll(root.excludeDirectories ?: [] as Set<File>)
 			}
 
-			(module.dependencies as List<IdeaSingleEntryLibraryDependency>).each {
-				def dep = new DependencyNode(
-						it.gradleModuleVersion.name,
-						it.gradleModuleVersion.group,
-						it.gradleModuleVersion.version,
-						it.scope?.scope,
-						it.file,
-						it.source,
-						it.javadoc
-				)
-				project.dependencies << dep
+			(module.dependencies as List<IdeaSingleEntryLibraryDependency>)?.each {
+				if (it != null && it.gradleModuleVersion != null) {
+					def dep = new DependencyNode(
+							it.gradleModuleVersion.name,
+							it.gradleModuleVersion.group,
+							it.gradleModuleVersion.version,
+							it.scope?.scope,
+							it.file,
+							it.source,
+							it.javadoc
+					)
+					project.dependencies << dep
+				}
 			}
 		}
+
+		// Build baseline SourceSetModel instances from IDEA module metadata
+		buildIdeaSourceSetModels(project, targetModule)
 
 		// Extract Grails version information
 		extractGrailsVersionInfo(project)
 
 		project.sourceFileCount = getFileCount(project.sourceDirectories, ".groovy")
-		// project.javaFileCount = getFileCount(project.sourceDirectories, ".java")
 
 		return project
+	}
+
+	private static void buildIdeaSourceSetModels(GrailsProject project, IdeaModule module) {
+		if (project == null) return
+		File root = project.rootDirectory
+
+		List<File> mainCompileCp = []
+		List<File> testCompileCp = []
+		List<File> mainRuntimeCp = []
+		List<File> testRuntimeCp = []
+
+		File mainOut = null
+		File testOut = null
+		try {
+			mainOut = module?.compilerOutput?.outputDir
+			testOut = module?.compilerOutput?.testOutputDir
+		} catch (Throwable ignored) {}
+
+		if (mainOut != null) {
+			testCompileCp.add(mainOut)
+		}
+
+		project.dependencies?.each { dep ->
+			if (dep?.jarFileClasspath != null) {
+				String scope = dep.scope?.trim()?.toUpperCase() ?: "COMPILE"
+				if (scope in ["COMPILE", "PROVIDED"]) {
+					mainCompileCp.add(dep.jarFileClasspath)
+					testCompileCp.add(dep.jarFileClasspath)
+				} else if (scope == "RUNTIME") {
+					mainRuntimeCp.add(dep.jarFileClasspath)
+					testRuntimeCp.add(dep.jarFileClasspath)
+				} else if (scope == "TEST") {
+					testCompileCp.add(dep.jarFileClasspath)
+					testRuntimeCp.add(dep.jarFileClasspath)
+				}
+			}
+		}
+
+		SourceSetModel mainModel = new SourceSetModel(
+				"main",
+				":",
+				root,
+				root,
+				project.sourceDirectories,
+				project.resourceDirectories,
+				project.generatedSourceDirectories.findAll { project.sourceDirectories.contains(it) },
+				mainCompileCp,
+				mainRuntimeCp,
+				mainOut != null ? [mainOut] : [],
+				[],
+				true,
+				[]
+		)
+
+		SourceSetModel testModel = new SourceSetModel(
+				"test",
+				":",
+				root,
+				root,
+				project.testDirectories,
+				project.testResourceDirectories,
+				project.generatedSourceDirectories.findAll { project.testDirectories.contains(it) },
+				testCompileCp,
+				testRuntimeCp,
+				testOut != null ? [testOut] : [],
+				[],
+				true,
+				[]
+		)
+
+		project.sourceSets.put("main", mainModel)
+		project.sourceSets.put("test", testModel)
+	}
+
+	private static boolean isSameOrChildPath(String childPath, String parentPath) {
+		if (!childPath || !parentPath) return false
+		String c = childPath.replace('/', File.separator).replace('\\', File.separator)
+		String p = parentPath.replace('/', File.separator).replace('\\', File.separator)
+		if (c.equalsIgnoreCase(p)) return true
+		if (!p.endsWith(File.separator)) {
+			p = p + File.separator
+		}
+		return c.length() > p.length() && c.substring(0, p.length()).equalsIgnoreCase(p)
 	}
 
 	private static void extractGrailsVersionInfo(GrailsProject project) {

@@ -94,7 +94,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         )
 
         // Initialize the first generation
-        this.@compiler = new GrailsCompiler(grailsService)
+        this.@compiler = new GrailsCompiler(grailsService, this)
         this.@visitor = new GrailsASTVisitor(grailsService)
     }
 
@@ -300,7 +300,8 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
             isGrailsProject: p.isGrailsProject, rootDirectory: p.rootDirectory,
             sourceDirectories: p.sourceDirectories ?: [] as Set,
             testDirectories: p.testDirectories ?: [] as Set,
-            dependencies: p.dependencies ?: [] as Set
+            dependencies: p.dependencies ?: [] as Set,
+            sourceSets: p.sourceSets ?: [:]
         )
     }
 
@@ -505,7 +506,7 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
         reactivate {
             log.info("[ProjectContext] Reactivating compiler for project ${this.@project.name}")
             withWriteLock {
-                this.@compiler = new GrailsCompiler(grailsService)
+                this.@compiler = new GrailsCompiler(grailsService, this)
                 this.@visitor = new GrailsASTVisitor(grailsService)
             }
             ready()
@@ -771,6 +772,9 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     }
     ClassLoader getClassLoaderUnsafeOrNull() {
         this.@compiler?.classLoader
+    }
+    @Override ClassLoader getClassLoaderForUri(String uri) {
+        this.@compiler?.getClassLoaderForUri(uri)
     }
     @Override FileContentTracker getFileTracker() { grailsService.fileTracker }
     @Override kingsk.grails.lsp.services.ASTService getAstService() { null }

@@ -74,8 +74,10 @@ T1 extends BaseProvider, receives context interfaces from the registry, captures
 - [BaseProvider](../../server/src/main/groovy/kingsk/grails/lsp/providers/document/BaseProvider.groovy): request capture and current versus retained state.
 - [GrailsASTVisitor](../../server/src/main/groovy/kingsk/grails/lsp/core/visitor/GrailsASTVisitor.groovy): copied maps retain AST object identities; audit nested mutation.
 - [WorkspaceManager](../../server/src/main/groovy/kingsk/grails/lsp/services/WorkspaceManager.groovy): guessed dependency edges and synchronous LRU hibernation remain; removed-root disposal is asynchronous after document drainage.
-- [GrailsCompiler](../../server/src/main/groovy/kingsk/grails/lsp/core/compiler/GrailsCompiler.groovy): workspace classpath aggregation and discovery registration.
+- [GrailsCompiler](../../server/src/main/groovy/kingsk/grails/lsp/core/compiler/GrailsCompiler.groovy): source-set isolation is under R2-01 verification. The project writer can reset existing source-set units through `refreshCompilationUnit`; it retains loaders, clears source/error caches, and requires sources to be re-added and compiled before publication. Discovery registration and retirement remain R2-01 risk areas.
 - [DiscoveryService](../../server/src/main/groovy/kingsk/grails/lsp/services/DiscoveryService.groovy): fallback inventories, asynchronous scan publication and static classloader retention.
+- [GrailsCompiler](../../server/src/main/groovy/kingsk/grails/lsp/core/compiler/GrailsCompiler.groovy): source-set isolation verified under R2-01 (ADR-011). Partitioned internally across lazy `SourceSetCompilationState` per source set with `IsolatedParentClassLoader` preventing host library leaks. The project writer can reset existing source-set units through `refreshCompilationUnit`. R2-02 owns coordinated dependency refresh.
+- [DiscoveryService](../../server/src/main/groovy/kingsk/grails/lsp/services/DiscoveryService.groovy): generation-tracked scan publication and scoped root release verified under R2-01. Fallback inventories and capability adapters remain under R2-04/R2-05.
 
 Read the relevant task card/spec and existing tests before changing these paths. [Code review](../skills/code-review.md) and [change triggers](change-triggers.md) apply; source-backed findings require appropriate runtime tests before claiming a fix.
 

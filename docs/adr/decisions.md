@@ -19,6 +19,25 @@
 > **Note:** Future architecture ideas without evidence live in `docs/architecture/backlog.md`, not here.
 > Promote to ADR only when a reproduced issue or benchmark justifies the decision.
 
+## ADR-011: Isolated Classpaths and Source-Set Scoped Compilation and Discovery (2026-09-12)
+
+**Status:** Accepted
+**Evidence:** Verified by `kingsk.grails.lsp.services.ClasspathAndSourceSetSpec` (11/11 passing), `kingsk.grails.lsp.model.SourceSetModelSpec` (7/7 passing), `kingsk.grails.lsp.core.compiler.GrailsCompilerRefreshSpec` (8/8 passing), the 85-test lifecycle verification suite, and full build/package/perf gates.
+**Context:** Previously, `GrailsCompiler.updateClassLoader` aggregated dependencies from all registered workspace projects into a single shared `URLClassLoader`. `GrailsProjectBuilder` flattened all Gradle/IDEA modules into a single project model with unioned source/test directories. As a result, sibling projects with conflicting library versions leaked APIs across projects, test dependencies leaked into production compilation and completion scopes, and ClassGraph discovery lacked project/source-set scoping and generation tracking.
+
+**Decision:**
+- Gradle source-set model: Export real Gradle source sets (`SourceSetModel`) via an extension-owned transient init-script (`SourceSetExporter`) without altering user build files. Defensive copying ensures `SourceSetModel` collections are unmodifiable.
+- Sibling/multi-root isolation: `WorkspaceManager` and `DiscoveryService` route documents using segment-aware path matching with longest-prefix wins. Unknown or unclassified files outside source sets resolve to explicit degraded scope (`unknown`) with zero project classpath URLs, never inheriting `main` or the default project.
+- Per-source-set compiler isolation: `GrailsCompiler` owns a concurrent map of lazy `SourceSetCompilationState` instances. Each source set maintains its own `URLClassLoader` parented by `IsolatedParentClassLoader` (which permits standard JDK and Groovy compiler runtime packages while strictly blocking host test frameworks like JUnit and Spock from leaking into project scope).
+- Scope retirement and race-free discovery: Background `ClassGraph` scans in `DiscoveryService` track `projectScanGenerations` (`AtomicLong` per project URI). Prior to publication, scans verify generation match and project existence; superseded or removed scans close their results immediately and discard them. Removing a project cleans up scan results and generation tracking without affecting surviving projects sharing identical dependencies.
+
+**Rejected:**
+- Single global ClassLoader with runtime filtering (vulnerable to AST-level symbol leakage and class resolution conflicts).
+- Mutable `MAIN/TEST/GENERATED` flag replacing source-set identity (loses owning source set of generated files and violates ordered compile classpath precedence).
+- Unscoped reflection caches and fallback to arbitrary projects in `DiscoveryService`.
+
+**Related invariants:** `INV-DISC-001`, `INV-DISC-002`, `INV-OWN-001`, `INV-OWN-002`, `INV-OWN-004`, `INV-OWN-005`, `INV-ID-006`, `INV-STATE-003`, `INV-STATE-004`, `INV-STATE-005`, `INV-STATE-010`.
+
 ---
 
 ## ADR-010: Request Lease and Detached AST Retention for Lifecycle Safety (2026-09-10)

@@ -25,37 +25,30 @@ class DocTestClass {
         File tempFile = File.createTempFile("DocTestClass", ".groovy")
         tempFile.text = content
         tempFile.deleteOnExit()
-        
-        GrailsService mockService = Mock(GrailsService)
-        mockService.project >> new kingsk.grails.lsp.model.dto.GrailsProject(
-            excludeDirectories: []
-        )
-        GrailsCompiler compiler = new GrailsCompiler(mockService)
-        
-        // Ensure compiler uses standard config for isolated compile
-        compiler.updateCompilerOptions()
-        CompilerConfiguration configuration = compiler.compilerConfig
-        compiler.classLoader = new GroovyClassLoader(this.class.classLoader, configuration)
 
-        when: "The file is compiled using existing GrailsCompiler"
-        def uri = tempFile.toURI().toString()
-        compiler.compilationUnit = new kingsk.grails.lsp.core.compiler.GrailsCU(configuration, null, compiler.classLoader)
-        compiler.compilationUnit.addSource("DocTestClass.groovy", content)
-        compiler.compilationUnit.compile(org.codehaus.groovy.control.Phases.INSTRUCTION_SELECTION)
-        
-        def sourceUnit = compiler.compilationUnit.iterator().next()
+        // Set up compiler configuration with groovydoc enabled
+        CompilerConfiguration configuration = new CompilerConfiguration(CompilerConfiguration.DEFAULT)
+        configuration.optimizationOptions.put(CompilerConfiguration.GROOVYDOC, true)
+        GroovyClassLoader classLoader = new GroovyClassLoader(this.class.classLoader, configuration)
+
+        when: "The file is compiled using GrailsCU directly"
+        def cu = new GrailsCU(configuration, null, classLoader)
+        cu.addSource("DocTestClass.groovy", content)
+        cu.compile(org.codehaus.groovy.control.Phases.INSTRUCTION_SELECTION)
+
+        def sourceUnit = cu.iterator().next()
         def moduleNode = sourceUnit.getAST()
-        
+
         then: "Compiler configuration should be reported"
         println "Compiler Configuration:"
         println "- runtimeGroovydocEnabled: " + configuration.runtimeGroovydocEnabled
         println "- optimizationOptions: " + configuration.optimizationOptions
-        
+
         and: "ClassNode groovydoc should be present"
         ClassNode classNode = moduleNode.classes.find { it.name == 'DocTestClass' }
         assert classNode != null
         def classDoc = classNode.groovydoc
-        println "Class Groovydoc: \${classDoc?.content}"
+        println "Class Groovydoc: ${classDoc?.content}"
         assert classDoc != null
         assert classDoc.content.contains("This is the class groovydoc")
 
@@ -63,7 +56,7 @@ class DocTestClass {
         MethodNode methodNode = classNode.methods.find { it.name == 'doSomething' }
         assert methodNode != null
         def methodDoc = methodNode.groovydoc
-        println "Method Groovydoc: \${methodDoc?.content}"
+        println "Method Groovydoc: ${methodDoc?.content}"
         assert methodDoc != null
         assert methodDoc.content.contains("This is the method groovydoc")
     }

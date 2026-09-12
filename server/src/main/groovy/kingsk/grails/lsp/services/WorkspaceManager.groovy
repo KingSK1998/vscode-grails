@@ -151,6 +151,8 @@ class WorkspaceManager {
     void removeProject(String uri) {
         String normalizedUri = TextFile.normalizePath(uri)
         def ctx = contexts.remove(normalizedUri)
+        // Clean up DiscoveryService resources for this project root
+        DiscoveryService.removeProject(normalizedUri)
         // Remove routing first so overload recovery cannot re-admit buffers for
         // this root, then invalidate document work before disposing the context.
         CompletableFuture<Void> drained = grailsService.document?.cancelProjectWork(normalizedUri) ?:

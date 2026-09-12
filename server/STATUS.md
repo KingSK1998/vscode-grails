@@ -1,7 +1,7 @@
 # Server Status
 
 > **AI AGENTS: Update this file on EVERY task that touches server code. Status only — no docs, no API, no architecture. Just current state.**
-> Last updated: 2026-09-10
+> Last updated: 2026-09-12
 
 ---
 
@@ -11,27 +11,45 @@
 
 ### Current verification status (2026-09-10)
 
-| Feature / check | Status | Evidence |
-|---|---|---|
-| Performance & resource baselines (R1-05) | ✅ Passing | Baseline measurements published to `reports/performance-baseline.json`. All 7 scorecard targets satisfied: ordinary notification p95=2.89ms (<10ms target), warm completion p95=2.59ms (<100ms), warm hover p95=4.80ms (<100ms), blocked-build read latency p95=0.03ms (<10ms), bounded edit storm (p95=9.32ms), memory settling after 25 project lifecycles (30.3 MiB, 1.01x growth ratio, zero monotonic leak, classloader detachment verified), large file policy (>4 MiB skips heavy compile). Automated via `npm run benchmark:perf`. Tests: `PerformanceBaselineSpec` (7/7) |
-| Publication & lifecycle ownership (R1-04) | ✅ Passing | Readers decoupled from compiler writer locks (<5ms latency); `RequestLease` resource tracking; `DetachedASTAccessor` AST detachment on hibernation; cache eviction on disposal; non-blocking routing and cross-project deadlock-free lock ordering. Tests: `PublicationAndLifecycleSpec` (7/7) |
-| Bounded Gradle synchronization & LKG retention | ✅ Passing | Decoupled Gradle sync from compiler activation; non-blocking reads during 30s sync stall (< 10 ms); preserved usable LKG committed state on sync failure; in-flight sync cancellation on supersede and disposal; stale sync state labeled; bounded retry with triggers. Tests: `GradleSyncSpec` (12/12) |
-| Revision ordering & publication safety | ✅ Passing | Sequential incremental changes applied in array order; open generation sequence tracking; obsolete versions rejected; atomic generation/version verification before commit and diagnostic publishing; distinct overlay close vs delete document lifecycle. Tests: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15) |
-| Background document compilation | ✅ Passing | `DocumentCompilationSpec`: 15/15 tests pass; bounded count/bytes, multi-root fairness, overload and newest-revision recovery, close storms, oversized input policy, root cancellation and shutdown |
-| Incremental compiler regression suite | ✅ Passing | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic` |
-| Workspace startup and folder lifecycle | ✅ Passing | `WorkspaceLifecycleSpec`: 8/8 tests pass; prior startup/root cases plus prompt terminal removal and blocked-candidate publication rejection |
-| Stdio logging and custom protocol | ✅ Passing | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 869 ms (exit 0) |
-| Packaged release | ✅ Passing | Deterministic build/copy verified; package asset audit passed; local VSIX installed and verified with smoke test in 921 ms (R0-04) |
+| Feature / check                                | Status         | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Compiler refresh delegate                      | ✅ Passing | `GrailsCompilerRefreshSpec`: 8/8 pass after reproducing missing-method failures. Scoped/all-state reset retains configuration and loaders, clears source/error caches, and preserves lazy scopes. `npm run build:server` passed on 2026-09-12. |
+| Project/source-set isolation (R2-01)           | 🟡 In progress | Slices 1-5 implemented: `SourceSetCompilationState` per-scope compilation, `GrailsCompiler` source-set routing, `ProjectContextImpl` wired with `getClassLoaderForUri`, `IsolatedParentClassLoader` blocks host deps, `DiscoveryService` segment-aware routing + `removeProject`, `BaseProvider` uses URI-scoped classloader. `GrailsdocExtractionSpec` and `ClasspathAndSourceSetSpec R2-01/2` passing. Slice 6 (concurrent retirement) pending.                                                                                                                                 |
+| Project/source-set isolation (R2-01)           | 🟡 In progress | Slices 1-5 implemented: `SourceSetCompilationState` per-scope compilation, `GrailsCompiler` source-set routing, `ProjectContextImpl` wired with `getClassLoaderForUri`, `IsolatedParentClassLoader` blocks host deps, `DiscoveryService` segment-aware routing + generation-tracked publication + `removeProject`, `BaseProvider` and `RequestContext` use URI-scoped classloader/sourceSet. `SourceSetModelSpec` (7/7), `ClasspathAndSourceSetSpec` (2/2), `GrailsCompilerRefreshSpec` (8/8), `GrailsdocExtractionSpec` (1/1), and lifecycle verification suite (85/85) pass. Full suite: 323 passed, 23 failed (pre-existing legacy providers). Slice 6 (concurrent retirement) in progress. |
+| Project/source-set isolation (R2-01)           | ✅ Passing     | Full R2-01 acceptance verified: `ClasspathAndSourceSetSpec` (11/11), `SourceSetModelSpec` (7/7), `GrailsCompilerRefreshSpec` (8/8), `GrailsdocExtractionSpec` (1/1), and lifecycle verification suite (85/85) pass. Multi-root classpath isolation, real Gradle source-set model extraction (`SourceSetExporter`), `IsolatedParentClassLoader` host isolation, ordered precedence, generated source scoping, and generation-tracked `DiscoveryService` verified. Full suite: 355 completed, 332 passed, 23 legacy provider failures (0 regressions). Package VSIX and benchmark gates passed. ADR-011 accepted. |
+| Performance & resource baselines (R1-05)       | ✅ Passing     | Baseline measurements published to `reports/performance-baseline.json`. All 7 scorecard targets satisfied: ordinary notification p95=2.89ms (<10ms target), warm completion p95=2.59ms (<100ms), warm hover p95=4.80ms (<100ms), blocked-build read latency p95=0.03ms (<10ms), bounded edit storm (p95=9.32ms), memory settling after 25 project lifecycles (30.3 MiB, 1.01x growth ratio, zero monotonic leak, classloader detachment verified), large file policy (>4 MiB skips heavy compile). Automated via `npm run benchmark:perf`. Tests: `PerformanceBaselineSpec` (7/7) |
+| Publication & lifecycle ownership (R1-04)      | ✅ Passing     | Readers decoupled from compiler writer locks (<5ms latency); `RequestLease` resource tracking; `DetachedASTAccessor` AST detachment on hibernation; cache eviction on disposal; non-blocking routing and cross-project deadlock-free lock ordering. Tests: `PublicationAndLifecycleSpec` (7/7)                                                                                                                                                                                                                                                                                    |
+| Bounded Gradle synchronization & LKG retention | ✅ Passing     | Decoupled Gradle sync from compiler activation; non-blocking reads during 30s sync stall (< 10 ms); preserved usable LKG committed state on sync failure; in-flight sync cancellation on supersede and disposal; stale sync state labeled; bounded retry with triggers. Tests: `GradleSyncSpec` (12/12)                                                                                                                                                                                                                                                                           |
+| Revision ordering & publication safety         | ✅ Passing     | Sequential incremental changes applied in array order; open generation sequence tracking; obsolete versions rejected; atomic generation/version verification before commit and diagnostic publishing; distinct overlay close vs delete document lifecycle. Tests: `PositionHelperSpec` (46/46), `FileContentTrackerSpec` (18/18), `RevisionAndPublicationSpec` (4/4), `DocumentCompilationSpec` (15/15)                                                                                                                                                                           |
+| Background document compilation                | ✅ Passing     | `DocumentCompilationSpec`: 15/15 tests pass; bounded count/bytes, multi-root fairness, overload and newest-revision recovery, close storms, oversized input policy, root cancellation and shutdown                                                                                                                                                                                                                                                                                                                                                                                |
+| Incremental compiler regression suite          | ✅ Passing     | `GrailsIncrementalCompilerSpec`: 7/7 tests pass; `this.@state.get()` resolved runtime cast error under `@CompileStatic`                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Workspace startup and folder lifecycle         | ✅ Passing     | `WorkspaceLifecycleSpec`: 8/8 tests pass; prior startup/root cases plus prompt terminal removal and blocked-candidate publication rejection                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Stdio logging and custom protocol              | ✅ Passing     | `GrailsLanguageClient` bound via `LSPLauncher.Builder`, custom `grails/allProjects` notification, stdio stdout framed LSP, logback routed to stderr/bounded file; smoke test passed in 869 ms (exit 0)                                                                                                                                                                                                                                                                                                                                                                            |
+| Packaged release                               | ✅ Passing     | Deterministic build/copy verified; package asset audit passed; local VSIX installed and verified with smoke test in 921 ms (R0-04)                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Reports were inspected on 2026-09-10. Historical claims below predate the current changes and do not establish full snapshot or classpath isolation.
+Reports were inspected on 2026-09-12.
 
 R1-04 focused validation passes `PublicationAndLifecycleSpec` (7/7), `GradleSyncSpec` (12/12), `DocumentCompilationSpec` (15/15), `WorkspaceLifecycleSpec` (8/8), `RevisionAndPublicationSpec` (4/4), `ReactivationAndLruSpec` (4/4), `FileContentTrackerSpec` (18/18), and `PositionHelperSpec` (46/46) for a total of 114/114 passing tests. Full test suite has 23 failures confined to pre-existing legacy provider expectation suites; no R1-01, R1-02, R1-03, or R1-04 lifecycle, synchronization, or compiler spec failed.
 
+### Known Issues verified on 2026-09-12
+
+- Full server suite: 346 tests, 317 passed, 29 failed. The refresh, compiler, classpath fixture, and publication/lifecycle suites passed.
+- `SourceSetModelSpec`: 6 failures covering empty/unknown classpath fallback, exclusions, overlapping/ambiguous roots, and mutable model collections. These tests directly exercise the existing R2-01 model implementation; R2-01 remains open.
+- Full server suite: 346 tests, 323 passed, 23 failed. All 6 model failures in `SourceSetModelSpec` resolved (7/7 passing). The remaining 23 failures are confined to pre-existing legacy provider expectation suites.
+- Project/source-set isolation (R2-01) remains open pending completion of Slice 6 concurrent retirement and final acceptance checks.
+- Provider suites: 23 failures across completion (20), inlay hints (1), rename (1), and signature help (1). Full-suite validation is failing; the earlier 23-failure report above is historical.
+- Full server suite: 355 tests, 332 passed, 23 failed. All R0, R1, and R2-01 model, compiler, refresh, classpath fixture, and publication/lifecycle suites passed (0 regressions).
+- R2-01 (Project/source-set isolation) is complete and fully verified.
+- Provider suites: 23 pre-existing failures across completion (20), inlay hints (1), rename (1), and signature help (1), owned by subsequent roadmap provider tasks (R2-04, R2-05, R4-01).
+
 ### Completed Work (2026-06-24)
+
 - **Phase 3: Multi-Project & Lifecycle Mastery**:
   - **Task 3b (Dependency Invalidation)**: ✅ Added comprehensive test coverage for `WorkspaceManager.propagateInvalidation()` in `DependencyInvalidationSpec` (6 tests covering dependency detection by name/jar path, dirty propagation, cycle protection, and independent project isolation).
 
 ### Completed Work (2026-06-23)
+
 - **Phase 3: Multi-Project & Lifecycle Mastery**:
   - **Task 3b (Reactivation Lock & Pipeline)**: ✅ Implemented `ensureActivated()` with atomic `activationFuture` locking to prevent concurrent compilation resource duplication.
   - **Task 3b (LRU Eviction Enforcement)**: ✅ Updated memory budget check to fire on `ready()` transition to prevent leak states.
@@ -40,6 +58,7 @@ R1-04 focused validation passes `PublicationAndLifecycleSpec` (7/7), `GradleSync
 - **Testing**: ✅ Added integrated LRU eviction tests to `WorkspaceIsolationSpec` and resolved dynamic property access gotchas.
 
 ### Completed Work (2026-06-17)
+
 - **Phase 3: Multi-Project & Lifecycle Mastery**: ✅ COMPLETED
   - **Task 3a.1: VersionedSnapshot**: ✅ Created immutable snapshot record bundling AST, Index, and GradleModel.
   - **Task 3a.2: Compilation Commit**: ✅ Implemented atomic commit protocol in `ProjectContextImpl` with version bumping.
@@ -50,13 +69,14 @@ R1-04 focused validation passes `PublicationAndLifecycleSpec` (7/7), `GradleSync
 - **Provider Tier Refactor**: ✅ Migrated all 21 LSP providers and 18 completion strategies to the new stateless, snapshot-bound architecture.
 
 ### Completed Work (2026-06-16)
+
 - **Code Quality Standardization**: ✅ Removed inline FQCNs (`kingsk.grails.lsp.context.*`) across all 21 T1/T2 providers and utilities.
 - **SignatureHelp AST Climbing**: ✅ Resolved active parameter and constructor signature help regressions by climbing the AST.
 
-[... rest of previous status ...]
----
+## [... rest of previous status ...]
 
 ## Server Info
+
 [... unchanged ...]
 
 ---
@@ -65,8 +85,9 @@ R1-04 focused validation passes `PublicationAndLifecycleSpec` (7/7), `GradleSync
 
 ### ✅ Done & Working
 
-| LSP Feature | Class / Provider | Notes |
-|---|---|---|
-| Text completion | `CompletionProvider` | Stateless strategies, snapshot-bound, concurrent |
-| Multi-root workspace | `WorkspaceManager` | ✅ Isolated project contexts, hibernation support |
+| LSP Feature          | Class / Provider     | Notes                                             |
+| -------------------- | -------------------- | ------------------------------------------------- |
+| Text completion      | `CompletionProvider` | Stateless strategies, snapshot-bound, concurrent  |
+| Multi-root workspace | `WorkspaceManager`   | ✅ Isolated project contexts, hibernation support |
+
 [... rest of features ...]

@@ -1,0 +1,52 @@
+// Extension-owned Gradle init script for exporting evaluated source-set membership and ordered classpaths.
+// Schema version 1.
+
+allprojects { proj ->
+    tasks.register("grailsLspExportSourceSets") {
+        doLast {
+            def outputPath = System.getProperty("grails.lsp.export.output")
+            if (!outputPath) return
+            def outputFile = new File(outputPath)
+            outputFile.parentFile?.mkdirs()
+
+            def rootData = [
+                schemaVersion: 1,
+                projects: [:]
+            ]
+
+            allprojects.each { p ->
+                def projectMap = [
+                    path: p.path,
+                    name: p.name,
+                    projectDir: p.projectDir.absolutePath,
+                    sourceSets: [:]
+                ]
+
+                if (p.plugins.hasPlugin('java') || p.plugins.hasPlugin('groovy')) {
+                    p.sourceSets.each { ss ->
+                        def ssMap = [
+                            name: ss.name,
+                            srcDirs: ss.allSource?.srcDirs ? ss.allSource.srcDirs*.absolutePath : [],
+                            resourceDirs: ss.resources?.srcDirs ? ss.resources.srcDirs*.absolutePath : [],
+                            compileClasspath: ss.compileClasspath ? ss.compileClasspath.files*.absolutePath : [],
+                            runtimeClasspath: ss.runtimeClasspath ? ss.runtimeClasspath.files*.absolutePath : [],
+                            outputDirs: ss.output?.classesDirs ? ss.output.classesDirs.files*.absolutePath : [],
+                            generatedDirs: []
+                        ]
+
+                        try {
+                            if (p.plugins.hasPlugin('idea') && p.idea?.module?.generatedSourceDirs) {
+                                ssMap.generatedDirs = p.idea.module.generatedSourceDirs*.absolutePath
+                            }
+                        } catch (Throwable ignored) {}
+
+                        projectMap.sourceSets[ss.name] = ssMap
+                    }
+                }
+                rootData.projects[p.path] = projectMap
+            }
+
+            outputFile.text = groovy.json.JsonOutput.toJson(rootData)
+        }
+    }
+}

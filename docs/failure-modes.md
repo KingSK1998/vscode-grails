@@ -2,7 +2,7 @@
 
 > **Status:** ACTIVE — add entries within 30 minutes of discovering a bug.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-09
+> **Last updated:** 2026-09-12
 > **Validation triggers:** Bug fixed, architecture change
 > **Rule:** Every agent surprise → one entry here. No exceptions.
 
@@ -19,6 +19,7 @@
 | ThreadSafeLruCache | RL-001 |
 | ProviderRegistry / BaseProvider | PC-001 |
 | GrailsIncrementalCompilerSpec | AL-001 |
+| GrailsCompiler / SourceSetCompilationState | AL-002 |
 | Client startup / packaging | ST-001 |
 | Stdio transport / Logback | ST-002 |
 | Server workspace / Source duplication | ST-003 |
@@ -30,7 +31,7 @@
 | Invariant | Failure Modes |
 |---|---|
 | `INV-OWN-001` | PC-001 |
-| `INV-OWN-004` | SM-001, CI-001, RL-001 |
+| `INV-OWN-004` | SM-001, CI-001, RL-001, AL-002 |
 | `INV-OWN-005` | CC-003 |
 | `INV-OWN-008` | DP-001 |
 | `INV-STATE-001` | CC-003 |
@@ -130,6 +131,16 @@
 
 ## AST Lifecycle
 
+### AL-002: Compiler Refresh Delegate Lost During Source-Set Refactor
+- **Status:** Active
+- **Bug:** Calls to `GrailsCompiler.refreshCompilationUnit()` fail after the reset implementation moves into `SourceSetCompilationState`.
+- **Invariant affected:** `INV-OWN-004` requires an owned invalidation path for derived compiler state.
+- **Root cause:** The source-set refactor retained compilation-unit getter/setter delegates but omitted the refresh delegate.
+- **Fix:** Restore the compiler delegate for a named existing scope or all initialized scopes, with lazy main initialization when refreshing an empty compiler. Serialize resets with compiler/state locks and clear source/error caches while retaining configuration/classloader identities. The project writer must re-add sources and compile before publication; this operation does not rebuild missing classloaders.
+- **Test:** `GrailsCompilerRefreshSpec`: eight cases failed with `MissingMethodException` before the fix and passed afterward, including in the full server suite. Server build passed; full suite reports 29 failures in model/provider suites.
+- **Detected by:** Refresh API review and focused regression tests.
+- **Date:** 2026-09-12.
+
 ### AL-001: Stub Test — Zero Regression Protection
 - **Status:** Resolved
 - **Bug:** `GrailsIncrementalCompilerSpec` contained only `expect: true`. Zero protection for most critical pipeline.
@@ -222,12 +233,16 @@
 
 ### DP-001: Cross-Root Classpath Pollution and Guess-Based Project Edges
 - **Status:** Open (owned by R2-01, R2-03)
+- **Status:** Partially resolved (R2-01 complete; R2-03 open)
 - **Bug:** Two workspace roots with differing dependency versions share an aggregated classloader; cross-project dependencies use name/prefix heuristics instead of resolved Gradle models.
 - **Invariant violated:** `INV-DISC-001`, `INV-DISC-002`, `INV-OWN-008`
 - **Root cause:** Global classpath aggregation in compiler.
 - **Fix:** Pending R2-01 (isolate classpaths per source set) and R2-03 (resolved Gradle build model edges).
-- **Test:** To be implemented in R2-01 and R2-03.
+- **Test:** On 2026-09-12, `ClasspathAndSourceSetSpec` passed 2/2 cases; `SourceSetModelSpec` failed 6/7 cases (empty/unknown classpath fallback, exclusions, overlapping/ambiguous roots, mutable collections). The model cases do not invoke the compiler refresh API. Broader R2-01/R2-03 acceptance remains open.
+- **Fix:** R2-01 resolved classpath isolation: real Gradle source-set model extraction (`SourceSetModel`), per-source-set compiler isolation (`SourceSetCompilationState`), `IsolatedParentClassLoader` blocking host test dependencies, segment-aware longest-prefix routing, and generation-tracked scan publication in `DiscoveryService`. R2-03 retains resolved Gradle project edges and propagation.
+- **Test:** `ClasspathAndSourceSetSpec` (11/11 passing), `SourceSetModelSpec` (7/7 passing), `GrailsCompilerRefreshSpec` (8/8 passing), 85/85 lifecycle tests. R2-03 cross-project edge tests remain to be implemented in R2-03.
 - **Detected by:** Architecture review.
+- **Related ADRs:** ADR-011
 - **Date:** 2026-09-09.
 
 ---

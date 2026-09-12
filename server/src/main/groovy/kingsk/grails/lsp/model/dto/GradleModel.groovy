@@ -6,6 +6,8 @@ import groovy.transform.Immutable
 @CompileStatic
 @Immutable
 class GradleModel implements Serializable {
+    private static final long serialVersionUID = 2L
+
     String name
     String group
     String version
@@ -16,4 +18,5 @@ class GradleModel implements Serializable {
     Set<File> sourceDirectories
     Set<File> testDirectories
     Set<DependencyNode> dependencies
+    Map<String, SourceSetModel> sourceSets
 }

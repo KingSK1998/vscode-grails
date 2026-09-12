@@ -197,5 +197,69 @@
 - **Milestone Phase 1: Concurrency & Lifecycle Correctness** is officially COMPLETE with R1-01, R1-02, R1-03, R1-04, and R1-05 all accepted.
 - Next roadmap task: **R2-01** (Isolate classpaths and source-set membership) starting **Phase 2: Dependency Resolution & Cross-Project Correctness**.
 
+## R2-01 implementation-plan review (2026-09-10)
 
+- Reviewed Antigravity's external `4419df08-6140-48ae-b460-3347d880c39b/implementation_plan.md` against source at `2eb0b18`; rejected the draft and created [docs/execution/plans/R2-01.md](docs/execution/plans/R2-01.md). This is a plan-only review; R2-01 remains queued and no runtime checks were rerun.
+- Replacement covers resolved Gradle module/source-set membership and ordered classpaths, generated roots as attributes of their owning source sets, scoped compiler/source/discovery caches, coherent request capture, and generation-checked scan/resource retirement. It includes provider-visible origins, precedence, ambient host-classpath leakage, and blocked removal/re-add tests.
+- Preserve the existing `docs/specs/performance.md` edit. The external draft, task queue, and code were not changed. Follow the replacement plan when R2-01 implementation is authorized; do not infer full monorepo/composite support or a green provider suite from this review.
+- Documentation validation: 23 local plan links/anchors checked successfully, roadmap validator passed all 38 tasks, and tracked/new-plan whitespace checks reported no errors.
+
+## Compiler refresh delegate (2026-09-12)
+
+- Restored `GrailsCompiler.refreshCompilationUnit(String sourceSetName = null)` within the existing uncommitted R2-01 refactor. Named initialized scopes reset individually; null/empty refreshes all existing scopes and initializes main only when no scopes exist. Named uninitialized scopes remain lazy.
+- Compiler and source-set locks protect reset; configuration/classloader identities are retained and source/error caches cleared. The project writer must re-add and compile sources before publication. This API does not rebuild a missing classloader.
+- Added `GrailsCompilerRefreshSpec`: all eight cases reproduced `MissingMethodException` before implementation and passed afterward. Server shadow-JAR build passed. Full server suite: 346 tests, 317 passed, 29 failed (six `SourceSetModelSpec` failures and 23 provider failures). Compiler, classpath fixture, refresh, and publication/lifecycle suites passed.
+- Updated server status, AL-002/DP-001 failure evidence, compiler risk description, and the R2-01 follow-up record. R2-01 remains open. Next work belongs to its model fallback, exclusions, root ambiguity/precedence, immutability, and outstanding isolation/retirement acceptance cases; the refresh delegate does not certify those contracts.
+- Preserved prior dirty work. Gradle validation needed access to the existing user cache; sandboxed PowerShell process creation also failed intermittently. Roadmap validation passed all 38 tasks and whitespace checks passed.
+
+## Model fallback, membership, immutability, and generation-tracked discovery (2026-09-12)
+
+- Resolved all 6 failures in `SourceSetModelSpec` (7/7 now passing):
+  - Enforced immutability on `SourceSetModel`: wrapped all collection fields in `Collections.unmodifiableList` / `Collections.unmodifiableSet` after defensive copying.
+  - Added Ant glob pattern converter (`**`, `*`, `?`) to `SourceSetModel.isExcluded(File, File)` for root-relative exclusion matching.
+  - Implemented `getMatchingDeclaredRoot(File)` on `SourceSetModel` and updated `GrailsProject.getSourceSetForFile(File)` to choose the most specific (longest) matching declared root, and detect explicit equal-root ambiguity across distinct source sets returning `null`.
+  - Updated `GrailsProject` classpath resolution (`getMainClasspathUrls`, `getTestClasspathUrls`, `getClasspathUrlsForUri`): in resolved source-set mode, empty classpaths never fall back to legacy dependencies, and files outside declared source sets receive an empty classpath rather than inheriting the main classpath.
+  - Added `RequestContext.sourceSet()` method to directly expose the resolved `SourceSetModel` for the active request URI.
+- Generation-tracked Discovery publication (Slice 6.2):
+  - Added `projectScanGenerations` (`ConcurrentHashMap<String, AtomicLong>`) in `DiscoveryService`.
+  - Scans are built privately and check generation before publishing to `classGraphScanResults`: superseded scans or scans on removed projects are closed and discarded immediately.
+  - Updated `removeProject` and `clearCaches` to clean `projectScanGenerations`.
+  - Updated `getClassGraphScanResult` to return `null` on empty/null URIs (preventing arbitrary project leaks) and select longest matching root for nested projects (`INV-DISC-001`).
+- Verification:
+  - `SourceSetModelSpec`: 7/7 passing.
+  - `ClasspathAndSourceSetSpec`: 2/2 passing (R2-01/1 and R2-01/2).
+  - Lifecycle verification suite (85 tests): 100% passing (`*GrailsProjectBuilderSpec`, `*WorkspaceIsolationSpec`, `*DocumentCompilationSpec`, `*WorkspaceLifecycleSpec`, `*RevisionAndPublicationSpec`, `*GradleSyncSpec`, `*PublicationAndLifecycleSpec`, `*ReactivationAndLruSpec`, `*GrailsIncrementalCompilerSpec`).
+  - Full server suite: 346 tests, 323 passed, 23 failed (confined strictly to pre-existing legacy provider expectation suites).
+  - Client checks: `npm run check-types` and `npm run lint` passed (exit 0).
+  - Server shadowJar: `npm run build:server` passed (exit 0).
+  - Roadmap: `node scripts/roadmap.js validate` passed (38 tasks valid).
+  - `git diff --check` passed cleanly.
+
+## R2-01 Acceptance and Completion Milestone (2026-09-12)
+
+- **R2-01 Completed & Accepted**:
+  - Implemented comprehensive acceptance coverage in `ClasspathAndSourceSetSpec` (11/11 tests passing):
+    - `R2-01/1`: Sibling prefix collision (`my-project` vs `my-project-api`) and nested child module routing; compiler static type-checking isolation verifying that `@CompileStatic` code referencing v1 method succeeds in project A and fails in project B, while v2 method succeeds in project B and fails in project A; unrelated files route to null and never inherit default project facts.
+    - `R2-01/2`: Production sources blocked from test-only APIs (`ClassNotFoundException`); ordered classpath precedence strictly preserved across duplicate FQNs (`originAB == "A"`, `originBA == "B"`); host test classpath (`org.junit.Test`, `spock.lang.Specification`) blocked by `IsolatedParentClassLoader`; generated main/test directories inherit owning source-set visibility.
+    - `R2-01/3`: Removing one project root leaves sibling projects sharing identical JARs unaffected and functional; active `RequestLease` readers hold valid snapshots across project removal without crash or use-after-free; `DiscoveryService` uses `projectScanGenerations` to discard superseded or removed background scans before publication.
+    - `Regression`: `ProjectCache` (schema v2) rejects legacy v1 caches and caches without sourceSets; unknown files outside source sets resolve to empty classpaths without fallback to main; compiler refresh delegate serializes with locks and clears cached error collectors.
+  - Verification Gates:
+    - Focused tests: `ClasspathAndSourceSetSpec` (11/11), `SourceSetModelSpec` (7/7), `GrailsCompilerRefreshSpec` (8/8), `GrailsdocExtractionSpec` (1/1) — all 27 focused tests pass.
+    - Lifecycle verification suite: 85/85 tests pass (`*GrailsProjectBuilderSpec`, `*WorkspaceIsolationSpec`, `*DocumentCompilationSpec`, `*WorkspaceLifecycleSpec`, `*RevisionAndPublicationSpec`, `*GradleSyncSpec`, `*PublicationAndLifecycleSpec`, `*ReactivationAndLruSpec`, `*GrailsIncrementalCompilerSpec`).
+    - Full server test suite: 355 completed, 332 passed, 23 legacy provider failures (zero regressions).
+    - Client checks: `npm run check-types` and `npm run lint` passed (exit code 0).
+    - Client tests: `npm run test:client` passed (7/7, exit code 0).
+    - Server smoke test: `npm run test:smoke` passed (exit code 0).
+    - Packaged release: `npm run package` produced `vscode-gng-support.vsix` (27 files, 17.98 MB, exit code 0).
+    - Performance benchmark: `npm run benchmark:perf` passed all 7 roadmap scorecard targets (ordinary notification p95=4.06ms, warm completion p95=2.43ms, warm hover p95=3.91ms, blocked-build reads p95=0.03ms, bounded edit storm, memory settling 29 MiB, large file policy).
+  - Knowledge Base & Architecture:
+    - Added and accepted **ADR-011** (`docs/adr/decisions.md`): Isolated Classpaths and Source-Set Scoped Compilation and Discovery.
+    - Updated `docs/invariants.md`: field ownership table updated with source-set scoped compiler and generation-tracked discovery; ADR-011 linked.
+    - Updated `docs/failure-modes.md`: `DP-001` marked partially resolved (R2-01 complete; R2-03 open).
+    - Updated `docs/architecture/system-map.md`: updated risk descriptions for `GrailsCompiler` and `DiscoveryService`.
+    - Updated `server/STATUS.md`: R2-01 marked `✅ Passing`.
+    - Updated `docs/execution/records/R2-01.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
+    - Updated `docs/execution/task-queue.json`: R2-01 status updated to `done`.
+    - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
+- Next roadmap task: **R2-02** (Refresh dependency-derived state coherently).
 

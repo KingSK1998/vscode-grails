@@ -66,7 +66,7 @@ abstract class BaseProvider {
             lease,
             projectCtx.methodScopeCache,
             projectCtx.groovydocCache,
-            projectCtx.classLoaderUnsafeOrNull
+            projectCtx.getClassLoaderForUri(uri)
         )
     }
 

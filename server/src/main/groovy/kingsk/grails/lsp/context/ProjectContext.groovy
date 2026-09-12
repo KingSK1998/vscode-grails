@@ -29,7 +29,6 @@ interface ProjectContext {
     void hibernate()
     void dispose()
 
-    // Dependency & Sync Status (Phase 3)
     // Dependency & Sync Status (Phase 3 & R1-03)
     boolean isDependencyDirty()
     void setDependencyDirty(boolean dirty)
@@ -42,4 +41,7 @@ interface ProjectContext {
     int getSyncRetryCount()
     CompletableFuture<GrailsProject> getCurrentGradleSyncFuture()
     void recompileAsync()
+
+    // Classpath Isolation (R2-01)
+    ClassLoader getClassLoaderForUri(String uri)
 }

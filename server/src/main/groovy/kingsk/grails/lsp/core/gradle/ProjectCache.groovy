@@ -18,7 +18,7 @@ class ProjectCache {
     private static final String PROJECT_JSON_FILE = "projectInfo.json"
 
     // Increment when project structure changes
-    private int currentVersion = 1
+    private int currentVersion = 2
 
     /* -------------- public API remains unchanged -------------------- */
 
@@ -38,7 +38,11 @@ class ProjectCache {
                 }
 
                 GrailsProject project = ois.readObject() as GrailsProject
-                log.info("[GRADLE] Loaded project from binary cache: ${project.name} (${project.dependencies.size()} dependencies)")
+                if (project == null || project.sourceSets == null) {
+                    log.info("[GRADLE] Cache missing source-set membership, invalidating: ${projectDir.name}")
+                    return null
+                }
+                log.info("[GRADLE] Loaded project from binary cache: ${project.name} (${project.dependencies.size()} dependencies, ${project.sourceSets.size()} source sets)")
                 return project
             }
         } catch (Exception e) {

@@ -1,9 +1,13 @@
 package kingsk.grails.lsp.core.compiler
 
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
+import kingsk.grails.lsp.context.ProjectContext
 import kingsk.grails.lsp.core.compiler.GrailsCU
+import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.SourceSetModel
 import kingsk.grails.lsp.model.types.TextFile
 import kingsk.grails.lsp.utils.grails.GrailsUtils
 import kingsk.grails.lsp.utils.services.ServiceUtils
@@ -22,42 +26,76 @@ import java.util.concurrent.locks.ReentrantLock
  * This class manages the Groovy compilation unit, configuration, and classloader,
  * and provides methods to set up, configure, and execute compilation for a Grails project.
  * <p>
- * Thread Safety: This class is not guaranteed to be thread-safe.
- * <p>
- * Usage Example:
- * <pre>
- *     GrailsCompiler compiler = new GrailsCompiler(service)
- *     compiler.setupCompiler(project, reportingService)
- *     compiler.compile()
- * </pre>
+ * Thread Safety: Coordinates with ProjectContext and SourceSetCompilationState.
  */
 @Slf4j
+@CompileStatic
 class GrailsCompiler {
     // Thread-safety lock
     private final ReentrantLock compileLock = new ReentrantLock()
 
     // Compiler Configurations
     private CompilerConfiguration compilerConfig
-    private GroovyClassLoader classLoader
-    private GrailsCU compilationUnit
-
-    // Source unit caches
-    private final Map<String, SourceUnit> sourceUnitsCache = new ConcurrentHashMap<>()
-    private final Set<String> dirtySources = ConcurrentHashMap.newKeySet()
+    private final Map<String, SourceSetCompilationState> sourceSetStates = new ConcurrentHashMap<>()
     private boolean isFullCompilation = true
     private String previousContext
-
-    // Cache last classpath to reuse classloader when unchanged
-    private volatile int lastClasspathHash = 0
 
     // Cached error collector for latest compilation state
     private volatile ErrorCollector cachedErrorCollector
     private volatile long lastErrorCollectorUpdate = 0
 
     private final GrailsService grailsService
+    private final ProjectContext projectContext
 
-    GrailsCompiler(GrailsService service) {
+    GrailsCompiler(GrailsService service, ProjectContext projectContext = null) {
         this.grailsService = service
+        this.projectContext = projectContext
+    }
+
+    GrailsProject getProject() {
+        return projectContext?.getProject() ?: grailsService.project
+    }
+
+    String getSourceSetNameForUri(String uri) {
+        GrailsProject project = getProject()
+        if (project != null && uri != null) {
+            SourceSetModel model = project.getSourceSetForUri(uri)
+            if (model != null) return model.sourceSetName
+            if (project.sourceSets != null && !project.sourceSets.isEmpty()) {
+                return "unknown"
+            }
+            if (project.isTestFile(uri)) return "test"
+        }
+        return "main"
+    }
+
+    SourceSetCompilationState getStateForUri(String uri) {
+        String sourceSetName = getSourceSetNameForUri(uri)
+        return getOrCreateState(sourceSetName)
+    }
+
+    SourceSetCompilationState getMainState() {
+        return getOrCreateState("main")
+    }
+
+    SourceSetCompilationState getOrCreateState(String sourceSetName) {
+        String name = sourceSetName ?: "main"
+        return sourceSetStates.computeIfAbsent(name) { String ssn ->
+            GrailsProject project = getProject()
+            List<URL> classpathUrls
+            if ("test".equalsIgnoreCase(ssn)) {
+                classpathUrls = project?.getTestClasspathUrls() ?: []
+            } else if (project?.sourceSets?.containsKey(ssn)) {
+                SourceSetModel ss = project.sourceSets.get(ssn)
+                classpathUrls = ss.compileClasspath.collect { ServiceUtils.validateClasspathEntry(it) }.findAll { it != null }
+            } else if (project?.sourceSets != null && !project.sourceSets.isEmpty()) {
+                classpathUrls = []
+            } else {
+                classpathUrls = project?.getMainClasspathUrls() ?: []
+            }
+            if (!compilerConfig) updateCompilerOptions()
+            return new SourceSetCompilationState(ssn, compilerConfig, classpathUrls, this.class.classLoader)
+        }
     }
 
     //==============================================================//
@@ -71,12 +109,13 @@ class GrailsCompiler {
     void compileProject() {
         compileLock.lock()
         try {
-            if (!grailsService.project) {
+            GrailsProject project = getProject()
+            if (!project) {
                 log.warn("[COMPILER] Cannot compile project: GrailsProject is not set")
                 return
             }
 
-            log.info("[COMPILER] Starting full project compilation for: ${grailsService.project.name}")
+            log.info("[COMPILER] Starting full project compilation for: ${project.name}")
 
             grailsService.progressService.update("Preparing compiler...", 30)
 
@@ -86,18 +125,21 @@ class GrailsCompiler {
             updateCompilerOptions()
             updateClassLoader()
 
-            // Add all source files from the project
-            def allSources = ServiceUtils.getAllGroovySourceFilesFromProject(grailsService.project)
+            // Add all source files from the project routed to their respective source set
+            def allSources = ServiceUtils.getAllGroovySourceFilesFromProject(project)
             if (allSources) {
-                allSources.each { src -> compilationUnit.addSource(src) }
-                log.info("[COMPILER] Added ${allSources.size()} source files to compilation unit")
+                allSources.each { File src ->
+                    String uri = src.toURI().toString()
+                    SourceSetCompilationState state = getStateForUri(uri)
+                    state.addSource(src)
+                }
+                log.info("[COMPILER] Added ${allSources.size()} source files to compilation units")
                 grailsService.progressService.update("Compiling ${allSources.size()} source files...", 40)
             } else {
                 log.warn("[COMPILER] No source files found in project")
             }
 
             isFullCompilation = true
-            // Compile with appropriate phase for workspace analysis
             boolean success = compileDefaultOrTillPhase(determineProjectAnalysisPhase())
             log.info("[COMPILER] Project compilation ${success ? 'successful' : 'completed with errors'}")
             grailsService.progressService.update(success ? "Compilation completed" : "Compilation completed with errors", 60)
@@ -122,8 +164,9 @@ class GrailsCompiler {
             log.info("[COMPILER] Compiler Configuration initialized")
         }
 
+        GrailsProject project = getProject()
         // optimization options
-        def buildDir = grailsService.project?.excludeDirectories
+        def buildDir = project?.excludeDirectories
             ?.find { it.name == "build" }
         if (buildDir?.exists()) compilerConfig.targetDirectory = buildDir
         else compilerConfig.targetDirectory = option.TARGET_DIRECTORY
@@ -143,41 +186,25 @@ class GrailsCompiler {
      * NOTE: Resets the compilation unit
      */
     void updateClassLoader() {
-        def urls = grailsService.workspaceManager.getAllProjects()
-            .collectMany { project ->
-                project.dependencies.collect { ServiceUtils.validateClasspathEntry(it.jarFileClasspath) }
-            }
-            .findAll()
-            .unique()
+        GrailsProject project = getProject()
+        if (!project) return
 
-        def paths = urls.collect { it.path }
-        if (paths.hashCode() == lastClasspathHash && classLoader) {
-            log.info("[COMPILER] Classpath unchanged, reusing existing classloader")
-            return
-        }
-        lastClasspathHash = paths.hashCode()
+        sourceSetStates.values().each { it.invalidate() }
+        sourceSetStates.clear()
 
-        // Close old classloader to release file handles
-        if (classLoader != null) {
-            try {
-                classLoader.close()
-            } catch (Exception e) {
-                log.warn("[COMPILER] Error closing old GroovyClassLoader: ${e.message}")
-            }
+        SourceSetCompilationState mainState = getOrCreateState("main")
+        if (project.testDirectories || project.sourceSets?.containsKey("test") || project.getTestClasspathUrls()) {
+            getOrCreateState("test")
         }
 
-        def urlCl = new URLClassLoader(urls as URL[], this.class.classLoader)
-        classLoader = new GroovyClassLoader(urlCl, compilerConfig, true)
-        log.info("[COMPILER] Unified Classloader created with ${urls.size()} entries across ${grailsService.workspaceManager.getAllProjects().size()} projects")
         try {
-            def uri = grailsService.project?.rootDirectory?.toURI()?.toString()
-            if (uri) {
-                grailsService.discoveryService.updateClassGraph(uri, classLoader, grailsService.errorService)
+            def uri = project.rootDirectory?.toURI()?.toString()
+            if (uri && mainState.getClassLoader() != null) {
+                grailsService.discoveryService.updateClassGraph(uri, mainState.getClassLoader(), grailsService.errorService)
             }
         } catch (Exception e) {
             log.warn("[COMPILER] Failed to initialize ClassGraph: ${e.message}")
         }
-        refreshCompilationUnit()
     }
 
     /**
@@ -194,54 +221,36 @@ class GrailsCompiler {
         compileLock.lock()
         try {
             log.info("[COMPILER] Incremental compilation trigger: ${textFile.name}")
-            // Ensure compiler is properly initialized
             if (!compilerConfig) updateCompilerOptions()
-            if (!classLoader) updateClassLoader()
 
-            // If we don't have a compilation unit, we should probably do a full compile or at least initialize one
-            if (!compilationUnit) {
-                log.info("[COMPILER] No compilation unit found, initializing fresh for incremental build")
-                invalidateCompiler()
-            }
+            GrailsProject project = getProject()
+            SourceSetCompilationState state = getStateForUri(textFile.uri)
 
             isFullCompilation = false
 
-            // True incremental: instead of refreshing the whole unit, we update only the specific source and its dependents
-            // The GrailsCU.removeSourceUnit method handles AST-level module preservation
-
             Set<TextFile> filesToUpdate = []
             if (textFile.uri.endsWith('.gsp')) {
-                // For GSP, we usually only care about the modified file context
                 filesToUpdate.add(textFile)
             } else {
-                // For Groovy files, we should update dependencies too
                 filesToUpdate = grailsService.fileTracker?.getFileAndItsDependencies(textFile) ?: [textFile] as Set
             }
 
-            log.info("[COMPILER] Incremental update for ${filesToUpdate.size()} files")
+            log.info("[COMPILER] Incremental update for ${filesToUpdate.size()} files in scope ${state.sourceSetName}")
 
-            filesToUpdate.each { file ->
-                // 1. Remove old version if it exists in current CU
-                if (compilationUnit.sources.containsKey(file.uri)) {
-                    SourceUnit old = compilationUnit.sources[file.uri]
-                    compilationUnit.removeSourceUnit(old)
+            filesToUpdate.each { TextFile file ->
+                // Crucial isolation rule: production state MUST NOT admit test files!
+                if (state.isMain() && project != null && project.isTestFile(file.uri)) {
+                    log.debug("[COMPILER] Skipping test file ${file.name} for main source set")
+                    return
                 }
-
-                // 2. Add new version (handling GSP transpilation if needed)
-                String compilationText = file.uri.endsWith('.gsp') ?
-                    kingsk.grails.lsp.utils.gsp.GspToGroovyConverter.convertToVirtualGroovy(file.text) :
-                    file.text
-
-                compilationUnit.addSource(file.uri, compilationText)
-                log.debug("[COMPILER] Source unit updated in CU: ${file.name}")
+                state.addOrUpdateSource(file)
             }
 
             previousContext = textFile.uri
 
-            // Determine optimal phase for incremental developer feedback
             int targetPhase = determineProjectAnalysisPhase()
-            compileDefaultOrTillPhase(targetPhase)
-            clearDirty(textFile.uri)
+            state.compile(targetPhase)
+            state.clearDirty(textFile.uri)
         } catch (Exception e) {
             log.error("[COMPILER] Incremental compilation failed for ${textFile.name}", e)
         } finally {
@@ -256,35 +265,11 @@ class GrailsCompiler {
         compileLock.lock()
         try {
             log.info("[COMPILER] Invalidating compiler state")
-
-            // Clear all cached state first
-            sourceUnitsCache.clear()
+            sourceSetStates.values().each { it.invalidate() }
+            sourceSetStates.clear()
             cachedErrorCollector = null
             lastErrorCollectorUpdate = 0
             previousContext = null
-            dirtySources.clear()
-
-            // Clear compilation unit errors
-            if (compilationUnit != null) {
-                try {
-                    compilationUnit.clearErrors()
-                } catch (Exception ignored) {}
-                compilationUnit = null
-            }
-
-            // Close and release classLoader
-            if (classLoader != null) {
-                try {
-                    classLoader.close()
-                } catch (Exception e) {
-                    log.warn("[COMPILER] Error closing GroovyClassLoader: ${e.message}")
-                }
-                classLoader = null
-            }
-
-            // Reset classpath hash to force classloader refresh if needed
-            lastClasspathHash = 0
-
             log.info("[COMPILER] Compiler state invalidated and released")
         } finally {
             compileLock.unlock()
@@ -297,7 +282,7 @@ class GrailsCompiler {
      */
     void markDirty(String uri) {
         if (uri) {
-            dirtySources.add(uri)
+            getStateForUri(uri).markDirty(uri)
             log.debug("[COMPILER] Marked dirty: ${uri}")
         }
     }
@@ -308,7 +293,7 @@ class GrailsCompiler {
      * @return true if the source is marked dirty
      */
     boolean isDirty(String uri) {
-        uri ? dirtySources.contains(uri) : false
+        uri ? getStateForUri(uri).isDirty(uri) : false
     }
 
     /**
@@ -316,7 +301,8 @@ class GrailsCompiler {
      * @param uri The URI of the source file
      */
     void clearDirty(String uri) {
-        if (uri && dirtySources.remove(uri)) {
+        if (uri) {
+            getStateForUri(uri).clearDirty(uri)
             log.debug("[COMPILER] Cleared dirty: ${uri}")
         }
     }
@@ -325,14 +311,16 @@ class GrailsCompiler {
      * Clears all dirty flags.
      */
     void clearAllDirty() {
-        dirtySources.clear()
+        sourceSetStates.values().each { it.clearAllDirty() }
     }
 
     /**
      * Gets count of dirty sources pending compilation.
      */
     int getDirtyCount() {
-        dirtySources.size()
+        int count = 0
+        sourceSetStates.values().each { count += it.dirtyCount }
+        return count
     }
 
     /**
@@ -342,9 +330,12 @@ class GrailsCompiler {
      */
     boolean compilationExistsFor(String uri) {
         if (!uri) return false
-        if (sourceUnitsCache.containsKey(uri)) return true
-        String norm = TextFile.normalizePath(uri)
-        return (norm && norm != uri) ? sourceUnitsCache.containsKey(norm) : false
+        SourceSetCompilationState state = getStateForUri(uri)
+        if (state.compilationExistsFor(uri)) return true
+        for (SourceSetCompilationState s : sourceSetStates.values()) {
+            if (s != state && s.compilationExistsFor(uri)) return true
+        }
+        return false
     }
 
     /**
@@ -352,10 +343,16 @@ class GrailsCompiler {
      */
     SourceUnit getSourceUnit(TextFile textFile) {
         if (!textFile?.uri) return null
-        SourceUnit direct = sourceUnitsCache.get(textFile.uri)
-        if (direct != null) return direct
-        String norm = TextFile.normalizePath(textFile.uri)
-        return (norm && norm != textFile.uri) ? sourceUnitsCache.get(norm) : null
+        SourceSetCompilationState state = getStateForUri(textFile.uri)
+        SourceUnit unit = state.getSourceUnit(textFile)
+        if (unit != null) return unit
+        for (SourceSetCompilationState s : sourceSetStates.values()) {
+            if (s != state) {
+                unit = s.getSourceUnit(textFile)
+                if (unit != null) return unit
+            }
+        }
+        return null
     }
 
     String getPatchedSourceUnitText(TextFile textFile) {
@@ -367,22 +364,26 @@ class GrailsCompiler {
     }
 
     List<SourceUnit> getSourceUnits() {
-        return sourceUnitsCache.values() as List<SourceUnit>
+        List<SourceUnit> list = []
+        sourceSetStates.values().each { list.addAll(it.getSourceUnits()) }
+        return list
     }
 
-    /**
-     * Gets the compilation errors if there are any
-     * @return ErrorCollector
-     */
     /**
      * Gets the compilation errors if there are any
      * Returns cached error collector, updating when compilation unit changes
      */
     ErrorCollector getErrorCollectorOrNull() {
-        if (compilationUnit?.errorCollector != cachedErrorCollector) {
-            cachedErrorCollector = compilationUnit?.errorCollector
-            lastErrorCollectorUpdate = System.currentTimeMillis()
+        for (SourceSetCompilationState state : sourceSetStates.values()) {
+            ErrorCollector ec = state.getErrorCollectorOrNull()
+            if (ec != null && ec.hasErrors()) {
+                cachedErrorCollector = ec
+                lastErrorCollectorUpdate = System.currentTimeMillis()
+                return ec
+            }
         }
+        cachedErrorCollector = getMainState().getErrorCollectorOrNull()
+        lastErrorCollectorUpdate = System.currentTimeMillis()
         return cachedErrorCollector
     }
 
@@ -390,159 +391,80 @@ class GrailsCompiler {
      * Determines and compiles to the correct phase.
      */
     boolean compileDefaultOrTillPhase(int phase = grailsService.config.compilerPhase) {
+        GrailsProject project = getProject()
         if (phase == GrailsUtils.DEFAULT_COMPILATION_PHASE) {
-            phase = grailsService.project.isGrailsProject
+            phase = (project != null && project.isGrailsProject)
                 ? Phases.CLASS_GENERATION : Phases.CANONICALIZATION
         }
 
         log.info("[COMPILER] Compiling till phase: ${Phases.getDescription(phase).toUpperCase()}")
 
-        compile(phase)
-        return !compilationUnit?.errorCollector?.hasErrors()
-    }
-
-    //========================= Private Methods =========================//
-
-    private void refreshCompilationUnit() {
-        compilationUnit = new GrailsCU(compilerConfig, null, classLoader)
-        log.info("[COMPILER] Compilation unit initialized")
-    }
-
-    private void removeSource(TextFile textFile) {
-        // if cache is empty, then there is nothing to remove
-        if (!sourceUnitsCache.containsKey(textFile.uri)) return
-
-        SourceUnit old = sourceUnitsCache.remove(textFile.uri)
-        compilationUnit.removeSourceUnit(old)
-        log.info("[COMPILER] Removed source unit ${textFile.name}")
-    }
-
-    private void compile(int phase) {
-        if (phase <= 0) return
-        compilationUnit.clearErrors()
-        try {
-            compilationUnit.compile(phase)
-            log.info("[COMPILER] Successfully compiled")
-        } catch (CompilationFailedException e) {
-            log.warn("[COMPILER] Compilation failed with message: ${e.message}")
-        } catch (GroovyBugError e) {
-            log.warn("[COMPILER] Compilation failed with Groovy bug: ${e.message}")
-        } catch (Exception e) {
-            log.warn("[COMPILER] Compilation failed with unknown exception: ${e}")
-            // Fallback: force build AST if missing
-            def preserveError = compilationUnit.errorCollector
-
-            boolean patchedAny = false
-            List<String> debugPatches = []
-            // for (sourceUnit in compilationUnit.sourceUnits.toList()) {
-            compilationUnit?.sourceUnits?.toList()?.each { sourceUnit ->
-                if (sourceUnit.AST != null) return
-
-                String original = sourceUnit.source.reader.text
-                int lineNumber = -1
-
-                if (e instanceof MultipleCompilationErrorsException || e.getCause() instanceof MultipleCompilationErrorsException) {
-                    def errorCollector = sourceUnit.errorCollector
-                    def syntaxErrors = errorCollector?.errors?.findAll { it instanceof SyntaxException }
-
-                    if (syntaxErrors && !syntaxErrors.isEmpty()) {
-                        def syntaxException = syntaxErrors[0] as SyntaxException
-                        lineNumber = Math.max(syntaxException.line - 1, 0)
-                    }
-                } else if (e instanceof groovyjarjarantlr4.v4.runtime.RecognitionException) {
-                    def token = e.offendingToken
-                    if (token) {
-                        lineNumber = Math.max(token.line - 1, 0)
-                    }
-                } else if (e.getCause() instanceof groovyjarjarantlr4.v4.runtime.RecognitionException) {
-                    def token = (e.getCause() as groovyjarjarantlr4.v4.runtime.RecognitionException).offendingToken
-                    if (token) {
-                        lineNumber = Math.max(token.line - 1, 0)
-                    }
-                } else {
-                    return
-                }
-
-                if (lineNumber < 0) return
-
-                // Split into lines and insert patch at end of affected line
-                List<String> lines = original.readLines()
-                if (lineNumber >= lines.size()) return
-
-                String patchText = GrailsUtils.PATTERN_CONSTRUCTOR_CALL.matcher(lines[lineNumber]).matches() ?
-                    GrailsUtils.DUMMY_COMPLETION_CONSTRUCTOR : GrailsUtils.DUMMY_COMPLETION_IDENTIFIER
-
-                lines[lineNumber] += patchText
-                String patchedSource = lines.join("\n")
-                debugPatches.add("File: ${sourceUnit.name}\nPatched Content:\n${patchedSource}")
-
-                compilationUnit.removeSourceUnit(sourceUnit)
-                compilationUnit.addSource(sourceUnit.name, patchedSource)
-                patchedAny = true
-            }
-            if (patchedAny) {
-                log.debug("[COMPILER] Patches applied:\n" + debugPatches.join("\n---\n"))
-                log.warn("[COMPILER] Patch applied for EOL error, recompiling")
-                compilationUnit.compile(phase)
-            } else {
-                log.warn("[COMPILER] No patch applied, cannot recover from compile failure")
-            }
-            compilationUnit.errorCollector.addCollectorContents(preserveError)
-        } finally {
-            updateSourceUnitCache()
+        boolean allSuccess = true
+        for (SourceSetCompilationState state : sourceSetStates.values()) {
+            boolean ok = state.compile(phase)
+            if (!ok) allSuccess = false
         }
-    }
-
-    private void updateSourceUnitCache() {
-        if (!compilationUnit) return
-
-        if (isFullCompilation) {
-            // Clear and rebuild cache to prevent memory leaks
-            sourceUnitsCache.clear()
-        }
-        compilationUnit.iterator().forEachRemaining { sourceUnit ->
-            def uri = TextFile.normalizePath(sourceUnit.name)
-            sourceUnitsCache[uri] = sourceUnit
-        }
-        String msg = isFullCompilation ? "Full project cache rebuilt (${sourceUnitsCache.size()} units)" : "Incremental cache updated"
-        log.info("[COMPILER] $msg")
+        return allSuccess
     }
 
     // Smart analysis phase determination based on project size and user preference.
     private int determineProjectAnalysisPhase() {
         int phase = grailsService.config.compilerPhase
-        // if some phase is set by user then use that phase
         if (phase != GrailsUtils.DEFAULT_COMPILATION_PHASE) return phase
 
-        // For project-wide indexing, stick to CONVERSION to avoid loading the user's dev environment heavily
         if (isFullCompilation) {
             return Phases.CONVERSION
         }
 
-        // if no phase and is big project then use semantic analysis
-        if (grailsService.project.sourceFileCount > 100) return Phases.SEMANTIC_ANALYSIS
-        // if small project then can use more detailed analysis
+        GrailsProject project = getProject()
+        if (project != null && project.sourceFileCount > 100) return Phases.SEMANTIC_ANALYSIS
         return Phases.INSTRUCTION_SELECTION
     }
 
     void removeSourceFile(String uri) {
         if (!uri) return
-        dirtySources.remove(uri)
-        String norm = TextFile.normalizePath(uri)
-        if (norm && norm != uri) {
-            dirtySources.remove(norm)
-        }
-        SourceUnit old = sourceUnitsCache.remove(uri)
-        if (old == null && norm && norm != uri) {
-            old = sourceUnitsCache.remove(norm)
-        }
-        if (old != null && compilationUnit != null) {
-            compilationUnit.removeSourceUnit(old)
-        }
-        log.info("[COMPILER] Removed ${uri} from cache and compilation unit")
+        sourceSetStates.values().each { it.removeSourceFile(uri) }
+        log.info("[COMPILER] Removed ${uri} from cache and compilation units")
     }
 
     GroovyClassLoader getClassLoader() {
-        return classLoader
+        return getMainState().getClassLoader()
+    }
+
+    ClassLoader getClassLoaderForUri(String uri) {
+        return getStateForUri(uri)?.getClassLoader() ?: getClassLoader()
+    }
+
+    GrailsCU getCompilationUnit() {
+        return getMainState().getCompilationUnit()
+    }
+
+    void setCompilationUnit(GrailsCU cu) {
+        getMainState().setCompilationUnit(cu)
+    }
+
+    /**
+     * Resets compilation units and source/error caches while retaining configurations and loaders.
+     * The project writer must re-add and compile sources before publishing a new generation.
+     * A null or empty scope refreshes all existing states, initializing main if none exist;
+     * a named scope that has not been created is left uninitialized.
+     */
+    void refreshCompilationUnit(String sourceSetName = null) {
+        compileLock.lock()
+        try {
+            if (sourceSetName) {
+                SourceSetCompilationState state = sourceSetStates.get(sourceSetName)
+                if (state == null) return
+                state.refreshCompilationUnit()
+            } else if (sourceSetStates.isEmpty()) {
+                getMainState().refreshCompilationUnit()
+            } else {
+                sourceSetStates.values().each { it.refreshCompilationUnit() }
+            }
+            cachedErrorCollector = null
+            lastErrorCollectorUpdate = 0
+        } finally {
+            compileLock.unlock()
+        }
     }
 }

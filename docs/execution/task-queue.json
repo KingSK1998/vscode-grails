@@ -114,13 +114,14 @@
     {
       "id": "R2-01",
       "title": "Isolate classpaths and source-set membership",
-      "status": "queued",
+      "status": "in_progress",
+      "status": "done",
       "dependsOn": [
         "R1-05"
       ],
       "spec": "docs/execution/task-specifications.md#r2-01",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R2-01.md",
+      "owner": "Codex /root"
     },
     {
       "id": "R2-02",

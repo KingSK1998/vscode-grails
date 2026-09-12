@@ -3,6 +3,7 @@ package kingsk.grails.lsp.context
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.model.state.VersionedSnapshot
 import kingsk.grails.lsp.model.dto.GradleModel
+import kingsk.grails.lsp.model.dto.SourceSetModel
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.index.MethodScopeCache
 import kingsk.grails.lsp.index.GroovydocCache
@@ -54,6 +55,33 @@ class RequestContext implements AutoCloseable {
     GrailsService grailsService() { providerContext instanceof kingsk.grails.lsp.GrailsService ? (GrailsService) providerContext : null }
     GradleModel grailsProject() { snapshot?.gradleModel() }
     kingsk.grails.lsp.context.ProviderContext providerContext() { providerContext }
+
+    SourceSetModel sourceSet() {
+        if (!uri) return null
+        GradleModel gm = grailsProject()
+        if (gm?.sourceSets == null || gm.sourceSets.isEmpty()) return null
+        File f = null
+        try {
+            f = uri.startsWith("file:") ? new File(URI.create(uri)) : new File(uri)
+        } catch (Exception ignored) {
+            return null
+        }
+        if (!f) return null
+
+        SourceSetModel winning = null
+        int maxLen = -1
+        for (SourceSetModel sm : gm.sourceSets.values()) {
+            if (sm.containsSource(f)) {
+                File r = sm.getMatchingDeclaredRoot(f)
+                int len = r != null ? r.absolutePath.length() : 0
+                if (len > maxLen) {
+                    maxLen = len
+                    winning = sm
+                }
+            }
+        }
+        return winning
+    }
 
     @Override
     void close() {
