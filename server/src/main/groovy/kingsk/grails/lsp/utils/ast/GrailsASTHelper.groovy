@@ -31,6 +31,27 @@ class GrailsASTHelper {
             case ClassExpression: return node.type // expression: SomeClass.someProp
             case ConstructorCallExpression: return node.type
             case MethodCallExpression: return getMethodFromCallExpression(node, visitor)?.returnType ?: node.type
+            case MethodCallExpression:
+                MethodNode methodNode = getMethodFromCallExpression(node, visitor)
+                if (methodNode != null && methodNode.returnType != null && methodNode.returnType != ClassHelper.OBJECT_TYPE) {
+                    return methodNode.returnType
+                }
+                String mName = node.methodAsString
+                if (mName != null) {
+                    ClassNode target = getTypeOfNode(node.objectExpression, visitor)
+                    if (target != null) {
+                        if (mName.startsWith('findAllBy') || mName in ['findAll', 'list', 'getAll']) {
+                            return ClassHelper.make(List.class)
+                        }
+                        if (mName.startsWith('findBy') || mName in ['get', 'load', 'read', 'findWhere']) {
+                            return target
+                        }
+                        if (mName.startsWith('countBy') || mName in ['count']) {
+                            return ClassHelper.Integer_TYPE
+                        }
+                    }
+                }
+                return methodNode?.returnType ?: node.type
             case PropertyExpression: return resolvePropertyExpressionType(node, visitor)
             case Variable: return resolveVariableType(node as Variable, visitor)
             case Expression: return node.type
@@ -295,6 +316,50 @@ class GrailsASTHelper {
         if (propertyNode) return getTypeOfNode(propertyNode, visitor)
         FieldNode fieldNode = getFieldFromExpression(node, visitor)
         if (fieldNode) return getTypeOfNode(fieldNode, visitor)
+
+        // Grails domain conventions: hasMany, hasOne, belongsTo, id, version
+        ClassNode objType = getTypeOfNode(node.objectExpression, visitor)
+        if (objType != null) {
+            String propName = node.propertyAsString
+            if (propName == 'id' || propName == 'version') {
+                return ClassHelper.make(Long.class)
+            }
+            if (propName == 'errors') {
+                return ClassHelper.make('org.springframework.validation.Errors')
+            }
+            FieldNode hasManyField = objType.getField('hasMany')
+            if (hasManyField != null && hasManyField.hasInitialExpression() && hasManyField.initialExpression instanceof MapExpression) {
+                MapExpression map = (MapExpression) hasManyField.initialExpression
+                for (MapEntryExpression entry : map.mapEntryExpressions) {
+                    if (entry.keyExpression.text == propName) {
+                        return ClassHelper.make(Set.class)
+                    }
+                }
+            }
+            FieldNode hasOneField = objType.getField('hasOne')
+            if (hasOneField != null && hasOneField.hasInitialExpression() && hasOneField.initialExpression instanceof MapExpression) {
+                MapExpression map = (MapExpression) hasOneField.initialExpression
+                for (MapEntryExpression entry : map.mapEntryExpressions) {
+                    if (entry.keyExpression.text == propName) {
+                        if (entry.valueExpression instanceof ClassExpression) {
+                            return ((ClassExpression) entry.valueExpression).type
+                        }
+                    }
+                }
+            }
+            FieldNode belongsToField = objType.getField('belongsTo')
+            if (belongsToField != null && belongsToField.hasInitialExpression() && belongsToField.initialExpression instanceof MapExpression) {
+                MapExpression map = (MapExpression) belongsToField.initialExpression
+                for (MapEntryExpression entry : map.mapEntryExpressions) {
+                    if (entry.keyExpression.text == propName) {
+                        if (entry.valueExpression instanceof ClassExpression) {
+                            return ((ClassExpression) entry.valueExpression).type
+                        }
+                    }
+                }
+            }
+        }
+
         return node.type
     }
 

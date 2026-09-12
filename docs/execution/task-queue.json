@@ -158,13 +158,13 @@
     {
       "id": "R2-05",
       "title": "Implement Grails capability adapters",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R2-04"
       ],
       "spec": "docs/execution/task-specifications.md#r2-05",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R2-05.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R2-06",

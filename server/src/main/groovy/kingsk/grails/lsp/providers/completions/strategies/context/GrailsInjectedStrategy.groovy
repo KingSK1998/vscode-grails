@@ -3,19 +3,21 @@ package kingsk.grails.lsp.providers.completions.strategies.context
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.core.capability.GrailsInjectionCapabilityAdapter
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import kingsk.grails.lsp.utils.grails.GrailsUtils
-import org.codehaus.groovy.ast.ASTNode
+
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
+
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 
 /**
- * Handles Grails injected properties (log, grailsApplication, etc.) only in appropriate contexts.
+ * Handles Grails injected properties (log, grailsApplication, params, etc.) only in appropriate contexts.
  */
 @Slf4j
 @CompileStatic
@@ -38,10 +40,10 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 	
 	@Override
 	List<CompletionItem> provideCompletions(CompletionRequest request, RequestContext ctx) {
-        List<CompletionItem> completions = []
+		List<CompletionItem> completions = []
 		
 		// 1. Common properties
-		['log', 'grailsApplication'].each { String propName ->
+		for (String propName : ['log', 'grailsApplication']) {
 			CompletionItem item = new CompletionItem(propName)
 			item.kind = CompletionItemKind.Property
 			item.detail = "Grails Injected Property"
@@ -52,21 +54,17 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 		ClassNode currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
 		if (currentClass) {
 			if (GrailsUtils.isControllerClass(currentClass, request.uri)) {
-				addArtifactCompletions(completions, kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getControllerProperties(), 'Controller')
+				completions.addAll(GrailsInjectionCapabilityAdapter.INSTANCE.getControllerProperties())
 			} else if (GrailsUtils.isServiceClass(currentClass, request.uri)) {
-				addArtifactCompletions(completions, kingsk.grails.lsp.utils.grails.GrailsHelperIntegration.getServiceProperties(), 'Service')
+				for (String propName : ['transactional', 'sessionRequired', 'dataSource', 'grailsApplication', 'applicationContext']) {
+					CompletionItem item = new CompletionItem(propName)
+					item.kind = CompletionItemKind.Property
+					item.detail = "Service Injected Property"
+					completions.add(item)
+				}
 			}
 		}
 		
 		return completions
-	}
-
-	private void addArtifactCompletions(List<CompletionItem> completions, List<String> props, String type) {
-		props.each { String name ->
-			CompletionItem item = new CompletionItem(name)
-			item.kind = CompletionItemKind.Property
-			item.detail = "${type} Injected Property"
-			completions.add(item)
-		}
 	}
 }

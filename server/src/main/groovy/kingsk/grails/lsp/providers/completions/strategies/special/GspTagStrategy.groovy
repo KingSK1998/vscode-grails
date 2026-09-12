@@ -2,10 +2,12 @@ package kingsk.grails.lsp.providers.completions.strategies.special
 
 import groovy.transform.CompileStatic
 import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.core.capability.TagLibCapabilityAdapter
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
 import org.codehaus.groovy.ast.ASTNode
+
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 
@@ -39,5 +41,7 @@ class GspTagStrategy extends BaseCompletionStrategy {
             }
         }
         return completions
+        if (!request.isGrailsProject) return []
+        return TagLibCapabilityAdapter.INSTANCE.getTagCompletions("g", ctx)
     }
 }

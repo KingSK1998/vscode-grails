@@ -349,17 +349,22 @@ class DiscoveryService {
     static List<String> getMethodsForType(ClassNode classNode) {
         if (!classNode) return []
 
+        List<String> methods = []
         if (isPrimitiveType(classNode)) {
             return [] // Primitives don't have methods
         } else if (classNode == ClassHelper.STRING_TYPE) {
-            return getStringMethods()
+            methods = new ArrayList<>(getStringMethods())
         } else if (isCollectionType(classNode)) {
-            return getCollectionMethods()
+            methods = new ArrayList<>(getCollectionMethods())
         } else if (isMapType(classNode)) {
-            return getMapMethods()
+            methods = new ArrayList<>(getMapMethods())
         } else {
-            return getMethodsForClassNode(classNode)
+            methods = new ArrayList<>(getMethodsForClassNode(classNode))
         }
+
+        ClassLoader targetLoader = !projectClassLoaders.isEmpty() ? projectClassLoaders.values().iterator().next() : DiscoveryService.class.classLoader
+        methods.addAll(DeclarationDiscoveryService.resolveExtensionMethods(classNode, targetLoader).collect { it.name })
+        return methods.unique()
     }
 
     /**
@@ -620,6 +625,7 @@ class DiscoveryService {
     ) {
         return DeclarationDiscoveryService.resolveExtensionMethods(targetType, loader, sourceSetName, projectCoords)
     }
+
 
     /**
      * Clear symbol and keyword caches without dropping expensive ClassGraph scans

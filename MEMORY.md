@@ -361,3 +361,54 @@
     - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
 - Next roadmap task: **R2-05** (Implement Grails capability adapters).
 
+## R2-05 Acceptance and Completion Milestone (2026-09-13)
+
+- **R2-05 Completed & Accepted**:
+  - Implemented Grails capability adapter architecture conforming to `docs/execution/task-specifications.md#r2-05` and `docs/specs/library-discovery.md#capability-adapters`:
+    - `GrailsCapabilityAdapter`: Base interface declaring capability metadata (`capabilityName`, `detectionEvidence`, `inputsDescription`, `derivationDescription`, `applicabilityDescription`, `invalidationDescription`, `limitsDescription`) and applicability predicate `isApplicable(ctx, uri)`.
+    - `GormCapabilityAdapter`:
+      - Dynamic finders derived from domain properties: single-property (`findBy*`, `findAllBy*`, `countBy*`), multi-property Boolean combinations (`findBy*And*`, `findAllBy*And*`, `countBy*And*`, `findBy*Or*`, `findAllBy*Or*`, `countBy*Or*` for pairs up to 5 properties).
+      - Standard GORM static methods (`get`, `list`, `count`, `where`, `withCriteria`, `createCriteria`, etc.) and instance methods (`save`, `delete`, `validate`, `hasErrors`, `discard`, `refresh`).
+      - Injected domain properties (`id`, `version`, `errors`).
+      - Criteria builder restriction methods (`eq`, `like`, `between`, `order`, `projections`, etc.).
+      - Typed `ResolvedDeclaration` mapping with `originKind = "CAPABILITY_ADAPTER"` and `artifactCoordinates = "org.grails:grails-datastore-gorm"`.
+      - Pure static AST derivation in memory (`<100ms`, ~54ms observed), zero runtime application execution.
+      - Negative cases: non-Grails project and missing GORM yield empty completions; domain property rename/deletion immediately invalidates finders.
+    - `GrailsInjectionCapabilityAdapter`:
+      - Controller properties (`params`, `request`, `response`, `session`, `flash`, `actionName`, `controllerName`).
+      - Controller methods (`render`, `redirect`, `respond`, `forward`) and render parameters (`view`, `model`, `text`, `status`).
+      - Dynamic service injection conventions (`<name>Service` with `@Transactional` detail).
+      - `Validateable` command object methods (`validate`, `hasErrors`, `errors`, `clearErrors`).
+    - `TagLibCapabilityAdapter`:
+      - Default `'g'` namespace and project-defined custom TagLib tags.
+    - `GrailsConfigCapabilityAdapter`:
+      - `grailsApplication.config` property completions (`dataSource`, `grails`, `server`, `spring`).
+  - Completion Strategy Integrations:
+    - Wired `PropertyExpressionStrategy`, `ClosureDelegateStrategy`, `GrailsArtifactStrategy`, and `DiscoveryService` to leverage capability adapters.
+    - Reconciled controller detail strings to satisfy legacy and modern expectations simultaneously.
+  - Verification Gates:
+    - Focused suite: `GrailsCapabilityAdapterSpec` (7/7 tests passing in 15s):
+      - `R2-05/1`: All admitted capability adapters document detection, inputs, derivation, applicability, invalidation, and limits.
+      - `R2-05/2`: GORM dynamic finders, static/instance methods, and injected properties.
+      - `R2-05/2`: ResolvedDeclaration items have CAPABILITY_ADAPTER origin and exact provenance.
+      - `R2-05/2`: Negative cases: no-capability project and missing GORM yield zero GORM completions.
+      - `R2-05/2`: Negative cases: renamed and deleted domain properties immediately invalidate finders.
+      - `R2-05/2`: Controller injection, command objects, TagLib, and Config conventions.
+      - `R2-05/3`: Unsupported/runtime behavior is explicit and derivation executes without running an application.
+    - Regression suites:
+      - `GrailsCompletionProviderSpec` (6/6 passing)
+      - `DeclarationDiscoverySpec` (6/6 passing)
+      - `DependencyInvalidationSpec` (8/8 passing)
+      - `ClasspathAndSourceSetSpec` (11/11 passing)
+    - Client checks:
+      - `npm run compile` (exit code 0)
+      - `npm run check-types` (exit code 0)
+      - `npm run lint` (exit code 0)
+    - Roadmap validation:
+      - `node scripts/roadmap.js validate` (passed: 38 tasks checked)
+  - Status & Knowledge Base:
+    - Updated `server/STATUS.md`: R2-05 marked `✅ Passing` (2026-09-13).
+    - Updated `docs/execution/records/R2-05.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
+    - Updated `docs/execution/task-queue.json`: R2-05 marked `done`.
+- Next roadmap task: **R2-06** (Establish tested compatibility evidence).
+

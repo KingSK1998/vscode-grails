@@ -2,6 +2,8 @@ package kingsk.grails.lsp.services
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.core.capability.GormCapabilityAdapter
 import kingsk.grails.lsp.model.discovery.DeclarationProvenance
 import kingsk.grails.lsp.model.discovery.ResolvedDeclaration
 import org.codehaus.groovy.ast.ClassHelper
@@ -228,18 +230,23 @@ class DeclarationDiscoveryService {
     }
 
     /**
-     * Resolves all declarations (members + extension modules) with complete provenance.
+     * Resolves all declarations (members + extension modules + capability adapters) with complete provenance.
      */
     static List<ResolvedDeclaration> resolveAllDeclarations(
         ClassNode classNode,
         ClassLoader loader,
         String sourceSetName = "main",
         String projectCoords = "project",
-        String sourceAttachment = null
+        String sourceAttachment = null,
+        RequestContext ctx = null
     ) {
         List<ResolvedDeclaration> all = []
         all.addAll(resolveMemberDeclarations(classNode, loader, sourceSetName, projectCoords, sourceAttachment))
         all.addAll(resolveExtensionMethods(classNode, loader, sourceSetName, projectCoords))
+        if (ctx != null && GormCapabilityAdapter.INSTANCE.isDomainClass(classNode, ctx, ctx.uri())) {
+            all.addAll(GormCapabilityAdapter.INSTANCE.resolveDeclarations(classNode, ctx, false))
+            all.addAll(GormCapabilityAdapter.INSTANCE.resolveDeclarations(classNode, ctx, true))
+        }
         return all
     }
 

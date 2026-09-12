@@ -497,6 +497,7 @@ class GrailsUtils {
 				|| hasAnnotation(node, DOMAIN_ANNOTATIONS)
 				|| isArtefactAnnotated(node, SUFFIX_DOMAIN)
 				|| isInDomainDir(uri)
+				|| (node != null && (node.nameWithoutPackage.endsWith(SUFFIX_DOMAIN) || node.getField('constraints') != null || node.getField('mapping') != null))
 	}
 	
 	/** Returns true if the given class node is a Controller Artefact, false otherwise. */

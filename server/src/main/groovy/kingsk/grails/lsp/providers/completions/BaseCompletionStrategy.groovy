@@ -4,14 +4,21 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.context.ASTAccessor
 import kingsk.grails.lsp.context.RequestContext
+import kingsk.grails.lsp.core.capability.GormCapabilityAdapter
+import kingsk.grails.lsp.core.capability.GrailsInjectionCapabilityAdapter
 import kingsk.grails.lsp.core.visitor.GrailsASTVisitor
 import kingsk.grails.lsp.model.enums.CompletionTarget
+import kingsk.grails.lsp.model.enums.GrailsArtifactType
 import kingsk.grails.lsp.utils.ast.GrailsASTHelper
 import kingsk.grails.lsp.utils.ast.MemberExtractor
 import kingsk.grails.lsp.utils.ast.ScopeHelper
+import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
+import kingsk.grails.lsp.utils.grails.GrailsUtils
+
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.Expression
+
 import org.eclipse.lsp4j.CompletionItem
 import kingsk.grails.lsp.model.enums.GrailsArtifactType
 import kingsk.grails.lsp.utils.grails.GrailsArtefactUtils
@@ -88,6 +95,9 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 				}
 			}
 		}
+		if (GormCapabilityAdapter.INSTANCE.isDomainClass(classType, ctx, ctx?.uri())) {
+			items.addAll(GormCapabilityAdapter.INSTANCE.getStaticCompletions(classType, ctx))
+		}
 	}
 
 	protected void addScopeCompletions(ASTNode offsetNode, RequestContext ctx, List<CompletionItem> items) {
@@ -100,6 +110,18 @@ abstract class BaseCompletionStrategy implements CompletionStrategy {
 		scopeItems.members.properties.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
 		scopeItems.members.fields.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
 		scopeItems.members.methods.each { items.add(kingsk.grails.lsp.utils.completion.CompletionUtil.buildCompletionItem(it)) }
+
+		ClassNode enclosingClass = GrailsASTHelper.getEnclosingClassNode(offsetNode, visitor)
+		if (enclosingClass != null) {
+			if (GormCapabilityAdapter.INSTANCE.isDomainClass(enclosingClass, ctx, ctx?.uri())) {
+				items.addAll(GormCapabilityAdapter.INSTANCE.getStaticCompletions(enclosingClass, ctx))
+			}
+			if (GrailsUtils.isControllerClass(enclosingClass, ctx?.uri())) {
+				items.addAll(GrailsInjectionCapabilityAdapter.INSTANCE.getControllerProperties())
+				items.addAll(GrailsInjectionCapabilityAdapter.INSTANCE.getControllerMethods())
+				items.addAll(GrailsInjectionCapabilityAdapter.INSTANCE.getRenderParameters())
+			}
+		}
 	}
 
 	protected void logDebug(String message, Object... args) {
