@@ -4,11 +4,15 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.model.dto.DependencyNode
 import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.ProjectDependencyEdge
 import kingsk.grails.lsp.model.dto.SourceSetModel
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
+import org.gradle.tooling.model.GradleProject
 import org.gradle.tooling.model.idea.IdeaContentRoot
+import org.gradle.tooling.model.idea.IdeaDependency
 import org.gradle.tooling.model.idea.IdeaModule
+import org.gradle.tooling.model.idea.IdeaModuleDependency
 import org.gradle.tooling.model.idea.IdeaProject
 import org.gradle.tooling.model.idea.IdeaSingleEntryLibraryDependency
 
@@ -69,12 +73,23 @@ allprojects {
 			IdeaProject ideaProject = modelBuilder.get()
 			GrailsProject project = fromIdeaProject(ideaProject, projectDir)
 
-			// Enrich with real evaluated source-set membership via init-script exporter
+			// Enrich with real evaluated source-set membership and project edges via init-script exporter
 			try {
-				Map<String, SourceSetModel> exported = SourceSetExporter.exportSourceSets(connection, projectDir, cancellationSource)
-				if (exported != null && !exported.isEmpty()) {
-					log.info("[GRADLE] Merging ${exported.size()} evaluated source sets from init-script export into ${project.name}")
-					project.sourceSets.putAll(exported)
+				SourceSetExportResult exported = SourceSetExporter.exportProjectData(connection, projectDir, cancellationSource)
+				if (exported != null) {
+					if (exported.sourceSets && !exported.sourceSets.isEmpty()) {
+						log.info("[GRADLE] Merging ${exported.sourceSets.size()} evaluated source sets from init-script export into ${project.name}")
+						project.sourceSets.putAll(exported.sourceSets)
+					}
+					if (exported.projectDependencies && !exported.projectDependencies.isEmpty()) {
+						project.projectDependencies.addAll(exported.projectDependencies)
+					}
+					if (exported.buildRoot != null) {
+						project.buildRoot = exported.buildRoot
+					}
+					if (exported.gradleProjectPath != null) {
+						project.gradleProjectPath = exported.gradleProjectPath
+					}
 				}
 			} catch (Exception e) {
 				log.warn("[GRADLE] Source-set init-script export skipped/failed: ${e.message}")
@@ -118,6 +133,20 @@ allprojects {
 				excludeDirectories: [] as Set
 		)
 
+		if (targetModule != null) {
+			try {
+				GradleProject gp = targetModule.gradleProject
+				if (gp != null) {
+					project.gradleProjectPath = gp.path
+					GradleProject rootGp = gp
+					while (rootGp.parent != null) {
+						rootGp = rootGp.parent
+					}
+					project.buildRoot = rootGp.projectDirectory
+				}
+			} catch (Throwable ignored) {}
+		}
+
 		List<IdeaModule> modulesToProcess = targetModule != null ? [targetModule] : (ideaProject.modules as List<IdeaModule> ?: [])
 		modulesToProcess.each { IdeaModule module ->
 			module.contentRoots.each { IdeaContentRoot root ->
@@ -153,18 +182,60 @@ allprojects {
 				project.excludeDirectories.addAll(root.excludeDirectories ?: [] as Set<File>)
 			}
 
-			(module.dependencies as List<IdeaSingleEntryLibraryDependency>)?.each {
-				if (it != null && it.gradleModuleVersion != null) {
-					def dep = new DependencyNode(
-							it.gradleModuleVersion.name,
-							it.gradleModuleVersion.group,
-							it.gradleModuleVersion.version,
-							it.scope?.scope,
-							it.file,
-							it.source,
-							it.javadoc
-					)
-					project.dependencies << dep
+			module.dependencies?.each { IdeaDependency dep ->
+				if (dep instanceof IdeaSingleEntryLibraryDependency) {
+					IdeaSingleEntryLibraryDependency libDep = (IdeaSingleEntryLibraryDependency) dep
+					if (libDep.gradleModuleVersion != null) {
+						def d = new DependencyNode(
+								libDep.gradleModuleVersion.name,
+								libDep.gradleModuleVersion.group,
+								libDep.gradleModuleVersion.version,
+								libDep.scope?.scope,
+								libDep.file,
+								libDep.source,
+								libDep.javadoc
+						)
+						project.dependencies << d
+					}
+				} else if (dep instanceof IdeaModuleDependency) {
+					try {
+						IdeaModuleDependency modDep = (IdeaModuleDependency) dep
+						String targetModName = modDep.targetModuleName
+						File targetModDir = null
+						File targetBuildRoot = null
+						String targetPath = null
+
+						if (targetModName != null && ideaProject.modules != null) {
+							IdeaModule matched = ideaProject.modules.find { it.name == targetModName }
+							if (matched != null) {
+								if (matched.contentRoots && !matched.contentRoots.isEmpty()) {
+									targetModDir = matched.contentRoots.iterator().next()?.rootDirectory
+								}
+								try {
+									if (matched.gradleProject != null) {
+										targetPath = matched.gradleProject.path
+										GradleProject rootGp = matched.gradleProject
+										while (rootGp.parent != null) {
+											rootGp = rootGp.parent
+										}
+										targetBuildRoot = rootGp.projectDirectory
+									}
+								} catch (Throwable ignored) {}
+							}
+						}
+
+						if (targetModName != null || targetModDir != null || targetPath != null) {
+							project.addProjectDependency(new ProjectDependencyEdge(
+									targetPath,
+									targetBuildRoot ?: project.buildRoot,
+									targetModDir,
+									targetModName,
+									null
+							))
+						}
+					} catch (Throwable modEx) {
+						log.warn("[GRADLE] Error resolving IdeaModuleDependency: ${modEx.message}")
+					}
 				}
 			}
 		}

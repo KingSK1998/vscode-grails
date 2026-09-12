@@ -57,6 +57,8 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
     private final AtomicReference<CompletableFuture<Void>> activationFuture = new AtomicReference<>(null)
     private volatile long lastAccessedTime = System.currentTimeMillis()
     private volatile boolean dependencyDirty = false
+    private final AtomicReference<String> lastInvalidationOrigin = new AtomicReference<>(null)
+    private final AtomicLong lastInvalidationRevision = new AtomicLong(0L)
 
     // Gradle Sync Lifecycle & Freshness (R1-03)
     private final AtomicReference<CompletableFuture<GrailsProject>> currentGradleSyncFuture = new AtomicReference<>(null)
@@ -612,6 +614,25 @@ class ProjectContextImpl implements ProjectContext, CompilationContext {
 
     @Override
     void setDependencyDirty(boolean dirty) { dependencyDirty = dirty }
+
+    @Override
+    void markDependencyDirty(String originUri, long revision) {
+        this.dependencyDirty = true
+        if (originUri != null) {
+            this.lastInvalidationOrigin.set(originUri)
+            this.lastInvalidationRevision.set(revision)
+        }
+    }
+
+    @Override
+    String getLastInvalidationOrigin() {
+        return lastInvalidationOrigin.get()
+    }
+
+    @Override
+    long getLastInvalidationRevision() {
+        return lastInvalidationRevision.get()
+    }
 
     @Override
     void resetFailedState() {

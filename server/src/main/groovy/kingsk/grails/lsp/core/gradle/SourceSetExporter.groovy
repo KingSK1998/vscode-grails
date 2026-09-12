@@ -3,6 +3,7 @@ package kingsk.grails.lsp.core.gradle
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import kingsk.grails.lsp.model.dto.ProjectDependencyEdge
 import kingsk.grails.lsp.model.dto.SourceSetModel
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.CancellationTokenSource
@@ -16,12 +17,12 @@ class SourceSetExporter {
 
     private static final int MAX_EXPORT_BYTES = 10 * 1024 * 1024 // 10 MiB limit
 
-    static Map<String, SourceSetModel> exportSourceSets(
+    static SourceSetExportResult exportProjectData(
         ProjectConnection connection,
         File projectDir,
         CancellationTokenSource cancellationSource = null
     ) {
-        if (connection == null || projectDir == null) return Collections.<String, SourceSetModel>emptyMap()
+        if (connection == null || projectDir == null) return new SourceSetExportResult()
 
         File tempInitScript = null
         File tempOutputFile = null
@@ -46,22 +47,31 @@ class SourceSetExporter {
 
             if (!tempOutputFile.exists() || tempOutputFile.length() == 0) {
                 log.warn("[GRADLE_EXPORT] Source-set export produced empty or missing file for: ${projectDir.name}")
-                return Collections.<String, SourceSetModel>emptyMap()
+                return new SourceSetExportResult()
             }
 
             if (tempOutputFile.length() > MAX_EXPORT_BYTES) {
                 log.warn("[GRADLE_EXPORT] Source-set export output exceeded 10 MiB limit (${tempOutputFile.length()} bytes)")
-                return Collections.<String, SourceSetModel>emptyMap()
+                return new SourceSetExportResult()
             }
 
             return parseExportJson(tempOutputFile, projectDir)
         } catch (Exception e) {
             log.warn("[GRADLE_EXPORT] Failed to export source sets via init-script: ${e.message}")
-            return Collections.<String, SourceSetModel>emptyMap()
+            return new SourceSetExportResult()
         } finally {
             cleanupFile(tempInitScript)
             cleanupFile(tempOutputFile)
         }
+    }
+
+    static Map<String, SourceSetModel> exportSourceSets(
+        ProjectConnection connection,
+        File projectDir,
+        CancellationTokenSource cancellationSource = null
+    ) {
+        SourceSetExportResult res = exportProjectData(connection, projectDir, cancellationSource)
+        return res != null ? res.sourceSets : Collections.<String, SourceSetModel>emptyMap()
     }
 
     private static File extractInitScript() {
@@ -78,8 +88,8 @@ class SourceSetExporter {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, SourceSetModel> parseExportJson(File jsonFile, File targetProjectDir) {
-        Map<String, SourceSetModel> result = new LinkedHashMap<>()
+    private static SourceSetExportResult parseExportJson(File jsonFile, File targetProjectDir) {
+        SourceSetExportResult result = new SourceSetExportResult()
         try {
             JsonSlurper slurper = new JsonSlurper()
             Object parsed = slurper.parse(jsonFile)
@@ -105,6 +115,33 @@ class SourceSetExporter {
                 // Check if this project matches the target directory
                 if (pDir.canonicalPath.equalsIgnoreCase(canonicalTarget)) {
                     String pPath = (String) pData.get("path")
+                    String buildRootPath = (String) pData.get("buildRoot")
+                    File buildRoot = buildRootPath ? new File(buildRootPath) : targetProjectDir
+                    result.gradleProjectPath = pPath
+                    result.buildRoot = buildRoot
+
+                    // Extract project dependencies
+                    List<Map<String, Object>> pDeps = (List<Map<String, Object>>) pData.get("projectDependencies")
+                    if (pDeps != null) {
+                        for (Map<String, Object> pd : pDeps) {
+                            String dPath = (String) pd.get("path")
+                            String dName = (String) pd.get("name")
+                            String dGroup = (String) pd.get("group")
+                            String dProjDir = (String) pd.get("projectDir")
+                            String dBuildRoot = (String) pd.get("buildRoot")
+                            File depProjDir = dProjDir ? new File(dProjDir) : null
+                            File depBuildRoot = dBuildRoot ? new File(dBuildRoot) : buildRoot
+
+                            result.projectDependencies.add(new ProjectDependencyEdge(
+                                dPath,
+                                depBuildRoot,
+                                depProjDir,
+                                dName,
+                                dGroup
+                            ))
+                        }
+                    }
+
                     Map<String, Object> sourceSets = (Map<String, Object>) pData.get("sourceSets")
                     if (sourceSets != null) {
                         for (Map.Entry<String, Object> ssEntry : sourceSets.entrySet()) {
@@ -120,7 +157,7 @@ class SourceSetExporter {
                             SourceSetModel model = new SourceSetModel(
                                 ssName,
                                 pPath,
-                                targetProjectDir,
+                                buildRoot,
                                 targetProjectDir,
                                 srcDirs.collect { new File(it) },
                                 resDirs.collect { new File(it) },
@@ -132,7 +169,7 @@ class SourceSetExporter {
                                 true,
                                 []
                             )
-                            result.put(ssName, model)
+                            result.sourceSets.put(ssName, model)
                         }
                     }
                     break
@@ -151,4 +188,12 @@ class SourceSetExporter {
             } catch (Exception ignored) {}
         }
     }
+}
+
+@CompileStatic
+class SourceSetExportResult {
+    final Map<String, SourceSetModel> sourceSets = new LinkedHashMap<>()
+    final List<ProjectDependencyEdge> projectDependencies = new ArrayList<>()
+    String gradleProjectPath
+    File buildRoot
 }

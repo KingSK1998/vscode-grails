@@ -40,6 +40,20 @@ class GrailsProject implements Serializable {
     // DEPENDENCIES
     Set<DependencyNode> dependencies = [] as LinkedHashSet<DependencyNode>
 
+    // GRADLE BUILD / PROJECT IDENTITY (R2-03)
+    File buildRoot
+    String gradleProjectPath
+    Set<ProjectDependencyEdge> projectDependencies = [] as LinkedHashSet<ProjectDependencyEdge>
+
+    void addProjectDependency(ProjectDependencyEdge edge) {
+        if (edge != null) {
+            if (projectDependencies == null) {
+                projectDependencies = [] as LinkedHashSet<ProjectDependencyEdge>
+            }
+            projectDependencies.add(edge)
+        }
+    }
+
     // SOURCE SETS
     Map<String, SourceSetModel> sourceSets = [:] as LinkedHashMap<String, SourceSetModel>
 

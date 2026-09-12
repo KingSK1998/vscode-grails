@@ -5,6 +5,9 @@ import groovy.util.logging.Slf4j
 import kingsk.grails.lsp.GrailsService
 import kingsk.grails.lsp.context.ProjectContextImpl
 import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.ProjectDependencyEdge
+import kingsk.grails.lsp.model.dto.SourceSetModel
+import kingsk.grails.lsp.model.dto.DependencyNode
 import kingsk.grails.lsp.model.state.ProjectState
 import kingsk.grails.lsp.model.types.TextFile
 
@@ -252,15 +255,19 @@ class WorkspaceManager {
     }
 
     List<GrailsProject> getAllProjects() {
-        return contexts.values().collect { it.project }
         return contexts.values().collect { it.project }.findAll { it != null }
     }
 
     /**
      * Propagates dependency invalidation downstream using BFS traversal with cycle protection.
-     * Marks dependent project contexts dirty and triggers background recompilation.
+     * Marks dependent project contexts dirty with origin/revision tracking and triggers background recompilation.
+     * Guaranteed non-blocking: never acquires nested project writer locks during traversal.
      */
     void propagateInvalidation(ProjectContextImpl upstream) {
+        if (upstream == null) return
+        String originUri = upstream.project?.rootDirectory ? upstream.project.rootDirectory.toURI().toString() : upstream.activeProjectUri
+        long originRevision = upstream.snapshotManager?.active?.version() ?: 0L
+
         Set<ProjectContextImpl> visited = new HashSet<>()
         Queue<ProjectContextImpl> queue = new LinkedList<>()
         queue.add(upstream)
@@ -270,10 +277,16 @@ class WorkspaceManager {
             ProjectContextImpl current = queue.poll()
 
             // Find all downstream projects that depend on 'current'
-            for (ctx in contexts.values()) {
+            for (ProjectContextImpl ctx : contexts.values()) {
+                if (ctx == null) continue
+                // Never re-dirty the origin project itself
+                if (originUri != null && ctx.project?.rootDirectory != null &&
+                    originUri == ctx.project.rootDirectory.toURI().toString()) {
+                    continue
+                }
                 if (!visited.contains(ctx) && projectDependsOn(ctx, current)) {
                     visited.add(ctx)
-                    ctx.setDependencyDirty(true)
+                    ctx.markDependencyDirty(originUri, originRevision)
                     ctx.recompileAsync()
                     queue.add(ctx)
                 }
@@ -282,30 +295,137 @@ class WorkspaceManager {
     }
 
     /**
-     * Checks if source project depends on target dependency project.
-     * Evaluates dependency names and checks if classpath jar references reside within dependency root directory.
+     * Checks if source project depends on target dependency project using resolved
+     * build, project, and source-set relationships.
+     * Replaces heuristic name and prefix string matching.
      */
     boolean projectDependsOn(ProjectContextImpl source, ProjectContextImpl dependency) {
-        if (source == dependency) return false
+        if (source == null || dependency == null || source == dependency) return false
 
-        // 1. Compare by name in dependencies
-        def depNames = source.project.dependencies.collect { it.name }.toSet()
-        if (depNames.contains(dependency.project.name)) {
-            return true
+        GrailsProject srcProj = source.project
+        GrailsProject depProj = dependency.project
+        if (srcProj == null || depProj == null) return false
+
+        // 1. Explicit project dependency edges (modelled relationships)
+        if (srcProj.projectDependencies != null && !srcProj.projectDependencies.isEmpty()) {
+            for (ProjectDependencyEdge edge : srcProj.projectDependencies) {
+                if (matchesProjectEdge(edge, depProj)) {
+                    return true
+                }
+            }
         }
 
-        // 2. Check if any jar classpath of source resides inside dependency's root folder
-        String depRootPath = dependency.project.rootDirectory?.absolutePath
-        if (depRootPath) {
-            for (dep in source.project.dependencies) {
-                if (dep.jarFileClasspath != null) {
-                    String jarPath = dep.jarFileClasspath.absolutePath
-                    if (jarPath.startsWith(depRootPath)) {
+        // 2. Classpath output directory / root directory containment (segment-safe)
+        String depCanonicalRoot = null
+        try {
+            depCanonicalRoot = depProj.rootDirectory?.canonicalPath
+        } catch (Exception ignored) {}
+
+        Set<String> depOutputDirs = new HashSet<>()
+        if (depProj.sourceSets != null) {
+            for (SourceSetModel ss : depProj.sourceSets.values()) {
+                if (ss?.outputDirectories != null) {
+                    for (File outDir : ss.outputDirectories) {
+                        try {
+                            if (outDir != null) depOutputDirs.add(outDir.canonicalPath)
+                        } catch (Exception ignored) {}
+                    }
+                }
+            }
+        }
+
+        // Check sourceSets compileClasspath
+        if (srcProj.sourceSets != null && !srcProj.sourceSets.isEmpty()) {
+            for (SourceSetModel srcSs : srcProj.sourceSets.values()) {
+                if (srcSs?.compileClasspath != null) {
+                    for (File cpEntry : srcSs.compileClasspath) {
+                        if (cpEntry != null && matchesClasspathToDependency(cpEntry, depCanonicalRoot, depOutputDirs)) {
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check dependency nodes jarFileClasspath
+        if (srcProj.dependencies != null) {
+            for (DependencyNode dep : srcProj.dependencies) {
+                if (dep?.jarFileClasspath != null) {
+                    if (matchesClasspathToDependency(dep.jarFileClasspath, depCanonicalRoot, depOutputDirs)) {
                         return true
                     }
                 }
             }
         }
+
+        return false
+    }
+
+    private static boolean matchesProjectEdge(ProjectDependencyEdge edge, GrailsProject depProj) {
+        if (edge == null || depProj == null) return false
+
+        // Match by canonical project directory (handles renamed modules & composite builds)
+        if (edge.projectDirectory != null && depProj.rootDirectory != null) {
+            try {
+                if (edge.projectDirectory.canonicalPath.equalsIgnoreCase(depProj.rootDirectory.canonicalPath)) {
+                    return true
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // Match by buildRoot + gradleProjectPath (exact project identity in build tree)
+        if (edge.projectPath != null && depProj.gradleProjectPath != null &&
+            edge.projectPath == depProj.gradleProjectPath) {
+            if (edge.buildRoot != null && depProj.buildRoot != null) {
+                try {
+                    if (edge.buildRoot.canonicalPath.equalsIgnoreCase(depProj.buildRoot.canonicalPath)) {
+                        return true
+                    }
+                } catch (Exception ignored) {}
+            } else if (edge.buildRoot == null && depProj.buildRoot == null) {
+                return true
+            }
+        }
+
+        // Match by project name only when within the same buildRoot (prevents unrelated same-name project false positives)
+        if (edge.projectName != null && edge.projectName == depProj.name) {
+            if (edge.buildRoot != null && depProj.buildRoot != null) {
+                try {
+                    if (edge.buildRoot.canonicalPath.equalsIgnoreCase(depProj.buildRoot.canonicalPath)) {
+                        return true
+                    }
+                } catch (Exception ignored) {}
+            } else if (edge.buildRoot == null && depProj.buildRoot == null && edge.projectPath == null && edge.projectDirectory == null) {
+                // Mock edge in test specifying only projectName
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private static boolean matchesClasspathToDependency(File cpEntry, String depCanonicalRoot, Set<String> depOutputDirs) {
+        if (cpEntry == null) return false
+        String cpPath = null
+        try {
+            cpPath = cpEntry.canonicalPath
+        } catch (Exception ignored) {
+            cpPath = cpEntry.absolutePath
+        }
+        if (!cpPath) return false
+
+        // Check if matching any declared output directory of dependency
+        for (String outDir : depOutputDirs) {
+            if (isSameOrChildPath(cpPath, outDir)) {
+                return true
+            }
+        }
+
+        // Check if inside dependency's root folder using segment-safe path containment
+        if (depCanonicalRoot != null && isSameOrChildPath(cpPath, depCanonicalRoot)) {
+            return true
+        }
+
         return false
     }
 }

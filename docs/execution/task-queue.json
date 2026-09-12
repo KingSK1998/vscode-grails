@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-09-10",
+  "updated": "2026-09-13",
   "scope": "R0-R5: 1.0 acceptance; R6: deferred candidates",
   "tasks": [
     {
@@ -136,13 +136,13 @@
     {
       "id": "R2-03",
       "title": "Use resolved Gradle project edges",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R2-02"
       ],
       "spec": "docs/execution/task-specifications.md#r2-03",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R2-03.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R2-04",

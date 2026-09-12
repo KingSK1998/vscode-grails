@@ -10,6 +10,7 @@ import kingsk.grails.lsp.index.ReferenceInfo
 import kingsk.grails.lsp.index.SymbolInfo
 import kingsk.grails.lsp.model.dto.DependencyNode
 import kingsk.grails.lsp.model.dto.GrailsProject
+import kingsk.grails.lsp.model.dto.ProjectDependencyEdge
 import kingsk.grails.lsp.model.state.ProjectState
 import kingsk.grails.lsp.model.state.VersionedSnapshot
 import kingsk.grails.lsp.model.types.TextFile
@@ -58,14 +59,20 @@ class PublicationAndLifecycleSpec extends Specification {
         GrailsProject projA = new GrailsProject(
             name: "projA",
             rootDirectory: projectRootA,
+            buildRoot: testDir,
+            gradleProjectPath: ":projA",
             sourceDirectories: [new File(projectRootA, "src/main/groovy")] as Set,
-            dependencies: [new DependencyNode(name: "projB", version: "1.0", scope: "compile")] as Set
+            dependencies: [new DependencyNode(name: "projB", version: "1.0", scope: "compile")] as Set,
+            projectDependencies: [new ProjectDependencyEdge(":projB", testDir, projectRootB, "projB")] as Set
         )
         GrailsProject projB = new GrailsProject(
             name: "projB",
             rootDirectory: projectRootB,
+            buildRoot: testDir,
+            gradleProjectPath: ":projB",
             sourceDirectories: [new File(projectRootB, "src/main/groovy")] as Set,
-            dependencies: [new DependencyNode(name: "projA", version: "1.0", scope: "compile")] as Set
+            dependencies: [new DependencyNode(name: "projA", version: "1.0", scope: "compile")] as Set,
+            projectDependencies: [new ProjectDependencyEdge(":projA", testDir, projectRootA, "projA")] as Set
         )
 
         grailsService.workspaceManager.addProject(projA)

@@ -292,4 +292,35 @@
     - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
 - Next roadmap task: **R2-03** (Use resolved Gradle project edges).
 
+## R2-03 Acceptance and Completion Milestone (2026-09-13)
 
+- **R2-03 Completed & Accepted**:
+  - Replaced heuristic name and JAR-path string prefix comparisons with resolved Gradle project edges and canonical segment-safe path containment:
+    - `ProjectDependencyEdge`: Introduced immutable model capturing `projectPath`, `buildRoot`, `projectDirectory`, `projectName`, `group`, and `sourceSetName`.
+    - `GrailsProject`: Added `File buildRoot`, `String gradleProjectPath`, and `Set<ProjectDependencyEdge> projectDependencies` with defensive copying and thread-safe mutation.
+    - `source-set-export.gradle` & `SourceSetExporter`: Extracted project dependencies from Gradle's `ProjectDependency` configurations and exported `buildRoot`, `gradleProjectPath`, and `projectDependencies` as part of `SourceSetExportResult`.
+    - `GrailsProjectBuilder`: Enriched project building via Tooling API's `IdeaModuleDependency` and merged `SourceSetExportResult`, ensuring multi-project and composite builds resolve accurate project edges.
+    - `WorkspaceManager.projectDependsOn`: Checks explicit `projectDependencies` matching canonical directory, `buildRoot + gradleProjectPath`, or same-buildRoot name, and source-set `compileClasspath` against target project `outputDirectories` / root directory using segment-safe `isSameOrChildPath`. Eliminates false positives on same-name external Maven dependencies and sibling directory prefixes (`/workspace/project-extra` vs `/workspace/project`).
+    - `WorkspaceManager.propagateInvalidation`: Evaluates BFS dirty propagation with a `visited` set to ensure single-visit termination for cyclic graphs (A->B->C->A). Skips re-dirtying origin project. Dispatches downstream recompilation asynchronously via `recompileAsync()` without holding or acquiring nested project writer locks (`INV-STATE-009`, `INV-OWN-008`).
+    - `ProjectContextImpl`: Added `markDependencyDirty(originUri, revision)`, atomically recording `lastInvalidationOrigin` (`AtomicReference<String>`) and `lastInvalidationRevision` (`AtomicLong`).
+  - Verification Gates:
+    - Focused tests: `DependencyInvalidationSpec` (8/8 pass in 7s):
+      - `R2-03/1`: Renamed module dependency resolves via project edges; composite build project dependencies match on buildRoot and project path; unrelated project with identical name or prefix is strictly isolated; sibling directory prefix is not falsely matched.
+      - `R2-03/2`: Cross-project invalidation propagates along permitted edges and records origin and revision; cyclic dependency graph terminates with exactly one visit per node per propagation.
+      - `R2-03/3`: Dynamic edge add/remove updates downstream dirty state without waiting on compilation; propagation does not acquire nested project writer locks.
+    - Regressions:
+      - `PublicationAndLifecycleSpec` (7/7 pass in 12s)
+      - `ClasspathAndSourceSetSpec` (11/11 pass in 9s)
+      - `DependencyRefreshSpec` (3/3 pass in 8s)
+      - `GradleSyncSpec` (12/12 pass in 24s)
+      - `SourceSetModelSpec` (7/7 pass in 4s)
+    - Client verification: `npm run compile && npm run check-types && npm run lint` passed (0 warnings/errors).
+    - Client tests: `npm run test:client` passed (7/7 tests).
+    - Server smoke: `npm run test:smoke` passed (initialize in 916 ms, project discovered, diagnostics/symbols OK, exit 0).
+    - Release packaging: `npm run package` produced `vscode-gng-support.vsix` (27 files, 18.01 MB, exit 0).
+  - Status & Knowledge Base:
+    - Updated `server/STATUS.md`: R2-03 marked `✅ Passing` (2026-09-13).
+    - Updated `docs/execution/records/R2-03.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
+    - Updated `docs/execution/task-queue.json`: R2-03 status updated to `done`.
+    - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
+- Next roadmap task: **R2-04** (Discover declarations and explain their origins).

@@ -30,8 +30,12 @@ interface ProjectContext {
     void dispose()
 
     // Dependency & Sync Status (Phase 3 & R1-03)
+    // Dependency & Sync Status (Phase 3 & R1-03 & R2-03)
     boolean isDependencyDirty()
     void setDependencyDirty(boolean dirty)
+    void markDependencyDirty(String originUri, long revision)
+    String getLastInvalidationOrigin()
+    long getLastInvalidationRevision()
     void resetFailedState()
     void triggerGradleSync()
     void retryGradleSync()

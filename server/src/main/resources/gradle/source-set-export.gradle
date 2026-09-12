@@ -18,9 +18,31 @@ allprojects { proj ->
                 def projectMap = [
                     path: p.path,
                     name: p.name,
+                    group: p.group ? p.group.toString() : null,
                     projectDir: p.projectDir.absolutePath,
+                    buildRoot: p.rootProject?.projectDir ? p.rootProject.projectDir.absolutePath : p.projectDir.absolutePath,
+                    projectDependencies: [],
                     sourceSets: [:]
                 ]
+
+                p.configurations.each { conf ->
+                    try {
+                        conf.dependencies.withType(org.gradle.api.artifacts.ProjectDependency).each { pd ->
+                            try {
+                                def depProj = pd.dependencyProject
+                                if (depProj != null) {
+                                    projectMap.projectDependencies << [
+                                        path: depProj.path,
+                                        name: depProj.name,
+                                        group: depProj.group ? depProj.group.toString() : null,
+                                        projectDir: depProj.projectDir.absolutePath,
+                                        buildRoot: depProj.rootProject?.projectDir ? depProj.rootProject.projectDir.absolutePath : depProj.projectDir.absolutePath
+                                    ]
+                                }
+                            } catch (Throwable ignored) {}
+                        }
+                    } catch (Throwable ignored) {}
+                }
 
                 if (p.plugins.hasPlugin('java') || p.plugins.hasPlugin('groovy')) {
                     p.sourceSets.each { ss ->

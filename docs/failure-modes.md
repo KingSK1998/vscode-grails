@@ -2,7 +2,7 @@
 
 > **Status:** ACTIVE — add entries within 30 minutes of discovering a bug.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-12
+> **Last updated:** 2026-09-13
 > **Validation triggers:** Bug fixed, architecture change
 > **Rule:** Every agent surprise → one entry here. No exceptions.
 
@@ -222,28 +222,26 @@
 - **Date:** 2026-09-09.
 
 ### CC-003: Concurrent Reader Visibility and AST Snapshot Isolation
-- **Status:** Open (owned by R1-04)
+- **Status:** Resolved (verified in R1-04)
 - **Bug:** Shallow AST visitor copies retain mutable Groovy AST node object identities; concurrent readers during compile/remove could observe partial publication.
 - **Invariant violated:** `INV-STATE-001`, `INV-STATE-004`, `INV-OWN-005`
 - **Root cause:** Visitor `copyFrom` duplicates collection maps, not deep AST nodes.
-- **Fix:** Pending R1-04: reproduce race condition, prove smallest mechanism satisfying coherent nonblocking reads, extract immutable facts.
-- **Test:** To be implemented in R1-04.
+- **Fix:** Providers decouple from compiler writer lock by reading immutable snapshots via `RequestContext.ast()` and `RequestContext.classLoader()`. `RequestLease` reference counting and `drainLeases()` ensure safe AST detachment via `DetachedASTAccessor.INSTANCE` on project hibernation and disposal (`INV-STATE-001`, `INV-STATE-004`, `INV-OWN-005`).
+- **Test:** `PublicationAndLifecycleSpec` (7/7 passing: 20 concurrent readers across 50 continuous compilation commits with zero exceptions or torn reads).
 - **Detected by:** Architecture review.
-- **Date:** 2026-09-09.
+- **Related ADRs:** ADR-010
+- **Date:** 2026-09-10.
 
 ### DP-001: Cross-Root Classpath Pollution and Guess-Based Project Edges
-- **Status:** Open (owned by R2-01, R2-03)
-- **Status:** Partially resolved (R2-01 complete; R2-03 open)
+- **Status:** Resolved (verified in R2-01 and R2-03)
 - **Bug:** Two workspace roots with differing dependency versions share an aggregated classloader; cross-project dependencies use name/prefix heuristics instead of resolved Gradle models.
-- **Invariant violated:** `INV-DISC-001`, `INV-DISC-002`, `INV-OWN-008`
-- **Root cause:** Global classpath aggregation in compiler.
-- **Fix:** Pending R2-01 (isolate classpaths per source set) and R2-03 (resolved Gradle build model edges).
-- **Test:** On 2026-09-12, `ClasspathAndSourceSetSpec` passed 2/2 cases; `SourceSetModelSpec` failed 6/7 cases (empty/unknown classpath fallback, exclusions, overlapping/ambiguous roots, mutable collections). The model cases do not invoke the compiler refresh API. Broader R2-01/R2-03 acceptance remains open.
-- **Fix:** R2-01 resolved classpath isolation: real Gradle source-set model extraction (`SourceSetModel`), per-source-set compiler isolation (`SourceSetCompilationState`), `IsolatedParentClassLoader` blocking host test dependencies, segment-aware longest-prefix routing, and generation-tracked scan publication in `DiscoveryService`. R2-03 retains resolved Gradle project edges and propagation.
-- **Test:** `ClasspathAndSourceSetSpec` (11/11 passing), `SourceSetModelSpec` (7/7 passing), `GrailsCompilerRefreshSpec` (8/8 passing), 85/85 lifecycle tests. R2-03 cross-project edge tests remain to be implemented in R2-03.
+- **Invariant violated:** `INV-DISC-001`, `INV-DISC-002`, `INV-OWN-008`, `INV-STATE-009`
+- **Root cause:** Global classpath aggregation in compiler, lack of source-set scoping, and string name/prefix matching in `projectDependsOn`.
+- **Fix:** R2-01 resolved classpath isolation per source set with `SourceSetModel`, `IsolatedParentClassLoader`, and generation-tracked scan publication. R2-03 resolved project dependencies via `ProjectDependencyEdge` extracted from Tooling API `IdeaModuleDependency` and `source-set-export.gradle`, canonical directory matching, and segment-safe classpath/output directory checks (`isSameOrChildPath`). Cross-project dirty propagation tracks origin and revision, terminates cycles via BFS visited sets, and dispatches asynchronously without nested writer locks (`INV-STATE-009`, `INV-OWN-008`).
+- **Test:** `ClasspathAndSourceSetSpec` (11/11 passing), `SourceSetModelSpec` (7/7 passing), `DependencyInvalidationSpec` (8/8 passing), `PublicationAndLifecycleSpec` (7/7 passing).
 - **Detected by:** Architecture review.
 - **Related ADRs:** ADR-011
-- **Date:** 2026-09-09.
+- **Date:** 2026-09-13.
 
 ---
 
