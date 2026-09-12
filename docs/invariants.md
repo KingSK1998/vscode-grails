@@ -37,8 +37,9 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `cancellationService` | `GrailsService` | Request lifecycle | All T1 providers | `createCancellationToken()`, `didClose()` auto-cancel |
 | `healthService` | `GrailsService` | Provider latency/success metrics | Observability | `recordHealth()` in provider finally blocks |
 | `providerRegistry` | `GrailsService` | Lazy provider instances | `GrailsTextDocumentService` | `getProvider()` (lazy init) |
-| `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with separate project membership | Completion/resolution | Scan/refresh and scoped release; existing static loader maps require R1/R2 repair |
 | `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with generation-tracked scan publication and scoped root release (`removeProject`, `projectScanGenerations`) | Completion/resolution | Scan/refresh, generation verification, and scoped release |
+| `artifactFactCache` (`ArtifactFactCache`) | `ArtifactFactCache.instance` | JAR artifact content SHA-256 fingerprints | Class/package discovery | Invalidation by content fingerprint change; bounded LRU (500 capacity, 1h TTL) |
+| `projectCache` (`ProjectCache`) | `ProjectCache` | Gradle project build model and artifact fingerprints | GradleService | Stale if build files/properties/toml changed or artifact fingerprints mismatch; schema v3 |
 | Cross-file caches | Registered cache owner coordinated by project writer | Derived from scoped visitor/compiler inputs | Providers | Coherent invalidation at commit; no unrelated-root clearing as default |
 
 ### Client — State Ownership
