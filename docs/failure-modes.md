@@ -19,7 +19,7 @@
 | ThreadSafeLruCache | RL-001 |
 | ProviderRegistry / BaseProvider | PC-001 |
 | GrailsIncrementalCompilerSpec | AL-001 |
-| GrailsCompiler / SourceSetCompilationState | AL-002 |
+| GrailsCompiler / SourceSetCompilationState | AL-002, AL-003 |
 | Client startup / packaging | ST-001 |
 | Stdio transport / Logback | ST-002 |
 | Server workspace / Source duplication | ST-003 |
@@ -37,7 +37,7 @@
 | `INV-STATE-001` | CC-003 |
 | `INV-STATE-002` | PC-001, ST-003 |
 | `INV-STATE-003` | CI-001 |
-| `INV-STATE-004` | CC-001, CC-003 |
+| `INV-STATE-004` | CC-001, CC-003, AL-003 |
 | `INV-STATE-005` | CC-002 |
 | `INV-PERF-001` | CC-002 |
 | `INV-PERF-002` | CC-002 |
@@ -130,6 +130,16 @@
 ---
 
 ## AST Lifecycle
+
+### AL-003: Premature Error Re-attachment During Dot Recovery
+- **Status:** Resolved
+- **Bug:** Trailing-dot syntax error recovery recompilations re-attached previous syntax errors from `preserveError` back into `errorCollector` even when recovery recompilation succeeded, leaving `hasErrors()` true and discarding the generated AST.
+- **Invariant violated:** `INV-STATE-004`
+- **Root cause:** In `SourceSetCompilationState.compile()`, `preserveError` was unconditionally restored after recompilation instead of only restoring when recompilation failed.
+- **Fix:** In `SourceSetCompilationState.compile()`, only restore `preserveError` into `compilationUnit.errorCollector` if the second compilation attempt throws an exception or still produces errors.
+- **Test:** `GroovyCompletionProviderSpec`
+- **Detected by:** Provider regression debugging (R2-04)
+- **Date:** 2026-09-13.
 
 ### AL-002: Compiler Refresh Delegate Lost During Source-Set Refactor
 - **Status:** Active

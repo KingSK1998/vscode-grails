@@ -1,4 +1,0 @@
-=== DEBUG AST FOR Completion3 ===
-Query URI: D:\Grails_Framework_Support_Extension\vscode-gng-support\server\src\test\resources\test-projects\groovy-test-project\Completion3.groovy
-Visitor nodesByURI keys: [D:\Grails_Framework_Support_Extension\vscode-gng-support\server\src\test\resources\test-projects\groovy-test-project\Completion2.groovy, D:\Grails_Framework_Support_Extension\vscode-gng-support\server\src\test\resources\test-projects\groovy-test-project\Completion.groovy, D:\Grails_Framework_Support_Extension\vscode-gng-support\server\src\test\resources\test-projects\groovy-test-project\Completion3.groovy]
-=================================

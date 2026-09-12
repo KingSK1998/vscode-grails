@@ -89,6 +89,14 @@ class GrailsUtils {
 	static final String DUMMY_COMPLETION_IDENTIFIER = "__GRAILS_DUMMY_COMPLETION__"
 	static final String DUMMY_COMPLETION_CONSTRUCTOR = "__GRAILS_DUMMY_COMPLETION__()"
 	
+	static final List<String> GROOVY_KEYWORDS = Collections.unmodifiableList([
+		'class', 'interface', 'enum', 'trait', 'extends', 'implements',
+		'def', 'void', 'public', 'protected', 'private', 'static', 'final',
+		'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default',
+		'try', 'catch', 'finally', 'throw', 'return', 'break', 'continue',
+		'import', 'package', 'new', 'this', 'super', 'instanceof', 'as', 'in'
+	])
+	
 	// === Types ===
 	static final String TYPE_OBJECT = "java.lang.Object"
 	static final String TYPE_LONG = "java.lang.Long"

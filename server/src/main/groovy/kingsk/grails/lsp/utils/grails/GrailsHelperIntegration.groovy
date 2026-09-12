@@ -4,40 +4,45 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.ast.ClassNode
 
+import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Integration with official Grails helper methods and utilities.
- * ClassLoader-aware to dynamically retrieve members from the project's classpath.
+ * Clean integration with Grails classes and traits without hardcoded fallback duplication.
+ * Provides evidence-backed resolution when classes are present, or documented fallbacks
+ * when explicitly permitted for legacy tests until R2-05 capability adapters are implemented.
  */
 @Slf4j
 @CompileStatic
 class GrailsHelperIntegration {
     
+    // Cache per ClassLoader to respect source-set boundaries
     private static final Map<ClassLoader, Map<String, Object>> CACHE = new ConcurrentHashMap<>()
-    
+    private static final Map<String, Object> DEFAULT_CACHE = new ConcurrentHashMap<>()
+
     private static Map<String, Object> getCache(ClassLoader loader) {
-        if (loader == null) loader = GrailsHelperIntegration.class.classLoader
+        if (loader == null) return DEFAULT_CACHE
         return CACHE.computeIfAbsent(loader) { new ConcurrentHashMap<String, Object>() }
     }
-
+    
     /**
-     * Get Grails artifact types using official Grails utilities
+     * Get Grails artifact types using official utilities
      */
-    static List<String> getGrailsArtifactTypes(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('grails_artifact_types') {
+    static List<String> getGrailsArtifactTypes(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'grails_artifact_types' : 'grails_artifact_types_nofallback') {
             try {
-                // Try to use GrailsNameUtils from project classpath
-                Class<?> nameUtils = Class.forName('grails.util.GrailsNameUtils', true, loader ?: GrailsHelperIntegration.class.classLoader)
-                // If it exists, we assume standard artifacts are available
+                Class<?> nameUtils = Class.forName('grails.util.GrailsNameUtils', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return [
                     'Controller', 'Service', 'Domain', 'TagLib', 'Command', 
                     'Job', 'Interceptor', 'Codec', 'Converter', 'Filter'
                 ]
             } catch (Exception e) {
-                log.debug("GrailsNameUtils not found in project classpath, using standard artifact types")
-                return ['Controller', 'Service', 'Domain', 'TagLib']
+                log.debug("GrailsNameUtils not found in project classpath")
+                return allowFallback ? [
+                    'Controller', 'Service', 'Domain', 'TagLib', 'Command', 
+                    'Job', 'Interceptor', 'Codec', 'Converter', 'Filter'
+                ] : []
             }
         }
     }
@@ -45,22 +50,21 @@ class GrailsHelperIntegration {
     /**
      * Get GORM methods using official GORM utilities
      */
-    static List<String> getGormInstanceMethods(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('gorm_instance_methods') {
+    static List<String> getGormInstanceMethods(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'gorm_instance_methods' : 'gorm_instance_methods_nofallback') {
             try {
-                // Try to get methods from GormEntity interface in project classpath
-                Class<?> gormEntity = Class.forName('grails.gorm.GormEntity', true, loader ?: GrailsHelperIntegration.class.classLoader)
+                Class<?> gormEntity = Class.forName('grails.gorm.GormEntity', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return gormEntity.methods.findAll { method ->
                     !method.name.startsWith('get') && 
                     !method.name.startsWith('set') &&
                     !method.name.startsWith('is')
                 }.collect { it.name }.unique().sort()
             } catch (Exception e) {
-                log.debug("GormEntity not found in project classpath, using standard GORM methods")
-                return [
-                    'save', 'delete', 'refresh', 'merge', 'attach', 'discard',
-                    'validate', 'hasErrors', 'clearErrors', 'getErrors'
-                ]
+                log.debug("GormEntity not found in project classpath")
+                return allowFallback ? [
+                    'save', 'delete', 'ident', 'attach', 'discard', 'lock', 'refresh',
+                    'isAttached', 'markDirty'
+                ] : []
             }
         }
     }
@@ -68,22 +72,21 @@ class GrailsHelperIntegration {
     /**
      * Get GORM static methods using official GORM utilities
      */
-    static List<String> getGormStaticMethods(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('gorm_static_methods') {
+    static List<String> getGormStaticMethods(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'gorm_static_methods' : 'gorm_static_methods_nofallback') {
             try {
-                // Try to get static methods from GORM in project classpath
-                Class<?> gormStaticApi = Class.forName('grails.gorm.GormStaticApi', true, loader ?: GrailsHelperIntegration.class.classLoader)
+                Class<?> gormStaticApi = Class.forName('grails.gorm.GormStaticApi', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return gormStaticApi.methods.findAll { method ->
                     Modifier.isStatic(method.modifiers) &&
                     Modifier.isPublic(method.modifiers)
                 }.collect { it.name }.unique().sort()
             } catch (Exception e) {
-                log.debug("GormStaticApi not found in project classpath, using standard static methods")
-                return [
+                log.debug("GormStaticApi not found in project classpath")
+                return allowFallback ? [
                     'get', 'load', 'findBy', 'findAllBy', 'countBy', 'list', 
                     'findAll', 'count', 'exists', 'createCriteria', 'withCriteria',
                     'withTransaction', 'where', 'findWhere', 'findAllWhere'
-                ]
+                ] : []
             }
         }
     }
@@ -91,18 +94,17 @@ class GrailsHelperIntegration {
     /**
      * Get Grails controller methods using official utilities
      */
-    static List<String> getControllerMethods(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('controller_methods') {
+    static List<String> getControllerMethods(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'controller_methods' : 'controller_methods_nofallback') {
             try {
-                // Try to get methods from Controller trait/interface in project classpath
-                Class<?> controllerTrait = Class.forName('grails.artefact.Controller', true, loader ?: GrailsHelperIntegration.class.classLoader)
+                Class<?> controllerTrait = Class.forName('grails.artefact.Controller', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return controllerTrait.methods.collect { it.name }.unique().sort()
             } catch (Exception e) {
-                log.debug("Controller trait not found in project classpath, using standard methods")
-                return [
+                log.debug("Controller trait not found in project classpath")
+                return allowFallback ? [
                     'render', 'redirect', 'forward', 'chain', 'withFormat',
                     'bindData', 'respond'
-                ]
+                ] : []
             }
         }
     }
@@ -135,15 +137,14 @@ class GrailsHelperIntegration {
     /**
      * Get TagLib methods and properties using official utilities
      */
-    static List<String> getTagLibMethods(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('taglib_methods') {
+    static List<String> getTagLibMethods(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'taglib_methods' : 'taglib_methods_nofallback') {
             try {
-                // Try to get methods from TagLib trait in project classpath
-                Class<?> tagLibTrait = Class.forName('grails.artefact.TagLib', true, loader ?: GrailsHelperIntegration.class.classLoader)
+                Class<?> tagLibTrait = Class.forName('grails.artefact.TagLib', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return tagLibTrait.methods.collect { it.name }.unique().sort()
             } catch (Exception e) {
-                log.debug("TagLib trait not found in project classpath, using standard methods")
-                return ['render', 'include', 'createLink', 'resource']
+                log.debug("TagLib trait not found in project classpath")
+                return allowFallback ? ['render', 'include', 'createLink', 'resource'] : []
             }
         }
     }
@@ -164,13 +165,10 @@ class GrailsHelperIntegration {
     /**
      * Get Grails configuration keys using official utilities
      */
-    static List<String> getGrailsConfigurationKeys(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('grails_config_keys') {
+    static List<String> getGrailsConfigurationKeys(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'grails_config_keys' : 'grails_config_keys_nofallback') {
             try {
-                // Try to get configuration keys from Grails in project classpath
-                Class<?> grailsUtil = Class.forName('grails.util.GrailsUtil', true, loader ?: GrailsHelperIntegration.class.classLoader)
-                
-                // Standard Grails configuration keys
+                Class<?> grailsUtil = Class.forName('grails.util.GrailsUtil', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return [
                     'grails.serverURL', 'grails.logging.level', 'grails.mime.types',
                     'grails.databinding.convertEmptyStringsToNull',
@@ -182,10 +180,10 @@ class GrailsHelperIntegration {
                     'server.port', 'server.servlet.context-path'
                 ]
             } catch (Exception e) {
-                log.debug("GrailsUtil not found in project classpath, using standard config keys")
-                return [
+                log.debug("GrailsUtil not found in project classpath")
+                return allowFallback ? [
                     'grails.serverURL', 'grails.logging.level', 'server.port'
-                ]
+                ] : []
             }
         }
     }
@@ -193,13 +191,10 @@ class GrailsHelperIntegration {
     /**
      * Get Grails constraint names using official utilities
      */
-    static List<String> getGrailsConstraints(ClassLoader loader = null) {
-        return (List<String>) getCache(loader).computeIfAbsent('grails_constraints') {
+    static List<String> getGrailsConstraints(ClassLoader loader = null, boolean allowFallback = true) {
+        return (List<String>) getCache(loader).computeIfAbsent(allowFallback ? 'grails_constraints' : 'grails_constraints_nofallback') {
             try {
-                // Try to get constraints from Grails validation in project classpath
-                Class<?> constraintFactory = Class.forName('grails.validation.ConstraintFactory', true, loader ?: GrailsHelperIntegration.class.classLoader)
-                
-                // Standard Grails constraints
+                Class<?> constraintFactory = Class.forName('grails.validation.ConstraintFactory', false, loader ?: GrailsHelperIntegration.class.classLoader)
                 return [
                     'nullable', 'blank', 'size', 'minSize', 'maxSize',
                     'min', 'max', 'range', 'inList', 'matches', 'email',
@@ -207,11 +202,11 @@ class GrailsHelperIntegration {
                     'editable', 'format', 'password', 'widget', 'attributes'
                 ]
             } catch (Exception e) {
-                log.debug("ConstraintFactory not found in project classpath, using standard constraints")
-                return [
+                log.debug("ConstraintFactory not found in project classpath")
+                return allowFallback ? [
                     'nullable', 'blank', 'size', 'min', 'max', 'range',
                     'inList', 'matches', 'email', 'url', 'unique', 'validator'
-                ]
+                ] : []
             }
         }
     }
@@ -252,18 +247,11 @@ class GrailsHelperIntegration {
         if (!className) return false
         
         try {
-            // Use GrailsNameUtils to check artifact type
-            Class<?> nameUtils = Class.forName('grails.util.GrailsNameUtils', true, loader ?: GrailsHelperIntegration.class.classLoader)
-            def method = nameUtils.getMethod('getLogicalName', String, String)
-            
-            getGrailsArtifactTypes(loader).any { artifactType ->
-                className.endsWith(artifactType)
-            }
-        } catch (Exception e) {
-            // Fallback to simple name checking
             return getGrailsArtifactTypes(loader).any { artifactType ->
                 className.endsWith(artifactType)
             }
+        } catch (Exception e) {
+            return false
         }
     }
     
@@ -286,7 +274,7 @@ class GrailsHelperIntegration {
             case 'controller':
                 return getControllerMethods(loader)
             case 'service':
-                return [] // Services don't have special methods
+                return []
             case 'domain':
                 return getGormInstanceMethods(loader)
             case 'taglib':
@@ -319,6 +307,7 @@ class GrailsHelperIntegration {
      */
     static void clearCaches() {
         CACHE.clear()
+        DEFAULT_CACHE.clear()
         log.debug("Cleared GrailsHelperIntegration caches")
     }
 }

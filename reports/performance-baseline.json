@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-09-12T17:31:42.338876200Z",
+    "timestamp": "2026-09-12T19:35:57.649178Z",
     "schemaVersion": 1,
     "taskId": "R1-05",
     "hardware": {
@@ -23,77 +23,77 @@
             "-Duser.variant",
             "-ea"
         ],
-        "totalMemoryMiB": 256,
+        "totalMemoryMiB": 336,
         "maxMemoryMiB": 2048
     },
     "benchmarks": {
         "warmDocumentNotification": {
             "sampleCount": 100,
-            "minMs": 1.15,
-            "maxMs": 6.33,
-            "meanMs": 2.25,
-            "p50Ms": 2.11,
-            "p95Ms": 4.06,
-            "p99Ms": 5.71,
-            "variance": 0.952
+            "minMs": 1.69,
+            "maxMs": 28.26,
+            "meanMs": 4.06,
+            "p50Ms": 2.77,
+            "p95Ms": 8.53,
+            "p99Ms": 28.15,
+            "variance": 19.042
         },
         "editStorm": {
             "sampleCount": 100,
-            "minMs": 1.94,
-            "maxMs": 23.36,
-            "meanMs": 6.08,
-            "p50Ms": 4.59,
-            "p95Ms": 12.02,
-            "p99Ms": 23.27,
-            "variance": 17.463
+            "minMs": 0.87,
+            "maxMs": 26.91,
+            "meanMs": 5.73,
+            "p50Ms": 4.41,
+            "p95Ms": 13.97,
+            "p99Ms": 26.54,
+            "variance": 22.155
         },
         "coldDocumentNotification": {
             "sampleCount": 50,
-            "minMs": 2.62,
-            "maxMs": 26.52,
-            "meanMs": 6.52,
-            "p50Ms": 4.86,
-            "p95Ms": 17.11,
-            "p99Ms": 26.52,
-            "variance": 19.627
+            "minMs": 1.31,
+            "maxMs": 13.09,
+            "meanMs": 2.49,
+            "p50Ms": 1.84,
+            "p95Ms": 5.76,
+            "p99Ms": 13.09,
+            "variance": 4.047
         },
         "warmHover": {
             "sampleCount": 100,
-            "minMs": 1.35,
-            "maxMs": 6.69,
-            "meanMs": 2.58,
-            "p50Ms": 2.39,
-            "p95Ms": 3.91,
-            "p99Ms": 5.29,
-            "variance": 0.676
+            "minMs": 1.19,
+            "maxMs": 9.54,
+            "meanMs": 2.99,
+            "p50Ms": 2.53,
+            "p95Ms": 5.61,
+            "p99Ms": 7.78,
+            "variance": 2.566
         },
         "memoryStats": {
-            "initialHeapBytes": 29819184,
-            "peakHeapBytes": 44501296,
-            "settledHeapBytes": 30434680,
-            "settledHeapMiB": 29,
-            "heapGrowthRatio": 1.02,
+            "initialHeapBytes": 180936664,
+            "peakHeapBytes": 195621424,
+            "settledHeapBytes": 181261368,
+            "settledHeapMiB": 172.9,
+            "heapGrowthRatio": 1,
             "classloaderDetached": true
         },
         "warmCompletion": {
             "sampleCount": 100,
-            "minMs": 0.72,
-            "maxMs": 11.3,
-            "meanMs": 1.49,
-            "p50Ms": 1.18,
-            "p95Ms": 2.43,
-            "p99Ms": 5.42,
-            "variance": 1.552
+            "minMs": 0.93,
+            "maxMs": 34.01,
+            "meanMs": 2.56,
+            "p50Ms": 1.74,
+            "p95Ms": 4.51,
+            "p99Ms": 14.7,
+            "variance": 13.79
         },
         "blockedBuildReads": {
             "sampleCount": 50,
             "minMs": 0.01,
-            "maxMs": 0.78,
-            "meanMs": 0.03,
+            "maxMs": 0.3,
+            "meanMs": 0.02,
             "p50Ms": 0.01,
             "p95Ms": 0.03,
-            "p99Ms": 0.78,
-            "variance": 0.012
+            "p99Ms": 0.3,
+            "variance": 0.002
         },
         "numericLimits": {
             "maxAutomaticDocumentBytes": 4194304,
@@ -102,35 +102,35 @@
             "maxTrackedFiles": 500,
             "maxFqcnEntries": 10000,
             "maxSyncRetries": 2,
-            "largeFileOpenLatencyMs": 19.91,
+            "largeFileOpenLatencyMs": 6.05,
             "largeFileAutomaticCompileSkipped": true,
             "queueLimitsEnforced": true
         },
         "lifecycleTransitions": {
             "sampleCount": 25,
-            "minMs": 13.16,
-            "maxMs": 28.15,
-            "meanMs": 20.66,
-            "p50Ms": 20.14,
-            "p95Ms": 27.27,
-            "p99Ms": 28.15,
-            "variance": 22.657
+            "minMs": 12.5,
+            "maxMs": 125.79,
+            "meanMs": 29.72,
+            "p50Ms": 21.77,
+            "p95Ms": 67.77,
+            "p99Ms": 125.79,
+            "variance": 556.739
         }
     },
     "scorecardComparisons": {
         "ordinaryDocumentNotification": {
             "target": "p95 <= 15.0 ms (target <10ms)",
-            "observedP95Ms": 4.06,
+            "observedP95Ms": 8.53,
             "status": "PASS"
         },
         "warmCompletion": {
             "target": "p95 < 100.0 ms",
-            "observedP95Ms": 2.43,
+            "observedP95Ms": 4.51,
             "status": "PASS"
         },
         "warmHover": {
             "target": "p95 < 100.0 ms",
-            "observedP95Ms": 3.91,
+            "observedP95Ms": 5.61,
             "status": "PASS"
         },
         "blockedBuildReads": {
@@ -144,7 +144,7 @@
         },
         "memorySettling": {
             "target": "settled heap stabilized, classloaders detached",
-            "observedSettledMiB": 29,
+            "observedSettledMiB": 172.9,
             "status": "PASS"
         },
         "largeFilePolicy": {

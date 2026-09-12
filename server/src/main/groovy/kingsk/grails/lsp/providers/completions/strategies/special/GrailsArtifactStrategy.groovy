@@ -75,6 +75,7 @@ class GrailsArtifactStrategy extends BaseCompletionStrategy {
             CompletionItem item = new CompletionItem(webParam)
             item.kind = CompletionItemKind.Keyword
             item.detail = 'Grails parameter'
+            item.detail = 'Grails controller parameter'
             completions.add(item)
         }
     }

@@ -30,7 +30,7 @@ class GrailsInjectedStrategy extends BaseCompletionStrategy {
 		if (request.offsetNode instanceof PropertyExpression) return false
 		if (request.offsetNode instanceof MethodCallExpression) return false
 		
-		ClassNode currentClass = request.offsetNode ? ctx.ast().getParent(request.offsetNode) as ClassNode : null // FIXME: use helper
+		ClassNode currentClass = ctx.ast()?.getClassNodes(request.uri)?.find { it }
 		if (!currentClass) return false
 		
 		return GrailsUtils.isGrailsArtefact(currentClass, request.uri)

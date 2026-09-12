@@ -204,15 +204,9 @@ class DiscoveryService {
     static List<String> getCollectionMethods() {
         return KEYWORD_CACHE.computeIfAbsent('collection') {
             try {
-                // Use GroovyHelperIntegration for comprehensive method discovery
                 return GroovyHelperIntegration.collectionMethodsWithExtensions
             } catch (Exception e) {
-                // We don't have GroovyHelperIntegration here yet, so fallback to basic
-                return getPublicMethodNames(Collection.class) + [
-                    'each', 'eachWithIndex', 'find', 'findAll', 'collect', 'inject', 'sum',
-                    'flatten', 'any', 'every', 'sort', 'unique', 'groupBy', 'join',
-                    'min', 'max', 'reverse'
-                ]
+                return getPublicMethodNames(Collection.class)
             }
         }
     }
@@ -223,20 +217,10 @@ class DiscoveryService {
     static List<String> getMapMethods() {
         return KEYWORD_CACHE.computeIfAbsent('map') {
             try {
-                // MetaClass on Map (interface) only returns Object methods — Groovy extensions
-                // are registered on concrete implementations. LinkedHashMap is Groovy's default
-                // map literal type and has all DGM extensions in its MetaClass.
                 return GroovyHelperIntegration.getMethodsUsingMetaClass(LinkedHashMap.class)
             } catch (Exception e) {
                 log.warn("Could not get map methods via GroovyHelperIntegration: ${e.message}")
-                // Fallback to basic Map methods + known Groovy extensions
-                List<String> methods = getPublicMethodNames(Map.class)
-                methods.addAll([
-                    'each', 'eachWithIndex', 'find', 'findAll', 'collect', 'collectEntries',
-                    'groupBy', 'subMap', 'withDefault', 'every', 'any', 'inject', 'sort',
-                    'min', 'max', 'sum', 'flatten', 'unique', 'count'
-                ])
-                return (List<String>) methods.unique()
+                return getPublicMethodNames(Map.class)
             }
         }
     }
@@ -247,16 +231,10 @@ class DiscoveryService {
     static List<String> getStringMethods() {
         return KEYWORD_CACHE.computeIfAbsent('string') {
             try {
-                // Use GroovyHelperIntegration for comprehensive method discovery
                 return GroovyHelperIntegration.getStringMethodsWithExtensions()
             } catch (Exception e) {
                 log.warn("Could not get string methods via GroovyHelperIntegration: ${e.message}")
-                // Fallback to basic string methods
-                return getPublicMethodNames(String.class) + [
-                    'eachLine', 'eachMatch', 'findAll', 'split', 'tokenize', 'padLeft',
-                    'padRight', 'center', 'reverse', 'capitalize', 'uncapitalize',
-                    'toInteger', 'toDouble', 'toBoolean', 'isNumber', 'isInteger'
-                ]
+                return getPublicMethodNames(String.class)
             }
         }
     }
@@ -616,6 +594,31 @@ class DiscoveryService {
             'toList', 'toSet', 'asType', 'is', 'dump', 'inspect', 'printf',
             'print', 'println', 'use', 'with', 'identity', 'sleep'
         ]
+    }
+
+    /**
+     * Resolves all member declarations with provenance for a ClassNode.
+     */
+    static List<kingsk.grails.lsp.model.discovery.ResolvedDeclaration> resolveDeclarations(
+        ClassNode classNode,
+        ClassLoader loader,
+        String sourceSetName = "main",
+        String projectCoords = "project",
+        String sourceAttachment = null
+    ) {
+        return DeclarationDiscoveryService.resolveMemberDeclarations(classNode, loader, sourceSetName, projectCoords, sourceAttachment)
+    }
+
+    /**
+     * Resolves Groovy extension methods with provenance for a target ClassNode.
+     */
+    static List<kingsk.grails.lsp.model.discovery.ResolvedDeclaration> resolveExtensionMethods(
+        ClassNode targetType,
+        ClassLoader loader,
+        String sourceSetName = "main",
+        String projectCoords = "org.apache.groovy:groovy"
+    ) {
+        return DeclarationDiscoveryService.resolveExtensionMethods(targetType, loader, sourceSetName, projectCoords)
     }
 
     /**

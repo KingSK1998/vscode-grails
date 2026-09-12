@@ -170,6 +170,7 @@ class SourceSetCompilationState {
                 compilationUnit.compile(phase)
             } catch (CompilationFailedException e) {
                 log.debug("[COMPILER:${sourceSetName}] Compilation failed: ${e.message}")
+                recoverFromSyntaxErrors(phase, e)
             } catch (Exception e) {
                 log.debug("[COMPILER:${sourceSetName}] Compilation error: ${e.message}")
                 recoverFromSyntaxErrors(phase, e)
@@ -183,27 +184,60 @@ class SourceSetCompilationState {
     }
 
     private void recoverFromSyntaxErrors(int phase, Exception e) {
+        log.debug("[RECOVERY] Entering recoverFromSyntaxErrors, phase={}, exception={}: {}", phase, e.class.name, e.message)
         if (compilationUnit == null) return
-        def preserveError = compilationUnit.errorCollector
+        MultipleCompilationErrorsException mce = (e instanceof MultipleCompilationErrorsException) ?
+            (MultipleCompilationErrorsException) e :
+            (e?.cause instanceof MultipleCompilationErrorsException ? (MultipleCompilationErrorsException) e.cause : null)
+
+        ErrorCollector preserveError = null
+        if (compilationUnit.errorCollector != null) {
+            preserveError = new ErrorCollector(compilationUnit.configuration)
+            preserveError.addCollectorContents(compilationUnit.errorCollector)
+        }
         boolean patchedAny = false
 
-        compilationUnit?.sourceUnits?.toList()?.each { SourceUnit sourceUnit ->
+        List<SourceUnit> units = compilationUnit.sourceUnits ?: []
+
+        units.each { SourceUnit sourceUnit ->
             if (sourceUnit.AST != null) return
 
             String original = sourceUnit.source.reader.text
             int lineNumber = -1
 
-            if (e instanceof MultipleCompilationErrorsException || e.getCause() instanceof MultipleCompilationErrorsException) {
-                def errorCollector = sourceUnit.errorCollector
-                def syntaxErrors = errorCollector?.errors?.findAll { it instanceof SyntaxErrorMessage }
-                if (syntaxErrors && !syntaxErrors.isEmpty()) {
-                    SyntaxException syntaxException = ((SyntaxErrorMessage) syntaxErrors[0]).cause
-                    lineNumber = Math.max(syntaxException.line - 1, 0)
+            def errs = sourceUnit.errorCollector?.errors ?: []
+            if (errs.isEmpty()) {
+                errs = compilationUnit.errorCollector?.errors ?: []
+            }
+            if (errs.isEmpty() && mce != null) {
+                errs = mce.errorCollector?.errors ?: []
+            }
+
+            for (Object err : errs) {
+                if (err instanceof SyntaxErrorMessage) {
+                    SyntaxException se = ((SyntaxErrorMessage) err).cause
+                    if (se != null) {
+                        lineNumber = Math.max(se.line - 1, 0)
+                        break
+                    }
+                } else if (err instanceof SyntaxException) {
+                    SyntaxException se = (SyntaxException) err
+                    lineNumber = Math.max(se.line - 1, 0)
+                    break
                 }
             }
 
-            if (lineNumber >= 0) {
-                List<String> lines = original.readLines()
+            List<String> lines = original.readLines()
+            if (lineNumber >= 0 && lineNumber < lines.size()) {
+                if (!lines[lineNumber].trim().endsWith(".")) {
+                    for (int i = lineNumber - 1; i >= Math.max(0, lineNumber - 3); i--) {
+                        if (lines[i].trim().endsWith(".")) {
+                            lineNumber = i
+                            break
+                        }
+                    }
+                }
+
                 if (lineNumber < lines.size()) {
                     String patchText = GrailsUtils.PATTERN_CONSTRUCTOR_CALL.matcher(lines[lineNumber]).matches() ?
                         GrailsUtils.DUMMY_COMPLETION_CONSTRUCTOR : GrailsUtils.DUMMY_COMPLETION_IDENTIFIER
@@ -220,11 +254,18 @@ class SourceSetCompilationState {
 
         if (patchedAny) {
             try {
+                compilationUnit.clearErrors()
                 compilationUnit.compile(phase)
-            } catch (Exception ignored) {}
-        }
-        if (compilationUnit.errorCollector != null && preserveError != null) {
-            compilationUnit.errorCollector.addCollectorContents(preserveError)
+            } catch (Exception recompileEx) {
+                log.debug("[RECOVERY] Recompilation failed: {}", recompileEx.message)
+                if (compilationUnit.errorCollector != null && preserveError != null) {
+                    compilationUnit.errorCollector.addCollectorContents(preserveError)
+                }
+            }
+        } else {
+            if (compilationUnit.errorCollector != null && preserveError != null) {
+                compilationUnit.errorCollector.addCollectorContents(preserveError)
+            }
         }
     }
 

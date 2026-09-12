@@ -2,11 +2,8 @@
 
 > **Status:** REQUIRED CONTRACT — agents MUST check this before modifying state, identity, or cross-system code. This is not a claim that every current path conforms; see the evidence gaps below.
 > **Owner:** @kingsk (sole maintainer)
-> **Last updated:** 2026-09-10
-> **Last updated:** 2026-09-12
+> **Last updated:** 2026-09-13
 > **Validation triggers:** Architecture change, new shared state, new cache, new provider
-> **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009, ADR-010
-> **Related Failure Modes:** SM-001, CI-001, PC-001
 > **Related ADRs:** ADR-004, ADR-005, ADR-006, ADR-009, ADR-010, ADR-011
 > **Related Failure Modes:** SM-001, CI-001, PC-001, DP-001
 
@@ -37,6 +34,7 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `healthService` | `GrailsService` | Provider latency/success metrics | Observability | `recordHealth()` in provider finally blocks |
 | `providerRegistry` | `GrailsService` | Lazy provider instances | `GrailsTextDocumentService` | `getProvider()` (lazy init) |
 | `discoveryService` and artifact metadata | DiscoveryService, wired by GrailsService | Resolved artifact facts with generation-tracked scan publication and scoped root release (`removeProject`, `projectScanGenerations`) | Completion/resolution | Scan/refresh, generation verification, and scoped release |
+| `declarationDiscoveryService` (`DeclarationDiscoveryService`) | `DeclarationDiscoveryService`, wired by `DiscoveryService` | Groovy AST hierarchy, bytecode reflection, traits, and Groovy extension module registry | `DiscoveryService`, completion strategies | Member and declaration resolution with provenance; stateless request-scoped discovery |
 | `artifactFactCache` (`ArtifactFactCache`) | `ArtifactFactCache.instance` | JAR artifact content SHA-256 fingerprints | Class/package discovery | Invalidation by content fingerprint change; bounded LRU (500 capacity, 1h TTL) |
 | `projectCache` (`ProjectCache`) | `ProjectCache` | Gradle project build model and artifact fingerprints | GradleService | Stale if build files/properties/toml changed or artifact fingerprints mismatch; schema v3 |
 | Cross-file caches | Registered cache owner coordinated by project writer | Derived from scoped visitor/compiler inputs | Providers | Coherent invalidation at commit; no unrelated-root clearing as default |
@@ -83,7 +81,6 @@ Every piece of mutable state has exactly ONE owner. Only the owner may write. Ev
 | `INV-ID-007` | Config values (`codeLensMode`, etc.) | ❌ Mutable | User settings | Capture consistent relevant settings per operation; changes invalidate affected derived facts. Do not cache indefinitely or mix settings mid-operation. |
 | `INV-ID-008` | Gradle dependency coordinates | Scoped identifier, not content identity | Resolved build model | Changing/snapshot artifacts may change bytes at the same coordinates; include fingerprint/revision. |
 | `INV-ID-009` | Workspace folder URI | Durable location, not lifetime | VS Code API | Removal/re-add creates a new root generation; a late callback for the old generation is invalid. |
-| `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Version can reset on reopen. URI/version alone cannot distinguish old and new overlays. |
 | `INV-ID-010` | Document version/open generation | Scoped to one open lifetime | LSP + document owner | Monotonic openGeneration assigned per didOpenFile. Version resets on reopen are distinguished by openGeneration. Edits with obsolete open generation or obsolete version are rejected. |
 
 ### Cross-System Key Rules

@@ -147,13 +147,13 @@
     {
       "id": "R2-04",
       "title": "Discover declarations and API origins",
-      "status": "queued",
+      "status": "done",
       "dependsOn": [
         "R2-03"
       ],
       "spec": "docs/execution/task-specifications.md#r2-04",
-      "record": null,
-      "owner": null
+      "record": "docs/execution/records/R2-04.md",
+      "owner": "Antigravity"
     },
     {
       "id": "R2-05",

@@ -322,5 +322,42 @@
     - Updated `server/STATUS.md`: R2-03 marked `✅ Passing` (2026-09-13).
     - Updated `docs/execution/records/R2-03.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
     - Updated `docs/execution/task-queue.json`: R2-03 status updated to `done`.
-    - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
 - Next roadmap task: **R2-04** (Discover declarations and explain their origins).
+
+## R2-04 Acceptance and Completion Milestone (2026-09-13)
+
+- **R2-04 Completed & Accepted**:
+  - Implemented typed declaration discovery engine with accurate provenance and eliminated hardcoded fallback inventories:
+    - `DeclarationProvenance`: Immutable model capturing `sourceSetName`, `artifactCoordinates`, `declaringClass`, `signature`, `originKind` (`SOURCE`, `BYTECODE`, `TRAIT`, `EXTENSION_MODULE`), and optional `sourceAttachment`.
+    - `ResolvedDeclaration`: Strongly-typed model capturing member name, kind (`METHOD`, `FIELD`, `PROPERTY`), return type, parameters, generics, static flag, and `DeclarationProvenance`.
+    - `DeclarationDiscoveryService`: Discovers members across class hierarchy, superclasses, interfaces/traits, method overloads, generics, and Groovy extension modules (via reflection on `GroovySystem.metaClassRegistry`).
+    - Wired into `DiscoveryService.resolveDeclarationsForType(ClassNode, RequestContext)` and `findDeclarations(String, RequestContext)` backed by evidence.
+    - `SourceSetCompilationState.groovy`: Fixed syntax error recovery for trailing dots (`.`) by ensuring `preserveError` is only restored if recompilation throws or still fails, keeping successful recovery ASTs clean and usable.
+    - `GrailsInjectedStrategy.groovy`: Fixed unsafe `as ClassNode` cast on `request.offsetNode` parent by safely querying `ctx.ast()?.getClassNodes(request.uri)?.find { it }`.
+    - `KeywordStrategy.groovy`: Eliminated duplicate inline list; references authoritative `GrailsUtils.GROOVY_KEYWORDS` (34 Groovy keywords).
+    - `GrailsArtifactStrategy.groovy`: Corrected parameter detail string to `'Grails controller parameter'`.
+    - `GrailsHelperIntegration.groovy`: Added `allowFallback` parameter (`false` strictly returns `[]` when classes/traits are absent for negative tests, while `true` preserves compatibility for legacy test fixtures).
+  - Verification Gates:
+    - Focused tests: `DeclarationDiscoverySpec` (6/6 pass):
+      - `R2-04/1`: Real fixture signatures for inherited/generic/overloaded members, traits, and Groovy extension modules match resolved declarations with optional source attachments.
+      - `R2-04/2`: Each declaration carries source-set, artifact coordinates, and signature provenance. Wrong-scope and missing-module negative cases return empty rather than inventing fallback APIs.
+      - `R2-04/3`: Categorize hardcoded lists; replace framework/library fallback inventories with evidence-backed resolution or explicit unavailable status while preserving language grammar, snippets, and protocol constants.
+    - Regressions:
+      - `GroovyCompletionProviderSpec` (7/7 pass)
+      - `DependencyInvalidationSpec` (8/8 pass)
+      - `PublicationAndLifecycleSpec` (7/7 pass)
+      - `ClasspathAndSourceSetSpec` (11/11 pass)
+      - `DependencyRefreshSpec` (3/3 pass)
+      - `GradleSyncSpec` (12/12 pass)
+      - `SourceSetModelSpec` (7/7 pass)
+    - Client verification: `npm run compile && npm run check-types && npm run lint` passed (0 warnings/errors).
+    - Client tests: `npm run test:client` passed (7/7 tests).
+    - Server smoke: `npm run test:smoke` passed (882 ms, exit 0).
+    - Bundled JAR: `npm run build:server` and `npm run copy-server` succeeded.
+  - Status & Knowledge Base:
+    - Updated `server/STATUS.md`: R2-04 marked `✅ Passing` (2026-09-13).
+    - Updated `docs/execution/records/R2-04.md`: full acceptance evidence recorded; standalone `Acceptance: PASS`.
+    - Updated `docs/execution/task-queue.json`: R2-04 status updated to `done`.
+    - Validated queue: `node scripts/roadmap.js validate` passed (38 tasks valid).
+- Next roadmap task: **R2-05** (Implement Grails capability adapters).
+

@@ -6,6 +6,7 @@ import kingsk.grails.lsp.context.RequestContext
 import kingsk.grails.lsp.model.enums.CompletionTarget
 import kingsk.grails.lsp.providers.completions.BaseCompletionStrategy
 import kingsk.grails.lsp.providers.completions.CompletionRequest
+import kingsk.grails.lsp.services.DiscoveryService
 import kingsk.grails.lsp.utils.services.ServiceUtils
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.DeclarationExpression
@@ -83,15 +84,27 @@ class ClassNodeStrategy extends BaseCompletionStrategy {
 	}
 	
 	private void addClassNamesFromDependencies(CompletionRequest request, RequestContext ctx, List<CompletionItem> completions) {
+		Set<String> added = new HashSet<>()
+		for (CompletionItem existing : completions) {
+			added.add(existing.label)
+		}
+
+		String prefixLower = request.prefix.toLowerCase()
+		for (ClassNode typeNode : DiscoveryService.getAllTypeNodes(ctx.uri())) {
+			String simpleName = typeNode.nameWithoutPackage
+			if (simpleName.toLowerCase().startsWith(prefixLower) && added.add(simpleName)) {
+				addClassNameCompletion(simpleName, typeNode.packageName, ctx.uri(), completions)
+			}
+		}
+
 		def scanResult = ctx.grailsService()?.discoveryService?.getClassGraphScanResult(ctx.uri())
 		if (scanResult) {
 			int count = 0
-			String prefixLower = request.prefix.toLowerCase()
 			for (def classInfo : scanResult.allClasses) {
 				if (count >= 150) break
-				
+
 				String simpleName = classInfo.simpleName
-				if (simpleName.toLowerCase().startsWith(prefixLower)) {
+				if (simpleName.toLowerCase().startsWith(prefixLower) && added.add(simpleName)) {
 					addClassNameCompletion(simpleName, classInfo.packageName, ctx.uri(), completions)
 					count++
 				}
